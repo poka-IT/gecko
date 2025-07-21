@@ -450,9 +450,15 @@
     "dateRange": "Plage de dates",
     "selectDateRange": "Sélectionner plage de dates",
     "amountRange": "Plage de montants",
-    "min": "Min",
-    "max": "Max",
+    "minimum": "Minimum",
+    "maximum": "Maximum",
     "clearAll": "Effacer tout",
     "done": "Terminé",
-    "filters": "Filtres"
+    "filters": "Filtres",
+    "fromAddressOrName": "Depuis adresse ou identité",
+    "enterFromAddressOrName": "Entrer l'adresse ou l'identité expéditrice",
+    "toAddressOrName": "Vers adresse ou identité",
+    "enterToAddressOrName": "Entrer l'adresse ou l'identité destinataire",
+    "newNetworkActivity": "Nouvelle activité réseau",
+    "noNetworkActivity": "Aucune activité réseau"
 }

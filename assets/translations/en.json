@@ -438,9 +438,15 @@
     "dateRange": "Date range",
     "selectDateRange": "Select date range",
     "amountRange": "Amount range",
-    "min": "Min",
-    "max": "Max",
+    "minimum": "Minimum",
+    "maximum": "Maximum",
     "clearAll": "Clear all",
     "done": "Done",
-    "filters": "Filters"
+    "filters": "Filters",
+    "fromAddressOrName": "From address or identity",
+    "enterFromAddressOrName": "Enter sender address or identity",
+    "toAddressOrName": "To address or identity",
+    "enterToAddressOrName": "Enter recipient address or identity",
+    "newNetworkActivity": "New network activity",
+    "noNetworkActivity": "No network activity"
 }

@@ -21,6 +21,10 @@ class TransactionDisplayItem {
   final String dateDelimiter;
   final bool isMigrationTime;
   final TransactionType type;
+  final String? fromAddress; // For network view: explicit from address
+  final String? toAddress; // For network view: explicit to address
+  final String? fromUsername; // For network view: from identity name
+  final String? toUsername; // For network view: to identity name
 
   TransactionDisplayItem({
     required this.address,
@@ -33,6 +37,10 @@ class TransactionDisplayItem {
     required this.dateDelimiter,
     required this.isMigrationTime,
     required this.type,
+    this.fromAddress,
+    this.toAddress,
+    this.fromUsername,
+    this.toUsername,
   });
 
   factory TransactionDisplayItem.fromGraphQLNode(
@@ -76,6 +84,10 @@ class TransactionDisplayItem {
       dateDelimiter: dateDelimiter,
       isMigrationTime: isMigrationTime,
       type: TransactionType.transfer,
+      fromAddress: node.fromId,
+      toAddress: node.toId,
+      fromUsername: node.from?.identity?.name,
+      toUsername: node.to?.identity?.name,
     );
   }
 
@@ -123,6 +135,10 @@ class TransactionDisplayItem {
       dateDelimiter: dateDelimiter,
       isMigrationTime: isMigrationTime,
       type: TransactionType.transfer,
+      fromAddress: fromAddress,
+      toAddress: toAddress,
+      fromUsername: fromUsername,
+      toUsername: toUsername,
     );
   }
 

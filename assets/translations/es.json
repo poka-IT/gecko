@@ -448,9 +448,15 @@
     "dateRange": "Rango de fechas",
     "selectDateRange": "Seleccionar rango de fechas",
     "amountRange": "Rango de montos",
-    "min": "Mín",
-    "max": "Máx",
+    "minimum": "Mínimo",
+    "maximum": "Máximo",
     "clearAll": "Borrar todo",
     "done": "Hecho",
-    "filters": "Filtros"
+    "filters": "Filtros",
+    "fromAddressOrName": "Desde dirección o identidad",
+    "enterFromAddressOrName": "Introducir dirección o identidad remitente",
+    "toAddressOrName": "Hacia dirección o identidad",
+    "enterToAddressOrName": "Introducir dirección o identidad destinatario",
+    "newNetworkActivity": "Nueva actividad de red",
+    "noNetworkActivity": "Sin actividad de red"
 }

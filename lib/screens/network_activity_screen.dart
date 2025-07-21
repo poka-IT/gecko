@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/transaction_filters.dart';
 import 'package:gecko/providers/network_activity_provider.dart';
+import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/generic_transaction_filters.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
 
 class NetworkActivityScreen extends ConsumerStatefulWidget {
@@ -25,6 +28,8 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
   DateTime? _lastActivityTimestamp;
   bool _isDisposed = false;
   Timer? _hideIndicatorTimer;
+  double _lastScrollOffset = 0.0;
+  double _filterTranslationY = 0.0;
 
   bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
 
@@ -62,6 +67,45 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
       loadMoreNetworkTransactions(ref);
     }
+
+    // Handle filter visibility similar to account activity
+    final hasAdvancedFilters = ref.read(networkFiltersProvider).hasActiveFilters;
+    final isFilterPanelExpanded = ref.read(networkFilterPanelExpandedProvider);
+
+    if (!hasAdvancedFilters && !isFilterPanelExpanded) {
+      _handleFilterVisibility();
+    }
+  }
+
+  void _handleFilterVisibility() {
+    if (!_scrollController.hasClients) return;
+
+    final currentOffset = _scrollController.position.pixels;
+    final scrollDelta = currentOffset - _lastScrollOffset;
+
+    // Always show filter when at the top
+    if (currentOffset <= 50) {
+      if (_filterTranslationY != 0.0) {
+        setState(() {
+          _filterTranslationY = 0.0;
+        });
+      }
+    } else if (scrollDelta.abs() > 2.0) {
+      // Threshold to avoid jitter
+      const sensitivity = 0.02;
+
+      // Update translation based on scroll direction
+      double newTranslation = _filterTranslationY - (scrollDelta * sensitivity);
+      newTranslation = newTranslation.clamp(-1.0, 0.0);
+
+      if ((newTranslation - _filterTranslationY).abs() > 0.01) {
+        setState(() {
+          _filterTranslationY = newTranslation;
+        });
+      }
+    }
+
+    _lastScrollOffset = currentOffset;
   }
 
   void _onNewNetworkActivityReceived() {
@@ -128,7 +172,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
 
   @override
   Widget build(BuildContext context) {
-    final networkActivity = ref.watch(networkActivityProvider);
+    final networkActivity = ref.watch(filteredNetworkActivityProvider);
 
     // Check for new network activity using timestamp comparison
     if (!_isInitialLoad && !networkActivity.isLoading && networkActivity.transactions.isNotEmpty) {
@@ -160,55 +204,124 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
       body: SafeArea(
         child: Stack(
           children: [
-            networkActivity.isLoading && networkActivity.transactions.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: () => refreshNetworkActivity(ref),
-                    child: networkActivity.error != null && networkActivity.transactions.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.error_outline, size: scaleSize(48), color: context.colorScheme.error),
-                                ScaledSizedBox(height: 16),
-                                Text(
-                                  networkActivity.error!,
-                                  style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
-                                  textAlign: TextAlign.center,
+            // Main content with conditional filter handling
+            Consumer(
+              builder: (context, ref, child) {
+                final hasAdvancedFilters = ref.watch(networkFiltersProvider).hasActiveFilters;
+                final isFilterPanelExpanded = ref.watch(networkFilterPanelExpandedProvider);
+                final keepFiltersVisible = hasAdvancedFilters || isFilterPanelExpanded;
+
+                if (networkActivity.isLoading && networkActivity.transactions.isEmpty) {
+                  return Column(
+                    children: [
+                      // Always show filter in loading state
+                      GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      const Expanded(child: Center(child: CircularProgressIndicator())),
+                    ],
+                  );
+                }
+
+                if (networkActivity.error != null && networkActivity.transactions.isEmpty) {
+                  return Column(
+                    children: [
+                      // Always show filter in error state
+                      GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.error_outline, size: scaleSize(48), color: context.colorScheme.error),
+                              ScaledSizedBox(height: 16),
+                              Text(
+                                networkActivity.error!,
+                                style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
+                                textAlign: TextAlign.center,
+                              ),
+                              ScaledSizedBox(height: 16),
+                              ElevatedButton(onPressed: () => refreshNetworkActivity(ref), child: Text('retry'.tr())),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                if (networkActivity.transactions.isEmpty) {
+                  return Column(
+                    children: [
+                      // Always show filter in empty state
+                      GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.history,
+                                size: scaleSize(48),
+                                color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                              ),
+                              ScaledSizedBox(height: 16),
+                              Text(
+                                'noNetworkActivity'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 16,
+                                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
                                 ),
-                                ScaledSizedBox(height: 16),
-                                ElevatedButton(onPressed: () => refreshNetworkActivity(ref), child: Text('retry'.tr())),
-                              ],
-                            ),
-                          )
-                        : networkActivity.transactions.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.history,
-                                  size: scaleSize(48),
-                                  color: context.colorScheme.onSurface.withValues(alpha: 0.5),
-                                ),
-                                ScaledSizedBox(height: 16),
-                                Text(
-                                  'noNetworkActivity'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 16,
-                                    color: context.colorScheme.onSurface.withValues(alpha: 0.7),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          )
-                        : _buildTransactionsList(networkActivity),
-                  ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                // Main transaction list with filters
+                return Stack(
+                  children: [
+                    // Transaction list with conditional padding
+                    RefreshIndicator(
+                      onRefresh: () => refreshNetworkActivity(ref),
+                      child: AnimatedPadding(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        padding: EdgeInsets.only(
+                          top: keepFiltersVisible
+                              ? scaleSize(16) // Fixed padding when filters are visible
+                              : scaleSize(16) * (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when scrolling
+                        ),
+                        child: _buildTransactionsList(networkActivity),
+                      ),
+                    ),
+
+                    // Filter overlay with conditional visibility
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Transform.translate(
+                        offset: Offset(0, keepFiltersVisible ? 0.0 : _filterTranslationY * 16.0),
+                        child: Opacity(
+                          opacity: keepFiltersVisible
+                              ? 1.0 // Always visible when filtering
+                              : (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
+                          child: GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+
             // New activity indicator
             if (_showNewActivityIndicator)
               Positioned(
-                top: 16,
+                top: 80, // Position below the filter
                 left: 16,
                 right: 16,
                 child: FadeTransition(
@@ -252,23 +365,6 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
   }
 
   Widget _buildTransactionsList(NetworkActivityState networkActivity) {
-    if (networkActivity.transactions.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.history, size: scaleSize(48), color: context.colorScheme.onSurface.withValues(alpha: 0.5)),
-            ScaledSizedBox(height: 16),
-            Text(
-              'noNetworkActivity'.tr(),
-              style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
-    }
-
     int keyID = 0;
     const double avatarSize = 50;
     bool isMigrationPassed = false;

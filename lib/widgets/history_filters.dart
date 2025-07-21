@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/widgets/unified_transaction_filters.dart';
+import 'package:gecko/models/transaction_filters.dart';
+import 'package:gecko/widgets/generic_transaction_filters.dart';
 
-/// Simple wrapper for the unified transaction filter widget
+/// Simple wrapper for the generic transaction filter widget in account mode
 class TransactionFilter extends ConsumerWidget {
   const TransactionFilter({super.key, required this.address});
 
@@ -10,6 +11,6 @@ class TransactionFilter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return UnifiedTransactionFilters(address: address);
+    return GenericTransactionFilters(mode: FilterMode.account, address: address, showUDToggle: true);
   }
 }

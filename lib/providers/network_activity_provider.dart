@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/models/transaction_display_item.dart';
+import 'package:gecko/providers/transaction_filters_provider.dart';
+import 'package:gecko/providers/settings_provider.dart';
 
 /// State for network activity history
 class NetworkActivityState {
@@ -40,7 +42,7 @@ class NetworkActivityState {
   }
 }
 
-/// StateNotifier for managing network-wide transaction history
+/// StateNotifier for managing network-wide transaction history with UD support
 class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
   final Ref ref;
   StreamSubscription<String?>? _networkActivitySubscription;
@@ -164,37 +166,61 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      final includeUDs = ref.read(networkUniversalDividendsToggleProvider);
 
-      // Fetch network-wide transactions
-      final result = await d.SquidService.client.getNetworkActivity(number: 20, cursor: null);
+      List<TransactionDisplayItem> allTransactions = [];
 
-      if (result == null) {
+      // Fetch network-wide transfers
+      final transferResult = await d.SquidService.client.getNetworkActivity(number: 20, cursor: null);
+
+      if (transferResult != null) {
+        final transferTransactions = transferResult.edges
+            .map((edge) => TransactionDisplayItem.fromNetworkActivityNode(edge.node, genesisTime))
+            .toList();
+        allTransactions.addAll(transferTransactions);
+      }
+
+      // Fetch Universal Dividends if enabled (network-wide)
+      if (includeUDs) {
+        // Note: This would require a new GraphQL query for network-wide UDs
+        // For now, we'll add a placeholder for future implementation
+        final networkUDs = await _fetchNetworkUniversalDividends(genesisTime);
+        allTransactions.addAll(networkUDs);
+      }
+
+      // Sort all transactions by timestamp (newest first)
+      allTransactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+      if (transferResult == null) {
         print('🔴 Network activity result is null');
         state = state.copyWith(transactions: [], isLoading: false, hasNextPage: false, cursor: null);
         return;
       }
 
-      print('🟢 Network activity loaded: ${result.edges.length} transactions');
-
-      // Convert network activity nodes to TransactionDisplayItems for network view
-      final transactions = result.edges
-          .map((edge) => TransactionDisplayItem.fromNetworkActivityNode(edge.node, genesisTime))
-          .toList();
+      print('🟢 Network activity loaded: ${allTransactions.length} transactions');
 
       state = state.copyWith(
-        transactions: transactions,
+        transactions: allTransactions,
         isLoading: false,
-        hasNextPage: result.pageInfo.hasNextPage,
-        cursor: result.pageInfo.endCursor,
+        hasNextPage: transferResult.pageInfo.hasNextPage,
+        cursor: transferResult.pageInfo.endCursor,
       );
 
       // Store the most recent transaction ID for activity detection
-      if (transactions.isNotEmpty) {
-        _lastSeenTransactionId = _generateTransactionId(transactions.first);
+      if (allTransactions.isNotEmpty) {
+        _lastSeenTransactionId = _generateTransactionId(allTransactions.first);
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
+  }
+
+  /// Fetch network-wide Universal Dividends (placeholder for future implementation)
+  Future<List<TransactionDisplayItem>> _fetchNetworkUniversalDividends(DateTime genesisTime) async {
+    // This would require a new GraphQL query to fetch network-wide UDs
+    // For now, return empty list
+    // TODO: Implement network-wide UD fetching when GraphQL endpoint is available
+    return [];
   }
 
   /// Load the next page of network transactions
@@ -211,6 +237,7 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      final includeUDs = ref.read(networkUniversalDividendsToggleProvider);
 
       // Fetch more network transactions using cursor pagination
       final result = await d.SquidService.client.getNetworkActivity(number: 20, cursor: state.cursor);
@@ -220,12 +247,23 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
         return;
       }
 
-      final newTransactions = result.edges
+      final newTransferTransactions = result.edges
           .map((edge) => TransactionDisplayItem.fromNetworkActivityNode(edge.node, genesisTime))
           .toList();
 
+      List<TransactionDisplayItem> allNewTransactions = [...newTransferTransactions];
+
+      // Add UDs if enabled (for pagination, this is more complex as we'd need cursor-based UD pagination)
+      if (includeUDs) {
+        // For now, we don't paginate UDs in network view
+        // In a full implementation, this would need proper pagination coordination
+      }
+
+      // Sort new transactions by timestamp
+      allNewTransactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
       state = state.copyWith(
-        transactions: [...state.transactions, ...newTransactions],
+        transactions: [...state.transactions, ...allNewTransactions],
         isLoading: false,
         hasNextPage: result.pageInfo.hasNextPage,
         cursor: result.pageInfo.endCursor,
@@ -253,6 +291,28 @@ final networkActivityProvider = StateNotifierProvider<NetworkActivityNotifier, N
   return NetworkActivityNotifier(ref);
 });
 
+/// Provider for Universal Dividends toggle in network view
+final networkUniversalDividendsToggleProvider = StateNotifierProvider<UniversalDividendsToggleNotifier, bool>((ref) {
+  return UniversalDividendsToggleNotifier(ref);
+});
+
+/// Enhanced network activity provider that applies filters
+final filteredNetworkActivityProvider = Provider<NetworkActivityState>((ref) {
+  final baseState = ref.watch(networkActivityProvider);
+  final filters = ref.watch(networkFiltersProvider);
+
+  // If no filters are active, return the base state
+  if (!filters.hasActiveFilters) {
+    return baseState;
+  }
+
+  // Apply filters to the transactions
+  final filteredTransactions = applyTransactionFilters(baseState.transactions, filters);
+
+  // Return a new state with filtered transactions but preserve other properties
+  return baseState.copyWith(transactions: filteredTransactions);
+});
+
 /// Load more network transactions
 Future<void> loadMoreNetworkTransactions(WidgetRef ref) async {
   await ref.read(networkActivityProvider.notifier).loadMoreTransactions();
@@ -261,4 +321,11 @@ Future<void> loadMoreNetworkTransactions(WidgetRef ref) async {
 /// Refresh network activity
 Future<void> refreshNetworkActivity(WidgetRef ref) async {
   await ref.read(networkActivityProvider.notifier).refresh();
+}
+
+/// Toggle Universal Dividends in network view
+void toggleNetworkUniversalDividends(WidgetRef ref) {
+  ref.read(networkUniversalDividendsToggleProvider.notifier).toggle();
+  // Refresh the network activity to apply the UD toggle
+  refreshNetworkActivity(ref);
 }

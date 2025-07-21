@@ -66,18 +66,80 @@ class AmountRangeFilter {
   int get hashCode => minAmount.hashCode ^ maxAmount.hashCode;
 }
 
+/// Filter mode for different activity views
+enum FilterMode { account, network }
+
+/// Direction filter for network activity (from/to addresses)
+class DirectionFilter {
+  final String? fromAddress;
+  final String? toAddress;
+
+  const DirectionFilter({this.fromAddress, this.toAddress});
+
+  DirectionFilter copyWith({String? fromAddress, String? toAddress}) {
+    return DirectionFilter(fromAddress: fromAddress ?? this.fromAddress, toAddress: toAddress ?? this.toAddress);
+  }
+
+  bool get isActive => fromAddress?.isNotEmpty == true || toAddress?.isNotEmpty == true;
+
+  bool matchesDirection(
+    String? transactionFromAddress,
+    String? transactionToAddress,
+    String? fromUsername,
+    String? toUsername,
+  ) {
+    if (!isActive) return true;
+
+    bool fromMatches = true;
+    bool toMatches = true;
+
+    // Check "from" filter
+    if (fromAddress?.isNotEmpty == true) {
+      final searchTerm = fromAddress!.toLowerCase();
+      fromMatches =
+          transactionFromAddress?.toLowerCase().contains(searchTerm) == true ||
+          fromUsername?.toLowerCase().contains(searchTerm) == true;
+    }
+
+    // Check "to" filter
+    if (toAddress?.isNotEmpty == true) {
+      final searchTerm = toAddress!.toLowerCase();
+      toMatches =
+          transactionToAddress?.toLowerCase().contains(searchTerm) == true ||
+          toUsername?.toLowerCase().contains(searchTerm) == true;
+    }
+
+    return fromMatches && toMatches;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DirectionFilter &&
+          runtimeType == other.runtimeType &&
+          fromAddress == other.fromAddress &&
+          toAddress == other.toAddress;
+
+  @override
+  int get hashCode => fromAddress.hashCode ^ toAddress.hashCode;
+}
+
 /// Complete transaction filter criteria
 class TransactionFilterCriteria {
   final String? addressOrNameSearch;
   final String? commentSearch;
   final DateRangeFilter dateRange;
   final AmountRangeFilter amountRange;
+  final FilterMode mode;
+  final DirectionFilter? directionFilter;
 
   const TransactionFilterCriteria({
     this.addressOrNameSearch,
     this.commentSearch,
     this.dateRange = const DateRangeFilter(),
     this.amountRange = const AmountRangeFilter(),
+    this.mode = FilterMode.account,
+    this.directionFilter,
   });
 
   TransactionFilterCriteria copyWith({
@@ -85,12 +147,16 @@ class TransactionFilterCriteria {
     String? commentSearch,
     DateRangeFilter? dateRange,
     AmountRangeFilter? amountRange,
+    FilterMode? mode,
+    DirectionFilter? directionFilter,
   }) {
     return TransactionFilterCriteria(
       addressOrNameSearch: addressOrNameSearch ?? this.addressOrNameSearch,
       commentSearch: commentSearch ?? this.commentSearch,
       dateRange: dateRange ?? this.dateRange,
       amountRange: amountRange ?? this.amountRange,
+      mode: mode ?? this.mode,
+      directionFilter: directionFilter ?? this.directionFilter,
     );
   }
 
@@ -105,6 +171,8 @@ class TransactionFilterCriteria {
         return copyWith(dateRange: const DateRangeFilter());
       case 'amount':
         return copyWith(amountRange: const AmountRangeFilter());
+      case 'direction':
+        return copyWith(directionFilter: const DirectionFilter());
       default:
         return this;
     }
@@ -112,7 +180,7 @@ class TransactionFilterCriteria {
 
   /// Clear all filters
   TransactionFilterCriteria clearAll() {
-    return const TransactionFilterCriteria();
+    return TransactionFilterCriteria(mode: mode);
   }
 
   /// Check if any filter is active
@@ -120,7 +188,8 @@ class TransactionFilterCriteria {
       addressOrNameSearch?.isNotEmpty == true ||
       commentSearch?.isNotEmpty == true ||
       dateRange.isActive ||
-      amountRange.isActive;
+      amountRange.isActive ||
+      (mode == FilterMode.network && directionFilter?.isActive == true);
 
   /// Get count of active filters
   int get activeFilterCount {
@@ -129,6 +198,7 @@ class TransactionFilterCriteria {
     if (commentSearch?.isNotEmpty == true) count++;
     if (dateRange.isActive) count++;
     if (amountRange.isActive) count++;
+    if (mode == FilterMode.network && directionFilter?.isActive == true) count++;
     return count;
   }
 
@@ -140,8 +210,16 @@ class TransactionFilterCriteria {
           addressOrNameSearch == other.addressOrNameSearch &&
           commentSearch == other.commentSearch &&
           dateRange == other.dateRange &&
-          amountRange == other.amountRange;
+          amountRange == other.amountRange &&
+          mode == other.mode &&
+          directionFilter == other.directionFilter;
 
   @override
-  int get hashCode => addressOrNameSearch.hashCode ^ commentSearch.hashCode ^ dateRange.hashCode ^ amountRange.hashCode;
+  int get hashCode =>
+      addressOrNameSearch.hashCode ^
+      commentSearch.hashCode ^
+      dateRange.hashCode ^
+      amountRange.hashCode ^
+      mode.hashCode ^
+      directionFilter.hashCode;
 }

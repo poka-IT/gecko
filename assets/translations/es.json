@@ -187,6 +187,8 @@
     "months": "{} meses",
     "years": "{} años",
     "certify": "Certificar esta identidad",
+    "renewCertification": "Renovar certificación",
+    "createThisIdentity": "Crear esta identidad",
     "from": "De:{}",
     "to": "A:{}",
     "amount": "Importe:",

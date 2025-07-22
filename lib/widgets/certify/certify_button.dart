@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/exceptions.dart';
@@ -19,12 +20,25 @@ import 'package:provider/provider.dart' as old_provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CertifyButton extends ConsumerWidget {
-  const CertifyButton(this.address, {super.key});
+  const CertifyButton(this.address, {super.key, this.isRenewal = false, this.idtyStatus = IdtyStatus.unknown});
   final String address;
+  final bool isRenewal;
+  final IdtyStatus idtyStatus;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+
+    // Determine the appropriate text based on identity status and renewal status
+    String getButtonText() {
+      if (idtyStatus == IdtyStatus.none) {
+        return "createThisIdentity".tr();
+      } else if (isRenewal) {
+        return "renewCertification".tr();
+      } else {
+        return "certify".tr();
+      }
+    }
 
     return Column(
       children: <Widget>[
@@ -123,7 +137,7 @@ class CertifyButton extends ConsumerWidget {
         Container(
           constraints: BoxConstraints(maxWidth: scaleSize(100)),
           child: Text(
-            "certify".tr(),
+            getButtonText(),
             textAlign: TextAlign.center,
             style: scaledTextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.w500),
           ),

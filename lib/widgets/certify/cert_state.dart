@@ -1,17 +1,19 @@
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/certify/certify_button.dart';
 import 'package:gecko/widgets/certify/wait_to_cert.dart';
 
-class CertStateWidget extends StatelessWidget {
+class CertStateWidget extends ConsumerWidget {
   const CertStateWidget({super.key, required this.certState, required this.address});
 
   final CertState certState;
   final String address;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     String label;
     bool canCertify = false;
 
@@ -39,7 +41,25 @@ class CertStateWidget extends StatelessWidget {
         return const SizedBox.shrink();
     }
 
-    return canCertify ? CertifyButton(address) : _buildDisabledButton(label);
+    if (canCertify) {
+      // Check if certification already exists to determine if it's a renewal
+      final certExistsAsync = ref.watch(certificationExistsProvider(address));
+      final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
+
+      return certExistsAsync.when(
+        data: (certExists) {
+          return idtyStatusAsync.when(
+            data: (idtyStatus) => CertifyButton(address, isRenewal: certExists, idtyStatus: idtyStatus),
+            loading: () => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
+            error: (_, _) => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
+          );
+        },
+        loading: () => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
+        error: (_, _) => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
+      );
+    } else {
+      return _buildDisabledButton(label);
+    }
   }
 
   String formatDuration(Duration duration) {

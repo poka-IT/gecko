@@ -541,6 +541,19 @@ final certificationStreamProvider = StreamProvider.family.autoDispose<d.Certific
   return controller.stream;
 });
 
+/// Provider to check if a certification already exists between effective wallet and target address
+/// Returns true if a certification exists (renewal case), false if not (new certification case)
+final certificationExistsProvider = FutureProvider.family<bool, String>((ref, targetAddress) async {
+  final effectiveWallet = await ref.watch(effectiveCertificationWalletProvider.future);
+  if (effectiveWallet == null) return false;
+
+  final storageService = ref.watch(storageServiceProvider);
+  final validityPeriod = await storageService.getCertValidityPeriod(effectiveWallet.address, targetAddress);
+
+  // If validity period > 0, certification exists
+  return validityPeriod > 0;
+});
+
 /// Provides persistent real-time certification data stream for owned wallets.
 /// This provider does NOT auto-dispose, keeping owned wallet certifications always up-to-date.
 /// Use this for: owned wallet screens where certifications should stay subscribed.

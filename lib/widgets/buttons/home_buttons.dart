@@ -9,8 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/screens/search.dart';
+import 'package:gecko/routes.dart';
 import 'package:provider/provider.dart';
 import 'package:gecko/utils/flower_power_colors.dart';
 
@@ -113,14 +112,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                   baseColor: context.colorScheme.primary,
                   offset: 0.33, // Premier bouton - décalage 1/3
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const SearchScreen();
-                        },
-                      ),
-                    );
+                    Navigator.pushNamed(context, RouteNames.search);
                   },
                   child: Padding(
                     padding: EdgeInsets.all(scaleSize(15)),
@@ -151,18 +143,15 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                   onTap: () async {
                     WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
                     if (myWalletProvider.pinCode == '') {
-                      final result = await Navigator.push(
+                      final result = await Navigator.pushNamed(
                         context,
-                        MaterialPageRoute(
-                          builder: (homeContext) {
-                            return UnlockingWallet(wallet: defaultWallet, canSwitch: true);
-                          },
-                        ),
+                        RouteNames.unlockingWallet,
+                        arguments: UnlockingWalletArguments(wallet: defaultWallet, canSwitch: true),
                       );
                       // Only continue if we actually got a valid PIN back
                       if (result == null) return;
                     }
-                    Navigator.pushNamed(context, '/mywallets');
+                    Navigator.pushNamed(context, RouteNames.myWallets);
                   },
                   child: Padding(
                     key: keyOpenWalletsHomme,

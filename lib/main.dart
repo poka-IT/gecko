@@ -29,10 +29,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/search.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/screens/home/home_screen.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
-import 'package:gecko/screens/search.dart';
-import 'package:gecko/screens/search_result.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/version_overlay.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -43,6 +40,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/widgets/global_offline_overlay.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
 
 const bool enableSentry = true;
 const bool showVersionOverlay = true; // Set to false to hide version overlay in production
@@ -135,9 +133,16 @@ class Gecko extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
           ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
           ChangeNotifierProvider(create: (_) => ConnectionProvider()),
+          ChangeNotifierProvider(create: (_) => BottomAppBarProvider()),
+          ChangeNotifierProvider(create: (_) => CurrentRouteProvider()),
         ],
         child: Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
+            // Create the bottom app bar provider and observer
+            final bottomAppBarProvider = Provider.of<BottomAppBarProvider>(context, listen: false);
+            final currentRouteProvider = Provider.of<CurrentRouteProvider>(context, listen: false);
+            final navigatorObserver = BottomAppBarNavigatorObserver(bottomAppBarProvider, currentRouteProvider);
+
             return MaterialApp(
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
@@ -146,6 +151,11 @@ class Gecko extends StatelessWidget {
               darkTheme: darkTheme,
               themeMode: themeProvider.currentThemeMode,
               navigatorKey: _navigatorKey,
+              navigatorObservers: [
+                navigatorObserver,
+                // Add RouteObserver for immediate bottom bar state updates
+                globalRouteObserver,
+              ],
               builder: (context, child) {
                 final responsiveChild = ResponsiveBreakpoints.builder(
                   child: child!,
@@ -156,18 +166,23 @@ class Gecko extends StatelessWidget {
                   ],
                 );
 
+                // Wrap with padding wrapper to avoid content being hidden behind bottom bar
+                final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
+
                 // Wrap with offline overlay and version overlay
-                final finalChild = showVersionOverlay ? VersionOverlay(child: responsiveChild) : responsiveChild;
-                return GlobalOfflineOverlay(child: finalChild);
+                final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
+
+                // Add the global bottom app bar as an overlay
+                return Stack(
+                  children: [
+                    GlobalOfflineOverlay(child: finalChild),
+                    Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                  ],
+                );
               },
               title: 'Ğecko',
-              initialRoute: "/",
-              routes: {
-                '/': (context) => const HomeScreen(),
-                '/mywallets': (context) => const WalletsHome(),
-                '/search': (context) => const SearchScreen(),
-                '/searchResult': (context) => const SearchResultScreen(),
-              },
+              initialRoute: AppRoutes.initialRoute,
+              routes: AppRoutes.getRoutes(),
             );
           },
         ),

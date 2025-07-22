@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:gecko/providers.dart';
 
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/history_query.dart';
 
 import 'package:provider/provider.dart' as old_provider;
@@ -91,7 +90,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
                 const Expanded(child: Center(child: CircularProgressIndicator())),
               ],
             ),
-            bottomNavigationBar: const GeckoBottomAppBar(),
           );
         }
 
@@ -103,7 +101,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
                 Expanded(child: Center(child: Text('errorLoadingWalletData'.tr()))),
               ],
             ),
-            bottomNavigationBar: const GeckoBottomAppBar(),
           );
         }
 
@@ -125,7 +122,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
           ),
         ],
       ),
-      bottomNavigationBar: const GeckoBottomAppBar(),
     );
   }
 

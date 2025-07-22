@@ -9,6 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -136,8 +137,8 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                     myWalletProvider.pinCode = '';
                     if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
 
-                    Navigator.popUntil(context, ModalRoute.withName('/'));
-                    Navigator.pushNamed(context, '/mywallets');
+                    Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));
+                    Navigator.pushNamed(context, RouteNames.myWallets);
                   },
                   child: Text(
                     'openThisSafe'.tr(),

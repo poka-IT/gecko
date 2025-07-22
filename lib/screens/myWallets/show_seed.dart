@@ -9,6 +9,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -182,13 +183,10 @@ class ShowSeed extends ConsumerWidget {
                                 ScaledSizedBox(width: 50),
                                 GestureDetector(
                                   onTap: () {
-                                    Navigator.push(
+                                    Navigator.pushNamed(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return PrintWallet(displayMnemonic);
-                                        },
-                                      ),
+                                      RouteNames.printWallet,
+                                      arguments: PrintWalletArguments(sentence: displayMnemonic),
                                     );
                                   },
                                   child: Image.asset('assets/printer.png', height: scaleSize(38)),

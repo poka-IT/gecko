@@ -8,27 +8,48 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
-import 'package:gecko/screens/onBoarding/7.dart';
-import 'package:gecko/screens/onBoarding/9.dart';
-import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
-class OnboardingStepSix extends StatelessWidget {
-  OnboardingStepSix({super.key, required this.skipIntro, required this.generatedMnemonic});
+class OnboardingStepSix extends StatefulWidget {
+  const OnboardingStepSix({super.key, required this.skipIntro, required this.generatedMnemonic});
 
   final bool skipIntro;
-  String? generatedMnemonic;
+  final String? generatedMnemonic;
+
+  @override
+  State<OnboardingStepSix> createState() => _OnboardingStepSixState();
+}
+
+class _OnboardingStepSixState extends State<OnboardingStepSix> {
   final wordController = TextEditingController();
   final _mnemonicController = TextEditingController();
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _mnemonicController.text = widget.generatedMnemonic!;
+    // Force focus after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    wordController.dispose();
+    _mnemonicController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: true);
-
-    _mnemonicController.text = generatedMnemonic!;
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -74,6 +95,7 @@ class OnboardingStepSix extends StatelessWidget {
                     child: TextFormField(
                       key: keyInputWord,
                       autofocus: true,
+                      focusNode: _focusNode,
                       enabled: !generateWalletProvider.isAskedWordValid,
                       controller: wordController,
                       textInputAction: TextInputAction.next,
@@ -103,10 +125,11 @@ class OnboardingStepSix extends StatelessWidget {
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
                       child: nextButton(
-                        context,
-                        'continue'.tr(),
-                        skipIntro ? const OnboardingStepNine() : const OnboardingStepSeven(),
-                        false,
+                        context: context,
+                        text: 'continue'.tr(),
+                        nextScreen: widget.skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
+                        isFast: false,
+                        arguments: OnboardingStepsSevenToNineArguments(scanDerivation: false, fromRestore: false),
                       ),
                     ),
                   ),
@@ -130,12 +153,13 @@ class OnboardingStepSix extends StatelessWidget {
   }
 }
 
-Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
-  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
-
-  generateWalletProvider.isAskedWordValid = false;
-  generateWalletProvider.askedWordColor = Colors.black;
-
+Widget nextButton({
+  required BuildContext context,
+  required String text,
+  required String nextScreen,
+  required bool isFast,
+  required OnboardingStepsSevenToNineArguments? arguments,
+}) {
   return ScaledSizedBox(
     width: 340,
     height: 55,
@@ -150,7 +174,10 @@ Widget nextButton(BuildContext context, String text, nextScreen, bool isFast) {
         shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
       ),
       onPressed: () {
-        Navigator.push(context, FaderTransition(page: nextScreen, isFast: isFast));
+        final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
+        generateWalletProvider.isAskedWordValid = false;
+        generateWalletProvider.askedWordColor = Colors.black;
+        AppNavigator.pushWithFader(context, nextScreen, arguments: arguments, isFast: isFast);
       },
       child: Text(
         text,

@@ -15,8 +15,8 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certifications.dart';
@@ -504,13 +504,10 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                         WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
 
                                         if (myWalletProvider.pinCode == '') {
-                                          final result = await Navigator.push(
+                                          final result = await Navigator.pushNamed(
                                             context,
-                                            MaterialPageRoute(
-                                              builder: (homeContext) {
-                                                return UnlockingWallet(wallet: defaultWallet);
-                                              },
-                                            ),
+                                            RouteNames.unlockingWallet,
+                                            arguments: UnlockingWalletArguments(wallet: defaultWallet),
                                           );
                                           // Only continue if we actually got a valid PIN back
                                           if (result == null) return;

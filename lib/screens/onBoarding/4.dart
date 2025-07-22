@@ -3,12 +3,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/screens/onBoarding/5.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
-class OnboardingStepFor extends StatelessWidget {
-  const OnboardingStepFor({super.key});
+class OnboardingStepFour extends StatelessWidget {
+  const OnboardingStepFour({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class OnboardingStepFor extends StatelessWidget {
             text: 'itsTimeToUseAPenAndPaper'.tr(),
             assetName: 'gecko_also_can_forget.png'.tr(),
             buttonText: '>',
-            nextScreen: const OnboardingStepFive(),
+            nextScreen: RouteNames.onboardingStepFive,
             pagePosition: 3,
             isMd: true,
           ),

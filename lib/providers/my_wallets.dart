@@ -10,7 +10,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/certification_list_providers.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -145,11 +145,10 @@ class MyWalletsProvider with ChangeNotifier {
 
     if (pinCode.isEmpty || force) {
       pinCode = '';
-      final result = await Navigator.push(
+      final result = await Navigator.pushNamed(
         homeContext,
-        MaterialPageRoute(
-          builder: (homeContext) => UnlockingWallet(wallet: defaultWallet, canSwitch: canSwitch),
-        ),
+        RouteNames.unlockingWallet,
+        arguments: UnlockingWalletArguments(wallet: defaultWallet, canSwitch: canSwitch),
       );
       // Only continue if we actually got a valid PIN back
       if (result == null) return false;
@@ -204,7 +203,7 @@ class MyWalletsProvider with ChangeNotifier {
         notifyListeners();
 
         // ignore: use_build_context_synchronously
-        await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+        await Navigator.of(context).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
       }
       return 0;
     } catch (e) {

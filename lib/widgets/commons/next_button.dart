@@ -2,14 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/routes.dart';
 
 class NextButton extends StatelessWidget {
-  const NextButton({super.key, required this.text, required this.nextScreen, required this.isFast});
+  const NextButton({
+    super.key,
+    required this.text,
+    required this.nextScreen,
+    required this.isFast,
+    this.routeArguments,
+  });
 
   final String text;
-  final Widget nextScreen;
+  final String nextScreen;
   final bool isFast;
+  final RouteArguments? routeArguments;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +34,7 @@ class NextButton extends StatelessWidget {
           shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
         ),
         onPressed: () {
-          Navigator.push(context, FaderTransition(page: nextScreen, isFast: isFast));
+          AppNavigator.pushWithFader(context, nextScreen, arguments: routeArguments, isFast: isFast);
         },
         child: Text(
           text,

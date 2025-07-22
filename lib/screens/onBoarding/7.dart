@@ -3,7 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/screens/onBoarding/8.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
@@ -23,7 +23,11 @@ class OnboardingStepSeven extends StatelessWidget {
             text: 'geckoWillGenerateAPassword'.tr(),
             assetName: 'coffre-fort-code-secret-dans-telephone.png',
             buttonText: '>',
-            nextScreen: OnboardingStepEight(scanDerivation: scanDerivation, fromRestore: fromRestore),
+            nextScreen: RouteNames.onboardingStepEight,
+            routeArguments: OnboardingStepsSevenToNineArguments(
+              scanDerivation: scanDerivation,
+              fromRestore: fromRestore,
+            ),
             pagePosition: 6,
             boxHeight: 320,
           ),

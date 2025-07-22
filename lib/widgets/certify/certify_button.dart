@@ -11,7 +11,7 @@ import 'package:gecko/providers.dart';
 
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
 import 'package:gecko/utils.dart';
@@ -73,13 +73,10 @@ class CertifyButton extends ConsumerWidget {
                       throw Exception('No identity wallet found for certification');
                     }
 
-                    final result = await Navigator.push(
+                    final result = await Navigator.pushNamed(
                       context,
-                      MaterialPageRoute(
-                        builder: (homeContext) {
-                          return UnlockingWallet(wallet: idtyWallet);
-                        },
-                      ),
+                      RouteNames.unlockingWallet,
+                      arguments: UnlockingWalletArguments(wallet: idtyWallet),
                     );
                     // Only continue if we actually got a valid PIN back
                     if (result == null) return;

@@ -34,14 +34,14 @@ class DragWalletsInfo extends ConsumerWidget {
       height: scaleSize(85),
       child: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ScaledSizedBox(height: 2),
-            Text('${'executeATransfer'.tr()}:', style: scaledTextStyle(fontSize: 15)),
+            MarkdownBody(data: '${'executeATransfer'.tr()}:', styleSheet: mdStyle),
             MarkdownBody(
               data: '${'from'.tr(args: [''])} **$fromName**',
               styleSheet: mdStyle,
             ),
-            if (isSameAddress) Text('chooseATargetWallet'.tr(), style: scaledTextStyle(fontSize: 15)),
+            if (isSameAddress) MarkdownBody(data: 'chooseATargetWallet'.tr(), styleSheet: mdStyle),
             if (!isSameAddress)
               MarkdownBody(
                 data: '${'to'.tr(args: [''])} **$toName**',

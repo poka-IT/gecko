@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -60,7 +61,7 @@ class SafeProvider with ChangeNotifier {
       Navigator.popUntil(
         // ignore: use_build_context_synchronously
         context,
-        ModalRoute.withName('/'),
+        ModalRoute.withName(RouteNames.home),
       );
       notifyListeners();
     }

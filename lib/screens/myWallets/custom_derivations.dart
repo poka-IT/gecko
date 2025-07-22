@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -113,7 +114,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                         int.parse(dropdownValue!),
                       );
                     }
-                    Navigator.popUntil(context, ModalRoute.withName('/mywallets'));
+                    Navigator.popUntil(context, ModalRoute.withName(RouteNames.myWallets));
                   },
                   child: Text(
                     'validate'.tr(),

@@ -10,11 +10,9 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/screens/myWallets/show_seed.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
-import 'package:gecko/screens/onBoarding/6.dart';
-import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -193,13 +191,10 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
                       ScaledSizedBox(width: 70),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return PrintWallet(generateWalletProvider.generatedMnemonic!);
-                              },
-                            ),
+                            RouteNames.printWallet,
+                            arguments: PrintWalletArguments(sentence: generateWalletProvider.generatedMnemonic!),
                           );
                         },
                         child: Image.asset(
@@ -212,7 +207,7 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
                   ),
                   ScaledSizedBox(height: isTall ? 17 : 5),
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(18)),
                     child: ScaledSizedBox(
                       width: 350,
                       height: 55,
@@ -240,9 +235,7 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
                       ),
                     ),
                   ),
-                  ScaledSizedBox(height: isTall ? 20 : 10),
                   nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
-                  ScaledSizedBox(height: isTall ? 40 : 5),
                 ],
               ),
             ),
@@ -275,14 +268,12 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
                 );
                 myWalletProvider.mnemonic = generateWalletProvider.generatedMnemonic!;
 
-                Navigator.push(
+                AppNavigator.pushWithFader(
                   context,
-                  FaderTransition(
-                    page: OnboardingStepSix(
-                      generatedMnemonic: generateWalletProvider.generatedMnemonic,
-                      skipIntro: skipIntro,
-                    ),
-                    isFast: true,
+                  RouteNames.onboardingStepSix,
+                  arguments: OnboardingStepSixArguments(
+                    generatedMnemonic: generateWalletProvider.generatedMnemonic,
+                    skipIntro: skipIntro,
                   ),
                 );
               }

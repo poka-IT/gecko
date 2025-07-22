@@ -12,11 +12,9 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
 import 'package:gecko/widgets/buttons/safe_options_buttons.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
-import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:gecko/widgets/wallet_tile_membre.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -134,8 +132,6 @@ class _WalletsHomeContent extends ConsumerWidget {
     List<WalletEntity> walletsWithoutIdty,
     int nTule,
   ) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-
     // SIMPLE tutorial logic: attach key to second wallet in grid if exists, otherwise first
     final int targetWalletIndex = walletsWithoutIdty.length > 1 ? 1 : 0;
     final bool shouldShowTutorial = walletsWithoutIdty.isNotEmpty;
@@ -214,13 +210,6 @@ class _WalletsHomeContent extends ConsumerWidget {
             ),
             ScaledSizedBox(width: 8),
           ],
-        ),
-        bottomNavigationBar: old_provider.Consumer<MyWalletsProvider>(
-          builder: (context, _, _) {
-            return myWalletProvider.lastFlyBy == null
-                ? const GeckoBottomAppBar(actualRoute: 'safeHome')
-                : DragWalletsInfo(lastFlyBy: myWalletProvider.lastFlyBy!, dragAddress: myWalletProvider.dragAddress!);
-          },
         ),
         body: SafeArea(
           child: Padding(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_image.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -19,18 +20,20 @@ class InfoIntro extends StatelessWidget {
     this.boxHeight = 340,
     this.imageWidth = 350,
     this.textSize = 17,
+    this.routeArguments,
   });
 
   final String text;
   final String assetName;
   final String buttonText;
-  final Widget nextScreen;
+  final String nextScreen;
   final double pagePosition;
   final bool isMd;
   final bool isFast;
   final double boxHeight;
   final double imageWidth;
   final double textSize;
+  final RouteArguments? routeArguments;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +48,7 @@ class InfoIntro extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
           child: Align(
             alignment: Alignment.bottomCenter,
-            child: NextButton(text: buttonText, nextScreen: nextScreen, isFast: false),
+            child: NextButton(text: buttonText, nextScreen: nextScreen, isFast: false, routeArguments: routeArguments),
           ),
         ),
         ScaledSizedBox(height: isTall ? 40 : 5),

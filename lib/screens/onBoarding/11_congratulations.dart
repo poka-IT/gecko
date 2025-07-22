@@ -8,6 +8,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gif_view/gif_view.dart';
@@ -144,7 +145,7 @@ Widget finishButton(BuildContext context) {
         shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
       ),
       onPressed: () {
-        Navigator.pushNamedAndRemoveUntil(context, '/mywallets', ModalRoute.withName('/'));
+        Navigator.pushNamedAndRemoveUntil(context, RouteNames.myWallets, ModalRoute.withName(RouteNames.home));
       },
       child: Text(
         "accessMySafe".tr(),

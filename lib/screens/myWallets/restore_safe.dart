@@ -10,9 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
-import 'package:gecko/screens/onBoarding/7.dart';
-import 'package:gecko/screens/onBoarding/9.dart';
-import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -106,14 +104,14 @@ class RestoreSafe extends ConsumerWidget {
                                       // DON'T overwrite generatedMnemonic - it already contains the user's original input
                                       // The English conversion will be handled automatically by createSafe in Durt2
                                       genW.resetImportView();
-                                      await Navigator.push(
+                                      await AppNavigator.pushWithFader(
                                         context,
-                                        FaderTransition(
-                                          page: skipIntro
-                                              ? const OnboardingStepNine(scanDerivation: true, fromRestore: true)
-                                              : const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
-                                          isFast: true,
+                                        skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
+                                        arguments: OnboardingStepsSevenToNineArguments(
+                                          scanDerivation: true,
+                                          fromRestore: true,
                                         ),
+                                        isFast: true,
                                       );
                                     } catch (e) {
                                       // Handle any errors from getting the English mnemonic

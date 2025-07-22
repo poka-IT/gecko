@@ -16,6 +16,8 @@ import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+const double _filterPadding = 32;
+
 class HistoryQuery extends ConsumerStatefulWidget {
   const HistoryQuery({super.key, required this.address, this.transactionData});
   final String address;
@@ -340,7 +342,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                         children: [
                           // Empty state content with padding for filters
                           Padding(
-                            padding: EdgeInsets.only(top: scaleSize(18)),
+                            padding: EdgeInsets.only(top: scaleSize(_filterPadding)),
                             child: SingleChildScrollView(
                               child: Column(
                                 children: [
@@ -401,8 +403,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                             curve: Curves.easeInOut,
                             padding: EdgeInsets.only(
                               top: keepFiltersVisible
-                                  ? scaleSize(18) // Reduced padding between filter and list
-                                  : scaleSize(18) *
+                                  ? scaleSize(_filterPadding) // Reduced padding between filter and list
+                                  : scaleSize(_filterPadding) *
                                         (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
                             ),
                             child: ListView(

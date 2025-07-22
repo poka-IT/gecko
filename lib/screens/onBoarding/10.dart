@@ -14,10 +14,9 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
-import 'package:gecko/screens/onBoarding/11_congratulations.dart';
-import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gif_view/gif_view.dart';
@@ -269,9 +268,10 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 await ref.read(walletServiceProvider).setDefaultAddress(defaultWallet.address);
               }
 
-              await Navigator.push(
+              await AppNavigator.pushWithFader(
                 context,
-                FaderTransition(page: OnboardingStepEleven(fromRestore: widget.fromRestore), isFast: false),
+                RouteNames.onboardingStepEleven,
+                arguments: OnboardingStepElevenArguments(fromRestore: widget.fromRestore),
               );
 
               myWalletProvider.reload();

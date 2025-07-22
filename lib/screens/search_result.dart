@@ -6,7 +6,6 @@ import 'package:gecko/models/scale_functions.dart';
 
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/providers/search.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/search_result_list.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -24,7 +23,6 @@ class SearchResultScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('researchResults'.tr()),
-      bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 15, right: 10),

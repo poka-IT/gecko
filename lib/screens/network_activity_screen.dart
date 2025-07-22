@@ -7,7 +7,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/transaction_filters.dart';
 import 'package:gecko/providers/network_activity_provider.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/transaction_filters.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
@@ -217,7 +216,6 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('networkActivity'.tr()),
-      bottomNavigationBar: const GeckoBottomAppBar(),
       body: SafeArea(
         child: Stack(
           children: [

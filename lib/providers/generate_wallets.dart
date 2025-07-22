@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -392,7 +393,7 @@ class GenerateWalletsProvider with ChangeNotifier {
 
           // Pop to home
           // ignore: use_build_context_synchronously
-          await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+          await Navigator.of(context).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
 
           return ScanDerivationsResult.timeout;
         },
@@ -408,7 +409,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       await _container.read(walletServiceProvider).safeBox.removeAllAsync();
 
       // ignore: use_build_context_synchronously
-      await Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+      await Navigator.of(context).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
 
       return ScanDerivationsResult.error;
     }

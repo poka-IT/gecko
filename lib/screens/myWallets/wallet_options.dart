@@ -14,11 +14,11 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/import_g1_v1.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
@@ -166,7 +166,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             ),
           ],
         ),
-        bottomNavigationBar: const GeckoBottomAppBar(),
       ),
     );
   }
@@ -535,7 +534,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
             if (!await myWalletProvider.askPinCode()) return;
             String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
             await myWalletProvider.generateNewDerivation(context, newDerivationName);
-            Navigator.pushReplacementNamed(context, '/mywallets');
+            Navigator.pushReplacementNamed(context, RouteNames.myWallets);
           }
         },
         child: Container(

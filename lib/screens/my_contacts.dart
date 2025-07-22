@@ -3,7 +3,6 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/contacts_list.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +54,6 @@ class _ContactsScreenState extends State<ContactsScreen> {
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('contactsManagementWithNbr'.tr(args: ['${allContacts.length}'])),
-        bottomNavigationBar: const GeckoBottomAppBar(),
         body: SafeArea(
           child: Column(
             children: [

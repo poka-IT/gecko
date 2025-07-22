@@ -9,8 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/onBoarding/7.dart';
-import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -228,12 +227,11 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                       // Clear all wallets from current safe
                       await ref.read(walletServiceProvider).deleteSafe(currentSafeNumber);
 
-                      await Navigator.pushAndRemoveUntil(
+                      await AppNavigator.pushAndRemoveUntilWithFader(
                         context,
-                        FaderTransition(
-                          page: const OnboardingStepSeven(scanDerivation: true, fromRestore: true),
-                          isFast: true,
-                        ),
+                        RouteNames.onboardingStepSeven,
+                        arguments: OnboardingStepsSevenToNineArguments(scanDerivation: true, fromRestore: true),
+                        isFast: true,
                         (route) => false,
                       );
                     } else {

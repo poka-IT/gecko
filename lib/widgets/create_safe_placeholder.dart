@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/screens/onBoarding/5.dart';
-import 'package:gecko/screens/myWallets/restore_safe.dart';
+import 'package:gecko/routes.dart';
 
 /// Reusable widget for creating or importing a new safe
 class CreateSafePlaceholder extends StatelessWidget {
@@ -141,7 +140,11 @@ class CreateSafePlaceholder extends StatelessWidget {
 
   /// Navigate to create new safe screen
   void _navigateToCreateSafe(BuildContext context) async {
-    await Navigator.push(context, MaterialPageRoute(builder: (context) => const OnboardingStepFive(skipIntro: true)));
+    await Navigator.pushNamed(
+      context,
+      RouteNames.onboardingStepFive,
+      arguments: OnboardingStepFiveArguments(skipIntro: true),
+    );
 
     // Callback after creation
     onSafeCreated();
@@ -149,7 +152,7 @@ class CreateSafePlaceholder extends StatelessWidget {
 
   /// Navigate to import safe screen
   void _navigateToImportSafe(BuildContext context) async {
-    await Navigator.push(context, MaterialPageRoute(builder: (context) => const RestoreSafe(skipIntro: true)));
+    await Navigator.pushNamed(context, RouteNames.restoreSafe, arguments: RestoreSafeArguments(skipIntro: true));
 
     // Callback after import
     onSafeImported();

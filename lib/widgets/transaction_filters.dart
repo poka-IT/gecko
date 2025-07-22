@@ -24,6 +24,9 @@ class TransactionFilters extends ConsumerStatefulWidget {
 class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
   bool _isExpanded = false;
 
+  // Minimum date for transaction filtering (G1 blockchain start)
+  static final DateTime _minSelectableDate = DateTime(2017, 3, 8);
+
   // Controllers for filters
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
@@ -955,7 +958,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _startDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
+      firstDate: _minSelectableDate,
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
@@ -978,7 +981,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _endDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
+      firstDate: _minSelectableDate,
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(

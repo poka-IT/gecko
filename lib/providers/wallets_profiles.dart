@@ -9,6 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -84,7 +85,7 @@ class WalletsProfilesProvider with ChangeNotifier {
         address = barcodeContent;
       }
 
-      Navigator.popUntil(context, ModalRoute.withName('/'));
+      Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));
       Navigator.push(
         context,
         MaterialPageRoute(

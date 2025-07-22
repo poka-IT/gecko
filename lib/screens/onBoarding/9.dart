@@ -8,10 +8,9 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/screens/onBoarding/10.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
-import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
@@ -111,15 +110,13 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
           boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
           onCompleted: (pin) async {
             if (isPinComplex(pin)) {
-              Navigator.push(
+              AppNavigator.pushWithFader(
                 context,
-                FaderTransition(
-                  page: OnboardingStepTen(
-                    scanDerivation: widget.scanDerivation,
-                    pinCode: enterPin.text,
-                    fromRestore: widget.fromRestore,
-                  ),
-                  isFast: false,
+                RouteNames.onboardingStepTen,
+                arguments: OnboardingStepTenArguments(
+                  scanDerivation: widget.scanDerivation,
+                  pinCode: enterPin.text,
+                  fromRestore: widget.fromRestore,
                 ),
               );
             } else {

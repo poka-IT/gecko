@@ -14,10 +14,9 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
-import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -107,7 +106,6 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
             address: address,
             titleBuilder: (uname) => uname == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [uname]),
           ),
-          bottomNavigationBar: const GeckoBottomAppBar(),
           body: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -397,9 +395,10 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     final defaultWallet = myWalletProvider.getDefaultWallet();
 
     if (myWalletProvider.pinCode == '') {
-      final result = await Navigator.push(
+      final result = await Navigator.pushNamed(
         homeContext,
-        MaterialPageRoute(builder: (_) => UnlockingWallet(wallet: defaultWallet)),
+        RouteNames.unlockingWallet,
+        arguments: UnlockingWalletArguments(wallet: defaultWallet),
       );
       // Only continue if we actually got a valid PIN back
       if (result == null) return;

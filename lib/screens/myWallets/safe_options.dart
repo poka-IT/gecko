@@ -15,7 +15,6 @@ import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/migrate_safe.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/rename_safe.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -30,7 +29,6 @@ class SafeOptions extends ConsumerWidget {
       backgroundColor: context.colorScheme.surface,
       resizeToAvoidBottomInset: false,
       appBar: GeckoAppBar(currentSafe.name),
-      bottomNavigationBar: const GeckoBottomAppBar(),
       body: Builder(
         builder: (ctx) => SafeArea(
           child: Column(

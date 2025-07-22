@@ -5,9 +5,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/screens/home/test_wallet_button.dart';
-import 'package:gecko/screens/myWallets/restore_safe.dart';
-import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 
@@ -119,10 +118,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                       shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
                                     ),
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const OnboardingStepOne()),
-                                  );
+                                  Navigator.pushNamed(context, RouteNames.onboardingStepOne);
                                 },
                                 child: Text(
                                   'createWallet'.tr(),
@@ -154,7 +150,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                       shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
                                     ),
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const RestoreSafe()));
+                                  Navigator.pushNamed(context, RouteNames.restoreSafe);
                                 },
                                 child: Text(
                                   "restoreWallet".tr(),

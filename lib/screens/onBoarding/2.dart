@@ -3,7 +3,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/screens/onBoarding/3.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
@@ -21,7 +21,7 @@ class OnboardingStepTwo extends StatelessWidget {
             text: 'keepThisMnemonicSecure'.tr(),
             assetName: 'fabrication-de-portefeuille-impossible-sans-phrase.png',
             buttonText: '>',
-            nextScreen: const OnboardingStepThree(),
+            nextScreen: RouteNames.onboardingStepThree,
             pagePosition: 1,
           ),
         ),

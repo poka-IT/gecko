@@ -55,7 +55,7 @@ class _SearchScreenState extends State<SearchScreen> {
         body: SafeArea(
           child: Column(
             children: <Widget>[
-              const Spacer(),
+              ScaledSizedBox(height: 20),
               _buttonsRow(),
               const Spacer(),
               Padding(
@@ -126,7 +126,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 height: 70,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: canValidate || searchProvider.canPasteAddress
                         ? [
                             BoxShadow(
@@ -151,7 +151,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       backgroundColor: context.colorScheme.primary,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: canValidate
                         ? () {
@@ -197,112 +197,134 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buttonsRow() {
-    return IntrinsicHeight(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_myContactsButton(), _networkActivityButton()],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: _myContactsButton()),
+            ScaledSizedBox(width: 12),
+            Expanded(child: _networkActivityButton()),
+          ],
+        ),
       ),
     );
   }
 
   Widget _myContactsButton() {
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return const ContactsScreen();
-          },
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [const Color(0xFF607D8B).withValues(alpha: 0.85), const Color(0xFF607D8B).withValues(alpha: 0.65)],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF607D8B).withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
+          ),
+        ],
       ),
-      child: Column(
-        children: <Widget>[
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
-                  spreadRadius: 0,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          key: keyOpenWalletsHomme,
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return const ContactsScreen();
+              },
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: scaleSize(12),
+              right: scaleSize(12),
+              top: scaleSize(12),
+              bottom: scaleSize(6),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.contacts_rounded, size: scaleSize(26), color: Colors.white),
+                ScaledSizedBox(height: 3),
+                SizedBox(
+                  height: scaleSize(32),
+                  child: Center(
+                    child: Text(
+                      'contactsManagement'.tr(),
+                      textAlign: TextAlign.center,
+                      style: scaledTextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: ClipOval(
-              key: keyOpenWalletsHomme,
-              child: Material(
-                color: context.colorScheme.secondary,
-                child: Padding(
-                  padding: EdgeInsets.all(scaleSize(14.5)),
-                  child: Icon(Icons.contacts_rounded, size: scaleSize(25)),
-                ),
-              ),
-            ),
           ),
-          ScaledSizedBox(height: 7),
-          SizedBox(
-            height: scaleSize(35), // Hauteur fixe pour aligner avec le texte sur 2 lignes
-            child: Text('contactsManagement'.tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 14)),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _networkActivityButton() {
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return const NetworkActivityScreen();
-          },
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [const Color(0xFF8D6E63).withValues(alpha: 0.85), const Color(0xFF8D6E63).withValues(alpha: 0.65)],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8D6E63).withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: -1,
+          ),
+        ],
       ),
-      child: Column(
-        children: <Widget>[
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
-                  spreadRadius: 0,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return const NetworkActivityScreen();
+              },
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.public, size: scaleSize(28), color: Colors.white),
+                ScaledSizedBox(height: 3),
+                SizedBox(
+                  height: scaleSize(32),
+                  child: Center(
+                    child: Text(
+                      'networkActivity'.tr(),
+                      textAlign: TextAlign.center,
+                      style: scaledTextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: ClipOval(
-              child: Material(
-                color: context.colorScheme.secondary,
-                child: Padding(
-                  padding: EdgeInsets.all(scaleSize(14.5)),
-                  child: Icon(Icons.public, size: scaleSize(25)),
-                ),
-              ),
-            ),
           ),
-          ScaledSizedBox(height: 7),
-          SizedBox(
-            height: scaleSize(35), // Hauteur fixe pour aligner avec le texte sur 2 lignes
-            child: Text('networkActivity'.tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 14)),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -317,7 +317,7 @@ class ShowSeed extends ConsumerWidget {
 class PrintWallet extends StatelessWidget {
   const PrintWallet(this.sentence, {super.key});
 
-  final String? sentence;
+  final String sentence;
 
   @override
   Widget build(BuildContext context) {
@@ -335,7 +335,7 @@ class PrintWallet extends StatelessWidget {
           toolbarHeight: scaleSize(57),
           title: Text('printMyMnemonic'.tr(), style: scaledTextStyle(fontWeight: FontWeight.w600)),
         ),
-        body: PdfPreview(canDebug: false, canChangeOrientation: false, build: (format) => printWallet(sentence!)),
+        body: PdfPreview(canDebug: false, canChangeOrientation: false, build: (format) => printWallet(sentence)),
       ),
     );
   }

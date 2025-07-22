@@ -4,7 +4,7 @@ import 'package:gecko/models/scale_functions.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
-  final VoidCallback? onPressed;
+  final VoidCallback onPressed;
   final double width;
   final double height;
   final Widget? child;
@@ -14,7 +14,7 @@ class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
     required this.label,
-    this.onPressed,
+    required this.onPressed,
     this.width = double.infinity,
     this.height = 55.0,
     this.child,

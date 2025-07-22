@@ -90,7 +90,6 @@ const keyBubbleSpeak = Key('keyBubbleSpeak');
 const keyGenerateMnemonic = Key('keyGenerateMnemonic');
 const keyAskedWord = Key('keyAskedWord');
 const keyInputWord = Key('keyInputWord');
-const keyGeneratedPin = Key('keyGeneratedPin');
 const keyGoWalletsHome = Key('keyGoWalletsHome');
 
 // Search

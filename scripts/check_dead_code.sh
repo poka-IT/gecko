@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EXCLUDE_PATTERN="{**/data/bff_generated/**,**/template-codegen/**,**/domain/utils/no_js.dart}"
+EXCLUDE_PATTERN="{**/models/widgets_keys.dart,}"
 
 display_help() {
   echo "Usage: $0 [option]"

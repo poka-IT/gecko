@@ -653,7 +653,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
-    bool? isExactMatch,
+    required bool isExactMatch,
     VoidCallback? onExactMatchChanged,
     bool enabled = true,
   }) {
@@ -672,7 +672,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                 ),
               ),
             ),
-            if (isExactMatch != null && onExactMatchChanged != null && enabled) ...[
+            if (onExactMatchChanged != null && enabled) ...[
               SizedBox(width: scaleSize(8)),
               InkWell(
                 onTap: onExactMatchChanged,

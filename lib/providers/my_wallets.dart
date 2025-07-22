@@ -305,9 +305,7 @@ class MyWalletsProvider with ChangeNotifier {
     });
   }
 
-  Future<List<int>> getNextWalletNumberAndDerivation({int? safeNumber}) async {
-    safeNumber ??= getCurrentSafe;
-
+  Future<List<int>> getNextWalletNumberAndDerivation({required int safeNumber}) async {
     await readAllWallets(safeBoxNumber: safeNumber);
 
     listWallets.sort((p1, p2) => p1.number.compareTo(p2.number));

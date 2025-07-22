@@ -5,7 +5,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
@@ -13,18 +12,18 @@ import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTile extends StatelessWidget {
-  const WalletTile({super.key, required this.repository, this.attachTutorialKey = false, this.uniqueId});
+  const WalletTile({super.key, required this.repository, this.attachTutorialKey = false, required this.uniqueId});
 
   final WalletEntity repository;
   final bool attachTutorialKey;
-  final String? uniqueId; // Add unique identifier to avoid key conflicts
+  final String uniqueId; // Add unique identifier to avoid key conflicts
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(scaleSize(11)),
       child: GestureDetector(
-        key: ValueKey('${keyOpenWallet(repository.address).toString()}_${uniqueId ?? repository.number}'),
+        key: ValueKey('${keyOpenWallet(repository.address).toString()}_$uniqueId'),
         onTap: () {
           Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: repository)));
         },
@@ -41,38 +40,31 @@ class WalletTile extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 Expanded(
-                  child: Consumer<V2sDatapodProvider>(
-                    builder: (context, datapod, _) {
-                      return Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(12),
-                            topRight: Radius.circular(12),
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                      color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
+                    ),
+                    child: repository.imagePath == null || repository.imagePath == ''
+                        ? Padding(
+                            padding: EdgeInsets.all(scaleSize(16)),
+                            child: Image.asset(
+                              'assets/avatars/${repository.number % 4}.png',
+                              alignment: Alignment.bottomCenter,
+                            ),
+                          )
+                        : Container(
+                            margin: EdgeInsets.all(scaleSize(16)),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(fit: BoxFit.fitHeight, image: AssetImage(repository.imagePath!)),
+                            ),
                           ),
-                          color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
-                        ),
-                        child: repository.imagePath == null || repository.imagePath == ''
-                            ? Padding(
-                                padding: EdgeInsets.all(scaleSize(16)),
-                                child: Image.asset(
-                                  'assets/avatars/${repository.number % 4}.png',
-                                  alignment: Alignment.bottomCenter,
-                                ),
-                              )
-                            : Container(
-                                margin: EdgeInsets.all(scaleSize(16)),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    fit: BoxFit.fitHeight,
-                                    image: AssetImage(repository.imagePath!),
-                                  ),
-                                ),
-                              ),
-                      );
-                    },
                   ),
                 ),
                 Container(

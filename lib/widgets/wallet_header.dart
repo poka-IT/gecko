@@ -218,16 +218,16 @@ class _IdentityStatusDisplay extends StatelessWidget {
 
   final String address;
   final IdtyStatus currentStatus;
-  final String? identityName;
+  final String identityName;
 
   @override
   Widget build(BuildContext context) {
     // Use the identity name directly from the stream provider instead of NameByAddress
-    final hasIdentityName = identityName != null && identityName!.isNotEmpty;
+    final hasIdentityName = identityName.isNotEmpty;
 
     final nameWidget = hasIdentityName
         ? Text(
-            identityName!.length > 22 ? '${identityName!.substring(0, 22)}...' : identityName!,
+            identityName.length > 22 ? '${identityName.substring(0, 22)}...' : identityName,
             style: currentStatus == IdtyStatus.validated
                 ? scaledTextStyle(
                     fontSize: 18,

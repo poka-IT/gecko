@@ -7,9 +7,9 @@ class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria
   TransactionFiltersNotifier([FilterMode mode = FilterMode.account]) : super(TransactionFilterCriteria(mode: mode));
 
   /// Update address or name search filter
-  void updateAddressOrNameSearch(String? search) {
-    final trimmed = search?.trim();
-    final result = trimmed?.isEmpty == true ? null : trimmed;
+  void updateAddressOrNameSearch(String search) {
+    final trimmed = search.trim();
+    final result = trimmed.isEmpty ? null : trimmed;
 
     // Force copyWith to accept null by creating new instance - PRESERVE EXACT MATCH FLAGS!
     state = TransactionFilterCriteria(
@@ -26,9 +26,9 @@ class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria
   }
 
   /// Update comment search filter
-  void updateCommentSearch(String? search) {
-    final trimmed = search?.trim();
-    final result = trimmed?.isEmpty == true ? null : trimmed;
+  void updateCommentSearch(String search) {
+    final trimmed = search.trim();
+    final result = trimmed.isEmpty ? null : trimmed;
 
     // Force copyWith to accept null by creating new instance - PRESERVE EXACT MATCH FLAGS!
     state = TransactionFilterCriteria(
@@ -59,10 +59,10 @@ class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria
   }
 
   /// Update direction filter (for network mode)
-  void updateDirectionFilter(String? fromAddress, String? toAddress) {
+  void updateDirectionFilter(String fromAddress, String toAddress) {
     if (state.mode == FilterMode.network) {
-      final cleanFromAddress = fromAddress?.trim().isEmpty == true ? null : fromAddress?.trim();
-      final cleanToAddress = toAddress?.trim().isEmpty == true ? null : toAddress?.trim();
+      final cleanFromAddress = fromAddress.trim().isEmpty ? null : fromAddress.trim();
+      final cleanToAddress = toAddress.trim().isEmpty ? null : toAddress.trim();
 
       DirectionFilter? newDirectionFilter;
       // If both addresses are null, clear the entire direction filter
@@ -164,8 +164,7 @@ final networkFilterPanelExpandedProvider = StateProvider<bool>((ref) => false);
 /// Utility functions for filter management
 
 /// Convert double amount to BigInt (assuming 2 decimal places like Duniter)
-BigInt? convertAmountToBigInt(double? amount) {
-  if (amount == null) return null;
+BigInt? convertAmountToBigInt(double amount) {
   return BigInt.from((amount * 100).round());
 }
 

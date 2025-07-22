@@ -17,9 +17,14 @@ class TapEvent {
 class EasterEggDetector extends StatefulWidget {
   final Widget child;
   final VoidCallback? onEasterEggTriggered;
-  final ValueChanged<bool>? onPlayingStateChanged;
+  final ValueChanged<bool> onPlayingStateChanged;
 
-  const EasterEggDetector({super.key, required this.child, this.onEasterEggTriggered, this.onPlayingStateChanged});
+  const EasterEggDetector({
+    super.key,
+    required this.child,
+    this.onEasterEggTriggered,
+    required this.onPlayingStateChanged,
+  });
 
   @override
   State<EasterEggDetector> createState() => _EasterEggDetectorState();
@@ -127,7 +132,7 @@ class _EasterEggDetectorState extends State<EasterEggDetector> {
       setState(() {
         _isPlaying = true;
       });
-      widget.onPlayingStateChanged?.call(true);
+      widget.onPlayingStateChanged(true);
 
       // Sauvegarder le message original du homeProvider
       final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
@@ -149,7 +154,7 @@ class _EasterEggDetectorState extends State<EasterEggDetector> {
           setState(() {
             _isPlaying = false;
           });
-          widget.onPlayingStateChanged?.call(false);
+          widget.onPlayingStateChanged(false);
         }
       });
     } catch (e) {
@@ -158,7 +163,7 @@ class _EasterEggDetectorState extends State<EasterEggDetector> {
       setState(() {
         _isPlaying = false;
       });
-      widget.onPlayingStateChanged?.call(false);
+      widget.onPlayingStateChanged(false);
     }
   }
 
@@ -169,7 +174,7 @@ class _EasterEggDetectorState extends State<EasterEggDetector> {
       setState(() {
         _isPlaying = false;
       });
-      widget.onPlayingStateChanged?.call(false);
+      widget.onPlayingStateChanged(false);
     } catch (e) {
       log.e('Error stopping sound: $e');
     }

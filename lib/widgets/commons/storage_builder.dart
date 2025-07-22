@@ -72,7 +72,7 @@ class StorageBuilder extends ConsumerWidget {
                       (context as Element).markNeedsBuild();
                     }
                   });
-                  
+
                   // For now, show placeholder and rebuild on next frame
                   try {
                     return builder(context, ref);
@@ -152,23 +152,6 @@ class BalanceStorageBuilder extends StorageBuilder {
       decoration: BoxDecoration(
         color: context.colorScheme.surfaceContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
-      ),
-    );
-  }
-}
-
-/// Specific builder for certification counters
-class CertificationStorageBuilder extends StorageBuilder {
-  const CertificationStorageBuilder({super.key, required super.builder});
-
-  @override
-  Widget _buildDefaultPlaceholder(BuildContext context) {
-    return Container(
-      height: scaleSize(20),
-      width: scaleSize(30),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(10),
       ),
     );
   }

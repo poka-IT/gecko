@@ -93,47 +93,11 @@ final balanceRatioProvider = Provider<BigInt>((ref) {
   return _getBalanceRatio(displayMode, trmData, ref);
 });
 
-/// Provider for precise balance ratio calculation (double) for payment calculations
-final preciseBalanceRatioProvider = Provider<double>((ref) {
-  final displayMode = ref.watch(currencyDisplayModeProvider);
-  final trmDataAsync = ref.watch(trmDataProvider);
-  final trmData = trmDataAsync.maybeWhen(data: (data) => data, orElse: () => null);
-
-  return _getPreciseBalanceRatio(displayMode, trmData, ref);
-});
-
-/// Provider for balance ratio calculation with custom mode
-final balanceRatioWithModeProvider = Provider.family<BigInt, CurrencyDisplayMode>((ref, mode) {
-  final trmDataAsync = ref.watch(trmDataProvider);
-  final trmData = trmDataAsync.maybeWhen(data: (data) => data, orElse: () => null);
-
-  return _getBalanceRatio(mode, trmData, ref);
-});
-
 /// Provider for currency symbol
 final currencySymbolProvider = Provider<String>((ref) {
   final displayMode = ref.watch(currencyDisplayModeProvider);
   return displayMode.symbol;
 });
-
-/// Get precise balance ratio for currency conversion (maintains precision for calculations)
-double _getPreciseBalanceRatio(CurrencyDisplayMode displayMode, TrmData? trmData, Ref ref) {
-  switch (displayMode) {
-    case CurrencyDisplayMode.g1:
-      // Convert centimes to G1 (1 G1 = 100 centimes)
-      return 100.0;
-    case CurrencyDisplayMode.du:
-      final udValue = ref.read(storageServiceProvider).udInfoNotifier.value;
-      return udValue.currentUd.toDouble();
-    case CurrencyDisplayMode.moneyOverMembers:
-      // For mM/N mode: centimes → G1 → M/N → mM/N
-      // ratio = moneyOverMembersRatio * 100 / 1000 = moneyOverMembersRatio / 10
-      if (trmData == null || trmData.membersCount == 0) {
-        return 100.0; // fallback to G1 conversion
-      }
-      return trmData.moneyOverMembersRatio * 100.0 / 1000.0;
-  }
-}
 
 /// Get balance ratio for currency conversion based on display mode (for display purposes)
 BigInt _getBalanceRatio(CurrencyDisplayMode displayMode, TrmData? trmData, Ref ref) {

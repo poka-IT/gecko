@@ -193,9 +193,6 @@ final squidConnectionStatusProvider = StateNotifierProvider<SquidConnectionStatu
   return SquidConnectionStatusNotifier();
 });
 
-/// Global container for accessing providers from anywhere
-final globalProviderContainer = ProviderContainer();
-
 /// Note: Stream reinitialization is no longer needed since durt2 uses proxy streams
 /// that remain stable across network switches
 
@@ -222,34 +219,6 @@ final storageServiceProvider = Provider<d.DuniterStorageService>((ref) {
 /// and crafting transactions like `pay`, `renewMembership`, etc.
 final duniterServiceProvider = Provider<d.DuniterService>((ref) {
   return ref.watch(durtProvider).duniter;
-});
-
-/// Provides the [d.Gdev] client, the auto-generated interface for interacting
-/// with the Duniter v2 Substrate runtime (querying storage, etc.).
-final blockchainProvider = Provider<d.Duniter>((ref) {
-  return ref.watch(durtProvider).blockchain;
-});
-
-/// Provides the low-level Polkadart [d.Provider] for sending raw JSON-RPC requests.
-///
-/// Note: This is aliased as `polkadart.Provider` to avoid conflicts with Riverpod's `Provider`.
-final polkadartProvider = Provider<d.Provider>((ref) {
-  return ref.watch(durtProvider).polkadart;
-});
-
-/// Provides the Substrate [d.AuthorApi] for submitting extrinsics.
-final authorApiProvider = Provider<d.AuthorApi>((ref) {
-  return ref.watch(durtProvider).authorApi;
-});
-
-/// Provides the Substrate [d.StateApi] for querying the node's state.
-final stateApiProvider = Provider<d.StateApi>((ref) {
-  return ref.watch(durtProvider).stateApi;
-});
-
-/// Provides the [d.DurtKeyring] for managing key pairs from mnemonics.
-final keyringProvider = Provider<d.DurtKeyring>((ref) {
-  return ref.watch(durtProvider).keyring;
 });
 
 /// Provides the current [d.Networks] enum value the app is connected to (e.g., gdev, gtest, g1).
@@ -324,12 +293,6 @@ final genesisTimeProvider = FutureProvider<DateTime>((ref) async {
   return await storageService.getGenesisBlockchainTime();
 });
 
-/// Provides the migration data for identity migration detection.
-final migrationDataProvider = FutureProvider.family<d.OldOwnerKey?, String>((ref, address) async {
-  final storageService = ref.watch(storageServiceProvider);
-  return await storageService.getOldOwnerKey(address);
-});
-
 /// Provides migration data for identities that migrated FROM this address using Squid
 final migrationFromDataProvider = FutureProvider.family<MigrationData?, String>((ref, address) async {
   try {
@@ -362,13 +325,6 @@ final migrationToDataProvider = FutureProvider.family<MigrationData?, String>((r
   } catch (e) {
     return null;
   }
-});
-
-/// Provides the previous address for identity migration detection.
-/// This is kept for backward compatibility but migrationFromDataProvider should be preferred.
-final previousAddressProvider = FutureProvider.family<String?, String>((ref, address) async {
-  final migrationData = await ref.watch(migrationDataProvider(address).future);
-  return migrationData?.oldAddress;
 });
 
 /// Provides the name of an identity by address.
@@ -800,27 +756,6 @@ final smartBalanceStreamProvider = Provider.family.autoDispose<AsyncValue<d.Wall
   }
 });
 
-/// Cached provider for checking if an account has consumers
-/// Uses smart caching to avoid repeated expensive storage calls
-final hasAccountConsumersProvider = FutureProvider.family<bool, String>((ref, address) async {
-  final storageService = ref.watch(storageServiceProvider);
-
-  // Check connection status first - if not connected, return false (safe default)
-  final connectionStatus = ref.watch(connectionStatusProvider);
-  if (connectionStatus != d.ConnectionStatus.connected) {
-    return false;
-  }
-
-  try {
-    final hasConsumers = await storageService.hasAccountConsumers(address);
-    return hasConsumers;
-  } catch (e) {
-    log.e('Error checking account consumers for $address: $e');
-    // Return false on error (safe default for deletion checks)
-    return false;
-  }
-});
-
 /// Smart cached provider for account consumers that handles connection changes
 /// This provider caches results and invalidates appropriately
 class AccountConsumersNotifier extends FamilyAsyncNotifier<bool, String> {
@@ -1109,25 +1044,6 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
 /// Stable async provider to get the identity wallet (member or identity holder)
 /// Uses caching to prevent UI reload spam during connection changes
 final idtyWalletAsyncProvider = AsyncNotifierProvider<IdtyWalletNotifier, d.WalletEntity?>(() => IdtyWalletNotifier());
-
-/// Async provider to get wallets without identity
-final walletsWithoutIdtyAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
-  final idtyWallet = await ref.watch(idtyWalletAsyncProvider.future);
-  final walletService = ref.watch(walletServiceProvider);
-
-  final allSafes = walletService.safeBox.getAll();
-  if (allSafes.isEmpty) return [];
-
-  final defaultSafeNumber = walletService.defaultSafeBoxNumber;
-  final defaultSafe = allSafes.firstWhere(
-    (safe) => safe.number == defaultSafeNumber,
-    orElse: () => allSafes.first, // Fallback to first safe if default not found
-  );
-
-  final allWallets = defaultSafe.wallets.toList();
-
-  return allWallets.where((w) => w.address != idtyWallet?.address).toList();
-});
 
 /// State provider for selected certification wallet (development mode only)
 /// This allows developers to choose which identity wallet to use for certifications

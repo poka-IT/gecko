@@ -13,8 +13,8 @@ class SafeCarousel extends StatelessWidget {
     required this.currentSafeIndex,
     required this.carouselController,
     required this.onPageChanged,
-    this.onSafeCreated,
-    this.onSafeImported,
+    required this.onSafeCreated,
+    required this.onSafeImported,
     this.showCreatePlaceholder = true,
     this.height = 210,
     this.isCompact = false,
@@ -24,8 +24,8 @@ class SafeCarousel extends StatelessWidget {
   final int currentSafeIndex;
   final CarouselSliderController carouselController;
   final Function(int, CarouselPageChangedReason) onPageChanged;
-  final VoidCallback? onSafeCreated;
-  final VoidCallback? onSafeImported;
+  final VoidCallback onSafeCreated;
+  final VoidCallback onSafeImported;
   final bool showCreatePlaceholder;
   final double height;
   final bool isCompact; // For unlocking_wallet compact mode

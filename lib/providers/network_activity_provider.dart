@@ -531,11 +531,6 @@ final adaptiveFilteredNetworkActivityProvider = Provider<NetworkActivityState>((
   }
 });
 
-/// Enhanced network activity provider that applies filters (legacy - kept for compatibility)
-final filteredNetworkActivityProvider = Provider<NetworkActivityState>((ref) {
-  return ref.watch(adaptiveFilteredNetworkActivityProvider);
-});
-
 /// Load more network transactions (adaptive)
 Future<void> loadMoreNetworkTransactions(WidgetRef ref) async {
   final filters = ref.read(networkFiltersProvider);
@@ -556,11 +551,4 @@ Future<void> refreshNetworkActivity(WidgetRef ref) async {
   } else {
     await ref.read(networkActivityProvider.notifier).refresh();
   }
-}
-
-/// Toggle Universal Dividends in network view
-void toggleNetworkUniversalDividends(WidgetRef ref) {
-  ref.read(networkUniversalDividendsToggleProvider.notifier).toggle();
-  // Refresh the network activity to apply the UD toggle
-  refreshNetworkActivity(ref);
 }

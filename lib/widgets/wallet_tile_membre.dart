@@ -5,7 +5,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/v2s_datapod.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
@@ -44,38 +43,31 @@ class WalletTileMembre extends StatelessWidget {
                 Expanded(
                   child: Stack(
                     children: [
-                      Consumer<V2sDatapodProvider>(
-                        builder: (context, datapod, _) {
-                          return Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
+                      Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                          color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
+                        ),
+                        child: wallet.imagePath == null || wallet.imagePath == ''
+                            ? Padding(
+                                padding: EdgeInsets.all(scaleSize(16)),
+                                child: Image.asset(
+                                  'assets/avatars/${wallet.number % 4}.png',
+                                  alignment: Alignment.bottomCenter,
+                                ),
+                              )
+                            : Container(
+                                margin: EdgeInsets.all(scaleSize(16)),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(fit: BoxFit.fitHeight, image: AssetImage(wallet.imagePath!)),
+                                ),
                               ),
-                              color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
-                            ),
-                            child: wallet.imagePath == null || wallet.imagePath == ''
-                                ? Padding(
-                                    padding: EdgeInsets.all(scaleSize(16)),
-                                    child: Image.asset(
-                                      'assets/avatars/${wallet.number % 4}.png',
-                                      alignment: Alignment.bottomCenter,
-                                    ),
-                                  )
-                                : Container(
-                                    margin: EdgeInsets.all(scaleSize(16)),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: DecorationImage(
-                                        fit: BoxFit.fitHeight,
-                                        image: AssetImage(wallet.imagePath!),
-                                      ),
-                                    ),
-                                  ),
-                          );
-                        },
                       ),
                       Positioned(
                         left: scaleSize(16),

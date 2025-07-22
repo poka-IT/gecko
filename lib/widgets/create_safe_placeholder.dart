@@ -10,15 +10,15 @@ import 'package:gecko/screens/myWallets/restore_safe.dart';
 class CreateSafePlaceholder extends StatelessWidget {
   const CreateSafePlaceholder({
     super.key,
-    this.onSafeCreated,
-    this.onSafeImported,
+    required this.onSafeCreated,
+    required this.onSafeImported,
     this.width,
     this.height,
     this.isSelected = false,
   });
 
-  final VoidCallback? onSafeCreated;
-  final VoidCallback? onSafeImported;
+  final VoidCallback onSafeCreated;
+  final VoidCallback onSafeImported;
   final double? width;
   final double? height;
   final bool isSelected;
@@ -144,7 +144,7 @@ class CreateSafePlaceholder extends StatelessWidget {
     await Navigator.push(context, MaterialPageRoute(builder: (context) => const OnboardingStepFive(skipIntro: true)));
 
     // Callback after creation
-    onSafeCreated?.call();
+    onSafeCreated();
   }
 
   /// Navigate to import safe screen
@@ -152,7 +152,7 @@ class CreateSafePlaceholder extends StatelessWidget {
     await Navigator.push(context, MaterialPageRoute(builder: (context) => const RestoreSafe(skipIntro: true)));
 
     // Callback after import
-    onSafeImported?.call();
+    onSafeImported();
   }
 }
 

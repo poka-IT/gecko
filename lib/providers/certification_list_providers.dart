@@ -20,15 +20,15 @@ class CertificationListState {
   });
 
   CertificationListState copyWith({
+    required bool hasError,
     List<CertDisplayItem>? certifications,
     bool? isLoading,
-    bool? hasError,
     String? error,
   }) {
     return CertificationListState(
+      hasError: hasError,
       certifications: certifications ?? this.certifications,
       isLoading: isLoading ?? this.isLoading,
-      hasError: hasError ?? this.hasError,
       error: error ?? this.error,
     );
   }

@@ -8,7 +8,6 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
-import 'package:gecko/providers/v2s_datapod.dart' show V2sDatapodProvider;
 import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -224,7 +223,6 @@ class HomeProvider with ChangeNotifier {
   Future<void> initHome({required BuildContext context, required WidgetRef ref}) async {
     final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final datapod = old_provider.Provider.of<V2sDatapodProvider>(context, listen: false);
 
     // Check if versionData non compatible, drop everything
     if (configBox.get('dataVersion') == null) {
@@ -233,7 +231,6 @@ class HomeProvider with ChangeNotifier {
     if (configBox.get('dataVersion') < dataVersion) {
       // ignore: use_build_context_synchronously
       await infoPopup(context, "safeNotCompatibleMustReinstallGecko".tr());
-      await datapod.deleteAvatarsDirectory();
       await avatarsDirectory.create();
       await configBox.delete('defaultWallet');
       await configBox.clear();
@@ -254,7 +251,6 @@ class HomeProvider with ChangeNotifier {
 
     if (!_container.read(durtProvider).isConnected) {
       await Hive.deleteBoxFromDisk('g1WalletsBox');
-      await datapod.deleteAvatarsCacheDirectory();
       await avatarsCacheDirectory.create();
       g1WalletsBox = await Hive.openBox<G1WalletsList>("g1WalletsBox");
       contactsBox = await Hive.openBox<G1WalletsList>("contactsBox");

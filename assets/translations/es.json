@@ -458,5 +458,8 @@
     "fromAddressOrName": "Desde dirección o identidad",
     "enterFromAddressOrName": "Introducir dirección o identidad remitente",
     "toAddressOrName": "Hacia dirección o identidad",
-    "enterToAddressOrName": "Introducir dirección o identidad destinatario"
+    "enterToAddressOrName": "Introducir dirección o identidad destinatario",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin",
+    "commentFilterDisabledNetwork": "Desactivado en la vista de red"
 }

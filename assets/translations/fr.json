@@ -460,5 +460,8 @@
     "fromAddressOrName": "Depuis adresse ou identité",
     "enterFromAddressOrName": "Entrer l'adresse ou l'identité expéditrice",
     "toAddressOrName": "Vers adresse ou identité",
-    "enterToAddressOrName": "Entrer l'adresse ou l'identité destinataire"
+    "enterToAddressOrName": "Entrer l'adresse ou l'identité destinataire",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "commentFilterDisabledNetwork": "Désactivé dans la vue réseau"
 }

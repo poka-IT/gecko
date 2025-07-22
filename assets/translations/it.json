@@ -374,5 +374,8 @@
     "xPercentRule": "Percentuale minima di membri referenti da raggiungere per rispettare la regola di distanza",
     "currencyDescription": "{currencyName} è una moneta libera, iniziata {startedAgo} fa. Conta attualmente {membersCount} membri, che producono e ricevono un Dividendo Universale (DU), ogni {udPeriod}.",
     "errorLoadingCurrencyData": "Errore nel caricamento dei dati della moneta",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "startDate": "Data di inizio",
+    "endDate": "Data di fine",
+    "commentFilterDisabledNetwork": "Disabilitato nella vista di rete"
 }

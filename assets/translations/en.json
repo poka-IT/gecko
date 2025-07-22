@@ -448,5 +448,8 @@
     "fromAddressOrName": "From address or identity",
     "enterFromAddressOrName": "Enter sender address or identity",
     "toAddressOrName": "To address or identity",
-    "enterToAddressOrName": "Enter recipient address or identity"
+    "enterToAddressOrName": "Enter recipient address or identity",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "commentFilterDisabledNetwork": "Disabled in network view"
 }

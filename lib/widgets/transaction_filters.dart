@@ -48,57 +48,78 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
   }
 
   void _loadCurrentFilters() {
+    if (!mounted) return; // Check if widget is still mounted before using ref
+
     final filters = widget.mode == FilterMode.network
         ? ref.read(networkFiltersProvider)
         : ref.read(transactionFiltersProvider);
 
     // Clear or set address/name search
-    if (filters.addressOrNameSearch?.isNotEmpty == true) {
-      _addressController.text = filters.addressOrNameSearch!;
-    } else {
-      _addressController.clear();
+    try {
+      if (filters.addressOrNameSearch?.isNotEmpty == true) {
+        _addressController.text = filters.addressOrNameSearch!;
+      } else {
+        _addressController.clear();
+      }
+    } catch (e) {
+      // Controller might be disposed, ignore
     }
 
-    // Clear or set comment search
-    if (filters.commentSearch?.isNotEmpty == true) {
-      _commentController.text = filters.commentSearch!;
-    } else {
-      _commentController.clear();
+    // Clear or set comment search (disabled for network mode)
+    try {
+      if (widget.mode == FilterMode.network) {
+        _commentController.clear();
+      } else if (filters.commentSearch?.isNotEmpty == true) {
+        _commentController.text = filters.commentSearch!;
+      } else {
+        _commentController.clear();
+      }
+    } catch (e) {
+      // Controller might be disposed, ignore
     }
 
     _startDate = filters.dateRange.startDate;
     _endDate = filters.dateRange.endDate;
 
-    if (filters.amountRange.minAmount != null) {
-      _minAmountController.text = convertBigIntToAmount(filters.amountRange.minAmount).toString();
-    } else {
-      _minAmountController.clear();
-    }
-    if (filters.amountRange.maxAmount != null) {
-      _maxAmountController.text = convertBigIntToAmount(filters.amountRange.maxAmount).toString();
-    } else {
-      _maxAmountController.clear();
+    // Clear or set amount range
+    try {
+      if (filters.amountRange.minAmount != null) {
+        _minAmountController.text = convertBigIntToAmount(filters.amountRange.minAmount).toString();
+      } else {
+        _minAmountController.clear();
+      }
+      if (filters.amountRange.maxAmount != null) {
+        _maxAmountController.text = convertBigIntToAmount(filters.amountRange.maxAmount).toString();
+      } else {
+        _maxAmountController.clear();
+      }
+    } catch (e) {
+      // Controllers might be disposed, ignore
     }
 
     // Load direction filters for network mode
-    if (widget.mode == FilterMode.network) {
-      // Clear or set from address
-      if (filters.directionFilter?.fromAddress?.isNotEmpty == true) {
-        _fromAddressController.text = filters.directionFilter!.fromAddress!;
-      } else {
-        _fromAddressController.clear();
-      }
+    try {
+      if (widget.mode == FilterMode.network) {
+        // Clear or set from address
+        if (filters.directionFilter?.fromAddress?.isNotEmpty == true) {
+          _fromAddressController.text = filters.directionFilter!.fromAddress!;
+        } else {
+          _fromAddressController.clear();
+        }
 
-      // Clear or set to address
-      if (filters.directionFilter?.toAddress?.isNotEmpty == true) {
-        _toAddressController.text = filters.directionFilter!.toAddress!;
+        // Clear or set to address
+        if (filters.directionFilter?.toAddress?.isNotEmpty == true) {
+          _toAddressController.text = filters.directionFilter!.toAddress!;
+        } else {
+          _toAddressController.clear();
+        }
       } else {
+        // Clear direction filters when not in network mode
+        _fromAddressController.clear();
         _toAddressController.clear();
       }
-    } else {
-      // Clear direction filters when not in network mode
-      _fromAddressController.clear();
-      _toAddressController.clear();
+    } catch (e) {
+      // Controllers might be disposed, ignore
     }
 
     // Load exact match states from provider
@@ -119,6 +140,8 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
   }
 
   void _toggleExpanded() {
+    if (!mounted) return; // Check if widget is still mounted before using ref
+
     setState(() {
       _isExpanded = !_isExpanded;
     });
@@ -137,6 +160,8 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
   }
 
   void _showFiltersBottomSheet() {
+    if (!mounted) return;
+
     // Load current filter values before showing
     _loadCurrentFilters();
 
@@ -147,10 +172,10 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
       isDismissible: true, // Allow dismissal by tapping outside
       enableDrag: true, // Allow drag to dismiss
       builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          height: MediaQuery.of(context).size.height * 0.8, // 80% of screen height
+        builder: (modalContext, setModalState) => Container(
+          height: MediaQuery.of(modalContext).size.height * 0.8, // 80% of screen height
           decoration: BoxDecoration(
-            color: context.colorScheme.surface,
+            color: modalContext.colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
               BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2)),
@@ -164,7 +189,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                 width: scaleSize(40),
                 height: scaleSize(4),
                 decoration: BoxDecoration(
-                  color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  color: modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -180,16 +205,16 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                         style: scaledTextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: context.colorScheme.onSurface,
+                          color: modalContext.colorScheme.onSurface,
                         ),
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(modalContext),
                       icon: Icon(Icons.close, size: scaleSize(24)),
                       style: IconButton.styleFrom(
-                        backgroundColor: context.colorScheme.surfaceContainer,
-                        foregroundColor: context.colorScheme.onSurfaceVariant,
+                        backgroundColor: modalContext.colorScheme.surfaceContainer,
+                        foregroundColor: modalContext.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -205,7 +230,9 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                     children: [
                       // Address search for account mode OR direction filters for network mode
                       if (widget.mode == FilterMode.account) ...[
-                        _buildFilterField(
+                        _buildFilterFieldModal(
+                          modalContext,
+                          setModalState,
                           label: 'searchAddressOrName'.tr(),
                           controller: _addressController,
                           hintText: 'enterAddressOrName'.tr(),
@@ -219,7 +246,9 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                         ),
                         SizedBox(height: scaleSize(16)),
                       ] else if (widget.mode == FilterMode.network) ...[
-                        _buildFilterField(
+                        _buildFilterFieldModal(
+                          modalContext,
+                          setModalState,
                           label: 'fromAddressOrName'.tr(),
                           controller: _fromAddressController,
                           hintText: 'enterFromAddressOrName'.tr(),
@@ -232,7 +261,9 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                           },
                         ),
                         SizedBox(height: scaleSize(16)),
-                        _buildFilterField(
+                        _buildFilterFieldModal(
+                          modalContext,
+                          setModalState,
                           label: 'toAddressOrName'.tr(),
                           controller: _toAddressController,
                           hintText: 'enterToAddressOrName'.tr(),
@@ -248,28 +279,35 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                       ],
 
                       // Comment search
-                      _buildFilterField(
+                      _buildFilterFieldModal(
+                        modalContext,
+                        setModalState,
                         label: 'searchComment'.tr(),
                         controller: _commentController,
-                        hintText: 'enterCommentKeywords'.tr(),
+                        hintText: widget.mode == FilterMode.network
+                            ? 'commentFilterDisabledNetwork'.tr()
+                            : 'enterCommentKeywords'.tr(),
                         icon: Icons.comment_outlined,
                         isExactMatch: _localExactMatchComment,
-                        onExactMatchChanged: () {
-                          setModalState(() {
-                            _localExactMatchComment = !_localExactMatchComment;
-                          });
-                        },
+                        onExactMatchChanged: widget.mode == FilterMode.network
+                            ? null
+                            : () {
+                                setModalState(() {
+                                  _localExactMatchComment = !_localExactMatchComment;
+                                });
+                              },
+                        enabled: widget.mode != FilterMode.network,
                       ),
 
                       SizedBox(height: scaleSize(16)),
 
                       // Date range
-                      _buildDateRangeFilter(),
+                      _buildDateRangeFilterModal(modalContext, setModalState),
 
                       SizedBox(height: scaleSize(16)),
 
                       // Amount range
-                      _buildAmountRangeFilter(),
+                      _buildAmountRangeFilterModal(modalContext, setModalState),
 
                       SizedBox(height: scaleSize(16)),
 
@@ -283,8 +321,10 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
               // Sticky action buttons at bottom
               Container(
                 decoration: BoxDecoration(
-                  color: context.colorScheme.surface,
-                  border: Border(top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1)),
+                  color: modalContext.colorScheme.surface,
+                  border: Border(
+                    top: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.2), width: 1),
+                  ),
                   boxShadow: [
                     BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, -2)),
                   ],
@@ -293,7 +333,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                   scaleSize(16),
                   scaleSize(16),
                   scaleSize(16),
-                  scaleSize(16) + MediaQuery.of(context).padding.bottom,
+                  scaleSize(16) + MediaQuery.of(modalContext).padding.bottom,
                 ),
                 child: Row(
                   children: [
@@ -301,10 +341,10 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                       child: TextButton(
                         onPressed: () {
                           _clearAllFilters();
-                          Navigator.pop(context);
+                          Navigator.pop(modalContext);
                         },
                         style: TextButton.styleFrom(
-                          foregroundColor: context.colorScheme.onSurfaceVariant,
+                          foregroundColor: modalContext.colorScheme.onSurfaceVariant,
                           padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
@@ -313,7 +353,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                           style: scaledTextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: context.colorScheme.onSurfaceVariant,
+                            color: modalContext.colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -323,15 +363,15 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                       child: ElevatedButton(
                         onPressed: () {
                           _applyAdvancedFilters();
-                          Navigator.pop(context);
+                          Navigator.pop(modalContext);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: context.colorScheme.primary,
+                          backgroundColor: modalContext.colorScheme.primary,
                           foregroundColor: Colors.white,
                           elevation: 2,
                           padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
+                          shadowColor: modalContext.colorScheme.primary.withValues(alpha: 0.3),
                         ),
                         child: Text(
                           'done'.tr(),
@@ -348,42 +388,65 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
       ),
     ).whenComplete(() {
       // Reset expanded state when bottom sheet closes
-      setState(() {
-        _isExpanded = false;
-      });
-      if (widget.mode == FilterMode.network) {
-        ref.read(networkFilterPanelExpandedProvider.notifier).state = false;
-      } else {
-        ref.read(filterPanelExpandedProvider.notifier).state = false;
+      if (mounted) {
+        setState(() {
+          _isExpanded = false;
+        });
+        // Only update provider if widget is still mounted
+        if (widget.mode == FilterMode.network) {
+          ref.read(networkFilterPanelExpandedProvider.notifier).state = false;
+        } else {
+          ref.read(filterPanelExpandedProvider.notifier).state = false;
+        }
       }
     });
   }
 
   void _applyAdvancedFilters() {
+    if (!mounted) return; // Check if widget is still mounted before using ref
+
     final filtersNotifier = widget.mode == FilterMode.network
         ? ref.read(networkFiltersProvider.notifier)
         : ref.read(transactionFiltersProvider.notifier);
 
-    if (widget.mode == FilterMode.account) {
-      // Apply account-specific filters
-      final addressText = _addressController.text.trim();
-      filtersNotifier.updateAddressOrNameSearch(addressText);
-    } else {
-      // Apply network-specific direction filters
-      final fromText = _fromAddressController.text.trim();
-      final toText = _toAddressController.text.trim();
-      filtersNotifier.updateDirectionFilter(fromText, toText);
-    }
-
-    // Apply common filters
-    final commentText = _commentController.text.trim();
-    filtersNotifier.updateCommentSearch(commentText);
-
-    filtersNotifier.updateDateRange(_startDate, _endDate);
-
     // Handle amount filters with proper validation
-    final minAmountText = _minAmountController.text.trim();
-    final maxAmountText = _maxAmountController.text.trim();
+    String minAmountText = '';
+    String maxAmountText = '';
+
+    try {
+      if (widget.mode == FilterMode.account) {
+        // Apply account-specific filters
+        final addressText = _addressController.text.trim();
+        filtersNotifier.updateAddressOrNameSearch(addressText);
+      } else {
+        // Apply network-specific direction filters
+        final fromText = _fromAddressController.text.trim();
+        final toText = _toAddressController.text.trim();
+        filtersNotifier.updateDirectionFilter(fromText, toText);
+      }
+
+      // Apply common filters (except comment search for network mode)
+      if (widget.mode != FilterMode.network) {
+        final commentText = _commentController.text.trim();
+        filtersNotifier.updateCommentSearch(commentText);
+      } else {
+        // Clear comment filter for network mode
+        filtersNotifier.updateCommentSearch('');
+      }
+
+      filtersNotifier.updateDateRange(_startDate, _endDate);
+
+      // Get amount text values
+      minAmountText = _minAmountController.text.trim();
+      maxAmountText = _maxAmountController.text.trim();
+    } catch (e) {
+      // Controllers might be disposed, ignore and apply basic filters
+      filtersNotifier.updateAddressOrNameSearch('');
+      filtersNotifier.updateCommentSearch('');
+      filtersNotifier.updateDirectionFilter('', '');
+      filtersNotifier.updateDateRange(_startDate, _endDate);
+      return;
+    }
 
     final minAmount = minAmountText.isEmpty ? null : convertAmountToBigInt(double.tryParse(minAmountText) ?? 0);
     final maxAmount = maxAmountText.isEmpty ? null : convertAmountToBigInt(double.tryParse(maxAmountText) ?? 0);
@@ -399,67 +462,34 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
   }
 
   void _clearAllFilters() {
+    if (!mounted) return; // Check if widget is still mounted before using ref
+
     final filtersNotifier = widget.mode == FilterMode.network
         ? ref.read(networkFiltersProvider.notifier)
         : ref.read(transactionFiltersProvider.notifier);
 
     filtersNotifier.clearAllFilters();
 
-    setState(() {
-      _addressController.clear();
-      _commentController.clear();
-      _minAmountController.clear();
-      _maxAmountController.clear();
-      _fromAddressController.clear();
-      _toAddressController.clear();
-      _startDate = null;
-      _endDate = null;
-      // Reset local exact match states
-      _localExactMatchAddress = false;
-      _localExactMatchComment = false;
-      _localExactMatchDirection = false;
-    });
-  }
-
-  Future<void> _selectDateRange() async {
-    final dateRange = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      initialDateRange: _startDate != null && _endDate != null
-          ? DateTimeRange(start: _startDate!, end: _endDate!)
-          : null,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(colorScheme: context.colorScheme),
-          child: child!,
-        );
-      },
-    );
-
-    if (dateRange != null) {
+    if (mounted) {
       setState(() {
-        _startDate = dateRange.start;
-        _endDate = dateRange.end;
+        try {
+          _addressController.clear();
+          _commentController.clear();
+          _minAmountController.clear();
+          _maxAmountController.clear();
+          _fromAddressController.clear();
+          _toAddressController.clear();
+        } catch (e) {
+          // Controllers might be disposed, ignore
+        }
+        _startDate = null;
+        _endDate = null;
+        // Reset local exact match states
+        _localExactMatchAddress = false;
+        _localExactMatchComment = false;
+        _localExactMatchDirection = false;
       });
-
-      final filtersNotifier = widget.mode == FilterMode.network
-          ? ref.read(networkFiltersProvider.notifier)
-          : ref.read(transactionFiltersProvider.notifier);
-      filtersNotifier.updateDateRange(_startDate, _endDate);
     }
-  }
-
-  void _clearDateRange() {
-    setState(() {
-      _startDate = null;
-      _endDate = null;
-    });
-
-    final filtersNotifier = widget.mode == FilterMode.network
-        ? ref.read(networkFiltersProvider.notifier)
-        : ref.read(transactionFiltersProvider.notifier);
-    filtersNotifier.updateDateRange(null, null);
   }
 
   @override
@@ -470,7 +500,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
 
     final hasAdvancedFilters = filters.hasActiveFilters;
 
-    // Check for UDs if in account mode and showUDToggle is true
+    // Check for UDs if in account mode
     bool hasUDs = false;
     bool isUDEnabled = false;
     if (widget.mode == FilterMode.account && widget.address != null) {
@@ -616,13 +646,16 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
     );
   }
 
-  Widget _buildFilterField({
+  Widget _buildFilterFieldModal(
+    BuildContext modalContext,
+    StateSetter setModalState, {
     required String label,
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
     bool? isExactMatch,
     VoidCallback? onExactMatchChanged,
+    bool enabled = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -634,12 +667,12 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                 label,
                 style: scaledTextStyle(
                   fontSize: 13,
-                  color: context.colorScheme.onSurfaceVariant,
+                  color: modalContext.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            if (isExactMatch != null && onExactMatchChanged != null) ...[
+            if (isExactMatch != null && onExactMatchChanged != null && enabled) ...[
               SizedBox(width: scaleSize(8)),
               InkWell(
                 onTap: onExactMatchChanged,
@@ -658,7 +691,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                       SizedBox(width: scaleSize(4)),
                       Text(
                         'exactMatch'.tr(),
-                        style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurfaceVariant),
+                        style: scaledTextStyle(fontSize: 11, color: modalContext.colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -670,98 +703,53 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
         SizedBox(height: scaleSize(6)),
         TextField(
           controller: controller,
+          enabled: enabled,
           decoration: InputDecoration(
             hintText: hintText,
-            prefixIcon: Icon(icon, size: scaleSize(20)),
+            hintStyle: scaledTextStyle(
+              fontSize: 14,
+              color: enabled
+                  ? modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)
+                  : modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
+            prefixIcon: Icon(
+              icon,
+              size: scaleSize(20),
+              color: enabled
+                  ? modalContext.colorScheme.onSurfaceVariant
+                  : modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+              borderSide: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+              borderSide: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.2)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+              borderSide: BorderSide(color: modalContext.colorScheme.primary, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
             isDense: true,
           ),
-          style: scaledTextStyle(fontSize: 14),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateRangeFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'dateRange'.tr(),
           style: scaledTextStyle(
-            fontSize: 13,
-            color: context.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: enabled
+                ? modalContext.colorScheme.onSurface
+                : modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
           ),
         ),
-        SizedBox(height: scaleSize(6)),
-        Row(
-          children: [
-            Expanded(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _selectDateRange,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.3)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.date_range, size: scaleSize(20), color: context.colorScheme.onSurfaceVariant),
-                        SizedBox(width: scaleSize(8)),
-                        Expanded(
-                          child: Text(
-                            _startDate != null && _endDate != null
-                                ? '${DateFormat('dd/MM/yy').format(_startDate!)} - ${DateFormat('dd/MM/yy').format(_endDate!)}'
-                                : 'selectDateRange'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: 14,
-                              color: _startDate != null && _endDate != null
-                                  ? context.colorScheme.onSurface
-                                  : context.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            if (_startDate != null || _endDate != null) ...[
-              SizedBox(width: scaleSize(8)),
-              IconButton(
-                onPressed: _clearDateRange,
-                icon: Icon(Icons.clear, size: scaleSize(20)),
-                style: IconButton.styleFrom(
-                  backgroundColor: context.colorScheme.errorContainer,
-                  foregroundColor: context.colorScheme.onErrorContainer,
-                ),
-              ),
-            ],
-          ],
-        ),
       ],
     );
   }
 
-  Widget _buildAmountRangeFilter() {
+  Widget _buildAmountRangeFilterModal(BuildContext modalContext, StateSetter setModalState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -769,7 +757,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
           'amountRange'.tr(),
           style: scaledTextStyle(
             fontSize: 13,
-            color: context.colorScheme.onSurfaceVariant,
+            color: modalContext.colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -782,18 +770,22 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   hintText: 'minimum'.tr(),
+                  hintStyle: scaledTextStyle(
+                    fontSize: 14,
+                    color: modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
                   prefixIcon: Icon(Icons.trending_up, size: scaleSize(20)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                    borderSide: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                    borderSide: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                    borderSide: BorderSide(color: modalContext.colorScheme.primary, width: 2),
                   ),
                   contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
                   isDense: true,
@@ -808,18 +800,22 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   hintText: 'maximum'.tr(),
+                  hintStyle: scaledTextStyle(
+                    fontSize: 14,
+                    color: modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
                   prefixIcon: Icon(Icons.trending_down, size: scaleSize(20)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                    borderSide: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                    borderSide: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                    borderSide: BorderSide(color: modalContext.colorScheme.primary, width: 2),
                   ),
                   contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
                   isDense: true,
@@ -831,5 +827,190 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
         ),
       ],
     );
+  }
+
+  Widget _buildDateRangeFilterModal(BuildContext modalContext, StateSetter setModalState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'dateRange'.tr(),
+          style: scaledTextStyle(
+            fontSize: 13,
+            color: modalContext.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: scaleSize(8)),
+
+        Row(
+          children: [
+            // Start date field
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _selectStartDateModal(setModalState),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: scaleSize(16), color: modalContext.colorScheme.onSurfaceVariant),
+                      SizedBox(width: scaleSize(8)),
+                      Expanded(
+                        child: Text(
+                          _startDate != null ? DateFormat('dd/MM/yyyy').format(_startDate!) : 'startDate'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 14,
+                            color: _startDate != null
+                                ? modalContext.colorScheme.onSurface
+                                : modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ),
+                      if (_startDate != null)
+                        GestureDetector(
+                          onTap: () => _clearStartDateModal(setModalState),
+                          child: Icon(
+                            Icons.close,
+                            size: scaleSize(16),
+                            color: modalContext.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            SizedBox(width: scaleSize(12)),
+
+            // End date field
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _selectEndDateModal(setModalState),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: modalContext.colorScheme.outline.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: scaleSize(16), color: modalContext.colorScheme.onSurfaceVariant),
+                      SizedBox(width: scaleSize(8)),
+                      Expanded(
+                        child: Text(
+                          _endDate != null ? DateFormat('dd/MM/yyyy').format(_endDate!) : 'endDate'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 14,
+                            color: _endDate != null
+                                ? modalContext.colorScheme.onSurface
+                                : modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ),
+                      if (_endDate != null)
+                        GestureDetector(
+                          onTap: () => _clearEndDateModal(setModalState),
+                          child: Icon(
+                            Icons.close,
+                            size: scaleSize(16),
+                            color: modalContext.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        // Clear all dates button
+        if (_startDate != null || _endDate != null) ...[
+          SizedBox(height: scaleSize(8)),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => _clearAllDatesModal(setModalState),
+              icon: Icon(Icons.clear_all, size: scaleSize(16)),
+              label: Text('clearDates'.tr()),
+              style: TextButton.styleFrom(
+                foregroundColor: modalContext.colorScheme.error,
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(4)),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _selectStartDateModal(StateSetter setModalState) async {
+    if (!mounted) return;
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _startDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(colorScheme: context.colorScheme),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && mounted) {
+      setModalState(() {
+        _startDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectEndDateModal(StateSetter setModalState) async {
+    if (!mounted) return;
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _endDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(colorScheme: context.colorScheme),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && mounted) {
+      setModalState(() {
+        _endDate = picked;
+      });
+    }
+  }
+
+  void _clearStartDateModal(StateSetter setModalState) {
+    setModalState(() {
+      _startDate = null;
+    });
+  }
+
+  void _clearEndDateModal(StateSetter setModalState) {
+    setModalState(() {
+      _endDate = null;
+    });
+  }
+
+  void _clearAllDatesModal(StateSetter setModalState) {
+    setModalState(() {
+      _startDate = null;
+      _endDate = null;
+    });
   }
 }

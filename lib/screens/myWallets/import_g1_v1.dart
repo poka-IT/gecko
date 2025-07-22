@@ -516,7 +516,6 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                           if (result == null) return;
                                         }
 
-                                        // ✅ Créer le stream UNE SEULE FOIS
                                         final transactionStream = _performG1v1Migration(
                                           salt: g1v1Migration.csSalt.text,
                                           password: g1v1Migration.csPassword.text,
@@ -524,7 +523,6 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                           pinCode: myWalletProvider.pinCode,
                                         );
 
-                                        // ✅ Pusher l'écran de transaction avec le stream créé
                                         Navigator.pop(context);
                                         await Navigator.push(
                                           context,

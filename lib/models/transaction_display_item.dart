@@ -91,6 +91,43 @@ class TransactionDisplayItem {
     );
   }
 
+  /// Factory for server-filtered GraphQL nodes (works with both types due to dynamic typing)
+  factory TransactionDisplayItem.fromFilteredGraphQLNode(
+    dynamic node, // Accept both Query$GetAccountHistory... and Query$GetAccountHistoryFiltered...
+    String walletAddress,
+    DateTime genesisTime,
+  ) {
+    final bool isReceived = node.toId == walletAddress;
+    final String otherAddress = isReceived ? (node.fromId ?? '') : (node.toId ?? '');
+    final String? otherUsername = isReceived ? node.from?.identity?.name : node.to?.identity?.name;
+    final BigInt amount = BigInt.parse(node.amount);
+    final DateTime transactionTime =
+        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
+        ? DateTime.parse(node.timestamp).toLocal()
+        : DateTime.parse('${node.timestamp}Z').toLocal();
+
+    final String dateDelimiter = _calculateDateDelimiter(transactionTime);
+    final bool isMigrationTime = transactionTime.isBefore(genesisTime);
+    final comment = _decodeHexString(node.comment?.remarkBytes);
+
+    return TransactionDisplayItem(
+      address: otherAddress,
+      username: otherUsername,
+      amount: amount,
+      comment: comment,
+      isReceived: isReceived,
+      timestamp: transactionTime,
+      transactionTime: transactionTime,
+      dateDelimiter: dateDelimiter,
+      isMigrationTime: isMigrationTime,
+      type: TransactionType.transfer,
+      fromAddress: node.fromId,
+      toAddress: node.toId,
+      fromUsername: node.from?.identity?.name,
+      toUsername: node.to?.identity?.name,
+    );
+  }
+
   factory TransactionDisplayItem.fromNetworkActivityNode(
     dynamic node, // Network activity node
     DateTime genesisTime,

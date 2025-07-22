@@ -6,6 +6,7 @@ import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
+import 'package:gecko/widgets/history_end_indicator.dart';
 
 class HistoryView extends StatelessWidget {
   const HistoryView({
@@ -16,6 +17,7 @@ class HistoryView extends StatelessWidget {
     required this.migrationToData,
     required this.hasNextPage,
     required this.isLoadingMore,
+    this.isFiltered = false,
   });
 
   final List<TransactionDisplayItem> transactions;
@@ -24,6 +26,7 @@ class HistoryView extends StatelessWidget {
   final MigrationData? migrationToData;
   final bool hasNextPage;
   final bool isLoadingMore;
+  final bool isFiltered;
 
   /// Merges transactions with migration events at correct chronological positions
   List<TransactionDisplayItem> _getMergedTransactionList() {
@@ -126,25 +129,7 @@ class HistoryView extends StatelessWidget {
         ),
         if (isLoadingMore && hasNextPage)
           const Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[Loading(size: 30, stroke: 3)]),
-        if (!hasNextPage)
-          Column(
-            children: <Widget>[
-              ScaledSizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Icon(Icons.blur_on_outlined, size: scaleSize(31)),
-                  Text(
-                    "historyStart".tr(),
-                    textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 19, fontWeight: FontWeight.w300),
-                  ),
-                  Icon(Icons.blur_on_outlined, size: scaleSize(31)),
-                ],
-              ),
-              ScaledSizedBox(height: 30),
-            ],
-          ),
+        if (!hasNextPage) HistoryEndIndicator(isFiltered: isFiltered),
       ],
     );
   }

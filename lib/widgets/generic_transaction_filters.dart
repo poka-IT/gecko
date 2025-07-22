@@ -41,6 +41,11 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
   DateTime? _startDate;
   DateTime? _endDate;
 
+  // Local state for exact match checkboxes (only applied when clicking "Done")
+  bool _localExactMatchAddress = false;
+  bool _localExactMatchComment = false;
+  bool _localExactMatchDirection = false;
+
   @override
   void initState() {
     super.initState();
@@ -65,23 +70,59 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
         ? ref.read(networkFiltersProvider)
         : ref.read(transactionFiltersProvider);
 
-    _addressController.text = filters.addressOrNameSearch ?? '';
-    _commentController.text = filters.commentSearch ?? '';
+    // Clear or set address/name search
+    if (filters.addressOrNameSearch?.isNotEmpty == true) {
+      _addressController.text = filters.addressOrNameSearch!;
+    } else {
+      _addressController.clear();
+    }
+
+    // Clear or set comment search
+    if (filters.commentSearch?.isNotEmpty == true) {
+      _commentController.text = filters.commentSearch!;
+    } else {
+      _commentController.clear();
+    }
+
     _startDate = filters.dateRange.startDate;
     _endDate = filters.dateRange.endDate;
 
     if (filters.amountRange.minAmount != null) {
       _minAmountController.text = convertBigIntToAmount(filters.amountRange.minAmount).toString();
+    } else {
+      _minAmountController.clear();
     }
     if (filters.amountRange.maxAmount != null) {
       _maxAmountController.text = convertBigIntToAmount(filters.amountRange.maxAmount).toString();
+    } else {
+      _maxAmountController.clear();
     }
 
     // Load direction filters for network mode
-    if (widget.mode == FilterMode.network && filters.directionFilter != null) {
-      _fromAddressController.text = filters.directionFilter!.fromAddress ?? '';
-      _toAddressController.text = filters.directionFilter!.toAddress ?? '';
+    if (widget.mode == FilterMode.network) {
+      // Clear or set from address
+      if (filters.directionFilter?.fromAddress?.isNotEmpty == true) {
+        _fromAddressController.text = filters.directionFilter!.fromAddress!;
+      } else {
+        _fromAddressController.clear();
+      }
+
+      // Clear or set to address
+      if (filters.directionFilter?.toAddress?.isNotEmpty == true) {
+        _toAddressController.text = filters.directionFilter!.toAddress!;
+      } else {
+        _toAddressController.clear();
+      }
+    } else {
+      // Clear direction filters when not in network mode
+      _fromAddressController.clear();
+      _toAddressController.clear();
     }
+
+    // Load exact match states from provider
+    _localExactMatchAddress = filters.exactMatchAddress;
+    _localExactMatchComment = filters.exactMatchComment;
+    _localExactMatchDirection = filters.exactMatchDirection;
   }
 
   @override
@@ -109,6 +150,8 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
     }
 
     if (_isExpanded) {
+      // Reload current filter values when opening the panel to sync controllers with provider state
+      _loadCurrentFilters();
       _animationController.forward();
     } else {
       _animationController.reverse();
@@ -122,23 +165,36 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
 
     if (widget.mode == FilterMode.account) {
       // Apply account-specific filters
-      filtersNotifier.updateAddressOrNameSearch(_addressController.text);
+      final addressText = _addressController.text.trim();
+      filtersNotifier.updateAddressOrNameSearch(addressText);
     } else {
       // Apply network-specific direction filters
-      filtersNotifier.updateDirectionFilter(_fromAddressController.text, _toAddressController.text);
+      final fromText = _fromAddressController.text.trim();
+      final toText = _toAddressController.text.trim();
+      filtersNotifier.updateDirectionFilter(fromText, toText);
     }
 
     // Apply common filters
-    filtersNotifier.updateCommentSearch(_commentController.text);
+    final commentText = _commentController.text.trim();
+    filtersNotifier.updateCommentSearch(commentText);
+
     filtersNotifier.updateDateRange(_startDate, _endDate);
 
-    final minAmount = _minAmountController.text.isEmpty
-        ? null
-        : convertAmountToBigInt(double.tryParse(_minAmountController.text));
-    final maxAmount = _maxAmountController.text.isEmpty
-        ? null
-        : convertAmountToBigInt(double.tryParse(_maxAmountController.text));
+    // Handle amount filters with proper validation
+    final minAmountText = _minAmountController.text.trim();
+    final maxAmountText = _maxAmountController.text.trim();
+
+    final minAmount = minAmountText.isEmpty ? null : convertAmountToBigInt(double.tryParse(minAmountText) ?? 0);
+    final maxAmount = maxAmountText.isEmpty ? null : convertAmountToBigInt(double.tryParse(maxAmountText) ?? 0);
+
     filtersNotifier.updateAmountRange(minAmount, maxAmount);
+
+    // Apply exact match settings
+    filtersNotifier.updateExactMatchAddress(_localExactMatchAddress);
+    filtersNotifier.updateExactMatchComment(_localExactMatchComment);
+    if (widget.mode == FilterMode.network) {
+      filtersNotifier.updateExactMatchDirection(_localExactMatchDirection);
+    }
   }
 
   void _clearAllFilters() {
@@ -157,6 +213,10 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
       _toAddressController.clear();
       _startDate = null;
       _endDate = null;
+      // Reset local exact match states
+      _localExactMatchAddress = false;
+      _localExactMatchComment = false;
+      _localExactMatchDirection = false;
     });
   }
 
@@ -336,6 +396,12 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
                           controller: _addressController,
                           hintText: 'enterAddressOrName'.tr(),
                           icon: Icons.person_search,
+                          isExactMatch: _localExactMatchAddress,
+                          onExactMatchChanged: () {
+                            setState(() {
+                              _localExactMatchAddress = !_localExactMatchAddress;
+                            });
+                          },
                         ),
                         SizedBox(height: scaleSize(16)),
                       ] else ...[
@@ -345,6 +411,12 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
                           controller: _fromAddressController,
                           hintText: 'enterFromAddressOrName'.tr(),
                           icon: Icons.call_made,
+                          isExactMatch: _localExactMatchDirection,
+                          onExactMatchChanged: () {
+                            setState(() {
+                              _localExactMatchDirection = !_localExactMatchDirection;
+                            });
+                          },
                         ),
                         SizedBox(height: scaleSize(16)),
                         _buildFilterField(
@@ -352,6 +424,12 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
                           controller: _toAddressController,
                           hintText: 'enterToAddressOrName'.tr(),
                           icon: Icons.call_received,
+                          isExactMatch: _localExactMatchDirection,
+                          onExactMatchChanged: () {
+                            setState(() {
+                              _localExactMatchDirection = !_localExactMatchDirection;
+                            });
+                          },
                         ),
                         SizedBox(height: scaleSize(16)),
                       ],
@@ -362,6 +440,12 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
                         controller: _commentController,
                         hintText: 'enterCommentKeywords'.tr(),
                         icon: Icons.comment_outlined,
+                        isExactMatch: _localExactMatchComment,
+                        onExactMatchChanged: () {
+                          setState(() {
+                            _localExactMatchComment = !_localExactMatchComment;
+                          });
+                        },
                       ),
 
                       SizedBox(height: scaleSize(16)),
@@ -463,17 +547,51 @@ class _GenericTransactionFiltersState extends ConsumerState<GenericTransactionFi
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
+    bool? isExactMatch,
+    VoidCallback? onExactMatchChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: scaledTextStyle(
-            fontSize: 13,
-            color: context.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: scaledTextStyle(
+                  fontSize: 13,
+                  color: context.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            if (isExactMatch != null && onExactMatchChanged != null) ...[
+              SizedBox(width: scaleSize(8)),
+              InkWell(
+                onTap: onExactMatchChanged,
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: EdgeInsets.all(scaleSize(4)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: isExactMatch,
+                        onChanged: (_) => onExactMatchChanged(),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      SizedBox(width: scaleSize(4)),
+                      Text(
+                        'exactMatch'.tr(),
+                        style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         SizedBox(height: scaleSize(6)),
         TextField(

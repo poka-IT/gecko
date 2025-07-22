@@ -8,6 +8,7 @@ import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
+import 'package:gecko/providers/server_filtered_history_provider.dart';
 
 /// State class for transaction history
 class TransactionHistoryState {
@@ -538,25 +539,39 @@ void toggleUniversalDividends(WidgetRef ref, String address) {
   ref.read(scrollToTopProvider.notifier).triggerScrollToTop();
 }
 
-/// Refresh transaction history based on current toggle state
+/// Refresh transaction history (adaptive - uses server filtering when filters are active)
 Future<void> refreshTransactionHistory(WidgetRef ref, String address) async {
-  final includeUD = ref.read(universalDividendsToggleProvider);
+  final filters = ref.read(transactionFiltersProvider);
 
-  if (includeUD) {
-    await ref.read(combinedHistoryProvider(address).notifier).refresh();
+  if (filters.hasActiveFilters) {
+    // Use server-side filtering refresh
+    await ref.read(serverFilteredHistoryProvider(address).notifier).refresh();
   } else {
-    await ref.read(transfersOnlyHistoryProvider(address).notifier).refresh();
+    // Use standard approach based on UD toggle
+    final includeUD = ref.read(universalDividendsToggleProvider);
+    if (includeUD) {
+      await ref.read(combinedHistoryProvider(address).notifier).refresh();
+    } else {
+      await ref.read(transfersOnlyHistoryProvider(address).notifier).refresh();
+    }
   }
 }
 
-/// Load more transactions based on current toggle state
+/// Load more transactions (adaptive - uses server filtering when filters are active)
 Future<void> loadMoreTransactions(WidgetRef ref, String address) async {
-  final includeUD = ref.read(universalDividendsToggleProvider);
+  final filters = ref.read(transactionFiltersProvider);
 
-  if (includeUD) {
-    await ref.read(combinedHistoryProvider(address).notifier).loadMoreTransactions();
+  if (filters.hasActiveFilters) {
+    // Use server-side filtering load more
+    await ref.read(serverFilteredHistoryProvider(address).notifier).loadMore();
   } else {
-    await ref.read(transfersOnlyHistoryProvider(address).notifier).loadMoreTransactions();
+    // Use standard approach based on UD toggle
+    final includeUD = ref.read(universalDividendsToggleProvider);
+    if (includeUD) {
+      await ref.read(combinedHistoryProvider(address).notifier).loadMoreTransactions();
+    } else {
+      await ref.read(transfersOnlyHistoryProvider(address).notifier).loadMoreTransactions();
+    }
   }
 }
 
@@ -574,22 +589,24 @@ final scrollToTopProvider = StateNotifierProvider<ScrollToTopNotifier, int>((ref
   return ScrollToTopNotifier();
 });
 
-/// Enhanced transaction history provider that applies both UD toggle and advanced filters
+/// Enhanced transaction history provider with adaptive server-side filtering
 final filteredTransactionHistoryProvider = Provider.family<TransactionHistoryState, String>((ref, address) {
-  // Get the base transaction state (with UD toggle applied)
-  final baseState = ref.watch(transactionHistoryProvider(address));
-
-  // Get advanced filter criteria
   final filters = ref.watch(transactionFiltersProvider);
 
-  // If no advanced filters are active, return the base state
-  if (!filters.hasActiveFilters) {
-    return baseState;
+  if (filters.hasActiveFilters) {
+    // Use the new server-side filtering for better performance and completeness
+    final serverState = ref.watch(serverFilteredHistoryProvider(address));
+
+    // Convert server state to standard TransactionHistoryState format
+    return TransactionHistoryState(
+      transactions: serverState.transactions,
+      isLoading: serverState.isLoading,
+      hasNextPage: serverState.hasNextPage,
+      cursor: serverState.cursor,
+      error: serverState.error,
+    );
+  } else {
+    // No filters: use existing efficient approach
+    return ref.watch(transactionHistoryProvider(address));
   }
-
-  // Apply advanced filters to the transactions
-  final filteredTransactions = applyTransactionFilters(baseState.transactions, filters);
-
-  // Return a new state with filtered transactions but preserve other properties
-  return baseState.copyWith(transactions: filteredTransactions);
 });

@@ -46,11 +46,9 @@ class MigrateIdentityScreen extends ConsumerStatefulWidget {
 }
 
 class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
-  // ✅ Controllers définis dans la classe State (persistent)
   late TextEditingController newMnemonicSentence;
   late TextEditingController newWalletAddress;
 
-  // ✅ Variables d'état persistent entre les rebuilds
   var migrationChecks = const MigrateWalletChecks.defaultValues();
   var mnemonicIsValid = false;
   int? matchDerivationNbr;
@@ -441,14 +439,12 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 // Demander le code PIN d'abord
                                 if (!await myWalletProvider.askPinCode()) return;
 
-                                // ✅ Créer le stream UNE SEULE FOIS
                                 final transactionStream = _performMigration(
                                   fromAddress: fromAddress,
                                   pinCode: myWalletProvider.pinCode,
                                   toKeypair: toKeypair!,
                                 );
 
-                                // ✅ Pusher l'écran de transaction avec le stream créé
                                 Navigator.pop(context);
                                 Navigator.push(
                                   context,

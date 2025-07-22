@@ -340,7 +340,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                         children: [
                           // Empty state content with padding for filters
                           Padding(
-                            padding: EdgeInsets.only(top: scaleSize(16)),
+                            padding: EdgeInsets.only(top: scaleSize(18)),
                             child: SingleChildScrollView(
                               child: Column(
                                 children: [
@@ -354,21 +354,26 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                           ),
 
                           // Filter overlay - always visible when filtering
-                          Positioned(top: 0, left: 0, right: 0, child: TransactionFilter(address: widget.address)),
+                          Positioned(
+                            top: scaleSize(8),
+                            left: 0,
+                            right: 0,
+                            child: TransactionFilter(address: widget.address),
+                          ),
                         ],
                       ),
                     );
-                  } else {
-                    // Show only empty message when no filters (hide filters)
-                    return Column(
-                      children: <Widget>[
-                        if (widget.transactionData != null)
-                          TransactionInProgressTule(transactionData: widget.transactionData!),
-                        ScaledSizedBox(height: 40),
-                        _buildEmptyStateView(context),
-                      ],
-                    );
                   }
+
+                  // Show only empty message when no filters (hide filters)
+                  return Column(
+                    children: <Widget>[
+                      if (widget.transactionData != null)
+                        TransactionInProgressTule(transactionData: widget.transactionData!),
+                      ScaledSizedBox(height: 40),
+                      _buildEmptyStateView(context),
+                    ],
+                  );
                 },
               ),
 
@@ -396,8 +401,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                             curve: Curves.easeInOut,
                             padding: EdgeInsets.only(
                               top: keepFiltersVisible
-                                  ? scaleSize(16) // Reduced to match new compact filter height
-                                  : scaleSize(16) *
+                                  ? scaleSize(18) // Reduced padding between filter and list
+                                  : scaleSize(18) *
                                         (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
                             ),
                             child: ListView(
@@ -426,6 +431,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                   ),
                                   hasNextPage: historyState.hasNextPage,
                                   isLoadingMore: historyState.isLoading,
+                                  isFiltered: hasAdvancedFilters,
                                 ),
                               ],
                             ),
@@ -434,13 +440,13 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
                         // Filter overlay with conditional visibility
                         Positioned(
-                          top: 0,
+                          top: scaleSize(8),
                           left: 0,
                           right: 0,
                           child: Transform.translate(
                             offset: Offset(
                               0,
-                              keepFiltersVisible ? 0.0 : _filterTranslationY * 16.0, // Match the reduced padding
+                              keepFiltersVisible ? 0.0 : _filterTranslationY * 18.0, // Match the reduced padding
                             ),
                             child: Opacity(
                               opacity: keepFiltersVisible

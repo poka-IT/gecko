@@ -11,6 +11,7 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/generic_transaction_filters.dart';
 import 'package:gecko/widgets/transaction_tile.dart';
+import 'package:gecko/widgets/history_end_indicator.dart';
 
 class NetworkActivityScreen extends ConsumerStatefulWidget {
   const NetworkActivityScreen({super.key});
@@ -45,6 +46,22 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _newActivityController, curve: Curves.easeInOut));
+
+    // Clear network filters when opening network activity screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          Future.delayed(Duration.zero, () {
+            if (mounted) {
+              ref.read(networkFiltersProvider.notifier).reset();
+            }
+          });
+        } catch (e) {
+          // Silently handle any errors during filter reset
+          debugPrint('Network filter reset error: $e');
+        }
+      }
+    });
   }
 
   @override
@@ -172,7 +189,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
 
   @override
   Widget build(BuildContext context) {
-    final networkActivity = ref.watch(filteredNetworkActivityProvider);
+    final networkActivity = ref.watch(adaptiveFilteredNetworkActivityProvider);
 
     // Check for new network activity using timestamp comparison
     if (!_isInitialLoad && !networkActivity.isLoading && networkActivity.transactions.isNotEmpty) {
@@ -214,8 +231,11 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                 if (networkActivity.isLoading && networkActivity.transactions.isEmpty) {
                   return Column(
                     children: [
-                      // Always show filter in loading state
-                      GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      // Always show filter in loading state with consistent padding
+                      Padding(
+                        padding: EdgeInsets.only(top: scaleSize(8)),
+                        child: GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      ),
                       const Expanded(child: Center(child: CircularProgressIndicator())),
                     ],
                   );
@@ -224,8 +244,11 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                 if (networkActivity.error != null && networkActivity.transactions.isEmpty) {
                   return Column(
                     children: [
-                      // Always show filter in error state
-                      GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      // Always show filter in error state with consistent padding
+                      Padding(
+                        padding: EdgeInsets.only(top: scaleSize(8)),
+                        child: GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      ),
                       Expanded(
                         child: Center(
                           child: Column(
@@ -251,8 +274,11 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                 if (networkActivity.transactions.isEmpty) {
                   return Column(
                     children: [
-                      // Always show filter in empty state
-                      GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      // Always show filter in empty state with consistent padding
+                      Padding(
+                        padding: EdgeInsets.only(top: scaleSize(8)),
+                        child: GenericTransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                      ),
                       Expanded(
                         child: Center(
                           child: Column(
@@ -291,8 +317,9 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                         curve: Curves.easeInOut,
                         padding: EdgeInsets.only(
                           top: keepFiltersVisible
-                              ? scaleSize(16) // Fixed padding when filters are visible
-                              : scaleSize(16) * (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when scrolling
+                              ? scaleSize(47) // Less space below filter, compensated by filter top position
+                              : scaleSize(47) *
+                                    (1.0 + _filterTranslationY).clamp(0.2, 1.0), // Animated when scrolling with minimum
                         ),
                         child: _buildTransactionsList(networkActivity),
                       ),
@@ -300,11 +327,11 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
 
                     // Filter overlay with conditional visibility
                     Positioned(
-                      top: 0,
+                      top: scaleSize(8), // More space from appbar
                       left: 0,
                       right: 0,
                       child: Transform.translate(
-                        offset: Offset(0, keepFiltersVisible ? 0.0 : _filterTranslationY * 16.0),
+                        offset: Offset(0, keepFiltersVisible ? 0.0 : _filterTranslationY * 47.0),
                         child: Opacity(
                           opacity: keepFiltersVisible
                               ? 1.0 // Always visible when filtering
@@ -370,65 +397,71 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
     bool isMigrationPassed = false;
     List<String> pastDelimiters = [];
 
-    return ListView.builder(
+    // Check if filters are active to determine history end text
+    final hasActiveFilters = ref.read(networkFiltersProvider).hasActiveFilters;
+
+    return ListView(
       controller: _scrollController,
       padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-      itemCount: networkActivity.transactions.length + (networkActivity.isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == networkActivity.transactions.length) {
-          // Loading indicator at the bottom
-          return Padding(
-            padding: EdgeInsets.all(scaleSize(16)),
-            child: const Center(child: CircularProgressIndicator()),
-          );
-        }
+      children: [
+        // Transaction list
+        ...networkActivity.transactions.asMap().entries.map((entry) {
+          final index = entry.key;
+          final transaction = entry.value;
+          keyID++;
+          pastDelimiters.add(transaction.dateDelimiter);
 
-        final transaction = networkActivity.transactions[index];
-        keyID++;
-        pastDelimiters.add(transaction.dateDelimiter);
+          // Check if we need to show date delimiter
+          final showDateDelimiter =
+              index == 0 ||
+              (index > 0 && networkActivity.transactions[index - 1].dateDelimiter != transaction.dateDelimiter);
 
-        // Check if we need to show date delimiter
-        final showDateDelimiter =
-            index == 0 ||
-            (index > 0 && networkActivity.transactions[index - 1].dateDelimiter != transaction.dateDelimiter);
+          // Check if this is migration time and we haven't passed it yet
+          if (transaction.isMigrationTime && !isMigrationPassed) {
+            isMigrationPassed = true;
+          }
 
-        // Check if this is migration time and we haven't passed it yet
-        if (transaction.isMigrationTime && !isMigrationPassed) {
-          isMigrationPassed = true;
-        }
-
-        return Column(
-          children: [
-            if (showDateDelimiter) ...[
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                padding: EdgeInsets.symmetric(vertical: scaleSize(6), horizontal: scaleSize(12)),
-                decoration: BoxDecoration(
-                  color: context.colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(scaleSize(8)),
-                ),
-                child: Text(
-                  transaction.dateDelimiter,
-                  style: scaledTextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: context.colorScheme.onSurface,
+          return Column(
+            children: [
+              if (showDateDelimiter) ...[
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                  padding: EdgeInsets.symmetric(vertical: scaleSize(6), horizontal: scaleSize(12)),
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(scaleSize(8)),
                   ),
-                  textAlign: TextAlign.center,
+                  child: Text(
+                    transaction.dateDelimiter,
+                    style: scaledTextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: context.colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
+              ],
+              TransactionTile(
+                key: Key("transaction$keyID"),
+                keyID: keyID,
+                context: context,
+                transaction: transaction,
+                avatarSize: avatarSize,
               ),
             ],
-            TransactionTile(
-              key: Key("transaction$keyID"),
-              keyID: keyID,
-              context: context,
-              transaction: transaction,
-              avatarSize: avatarSize,
-            ),
-          ],
-        );
-      },
+          );
+        }),
+
+        // Loading indicator or end of history indicator
+        if (networkActivity.isLoading && networkActivity.hasNextPage)
+          Padding(
+            padding: EdgeInsets.all(scaleSize(16)),
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+        if (!networkActivity.hasNextPage) HistoryEndIndicator(isFiltered: hasActiveFilters),
+      ],
     );
   }
 }

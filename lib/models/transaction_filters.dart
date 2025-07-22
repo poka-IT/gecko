@@ -132,6 +132,9 @@ class TransactionFilterCriteria {
   final AmountRangeFilter amountRange;
   final FilterMode mode;
   final DirectionFilter? directionFilter;
+  final bool exactMatchAddress;
+  final bool exactMatchComment;
+  final bool exactMatchDirection;
 
   const TransactionFilterCriteria({
     this.addressOrNameSearch,
@@ -140,6 +143,9 @@ class TransactionFilterCriteria {
     this.amountRange = const AmountRangeFilter(),
     this.mode = FilterMode.account,
     this.directionFilter,
+    this.exactMatchAddress = false,
+    this.exactMatchComment = false,
+    this.exactMatchDirection = false,
   });
 
   TransactionFilterCriteria copyWith({
@@ -149,6 +155,9 @@ class TransactionFilterCriteria {
     AmountRangeFilter? amountRange,
     FilterMode? mode,
     DirectionFilter? directionFilter,
+    bool? exactMatchAddress,
+    bool? exactMatchComment,
+    bool? exactMatchDirection,
   }) {
     return TransactionFilterCriteria(
       addressOrNameSearch: addressOrNameSearch ?? this.addressOrNameSearch,
@@ -157,6 +166,9 @@ class TransactionFilterCriteria {
       amountRange: amountRange ?? this.amountRange,
       mode: mode ?? this.mode,
       directionFilter: directionFilter ?? this.directionFilter,
+      exactMatchAddress: exactMatchAddress ?? this.exactMatchAddress,
+      exactMatchComment: exactMatchComment ?? this.exactMatchComment,
+      exactMatchDirection: exactMatchDirection ?? this.exactMatchDirection,
     );
   }
 
@@ -212,7 +224,10 @@ class TransactionFilterCriteria {
           dateRange == other.dateRange &&
           amountRange == other.amountRange &&
           mode == other.mode &&
-          directionFilter == other.directionFilter;
+          directionFilter == other.directionFilter &&
+          exactMatchAddress == other.exactMatchAddress &&
+          exactMatchComment == other.exactMatchComment &&
+          exactMatchDirection == other.exactMatchDirection;
 
   @override
   int get hashCode =>
@@ -221,5 +236,8 @@ class TransactionFilterCriteria {
       dateRange.hashCode ^
       amountRange.hashCode ^
       mode.hashCode ^
-      directionFilter.hashCode;
+      directionFilter.hashCode ^
+      exactMatchAddress.hashCode ^
+      exactMatchComment.hashCode ^
+      exactMatchDirection.hashCode;
 }

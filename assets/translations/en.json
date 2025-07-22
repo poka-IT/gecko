@@ -240,6 +240,7 @@
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
     "historyStart": "Beginning of history",
+    "filteredHistoryStart": "Beginning of filtered history",
     "blockchainStart": "Beginning of the ĞDev",
     "networkSettings": "Network Settings",
     "displaySettings": "Display Settings",
@@ -442,11 +443,10 @@
     "maximum": "Maximum",
     "clearAll": "Clear all",
     "done": "Done",
+    "exactMatch": "Exact",
     "filters": "Filters",
     "fromAddressOrName": "From address or identity",
     "enterFromAddressOrName": "Enter sender address or identity",
     "toAddressOrName": "To address or identity",
-    "enterToAddressOrName": "Enter recipient address or identity",
-    "newNetworkActivity": "New network activity",
-    "noNetworkActivity": "No network activity"
+    "enterToAddressOrName": "Enter recipient address or identity"
 }

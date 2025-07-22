@@ -249,6 +249,7 @@
     "memberAccountOf": "Compte de {}",
     "pasteAddress": "Coller l'adresse depuis\nle presse-papier",
     "historyStart": "Début de l'historique",
+    "filteredHistoryStart": "Début de l'historique filtré",
     "blockchainStart": "Mise à jour Duniter v2",
     "networkSettings": "Connectivité réseau",
     "displaySettings": "Affichage",
@@ -454,11 +455,10 @@
     "maximum": "Maximum",
     "clearAll": "Effacer tout",
     "done": "Terminé",
+    "exactMatch": "Exact",
     "filters": "Filtres",
     "fromAddressOrName": "Depuis adresse ou identité",
     "enterFromAddressOrName": "Entrer l'adresse ou l'identité expéditrice",
     "toAddressOrName": "Vers adresse ou identité",
-    "enterToAddressOrName": "Entrer l'adresse ou l'identité destinataire",
-    "newNetworkActivity": "Nouvelle activité réseau",
-    "noNetworkActivity": "Aucune activité réseau"
+    "enterToAddressOrName": "Entrer l'adresse ou l'identité destinataire"
 }

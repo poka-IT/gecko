@@ -242,6 +242,7 @@
     "memberAccountOf": "Conto di {}",
     "pasteAddress": "Incolla l'indirizzo \ndagli appunti",
     "historyStart" :"Inizio della storia",
+    "filteredHistoryStart": "Inizio della storia filtrata",
     "blockchainStart": "Inizio di ĞDev",
     "networkSettings": "Impostazioni di rete",
     "displaySettings": "Impostazioni interfaccia",

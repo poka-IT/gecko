@@ -8,6 +8,7 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/models/transaction_filters.dart';
 
 /// State for network activity history
 class NetworkActivityState {
@@ -16,6 +17,8 @@ class NetworkActivityState {
   final bool hasNextPage;
   final String? cursor;
   final String? error;
+  final bool hasActiveFilters;
+  final d.TransactionFilters? appliedServerFilters;
 
   const NetworkActivityState({
     this.transactions = const [],
@@ -23,6 +26,8 @@ class NetworkActivityState {
     this.hasNextPage = true,
     this.cursor,
     this.error,
+    this.hasActiveFilters = false,
+    this.appliedServerFilters,
   });
 
   NetworkActivityState copyWith({
@@ -31,6 +36,8 @@ class NetworkActivityState {
     bool? hasNextPage,
     String? cursor,
     String? error,
+    bool? hasActiveFilters,
+    d.TransactionFilters? appliedServerFilters,
   }) {
     return NetworkActivityState(
       transactions: transactions ?? this.transactions,
@@ -38,6 +45,8 @@ class NetworkActivityState {
       hasNextPage: hasNextPage ?? this.hasNextPage,
       cursor: cursor ?? this.cursor,
       error: error ?? this.error,
+      hasActiveFilters: hasActiveFilters ?? this.hasActiveFilters,
+      appliedServerFilters: appliedServerFilters ?? this.appliedServerFilters,
     );
   }
 }
@@ -108,8 +117,6 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
-
-      print('🔄 Fetching fresh network activity data');
 
       // Fetch fresh network-wide transactions
       final result = await d.SquidService.client.getNetworkActivity(number: 20, cursor: null);
@@ -197,8 +204,6 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
         return;
       }
 
-      print('🟢 Network activity loaded: ${allTransactions.length} transactions');
-
       state = state.copyWith(
         transactions: allTransactions,
         isLoading: false,
@@ -215,12 +220,43 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
     }
   }
 
-  /// Fetch network-wide Universal Dividends (placeholder for future implementation)
+  /// Fetch network-wide Universal Dividends
   Future<List<TransactionDisplayItem>> _fetchNetworkUniversalDividends(DateTime genesisTime) async {
-    // This would require a new GraphQL query to fetch network-wide UDs
-    // For now, return empty list
-    // TODO: Implement network-wide UD fetching when GraphQL endpoint is available
-    return [];
+    try {
+      final result = await d.SquidService.client.getNetworkUdHistory(number: 20);
+
+      if (result == null) {
+        return [];
+      }
+
+      return result.edges.map((edge) {
+        final node = edge.node;
+        final timestamp = DateTime.parse(
+          node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
+              ? node.timestamp
+              : '${node.timestamp}Z',
+        );
+
+        return TransactionDisplayItem(
+          address: '', // Network view, no specific address
+          amount: BigInt.parse(node.amount),
+          timestamp: timestamp,
+          transactionTime: timestamp,
+          dateDelimiter: '',
+          isMigrationTime: false,
+          comment: null,
+          isReceived: false, // Network view, not account-specific
+          type: TransactionType.universalDividend,
+          fromAddress: '', // UDs don't have a from address
+          toAddress: '', // UDs don't have a specific recipient in network view
+          fromUsername: null,
+          toUsername: null,
+        );
+      }).toList();
+    } catch (e) {
+      log.e('Failed to fetch network UDs: $e');
+      return [];
+    }
   }
 
   /// Load the next page of network transactions
@@ -296,31 +332,230 @@ final networkUniversalDividendsToggleProvider = StateNotifierProvider<UniversalD
   return UniversalDividendsToggleNotifier(ref);
 });
 
-/// Enhanced network activity provider that applies filters
-final filteredNetworkActivityProvider = Provider<NetworkActivityState>((ref) {
-  final baseState = ref.watch(networkActivityProvider);
-  final filters = ref.watch(networkFiltersProvider);
+/// Server-side filtered network activity notifier
+class ServerFilteredNetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
+  final Ref ref;
+  Timer? _debounceTimer;
 
-  // If no filters are active, return the base state
-  if (!filters.hasActiveFilters) {
-    return baseState;
+  ServerFilteredNetworkActivityNotifier(this.ref) : super(const NetworkActivityState()) {
+    // Listen to filter changes
+    ref.listen(networkFiltersProvider, (previous, next) {
+      if (previous != next) {
+        _debounceFilterUpdate();
+      }
+    });
+
+    // Initial load
+    _loadNetworkActivityWithFilters();
   }
 
-  // Apply filters to the transactions
-  final filteredTransactions = applyTransactionFilters(baseState.transactions, filters);
+  /// Debounce filter updates to avoid excessive API calls
+  void _debounceFilterUpdate() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _loadNetworkActivityWithFilters();
+    });
+  }
 
-  // Return a new state with filtered transactions but preserve other properties
-  return baseState.copyWith(transactions: filteredTransactions);
-});
+  /// Convert Gecko filters to Durt2 filters
+  d.TransactionFilters _convertToServerFilters(TransactionFilterCriteria geckoFilters) {
+    final serverFilters = d.TransactionFilters(
+      fromAddress: geckoFilters.directionFilter?.fromAddress,
+      toAddress: geckoFilters.directionFilter?.toAddress,
+      commentSearch: geckoFilters.commentSearch,
+      startDate: geckoFilters.dateRange.startDate,
+      endDate: geckoFilters.dateRange.endDate,
+      minAmount: geckoFilters.amountRange.minAmount,
+      maxAmount: geckoFilters.amountRange.maxAmount,
+      exactMatchAddress: geckoFilters.exactMatchAddress,
+      exactMatchComment: geckoFilters.exactMatchComment,
+      exactMatchDirection: geckoFilters.exactMatchDirection,
+    );
 
-/// Load more network transactions
-Future<void> loadMoreNetworkTransactions(WidgetRef ref) async {
-  await ref.read(networkActivityProvider.notifier).loadMoreTransactions();
+    return serverFilters;
+  }
+
+  /// Load network activity with current filters
+  Future<void> _loadNetworkActivityWithFilters() async {
+    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
+    if (squidConnectionStatus != d.ConnectionStatus.connected) {
+      print('❌ [NETWORK DEBUG] No network connection');
+      state = state.copyWith(error: 'No network connection');
+      return;
+    }
+
+    final geckoFilters = ref.read(networkFiltersProvider);
+    final hasFilters = geckoFilters.hasActiveFilters;
+
+    // Reset state when switching filter modes to avoid cursor conflicts (like account history does)
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      hasActiveFilters: hasFilters,
+      transactions: [], // Clear existing transactions when filters change
+      cursor: null, // Reset cursor to avoid conflicts
+    );
+
+    try {
+      final genesisTime = await ref.read(genesisTimeProvider.future);
+
+      if (hasFilters) {
+        // Use server-side filtering via Durt2 (always start fresh, no cursor)
+        final serverFilters = _convertToServerFilters(geckoFilters);
+        final result = await d.SquidService.client.getNetworkActivityFiltered(
+          number: 20,
+          cursor: null, // Always start fresh to avoid cursor conflicts
+          filters: serverFilters,
+        );
+
+        if (result != null) {
+          final displayItems = result.items
+              .map((node) => TransactionDisplayItem.fromNetworkActivityNode(node, genesisTime))
+              .toList();
+
+          state = state.copyWith(
+            transactions: displayItems,
+            isLoading: false,
+            hasNextPage: result.hasNextPage,
+            cursor: result.endCursor,
+            appliedServerFilters: serverFilters,
+          );
+        } else {
+          state = state.copyWith(
+            transactions: [],
+            isLoading: false,
+            hasNextPage: false,
+            error: 'Failed to load filtered network activity',
+          );
+        }
+      } else {
+        // No filters: use standard efficient approach
+        final baseState = ref.read(networkActivityProvider);
+        state = state.copyWith(
+          transactions: baseState.transactions,
+          isLoading: false,
+          hasNextPage: baseState.hasNextPage,
+          cursor: baseState.cursor,
+          appliedServerFilters: null, // No server filters applied
+        );
+      }
+    } catch (e) {
+      log.e('Error loading filtered network activity: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  /// Load more network activity (pagination)
+  Future<void> loadMore() async {
+    if (state.isLoading || !state.hasNextPage) {
+      return;
+    }
+
+    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
+    if (squidConnectionStatus != d.ConnectionStatus.connected) {
+      return;
+    }
+
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final genesisTime = await ref.read(genesisTimeProvider.future);
+
+      if (state.hasActiveFilters && state.appliedServerFilters != null) {
+        // Load more with server filters (use only server-generated cursors)
+        final result = await d.SquidService.client.getNetworkActivityFiltered(
+          number: 20,
+          cursor: state.cursor, // Use the cursor from server filtering results
+          filters: state.appliedServerFilters!,
+        );
+
+        if (result != null) {
+          final newItems = result.items
+              .map((node) => TransactionDisplayItem.fromNetworkActivityNode(node, genesisTime))
+              .toList();
+
+          state = state.copyWith(
+            transactions: [...state.transactions, ...newItems],
+            isLoading: false,
+            hasNextPage: result.hasNextPage,
+            cursor: result.endCursor,
+          );
+        }
+      } else {
+        // Load more without filters (delegate to existing provider)
+        await ref.read(networkActivityProvider.notifier).loadMoreTransactions();
+        final baseState = ref.read(networkActivityProvider);
+        state = state.copyWith(
+          transactions: baseState.transactions,
+          isLoading: false,
+          hasNextPage: baseState.hasNextPage,
+          cursor: baseState.cursor,
+        );
+      }
+    } catch (e) {
+      print('❌ [NETWORK DEBUG] Error in loadMore: $e');
+      log.e('Error loading more network activity: $e');
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
+  /// Refresh network activity
+  Future<void> refresh() async {
+    state = const NetworkActivityState();
+    await _loadNetworkActivityWithFilters();
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
 }
 
-/// Refresh network activity
+/// Provider for server-filtered network activity
+final serverFilteredNetworkActivityProvider =
+    StateNotifierProvider<ServerFilteredNetworkActivityNotifier, NetworkActivityState>((ref) {
+      return ServerFilteredNetworkActivityNotifier(ref);
+    });
+
+/// Adaptive network activity provider that chooses between server and client filtering
+final adaptiveFilteredNetworkActivityProvider = Provider<NetworkActivityState>((ref) {
+  final filters = ref.watch(networkFiltersProvider);
+
+  if (filters.hasActiveFilters) {
+    // Use server-side filtering for complex filters
+    return ref.watch(serverFilteredNetworkActivityProvider);
+  } else {
+    // Use existing efficient client-side provider for no filters
+    return ref.watch(networkActivityProvider);
+  }
+});
+
+/// Enhanced network activity provider that applies filters (legacy - kept for compatibility)
+final filteredNetworkActivityProvider = Provider<NetworkActivityState>((ref) {
+  return ref.watch(adaptiveFilteredNetworkActivityProvider);
+});
+
+/// Load more network transactions (adaptive)
+Future<void> loadMoreNetworkTransactions(WidgetRef ref) async {
+  final filters = ref.read(networkFiltersProvider);
+
+  if (filters.hasActiveFilters) {
+    await ref.read(serverFilteredNetworkActivityProvider.notifier).loadMore();
+  } else {
+    await ref.read(networkActivityProvider.notifier).loadMoreTransactions();
+  }
+}
+
+/// Refresh network activity (adaptive)
 Future<void> refreshNetworkActivity(WidgetRef ref) async {
-  await ref.read(networkActivityProvider.notifier).refresh();
+  final filters = ref.read(networkFiltersProvider);
+
+  if (filters.hasActiveFilters) {
+    await ref.read(serverFilteredNetworkActivityProvider.notifier).refresh();
+  } else {
+    await ref.read(networkActivityProvider.notifier).refresh();
+  }
 }
 
 /// Toggle Universal Dividends in network view

@@ -249,6 +249,7 @@
     "memberAccountOf": "Account of {}",
     "pasteAddress": "Paste address from\nclipboard",
     "historyStart": "Beginning of history",
+    "filteredHistoryStart": "Inicio del historial filtrado",
     "blockchainStart": "Comienzo de la ĞDev",
     "networkSettings": "Parametros de red",
     "displaySettings": "Parametros interficie",
@@ -452,11 +453,10 @@
     "maximum": "Máximo",
     "clearAll": "Borrar todo",
     "done": "Hecho",
+    "exactMatch": "Exacto",
     "filters": "Filtros",
     "fromAddressOrName": "Desde dirección o identidad",
     "enterFromAddressOrName": "Introducir dirección o identidad remitente",
     "toAddressOrName": "Hacia dirección o identidad",
-    "enterToAddressOrName": "Introducir dirección o identidad destinatario",
-    "newNetworkActivity": "Nueva actividad de red",
-    "noNetworkActivity": "Sin actividad de red"
+    "enterToAddressOrName": "Introducir dirección o identidad destinatario"
 }

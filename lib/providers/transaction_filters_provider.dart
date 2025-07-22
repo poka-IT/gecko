@@ -1,19 +1,47 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/transaction_filters.dart';
-import 'package:gecko/models/transaction_display_item.dart';
 
 /// StateNotifier for managing transaction filter criteria
+/// All actual filtering is done server-side via durt2 SquidService
 class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria> {
   TransactionFiltersNotifier([FilterMode mode = FilterMode.account]) : super(TransactionFilterCriteria(mode: mode));
 
   /// Update address or name search filter
   void updateAddressOrNameSearch(String? search) {
-    state = state.copyWith(addressOrNameSearch: search?.trim().isEmpty == true ? null : search?.trim());
+    final trimmed = search?.trim();
+    final result = trimmed?.isEmpty == true ? null : trimmed;
+
+    // Force copyWith to accept null by creating new instance - PRESERVE EXACT MATCH FLAGS!
+    state = TransactionFilterCriteria(
+      addressOrNameSearch: result,
+      commentSearch: state.commentSearch,
+      dateRange: state.dateRange,
+      amountRange: state.amountRange,
+      mode: state.mode,
+      directionFilter: state.directionFilter,
+      exactMatchAddress: state.exactMatchAddress,
+      exactMatchComment: state.exactMatchComment,
+      exactMatchDirection: state.exactMatchDirection,
+    );
   }
 
   /// Update comment search filter
   void updateCommentSearch(String? search) {
-    state = state.copyWith(commentSearch: search?.trim().isEmpty == true ? null : search?.trim());
+    final trimmed = search?.trim();
+    final result = trimmed?.isEmpty == true ? null : trimmed;
+
+    // Force copyWith to accept null by creating new instance - PRESERVE EXACT MATCH FLAGS!
+    state = TransactionFilterCriteria(
+      addressOrNameSearch: state.addressOrNameSearch,
+      commentSearch: result,
+      dateRange: state.dateRange,
+      amountRange: state.amountRange,
+      mode: state.mode,
+      directionFilter: state.directionFilter,
+      exactMatchAddress: state.exactMatchAddress,
+      exactMatchComment: state.exactMatchComment,
+      exactMatchDirection: state.exactMatchDirection,
+    );
   }
 
   /// Update date range filter
@@ -33,8 +61,28 @@ class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria
   /// Update direction filter (for network mode)
   void updateDirectionFilter(String? fromAddress, String? toAddress) {
     if (state.mode == FilterMode.network) {
-      state = state.copyWith(
-        directionFilter: DirectionFilter(fromAddress: fromAddress, toAddress: toAddress),
+      final cleanFromAddress = fromAddress?.trim().isEmpty == true ? null : fromAddress?.trim();
+      final cleanToAddress = toAddress?.trim().isEmpty == true ? null : toAddress?.trim();
+
+      DirectionFilter? newDirectionFilter;
+      // If both addresses are null, clear the entire direction filter
+      if (cleanFromAddress == null && cleanToAddress == null) {
+        newDirectionFilter = null;
+      } else {
+        newDirectionFilter = DirectionFilter(fromAddress: cleanFromAddress, toAddress: cleanToAddress);
+      }
+
+      // Force update with new instance to handle null properly - PRESERVE EXACT MATCH FLAGS!
+      state = TransactionFilterCriteria(
+        addressOrNameSearch: state.addressOrNameSearch,
+        commentSearch: state.commentSearch,
+        dateRange: state.dateRange,
+        amountRange: state.amountRange,
+        mode: state.mode,
+        directionFilter: newDirectionFilter,
+        exactMatchAddress: state.exactMatchAddress,
+        exactMatchComment: state.exactMatchComment,
+        exactMatchDirection: state.exactMatchDirection,
       );
     }
   }
@@ -61,6 +109,19 @@ class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria
         ),
       );
     }
+  }
+
+  /// Update exact match settings
+  void updateExactMatchAddress(bool exactMatch) {
+    state = state.copyWith(exactMatchAddress: exactMatch);
+  }
+
+  void updateExactMatchComment(bool exactMatch) {
+    state = state.copyWith(exactMatchComment: exactMatch);
+  }
+
+  void updateExactMatchDirection(bool exactMatch) {
+    state = state.copyWith(exactMatchDirection: exactMatch);
   }
 
   /// Clear specific filter
@@ -100,74 +161,6 @@ final filterPanelExpandedProvider = StateProvider<bool>((ref) => false);
 /// Provider to track if the network filter panel is expanded/open
 final networkFilterPanelExpandedProvider = StateProvider<bool>((ref) => false);
 
-/// Helper function to apply filters to a list of transactions
-List<TransactionDisplayItem> applyTransactionFilters(
-  List<TransactionDisplayItem> transactions,
-  TransactionFilterCriteria filters,
-) {
-  if (!filters.hasActiveFilters) return transactions;
-
-  return transactions.where((transaction) {
-    // Apply address or name search filter (for account mode)
-    if (filters.mode == FilterMode.account && filters.addressOrNameSearch?.isNotEmpty == true) {
-      final searchTerm = filters.addressOrNameSearch!.toLowerCase();
-      final addressMatches = transaction.address.toLowerCase().contains(searchTerm);
-      final usernameMatches = transaction.username?.toLowerCase().contains(searchTerm) ?? false;
-
-      if (!addressMatches && !usernameMatches) return false;
-    }
-
-    // Apply direction filter (for network mode)
-    if (filters.mode == FilterMode.network && filters.directionFilter?.isActive == true) {
-      // Use the explicit from/to fields for network transactions
-      if (!filters.directionFilter!.matchesDirection(
-        transaction.fromAddress,
-        transaction.toAddress,
-        transaction.fromUsername,
-        transaction.toUsername,
-      )) {
-        return false;
-      }
-    }
-
-    // Apply comment search filter
-    if (filters.commentSearch?.isNotEmpty == true) {
-      final searchTerm = filters.commentSearch!.toLowerCase();
-      final commentMatches = transaction.comment?.toLowerCase().contains(searchTerm) ?? false;
-
-      if (!commentMatches) return false;
-    }
-
-    // Apply date range filter
-    if (!filters.dateRange.matchesDate(transaction.timestamp)) return false;
-
-    // Apply amount range filter
-    if (!filters.amountRange.matchesAmount(transaction.amount)) return false;
-
-    return true;
-  }).toList();
-}
-
-/// Parameters for filtered transactions provider
-class FilteredTransactionsParams {
-  final String? address;
-  final List<TransactionDisplayItem> transactions;
-  final FilterMode mode;
-
-  const FilteredTransactionsParams({this.address, required this.transactions, this.mode = FilterMode.account});
-}
-
-/// Provider that applies filters to a transaction list
-final filteredTransactionsProvider = Provider.family<List<TransactionDisplayItem>, FilteredTransactionsParams>((
-  ref,
-  params,
-) {
-  final filters = params.mode == FilterMode.network
-      ? ref.watch(networkFiltersProvider)
-      : ref.watch(transactionFiltersProvider);
-  return applyTransactionFilters(params.transactions, filters);
-});
-
 /// Utility functions for filter management
 
 /// Convert double amount to BigInt (assuming 2 decimal places like Duniter)
@@ -180,21 +173,4 @@ BigInt? convertAmountToBigInt(double? amount) {
 double convertBigIntToAmount(BigInt? amount) {
   if (amount == null) return 0.0;
   return amount.toDouble() / 100;
-}
-
-/// Check if a search term matches an address (supports partial matches)
-bool matchesAddress(String address, String searchTerm) {
-  return address.toLowerCase().contains(searchTerm.toLowerCase());
-}
-
-/// Check if a search term matches a username
-bool matchesUsername(String? username, String searchTerm) {
-  if (username == null) return false;
-  return username.toLowerCase().contains(searchTerm.toLowerCase());
-}
-
-/// Check if a search term matches a comment
-bool matchesComment(String? comment, String searchTerm) {
-  if (comment == null) return false;
-  return comment.toLowerCase().contains(searchTerm.toLowerCase());
 }

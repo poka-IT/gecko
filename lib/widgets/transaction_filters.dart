@@ -12,21 +12,16 @@ import 'package:gecko/providers/transaction_filters_provider.dart';
 
 /// Generic transaction filters widget that adapts to both account and network modes
 class TransactionFilters extends ConsumerStatefulWidget {
-  const TransactionFilters({super.key, required this.mode, this.address, this.showUDToggle = false});
+  const TransactionFilters({super.key, required this.mode, this.address});
 
   final FilterMode mode;
   final String? address; // Only needed for account mode
-  final bool showUDToggle; // Whether to show Universal Dividends toggle
 
   @override
   ConsumerState<TransactionFilters> createState() => _TransactionFiltersState();
 }
 
-class _TransactionFiltersState extends ConsumerState<TransactionFilters> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
+class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
   bool _isExpanded = false;
 
   // Controllers for filters
@@ -48,18 +43,6 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> with Si
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
-
     // Load current filter values
     _loadCurrentFilters();
   }
@@ -126,7 +109,6 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> with Si
 
   @override
   void dispose() {
-    _animationController.dispose();
     _addressController.dispose();
     _commentController.dispose();
     _minAmountController.dispose();
@@ -149,12 +131,232 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> with Si
     }
 
     if (_isExpanded) {
-      // Reload current filter values when opening the panel to sync controllers with provider state
-      _loadCurrentFilters();
-      _animationController.forward();
-    } else {
-      _animationController.reverse();
+      // Show modal bottom sheet instead of inline expansion
+      _showFiltersBottomSheet();
     }
+  }
+
+  void _showFiltersBottomSheet() {
+    // Load current filter values before showing
+    _loadCurrentFilters();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allow full height control
+      backgroundColor: Colors.transparent,
+      isDismissible: true, // Allow dismissal by tapping outside
+      enableDrag: true, // Allow drag to dismiss
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          height: MediaQuery.of(context).size.height * 0.8, // 80% of screen height
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2)),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Handle bar for dragging
+              Container(
+                margin: EdgeInsets.only(top: scaleSize(12)),
+                width: scaleSize(40),
+                height: scaleSize(4),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              Padding(
+                padding: EdgeInsets.all(scaleSize(16)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'advancedFilters'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: context.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close, size: scaleSize(24)),
+                      style: IconButton.styleFrom(
+                        backgroundColor: context.colorScheme.surfaceContainer,
+                        foregroundColor: context.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Address search for account mode OR direction filters for network mode
+                      if (widget.mode == FilterMode.account) ...[
+                        _buildFilterField(
+                          label: 'searchAddressOrName'.tr(),
+                          controller: _addressController,
+                          hintText: 'enterAddressOrName'.tr(),
+                          icon: Icons.person_search,
+                          isExactMatch: _localExactMatchAddress,
+                          onExactMatchChanged: () {
+                            setModalState(() {
+                              _localExactMatchAddress = !_localExactMatchAddress;
+                            });
+                          },
+                        ),
+                        SizedBox(height: scaleSize(16)),
+                      ] else if (widget.mode == FilterMode.network) ...[
+                        _buildFilterField(
+                          label: 'fromAddressOrName'.tr(),
+                          controller: _fromAddressController,
+                          hintText: 'enterFromAddressOrName'.tr(),
+                          icon: Icons.call_made,
+                          isExactMatch: _localExactMatchDirection,
+                          onExactMatchChanged: () {
+                            setModalState(() {
+                              _localExactMatchDirection = !_localExactMatchDirection;
+                            });
+                          },
+                        ),
+                        SizedBox(height: scaleSize(16)),
+                        _buildFilterField(
+                          label: 'toAddressOrName'.tr(),
+                          controller: _toAddressController,
+                          hintText: 'enterToAddressOrName'.tr(),
+                          icon: Icons.call_received,
+                          isExactMatch: _localExactMatchDirection,
+                          onExactMatchChanged: () {
+                            setModalState(() {
+                              _localExactMatchDirection = !_localExactMatchDirection;
+                            });
+                          },
+                        ),
+                        SizedBox(height: scaleSize(16)),
+                      ],
+
+                      // Comment search
+                      _buildFilterField(
+                        label: 'searchComment'.tr(),
+                        controller: _commentController,
+                        hintText: 'enterCommentKeywords'.tr(),
+                        icon: Icons.comment_outlined,
+                        isExactMatch: _localExactMatchComment,
+                        onExactMatchChanged: () {
+                          setModalState(() {
+                            _localExactMatchComment = !_localExactMatchComment;
+                          });
+                        },
+                      ),
+
+                      SizedBox(height: scaleSize(16)),
+
+                      // Date range
+                      _buildDateRangeFilter(),
+
+                      SizedBox(height: scaleSize(16)),
+
+                      // Amount range
+                      _buildAmountRangeFilter(),
+
+                      SizedBox(height: scaleSize(16)),
+
+                      // Bottom padding to ensure content is not hidden behind sticky buttons
+                      SizedBox(height: scaleSize(100)),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Sticky action buttons at bottom
+              Container(
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surface,
+                  border: Border(top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1)),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, -2)),
+                  ],
+                ),
+                padding: EdgeInsets.fromLTRB(
+                  scaleSize(16),
+                  scaleSize(16),
+                  scaleSize(16),
+                  scaleSize(16) + MediaQuery.of(context).padding.bottom,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          _clearAllFilters();
+                          Navigator.pop(context);
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: context.colorScheme.onSurfaceVariant,
+                          padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          'clearAll'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: context.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: scaleSize(12)),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _applyAdvancedFilters();
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
+                        ),
+                        child: Text(
+                          'done'.tr(),
+                          style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(() {
+      // Reset expanded state when bottom sheet closes
+      setState(() {
+        _isExpanded = false;
+      });
+      if (widget.mode == FilterMode.network) {
+        ref.read(networkFilterPanelExpandedProvider.notifier).state = false;
+      } else {
+        ref.read(filterPanelExpandedProvider.notifier).state = false;
+      }
+    });
   }
 
   void _applyAdvancedFilters() {
@@ -271,7 +473,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> with Si
     // Check for UDs if in account mode and showUDToggle is true
     bool hasUDs = false;
     bool isUDEnabled = false;
-    if (widget.mode == FilterMode.account && widget.showUDToggle && widget.address != null) {
+    if (widget.mode == FilterMode.account && widget.address != null) {
       final combinedState = ref.watch(combinedHistoryProvider(widget.address!));
       hasUDs = combinedState.transactions.any((transaction) => transaction.type == TransactionType.universalDividend);
       isUDEnabled = ref.watch(universalDividendsToggleProvider);
@@ -330,10 +532,10 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> with Si
                           ),
 
                           // UD toggle for account mode
-                          if (widget.mode == FilterMode.account && hasUDs && widget.showUDToggle) ...[
+                          if (widget.mode == FilterMode.account && hasUDs) ...[
                             SizedBox(width: scaleSize(12)),
                             _buildQuickToggle(
-                              'DU',
+                              'udShort'.tr(),
                               Icons.water_drop,
                               isUDEnabled,
                               () => toggleUniversalDividends(ref, widget.address!),
@@ -359,156 +561,13 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> with Si
                       SizedBox(width: scaleSize(8)),
                     ],
 
-                    // Expand/collapse icon
-                    AnimatedRotation(
-                      duration: const Duration(milliseconds: 200),
-                      turns: _isExpanded ? 0.5 : 0.0,
-                      child: Icon(Icons.expand_more, size: scaleSize(20), color: context.colorScheme.onSurfaceVariant),
-                    ),
+                    // Filter icon
+                    Icon(Icons.tune, size: scaleSize(20), color: context.colorScheme.onSurfaceVariant),
                   ],
                 ),
               ),
             ),
           ),
-
-          // Expanded filter content
-          if (_isExpanded)
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Container(
-                  margin: EdgeInsets.only(top: scaleSize(8)),
-                  padding: EdgeInsets.all(scaleSize(16)),
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
-                  ),
-                  // Add constrained height and scrollable content
-                  height: MediaQuery.of(context).size.height * 0.6, // Limit height to 60% of screen
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Address search for account mode OR direction filters for network mode
-                        if (widget.mode == FilterMode.account) ...[
-                          _buildFilterField(
-                            label: 'searchAddressOrName'.tr(),
-                            controller: _addressController,
-                            hintText: 'enterAddressOrName'.tr(),
-                            icon: Icons.person_search,
-                            isExactMatch: _localExactMatchAddress,
-                            onExactMatchChanged: () {
-                              setState(() {
-                                _localExactMatchAddress = !_localExactMatchAddress;
-                              });
-                            },
-                          ),
-                          SizedBox(height: scaleSize(16)),
-                        ] else if (widget.mode == FilterMode.network) ...[
-                          _buildFilterField(
-                            label: 'fromAddress'.tr(),
-                            controller: _fromAddressController,
-                            hintText: 'enterFromAddress'.tr(),
-                            icon: Icons.call_made,
-                            isExactMatch: _localExactMatchDirection,
-                            onExactMatchChanged: () {
-                              setState(() {
-                                _localExactMatchDirection = !_localExactMatchDirection;
-                              });
-                            },
-                          ),
-                          SizedBox(height: scaleSize(16)),
-                          _buildFilterField(
-                            label: 'toAddress'.tr(),
-                            controller: _toAddressController,
-                            hintText: 'enterToAddress'.tr(),
-                            icon: Icons.call_received,
-                            isExactMatch: _localExactMatchDirection,
-                            onExactMatchChanged: () {
-                              setState(() {
-                                _localExactMatchDirection = !_localExactMatchDirection;
-                              });
-                            },
-                          ),
-                          SizedBox(height: scaleSize(16)),
-                        ],
-
-                        // Comment search
-                        _buildFilterField(
-                          label: 'searchComment'.tr(),
-                          controller: _commentController,
-                          hintText: 'enterCommentKeywords'.tr(),
-                          icon: Icons.comment_outlined,
-                          isExactMatch: _localExactMatchComment,
-                          onExactMatchChanged: () {
-                            setState(() {
-                              _localExactMatchComment = !_localExactMatchComment;
-                            });
-                          },
-                        ),
-
-                        SizedBox(height: scaleSize(16)),
-
-                        // Date range
-                        _buildDateRangeFilter(),
-
-                        SizedBox(height: scaleSize(16)),
-
-                        // Amount range
-                        _buildAmountRangeFilter(),
-
-                        SizedBox(height: scaleSize(16)),
-
-                        // Universal Dividends toggle (only for network mode)
-                        if (widget.showUDToggle && widget.mode == FilterMode.network) ...[
-                          _buildUDToggle(),
-                          SizedBox(height: scaleSize(16)),
-                        ],
-
-                        // Action buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextButton(
-                                onPressed: () {
-                                  _clearAllFilters();
-                                  _toggleExpanded(); // Close the popup after clearing
-                                },
-                                style: TextButton.styleFrom(foregroundColor: context.colorScheme.onSurfaceVariant),
-                                child: Text('clearAll'.tr()),
-                              ),
-                            ),
-                            SizedBox(width: scaleSize(12)),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  _applyAdvancedFilters();
-                                  _toggleExpanded(); // Close the popup after applying
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: context.colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: Text('done'.tr()),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // Add animated padding that responds to keyboard
-                        AnimatedPadding(
-                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-                          duration: const Duration(milliseconds: 200),
-                          child: const SizedBox.shrink(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -766,61 +825,6 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> with Si
                   isDense: true,
                 ),
                 style: scaledTextStyle(fontSize: 14),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUDToggle() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'universalDividends'.tr(),
-          style: scaledTextStyle(
-            fontSize: 13,
-            color: context.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: scaleSize(6)),
-        Row(
-          children: [
-            Expanded(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => toggleUniversalDividends(ref, widget.address!),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.3)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.water_drop, size: scaleSize(20), color: context.colorScheme.onSurfaceVariant),
-                        SizedBox(width: scaleSize(8)),
-                        Expanded(
-                          child: Text(
-                            'showUniversalDividends'.tr(),
-                            style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant),
-                          ),
-                        ),
-                        Checkbox(
-                          value: ref.watch(universalDividendsToggleProvider),
-                          onChanged: (value) => toggleUniversalDividends(ref, widget.address!),
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
             ),
           ],

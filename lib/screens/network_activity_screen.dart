@@ -234,7 +234,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                       // Always show filter in loading state with consistent padding
                       Padding(
                         padding: EdgeInsets.only(top: scaleSize(8)),
-                        child: TransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                        child: TransactionFilters(mode: FilterMode.network),
                       ),
                       const Expanded(child: Center(child: CircularProgressIndicator())),
                     ],
@@ -247,7 +247,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                       // Always show filter in error state with consistent padding
                       Padding(
                         padding: EdgeInsets.only(top: scaleSize(8)),
-                        child: TransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                        child: TransactionFilters(mode: FilterMode.network),
                       ),
                       Expanded(
                         child: Center(
@@ -277,7 +277,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                       // Always show filter in empty state with consistent padding
                       Padding(
                         padding: EdgeInsets.only(top: scaleSize(8)),
-                        child: TransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                        child: TransactionFilters(mode: FilterMode.network),
                       ),
                       Expanded(
                         child: Center(
@@ -336,7 +336,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                           opacity: keepFiltersVisible
                               ? 1.0 // Always visible when filtering
                               : (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
-                          child: TransactionFilters(mode: FilterMode.network, showUDToggle: true),
+                          child: TransactionFilters(mode: FilterMode.network),
                         ),
                       ),
                     ),

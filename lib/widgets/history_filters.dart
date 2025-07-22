@@ -11,6 +11,6 @@ class TransactionFilter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return TransactionFilters(mode: FilterMode.account, address: address, showUDToggle: true);
+    return TransactionFilters(mode: FilterMode.account, address: address);
   }
 }

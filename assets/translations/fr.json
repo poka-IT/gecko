@@ -214,7 +214,7 @@
     "derivationsScanProgress": "Scan des {} premières adresses",
     "importDerivationsInProgress": "Importation de l'adresse {}/{}",
     "youAreOffline": "Vous êtes hors ligne...",
-    "importIdPasswordAccount": "Migrer un compte Cesium",
+    "importIdPasswordAccount": "Migrer un ancien compte Id/Mdp",
     "migrateToThisWallet": "Migrer vers ce portefeuille:",
     "youMustWaitBeforeCashoutThisAccount": "Vous devez attendre quelques minutes\navant de pouvoir migrer ce compte",
     "thisAccountIsEmpty": "Ce compte est vide",

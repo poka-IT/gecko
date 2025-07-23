@@ -60,19 +60,20 @@ class SafeOptionsButtons extends StatelessWidget {
             children: [
               SvgPicture.asset('assets/cesium_bw2.svg', semanticsLabel: 'CS', height: scaleSize(40)),
               ScaledSizedBox(
-                width: 230,
+                width: 155,
                 height: 60,
                 child: Center(
                   child: Text(
                     'importIdPasswordAccount'.tr(),
                     style: scaledTextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        ScaledSizedBox(height: 30),
+        ScaledSizedBox(height: 50),
       ],
     );
   }

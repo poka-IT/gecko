@@ -214,7 +214,7 @@
     "derivationsScanProgress": "Scan {} firsts addresses",
     "importDerivationsInProgress": "Import address {}/{}",
     "youAreOffline": "You are offline...",
-    "importIdPasswordAccount": "Migrate a Cesium wallet",
+    "importIdPasswordAccount": "Migrate an old Id/Password account",
     "migrateToThisWallet": "Migrate to this wallet:",
     "youMustWaitBeforeCashoutThisAccount": "You must wait for the end of the availability period to withdraw funds from this account.",
     "thisAccountIsEmpty": "This account is empty.",

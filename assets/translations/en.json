@@ -453,5 +453,6 @@
     "enterToAddressOrName": "Enter recipient address or identity",
     "startDate": "Start date",
     "endDate": "End date",
-    "commentFilterDisabledNetwork": "Disabled in network view"
+    "commentFilterDisabledNetwork": "Disabled in network view",
+    "cropImage": "Customization"
 }

@@ -63,6 +63,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     return PopScope(
       onPopInvokedWithResult: (_, _) {
         walletOptions.isEditing = false;
+        // Reload wallets from database to catch avatar updates
+        myWalletProvider.readAllWallets();
         myWalletProvider.reload();
       },
       child: Scaffold(

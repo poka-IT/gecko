@@ -463,5 +463,6 @@
     "enterToAddressOrName": "Introducir dirección o identidad destinatario",
     "startDate": "Fecha de inicio",
     "endDate": "Fecha de fin",
-    "commentFilterDisabledNetwork": "Desactivado en la vista de red"
+    "commentFilterDisabledNetwork": "Desactivado en la vista de red",
+    "cropImage": "Personalización"
 }

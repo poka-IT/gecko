@@ -465,5 +465,6 @@
     "enterToAddressOrName": "Entrer l'adresse ou l'identité destinataire",
     "startDate": "Date de début",
     "endDate": "Date de fin",
-    "commentFilterDisabledNetwork": "Désactivé dans la vue réseau"
+    "commentFilterDisabledNetwork": "Désactivé dans la vue réseau",
+    "cropImage": "Personnalisation"
 }

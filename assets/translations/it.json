@@ -379,5 +379,6 @@
     "retry": "Riprova",
     "startDate": "Data di inizio",
     "endDate": "Data di fine",
-    "commentFilterDisabledNetwork": "Disabilitato nella vista di rete"
+    "commentFilterDisabledNetwork": "Disabilitato nella vista di rete",
+    "cropImage": "Personalizzazione"
 }

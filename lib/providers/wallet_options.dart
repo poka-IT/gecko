@@ -192,18 +192,20 @@ class WalletOptionsProvider with ChangeNotifier {
         uiSettings: [
           AndroidUiSettings(
             hideBottomControls: true,
-            toolbarTitle: 'Personnalisation',
+            toolbarTitle: 'cropImage'.tr(),
             toolbarColor: Colors.deepOrange,
             toolbarWidgetColor: Colors.white,
+            statusBarColor: Colors.deepOrange,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: true,
             cropStyle: CropStyle.circle,
             aspectRatioPresets: [CropAspectRatioPreset.square],
           ),
           IOSUiSettings(
-            title: 'Cropper',
+            title: 'cropImage'.tr(),
             cropStyle: CropStyle.circle,
             aspectRatioPresets: [CropAspectRatioPreset.square],
+            minimumAspectRatio: 1.0,
           ),
         ],
       );
@@ -222,7 +224,9 @@ class WalletOptionsProvider with ChangeNotifier {
 
       if (walletData!.imagePath != null) {
         final avatarFile = File(walletData.imagePath!);
-        await avatarFile.delete();
+        if (await avatarFile.exists()) {
+          await avatarFile.delete();
+        }
       }
 
       walletData.imagePath = newPath;

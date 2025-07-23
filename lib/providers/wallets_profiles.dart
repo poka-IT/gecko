@@ -11,9 +11,11 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class WalletsProfilesProvider with ChangeNotifier {
   late ProviderContainer _container;
@@ -155,6 +157,19 @@ bool isPubkey(String pubkey) {
   return regExp.hasMatch(pubkey) == true && pubkey.length > 42 && pubkey.length < 45;
 }
 
+// Utility function to calculate appropriate snackbar margin considering bottom app bar
+EdgeInsets _getSnackBarMargin(BuildContext context) {
+  try {
+    final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context, listen: false);
+    final isBottomBarVisible = bottomBarProvider.isBottomBarActuallyVisible;
+    final bottomMargin = isBottomBarVisible ? scaleSize(67) + 16.0 : 16.0; // Bottom bar height + standard margin
+    return EdgeInsets.only(left: 16, right: 16, top: 16, bottom: bottomMargin);
+  } catch (e) {
+    // Fallback to standard margin if provider is not available
+    return const EdgeInsets.all(16);
+  }
+}
+
 void snackMessage(BuildContext context, {required String message, int duration = 4, double fontSize = 14}) {
   final snackBar = SnackBar(
     backgroundColor: context.colorScheme.onSurface,
@@ -164,8 +179,10 @@ void snackMessage(BuildContext context, {required String message, int duration =
       style: scaledTextStyle(fontSize: fontSize, color: context.colorScheme.surfaceContainer),
     ),
     duration: Duration(seconds: duration),
+    behavior: SnackBarBehavior.floating,
+    margin: _getSnackBarMargin(context),
   );
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  context.showDismissibleSnackBar(snackBar);
 }
 
 void snackCopyKey(BuildContext context) {
@@ -177,8 +194,10 @@ void snackCopyKey(BuildContext context) {
       style: scaledTextStyle(fontSize: 13, color: context.colorScheme.surfaceContainer),
     ),
     duration: const Duration(seconds: 4),
+    behavior: SnackBarBehavior.floating,
+    margin: _getSnackBarMargin(context),
   );
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  context.showDismissibleSnackBar(snackBar);
 }
 
 void snackCopySeed(BuildContext context) {
@@ -190,6 +209,8 @@ void snackCopySeed(BuildContext context) {
       style: scaledTextStyle(fontSize: 13, color: context.colorScheme.surfaceContainer),
     ),
     duration: const Duration(seconds: 4),
+    behavior: SnackBarBehavior.floating,
+    margin: _getSnackBarMargin(context),
   );
-  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  context.showDismissibleSnackBar(snackBar);
 }

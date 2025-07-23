@@ -10,6 +10,7 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -40,13 +41,11 @@ class ShowSeed extends ConsumerWidget {
             padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
             child: Column(
               children: <Widget>[
-                FutureBuilder(
-                  future: ref
-                      .read(walletServiceProvider)
-                      .getSeed(address: defaultWallet.address, pin: walletProvider.pinCode),
-                  builder: (BuildContext context, AsyncSnapshot<String?> seed) {
-                    if (seed.connectionState != ConnectionState.done) {
-                      return Center(
+                // Use combined provider to load everything at once - no more double loading
+                ref
+                    .watch(seedDisplayProvider((address: defaultWallet.address, pin: walletProvider.pinCode)))
+                    .when(
+                      loading: () => Center(
                         child: Column(
                           children: [
                             const SizedBox(height: 173),
@@ -54,9 +53,8 @@ class ShowSeed extends ConsumerWidget {
                             const SizedBox(height: 173),
                           ],
                         ),
-                      );
-                    } else if (seed.hasError) {
-                      return Center(
+                      ),
+                      error: (error, stack) => Center(
                         child: Column(
                           children: [
                             const SizedBox(height: 173),
@@ -79,52 +77,10 @@ class ShowSeed extends ConsumerWidget {
                             const SizedBox(height: 173),
                           ],
                         ),
-                      );
-                    } else if (!seed.hasData) {
-                      return const Text('');
-                    }
-
-                    // Convert English mnemonic to original language for display using durt2's stored language
-                    final englishMnemonic = seed.data!;
-
-                    // Validate that we have a proper mnemonic
-                    if (englishMnemonic.isEmpty) {
-                      return Center(
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 173),
-                            Icon(Icons.error_outline, size: 48, color: context.colorScheme.error),
-                            const SizedBox(height: 16),
-                            Text(
-                              'errorRetrievingSeed'.tr(),
-                              style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 173),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return FutureBuilder<String>(
-                      future: () async {
-                        try {
-                          // Use durt2's automatic conversion based on safe's stored language
-                          final walletService = Durt.i.wallets;
-                          final safeBoxNumber = defaultWallet.safe.target?.number;
-                          return await walletService.convertEnglishToSafeLanguage(englishMnemonic, safeBoxNumber);
-                        } catch (e) {
-                          // Fallback to English if conversion fails
-                          return englishMnemonic;
-                        }
-                      }(),
-                      builder: (context, displayMnemonicSnapshot) {
-                        if (displayMnemonicSnapshot.connectionState == ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        }
-
-                        final displayMnemonic = displayMnemonicSnapshot.data ?? englishMnemonic;
-
+                      ),
+                      data: (seedData) {
+                        final englishMnemonic = seedData.englishMnemonic;
+                        final displayMnemonic = seedData.displayMnemonic;
                         // Validate that the mnemonic has exactly 12 words
                         final mnemonicWords = displayMnemonic.trim().split(RegExp(r'\s+'));
                         if (mnemonicWords.length != 12 || mnemonicWords.any((word) => word.isEmpty)) {
@@ -207,10 +163,23 @@ class ShowSeed extends ConsumerWidget {
                                   ),
                                   onPressed: () {
                                     Clipboard.setData(ClipboardData(text: englishMnemonic));
-                                    ScaffoldMessenger.of(context).showSnackBar(
+
+                                    // Calculate bottom margin based on bottom app bar visibility
+                                    final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    final isBottomBarVisible = bottomBarProvider.isBottomBarActuallyVisible;
+                                    final bottomMargin = isBottomBarVisible
+                                        ? scaleSize(67) + 16.0
+                                        : 16.0; // Bottom bar height + standard margin
+
+                                    context.showDismissibleSnackBar(
                                       SnackBar(
                                         content: Text('englishMnemonicCopied'.tr()),
                                         duration: const Duration(seconds: 2),
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: bottomMargin),
                                       ),
                                     );
                                   },
@@ -231,9 +200,8 @@ class ShowSeed extends ConsumerWidget {
                           ],
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
+
                 ScaledSizedBox(height: 50),
                 PrimaryButton(
                   label: 'close'.tr(),

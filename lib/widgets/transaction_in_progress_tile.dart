@@ -21,6 +21,8 @@ import 'package:gecko/widgets/transaction_state_icon.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:fade_and_translate/fade_and_translate.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 // Static cache to preserve transaction status across widget reconstructions
 class TransactionStatusCache {
@@ -425,10 +427,21 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
             final transactionData = _currentTransactionData;
 
             ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+
+            // Calculate bottom margin based on bottom app bar visibility
+            final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(homeContext, listen: false);
+            final isBottomBarVisible = bottomBarProvider.isBottomBarActuallyVisible;
+            final bottomMargin = isBottomBarVisible
+                ? scaleSize(67) + 16.0
+                : 16.0; // Bottom bar height + standard margin
+
             ScaffoldMessenger.of(homeContext).showSnackBar(
               SnackBar(
                 content: GestureDetector(
                   onTap: () {
+                    // Close the SnackBar first
+                    ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+                    // Then show the error details
                     _showTransactionErrorDetails(
                       context: homeContext,
                       errorMessage: errorMessage,
@@ -493,7 +506,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                 duration: Duration(days: 365), // Persist indefinitely
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                margin: EdgeInsets.all(16),
+                margin: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: bottomMargin),
               ),
             );
           }

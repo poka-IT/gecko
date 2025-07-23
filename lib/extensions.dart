@@ -18,3 +18,36 @@ extension ExtendedBuildContext on BuildContext {
   /// Is dark mode currently enabled?
   bool get isDarkTheme => Theme.of(this).brightness == Brightness.dark;
 }
+
+/// Extension to make SnackBars dismissible by tapping
+extension DismissibleSnackBar on BuildContext {
+  /// Show a SnackBar that can be dismissed by tapping on it
+  void showDismissibleSnackBar(SnackBar snackBar) {
+    // Wrap the original content in a GestureDetector
+    final dismissibleSnackBar = SnackBar(
+      content: GestureDetector(
+        onTap: () => ScaffoldMessenger.of(this).hideCurrentSnackBar(),
+        behavior: HitTestBehavior.opaque,
+        child: snackBar.content,
+      ),
+      backgroundColor: snackBar.backgroundColor,
+      elevation: snackBar.elevation,
+      margin: snackBar.margin,
+      padding: snackBar.padding,
+      width: snackBar.width,
+      shape: snackBar.shape,
+      behavior: snackBar.behavior,
+      action: snackBar.action,
+      actionOverflowThreshold: snackBar.actionOverflowThreshold,
+      showCloseIcon: snackBar.showCloseIcon,
+      closeIconColor: snackBar.closeIconColor,
+      duration: snackBar.duration,
+      animation: snackBar.animation,
+      onVisible: snackBar.onVisible,
+      clipBehavior: snackBar.clipBehavior,
+      dismissDirection: snackBar.dismissDirection,
+    );
+
+    ScaffoldMessenger.of(this).showSnackBar(dismissibleSnackBar);
+  }
+}

@@ -87,9 +87,9 @@ class WalletsProfilesProvider with ChangeNotifier {
         address = barcodeContent;
       }
 
-      Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));
+      Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
       Navigator.push(
-        context,
+        homeContext,
         MaterialPageRoute(
           builder: (context) {
             return WalletViewScreen(address: address, username: null);

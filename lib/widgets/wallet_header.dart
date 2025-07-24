@@ -18,6 +18,7 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/providers/wallet_options.dart';
@@ -361,7 +362,7 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                         ? (widget.defaultImagePath != null
                               ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
                               : DatapodAvatar(address: widget.address, size: avatarSize))
-                        : Image.asset(_newCustomImagePath, fit: BoxFit.cover),
+                        : SmartAvatar(imagePath: _newCustomImagePath),
                   ),
                 ),
               ),

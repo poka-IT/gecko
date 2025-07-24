@@ -8,6 +8,7 @@ import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/smooth_transition.dart';
+import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
@@ -60,10 +61,7 @@ class WalletTile extends StatelessWidget {
                           )
                         : Container(
                             margin: EdgeInsets.all(scaleSize(16)),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(fit: BoxFit.fitHeight, image: AssetImage(repository.imagePath!)),
-                            ),
+                            child: SmartAvatar(imagePath: repository.imagePath!),
                           ),
                   ),
                 ),

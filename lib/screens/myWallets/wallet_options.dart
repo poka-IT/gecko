@@ -24,6 +24,7 @@ import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
+import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
 import 'package:gecko/utils/identity_utils.dart';
 
@@ -198,11 +199,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ),
             ],
           ),
-          child: ClipOval(
-            child: widget.wallet.imagePath == null || widget.wallet.imagePath == ''
-                ? Image.asset('assets/avatars/${widget.wallet.number % 4}.png', fit: BoxFit.cover)
-                : Image.asset(widget.wallet.imagePath!, fit: BoxFit.cover),
-          ),
+          child: SmartAvatar(imagePath: widget.wallet.imagePath!),
         ),
         Positioned(
           right: 0,

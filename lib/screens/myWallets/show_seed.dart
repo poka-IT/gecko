@@ -145,7 +145,11 @@ class ShowSeed extends ConsumerWidget {
                                       arguments: PrintWalletArguments(sentence: displayMnemonic),
                                     );
                                   },
-                                  child: Image.asset('assets/printer.png', height: scaleSize(38)),
+                                  child: Image.asset(
+                                    'assets/printer.png',
+                                    height: scaleSize(38),
+                                    color: context.colorScheme.onSurface,
+                                  ),
                                 ),
                               ],
                             ),

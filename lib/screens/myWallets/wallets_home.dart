@@ -19,6 +19,7 @@ import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:gecko/widgets/wallet_tile_membre.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
 
 class WalletsHome extends ConsumerStatefulWidget {
   const WalletsHome({super.key});
@@ -52,8 +53,12 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
 
 class _WalletsHomeContent extends ConsumerWidget {
   // Static flag to prevent tutorial from showing multiple times in same session
-  static bool _tutorialShownInSession = false; // Reset for testing
+  static bool _tutorialShownInSession = false;
   static int? _lastSafeNumber; // Track last safe to reset tutorial when safe changes
+  // Static GlobalKey to ensure key stability across rebuilds
+  static final Map<String, GlobalKey> _tutorialKeys = {};
+  // Flag to prevent multiple tutorial calls during the same build cycle
+  static bool _tutorialScheduled = false;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,7 +79,11 @@ class _WalletsHomeContent extends ConsumerWidget {
     // Reset tutorial session flag when safe changes
     if (_lastSafeNumber != currentSafe.number) {
       _tutorialShownInSession = false;
+      _tutorialScheduled = false;
       _lastSafeNumber = currentSafe.number;
+
+      // Clean up old tutorial keys when switching safes
+      _tutorialKeys.removeWhere((key, _) => !key.contains('safe${currentSafe.number}'));
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
@@ -144,57 +153,70 @@ class _WalletsHomeContent extends ConsumerWidget {
     final int targetWalletIndex = walletsWithoutIdty.length > 1 ? 1 : 0;
     final bool shouldShowTutorial = walletsWithoutIdty.isNotEmpty;
 
-    // Create a unique tutorial key for the current safe and target wallet
-    final GlobalKey tutorialKey = shouldShowTutorial && walletsWithoutIdty.isNotEmpty
-        ? GlobalKey(debugLabel: 'tutorial_${walletsWithoutIdty[targetWalletIndex].address}_safe${currentSafe.number}')
-        : GlobalKey(debugLabel: 'tutorial_empty_safe${currentSafe.number}');
+    // Create a stable tutorial key using static map to avoid recreating keys
+    final String tutorialKeyId = shouldShowTutorial && walletsWithoutIdty.isNotEmpty
+        ? 'tutorial_${walletsWithoutIdty[targetWalletIndex].address}_safe${currentSafe.number}'
+        : 'tutorial_empty_safe${currentSafe.number}';
 
-    // Build tutorial with dynamic target
-    final tutorialCoachMark = TutorialCoachMark(
-      targets: [
-        TargetFocus(
-          identify: "drag_and_drop",
-          keyTarget: tutorialKey,
-          contents: [
-            TargetContent(
-              child: Column(
-                children: [
-                  Image.asset('assets/drag-and-drop.png', height: scaleSize(115)),
-                  ScaledSizedBox(height: 15),
-                  Text(
-                    'explainDraggableWallet'.tr(),
-                    textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                ],
+    final GlobalKey tutorialKey = _tutorialKeys.putIfAbsent(tutorialKeyId, () => GlobalKey(debugLabel: tutorialKeyId));
+
+    // Check if tutorial should be shown - use per-safe configuration
+    final String tutorialConfigKey = 'showDraggableTutorial_safe${currentSafe.number}';
+    final bool showDraggableTutorial = configBox.get(tutorialConfigKey) ?? true;
+
+    // Show tutorial only once per session and per safe, and only if not already scheduled
+    if (shouldShowTutorial && showDraggableTutorial && !_tutorialShownInSession && !_tutorialScheduled) {
+      _tutorialScheduled = true; // Prevent multiple scheduling
+
+      // Build tutorial with dynamic target
+      final tutorialCoachMark = TutorialCoachMark(
+        targets: [
+          TargetFocus(
+            identify: "drag_and_drop",
+            keyTarget: tutorialKey,
+            contents: [
+              TargetContent(
+                child: Column(
+                  children: [
+                    Image.asset('assets/drag-and-drop.png', height: scaleSize(115)),
+                    ScaledSizedBox(height: 15),
+                    Text(
+                      'explainDraggableWallet'.tr(),
+                      textAlign: TextAlign.center,
+                      style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-          alignSkip: Alignment.bottomRight,
-          enableOverlayTab: true,
-        ),
-      ],
-      colorShadow: context.colorScheme.primary,
-      textSkip: "skip".tr(),
-      paddingFocus: 10,
-      opacityShadow: 0.8,
-    );
+            ],
+            alignSkip: Alignment.bottomRight,
+            enableOverlayTab: true,
+          ),
+        ],
+        colorShadow: context.colorScheme.primary,
+        textSkip: "skip".tr(),
+        paddingFocus: 10,
+        opacityShadow: 0.8,
+        onFinish: () {
+          _resetDragStateAndRoute(context);
+          return true;
+        },
+        onSkip: () {
+          _resetDragStateAndRoute(context);
+          return true;
+        },
+      );
 
-    // Show tutorial only once and only if we have wallets
-    final bool showDraggableTutorial = configBox.get('showDraggableTutorial') ?? true;
-    // Re-enable tutorial now that GlobalKey duplication is fixed
-    const bool tutorialDisabled = false; // Fixed: was true
-
-    if (shouldShowTutorial && showDraggableTutorial && !_tutorialShownInSession && !tutorialDisabled) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 500), () {
+        Future.delayed(const Duration(milliseconds: 300), () {
           if (context.mounted) {
             tutorialCoachMark.show(context: context);
             _tutorialShownInSession = true; // Mark as shown for this session
+            // Mark tutorial as shown for this specific safe
+            configBox.put(tutorialConfigKey, false);
           }
         });
       });
-      configBox.put('showDraggableTutorial', false);
     }
 
     return SafeArea(
@@ -254,7 +276,7 @@ class _WalletsHomeContent extends ConsumerWidget {
                       children: <Widget>[
                         for (var i = 0; i < stableWalletsWithoutIdty.length; i++)
                           DragTuleAction(
-                            key: ValueKey('drag_${stableWalletsWithoutIdty[i].address}'),
+                            key: ValueKey('wallet_container_${stableWalletsWithoutIdty[i].address}_$i'),
                             wallet: stableWalletsWithoutIdty[i],
                             child: WalletTile(
                               repository: stableWalletsWithoutIdty[i],
@@ -276,5 +298,28 @@ class _WalletsHomeContent extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  // Clean method to reset drag state and fix route after tutorial
+  void _resetDragStateAndRoute(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        try {
+          // Reset drag state
+          final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+          myWalletProvider.lastFlyBy = null;
+          myWalletProvider.dragAddress = null;
+          myWalletProvider.reload();
+
+          // Fix route if it's empty (the main bug!)
+          final currentRouteProvider = old_provider.Provider.of<CurrentRouteProvider>(context, listen: false);
+          if (currentRouteProvider.currentRoute.isEmpty || currentRouteProvider.currentRoute != RouteNames.myWallets) {
+            currentRouteProvider.updateRoute(RouteNames.myWallets);
+          }
+        } catch (e) {
+          // Silent fallback
+        }
+      }
+    });
   }
 }

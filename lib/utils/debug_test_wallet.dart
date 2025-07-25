@@ -82,7 +82,7 @@ class DebugTestWalletService {
       // 1. Create a safe with test mnemonic first
       await walletService.createSafe(
         mnemonic: testMnemonic,
-        pinCode: defaultPinCode,
+        pinCode: defaultPinCode.toString(),
         safeName: 'Test Safe (Development)',
       );
 

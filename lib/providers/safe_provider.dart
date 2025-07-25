@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' show SafeEntity;
-import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -31,39 +32,73 @@ class SafeProvider with ChangeNotifier {
     final bool? answer = await (_confirmDeletingSafe(context, safe.name));
     // ignore: use_build_context_synchronously
     if (answer ?? false) {
-      await _container.read(walletServiceProvider).deleteSafe(safe.number);
+      // Get the wallet provider
       final myWalletProvider =
           // ignore: use_build_context_synchronously
           old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
-      myWalletProvider.pinCode = '';
+      // Note: PIN/biometric authentication is already done by the caller (safe_options.dart)
+      // so we don't need to call askPinCode() again here
+      // Also, deleteSafe() doesn't actually require a PIN - it just deletes the safe data
 
-      if (_container.read(walletServiceProvider).safeBox.isEmpty()) {
-        _container.read(walletServiceProvider).setDefaultSafeBoxNumber(0);
-        // Clear the wallet list when no safes remain
-        myWalletProvider.listWallets = [];
-      } else {
-        final int lastSafe = _container
-            .read(walletServiceProvider)
-            .safeBox
-            .query()
-            .build()
-            .property(SafeEntity_.number)
-            .max();
-        _container.read(walletServiceProvider).setDefaultSafeBoxNumber(lastSafe);
+      try {
+        // Now delete the safe (this also clears biometric data)
+        await _container.read(walletServiceProvider).deleteSafe(safe.number);
 
-        // Reload wallets for the new default safe
-        await myWalletProvider.readAllWallets(safeBoxNumber: lastSafe);
+        // Clear the PIN for security after successful deletion
+        myWalletProvider.pinCode = '';
+
+        // Handle navigation based on whether safes remain
+        final walletService = _container.read(walletServiceProvider);
+        if (walletService.safeBox.isEmpty()) {
+          walletService.setDefaultSafeBoxNumber(-1);
+          // Clear the wallet list when no safes remain
+          myWalletProvider.listWallets = [];
+
+          // Force refresh of biometric provider after safe state changes
+          await _container.read(biometricProvider.notifier).refresh();
+
+          // Navigate to home since no safes exist
+          Navigator.pushNamedAndRemoveUntil(
+            // ignore: use_build_context_synchronously
+            context,
+            RouteNames.home,
+            (route) => false,
+          );
+        } else {
+          // Update to the new default safe
+          final remainingSafes = walletService.safeBox.getAll();
+          final newDefaultSafe = remainingSafes.first.number;
+          walletService.setDefaultSafeBoxNumber(newDefaultSafe);
+
+          // Reload wallets for the new default safe
+          await myWalletProvider.readAllWallets(safeBoxNumber: newDefaultSafe);
+
+          // Force refresh of biometric provider after safe state changes
+          await _container.read(biometricProvider.notifier).refresh();
+
+          // Navigate back to wallets home
+          Navigator.popUntil(
+            // ignore: use_build_context_synchronously
+            context,
+            ModalRoute.withName(RouteNames.home),
+          );
+        }
+
+        myWalletProvider.notifyListeners();
+        notifyListeners();
+      } catch (e) {
+        log.e('Failed to delete safe: $e');
+        // Clear PIN on error for security
+        myWalletProvider.pinCode = '';
+
+        // Show error message to user
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete safe: ${e.toString()}'), backgroundColor: Colors.red),
+          );
+        }
       }
-
-      myWalletProvider.notifyListeners();
-
-      Navigator.popUntil(
-        // ignore: use_build_context_synchronously
-        context,
-        ModalRoute.withName(RouteNames.home),
-      );
-      notifyListeners();
     }
   }
 

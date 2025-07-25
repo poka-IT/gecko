@@ -16,6 +16,7 @@ import 'package:gecko/screens/myWallets/migrate_safe.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/rename_safe.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/biometric/biometric_settings_tile.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class SafeOptions extends ConsumerWidget {
@@ -146,6 +147,9 @@ class SafeOptionsContent extends ConsumerWidget {
             ),
           ),
         ),
+
+        // Biometric authentication settings
+        BiometricSettingsTile(),
         if (!isAlone)
           if (configBox.get('expertMode') ?? false)
             InkWell(

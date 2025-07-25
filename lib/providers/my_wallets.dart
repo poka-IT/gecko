@@ -185,8 +185,8 @@ class MyWalletsProvider with ChangeNotifier {
         type: ConfirmationDialogType.warning,
       );
       if (answer) {
-        await _container.read(walletServiceProvider).walletBox.removeAllAsync();
-        await _container.read(walletServiceProvider).safeBox.removeAllAsync();
+        // Use Durt2's clearWallets method which includes biometric cleanup
+        await _container.read(walletServiceProvider).clearWallets();
         await _container.read(configBoxProvider).removeAllAsync();
 
         final directory = await getApplicationDocumentsDirectory();

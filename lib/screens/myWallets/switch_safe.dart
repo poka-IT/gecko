@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/routes.dart';
@@ -63,6 +64,13 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
             buttonCarouselController.animateToPage(currentSafeIndex);
           }
         });
+      }
+    });
+
+    // Refresh biometric provider after safe creation/import to ensure correct state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(biometricProvider.notifier).refresh();
       }
     });
   }

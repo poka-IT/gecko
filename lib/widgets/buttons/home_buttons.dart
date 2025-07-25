@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -141,16 +140,8 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                   baseColor: context.colorScheme.primary,
                   offset: 0.66, // Deuxième bouton - décalage 2/3
                   onTap: () async {
-                    WalletEntity? defaultWallet = myWalletProvider.getDefaultWallet();
-                    if (myWalletProvider.pinCode == '') {
-                      final result = await Navigator.pushNamed(
-                        context,
-                        RouteNames.unlockingWallet,
-                        arguments: UnlockingWalletArguments(wallet: defaultWallet, canSwitch: true),
-                      );
-                      // Only continue if we actually got a valid PIN back
-                      if (result == null) return;
-                    }
+                    if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
+
                     Navigator.pushNamed(context, RouteNames.myWallets);
                   },
                   child: Padding(

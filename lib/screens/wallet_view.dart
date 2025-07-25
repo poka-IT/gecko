@@ -14,7 +14,6 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/routes.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/wallet_header.dart';
@@ -392,17 +391,10 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
 
   Future<void> _handleTransfer(WidgetRef ref) async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
-    final defaultWallet = myWalletProvider.getDefaultWallet();
 
-    if (myWalletProvider.pinCode == '') {
-      final result = await Navigator.pushNamed(
-        homeContext,
-        RouteNames.unlockingWallet,
-        arguments: UnlockingWalletArguments(wallet: defaultWallet),
-      );
-      // Only continue if we actually got a valid PIN back
-      if (result == null) return;
-    }
+    // Use askPinCode() method for authentication
+    if (!await myWalletProvider.askPinCode()) return;
+
     paymentPopup(ref: ref, toAddress: address, username: username);
   }
 }

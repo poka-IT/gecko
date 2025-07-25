@@ -68,8 +68,9 @@ class OnboardingStepTenArguments extends RouteArguments {
 /// Arguments for onboarding step 11
 class OnboardingStepElevenArguments extends RouteArguments {
   final bool fromRestore;
+  final String? pinCode; // Add PIN code parameter
 
-  OnboardingStepElevenArguments({this.fromRestore = false});
+  OnboardingStepElevenArguments({this.fromRestore = false, this.pinCode});
 }
 
 /// Arguments for restore safe
@@ -275,11 +276,11 @@ class AppNavigator {
     );
   }
 
-  static Future<void> toOnboardingStepEleven(BuildContext context, {bool fromRestore = false}) {
+  static Future<void> toOnboardingStepEleven(BuildContext context, {bool fromRestore = false, String? pinCode}) {
     return pushNamedWithArguments(
       context,
       RouteNames.onboardingStepEleven,
-      OnboardingStepElevenArguments(fromRestore: fromRestore),
+      OnboardingStepElevenArguments(fromRestore: fromRestore, pinCode: pinCode),
     );
   }
 }

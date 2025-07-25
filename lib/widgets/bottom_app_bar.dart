@@ -45,6 +45,9 @@ class BottomAppBarProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   BottomAppBarProvider() {
     WidgetsBinding.instance.addObserver(this);
+    // Initialize with correct state for initial route (home)
+    // NavigatorObserver is not called for initial route, so we need to set this manually
+    _shouldShowBottomBar = false; // Home route should not show bottom bar
   }
 
   @override
@@ -166,35 +169,40 @@ class GlobalBottomAppBar extends StatelessWidget {
           return const SizedBox.shrink(); // Hidden
         }
 
-        return Consumer<CurrentRouteProvider>(
-          builder: (context, currentRouteProvider, child) {
-            final currentRoute = currentRouteProvider.currentRoute;
+        // Also check if wallets exist - never show bottom bar without safes
+        return Consumer<MyWalletsProvider>(
+          builder: (context, myWalletsProvider, child) {
+            if (!myWalletsProvider.isWalletsExists) {
+              return const SizedBox.shrink(); // Hidden - no safes
+            }
 
-            // Special case for wallets home with drag functionality
-            if (currentRoute == RouteNames.myWallets) {
-              return Consumer<MyWalletsProvider>(
-                builder: (context, myWalletProvider, _) {
-                  return myWalletProvider.lastFlyBy == null
+            return Consumer<CurrentRouteProvider>(
+              builder: (context, currentRouteProvider, child) {
+                final currentRoute = currentRouteProvider.currentRoute;
+
+                // Special case for wallets home with drag functionality
+                if (currentRoute == RouteNames.myWallets) {
+                  return myWalletsProvider.lastFlyBy == null
                       ? const _GeckoBottomAppBar(actualRoute: 'safeHome')
                       : SafeArea(
                           child: DragWalletsInfo(
-                            lastFlyBy: myWalletProvider.lastFlyBy!,
-                            dragAddress: myWalletProvider.dragAddress!,
+                            lastFlyBy: myWalletsProvider.lastFlyBy!,
+                            dragAddress: myWalletsProvider.dragAddress!,
                           ),
                         );
-                },
-              );
-            }
+                }
 
-            // Default bottom app bar
-            String actualRoute = '';
-            if (currentRoute.contains('scan')) {
-              actualRoute = 'scan';
-            } else if (currentRoute.contains('wallet')) {
-              actualRoute = 'wallet';
-            }
+                // Default bottom app bar
+                String actualRoute = '';
+                if (currentRoute.contains('scan')) {
+                  actualRoute = 'scan';
+                } else if (currentRoute.contains('wallet')) {
+                  actualRoute = 'wallet';
+                }
 
-            return _GeckoBottomAppBar(actualRoute: actualRoute);
+                return _GeckoBottomAppBar(actualRoute: actualRoute);
+              },
+            );
           },
         );
       },
@@ -300,7 +308,7 @@ class _GeckoBottomAppBarState extends State<_GeckoBottomAppBar> {
                   onTap: lockAction
                       ? null
                       : () async {
-                          if (!await myWalletProvider.askPinCode()) return;
+                          if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
 
                           Navigator.pushNamedAndRemoveUntil(
                             homeContext,

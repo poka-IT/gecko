@@ -1,6 +1,6 @@
-// ignore_for_file: file_names, use_build_context_synchronously
+// ignore_for_file: file_names
 
-import 'package:durt2/durt2.dart' show WalletEntity, Durt;
+import 'package:durt2/durt2.dart' show Durt, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +11,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
@@ -198,7 +199,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               myWalletProvider.isPinLoading = false;
               myWalletProvider.isPinValid = true;
 
-              final pinCodeint = int.parse(widget.pinCode);
               // Pass the original user mnemonic to createSafe for proper language detection
               // The service will handle the conversion internally for crypto operations
               final originalMnemonic =
@@ -206,13 +206,17 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
               await ref
                   .read(walletServiceProvider)
-                  .createSafe(mnemonic: originalMnemonic, pinCode: pinCodeint, safeName: 'safeBoxName'.tr());
+                  .createSafe(mnemonic: originalMnemonic, pinCode: widget.pinCode, safeName: 'safeBoxName'.tr());
+
+              // Refresh biometric provider after safe creation
+              await ref.read(biometricProvider.notifier).refresh();
 
               // Get the current safe AFTER creation - this ensures we use the newly created safe
               final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
               ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
               if (widget.scanDerivation) {
+                // ignore: use_build_context_synchronously
                 scanStatus = await generateWalletProvider.scanDerivations(context);
               }
               switch (scanStatus) {
@@ -268,11 +272,14 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 await ref.read(walletServiceProvider).setDefaultAddress(defaultWallet.address);
               }
 
-              await AppNavigator.pushWithFader(
-                context,
-                RouteNames.onboardingStepEleven,
-                arguments: OnboardingStepElevenArguments(fromRestore: widget.fromRestore),
-              );
+              // Store context validity before async operation
+              if (context.mounted) {
+                await AppNavigator.pushWithFader(
+                  context,
+                  RouteNames.onboardingStepEleven,
+                  arguments: OnboardingStepElevenArguments(fromRestore: widget.fromRestore, pinCode: widget.pinCode),
+                );
+              }
 
               myWalletProvider.reload();
             } else {

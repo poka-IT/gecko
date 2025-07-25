@@ -37,7 +37,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _showCesiumImportInfoDialogIfNeeded() {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.isWalletsExists;
-    final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
+    // final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
+    final bool alreadyShown = false;
 
     if (!isWalletsExists && !alreadyShown) {
       showConfirmationDialog(

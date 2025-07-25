@@ -11,6 +11,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:flutter/material.dart';
@@ -19,9 +20,11 @@ import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/globals.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
+import 'package:gecko/widgets/biometric/biometric_auth_button.dart';
 
 class UnlockingWallet extends ConsumerStatefulWidget {
   const UnlockingWallet({required this.wallet, this.canSwitch = false}) : super(key: keyUnlockWallet);
+
   final WalletEntity wallet;
   final bool canSwitch; // Whether user can switch between safes during unlock
 
@@ -39,6 +42,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   late final FocusNode pinFocus;
   final CarouselSliderController carouselController = CarouselSliderController();
 
+  // Biometric state tracking
+  bool _biometricTriggered = false;
+
   Color pinColor = const Color(0xffF9F9F1);
 
   @override
@@ -47,6 +53,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     pinFocus = FocusNode(debugLabel: 'pinFocusNode');
     enterPin = TextEditingController();
     _initializeSafes();
+
+    // Trigger automatic biometric authentication after widget build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tryAutomaticBiometric();
+    });
   }
 
   // Removed didChangeDependencies to avoid conflicts with PIN focus and auto-reloads
@@ -85,7 +96,153 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     }
   }
 
-  /// Wait for Durt to be connected and storage service ready before allowing access
+  /// Try automatic biometric authentication if enabled
+  Future<void> _tryAutomaticBiometric() async {
+    if (_biometricTriggered) return;
+
+    _biometricTriggered = true;
+
+    try {
+      // Wait for biometric provider to fully initialize
+      final biometricNotifier = ref.read(biometricProvider.notifier);
+      await biometricNotifier.waitForInitialization();
+
+      // Check if biometric authentication is available after initialization
+      final biometricState = ref.read(biometricProvider);
+      if (!biometricState.canAuthenticate) {
+        // Biometric not available or not enrolled, focus on PIN field
+        if (mounted) {
+          pinFocus.requestFocus();
+        }
+        return;
+      }
+
+      // Attempt biometric authentication
+      final result = await biometricNotifier.authenticateWithBiometric();
+
+      if (result.success && result.pin != null && mounted) {
+        // Success - handle PIN completion
+        await _handlePinCompletion(result.pin!, fromBiometric: true);
+      } else {
+        // Failed or cancelled - focus on PIN field for manual entry
+        if (mounted) {
+          pinFocus.requestFocus();
+        }
+      }
+    } catch (e) {
+      // Error during biometric setup - focus on PIN field for manual entry
+      log.e('Error during automatic biometric authentication: $e');
+      if (mounted) {
+        pinFocus.requestFocus();
+      }
+    }
+  }
+
+  /// Handle PIN completion (extracted from PIN form for reuse with biometric auth)
+  Future<void> _handlePinCompletion(String pin, {bool fromBiometric = false}) async {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+
+    try {
+      myWalletProvider.isPinLoading = true;
+      myWalletProvider.pinCode = pin.toUpperCase();
+
+      // Add timeout to the entire unlock operation
+      final unlockFuture = Future(() async {
+        final isValid = await ref
+            .read(walletServiceProvider)
+            .checkCode(pin: pin.toUpperCase(), safeBoxNumber: currentSafeNumber);
+        if (!isValid) {
+          await Future.delayed(const Duration(milliseconds: 20));
+          setState(() {
+            pinColor = Colors.red[600]!;
+          });
+          myWalletProvider.isPinLoading = false;
+          myWalletProvider.isPinValid = false;
+          myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+          if (!fromBiometric) {
+            enterPin.text = '';
+            pinFocus.requestFocus();
+          }
+        } else {
+          myWalletProvider.isPinValid = true;
+          setState(() {
+            pinColor = Colors.green[400]!;
+          });
+
+          // Update the default safe to the currently selected one
+          ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
+
+          // Invalidate providers after changing default safe to fix state synchronization
+          myWalletProvider.invalidateProviders();
+
+          // Wait for Durt to be connected and wallets to be loaded before allowing access
+          await _waitForSystemReady();
+
+          myWalletProvider.isPinLoading = false;
+          myWalletProvider.debounceResetPinCode();
+
+          // ALWAYS return success and let the caller decide navigation
+          Navigator.pop(context, pin.toUpperCase());
+        }
+      });
+
+      // Apply global timeout to prevent hanging
+      await unlockFuture.timeout(
+        const Duration(seconds: 60),
+        onTimeout: () {
+          throw TimeoutException('Unlock operation timeout after 60 seconds');
+        },
+      );
+    } catch (e) {
+      // Comprehensive error handling
+      myWalletProvider.isPinLoading = false;
+      myWalletProvider.isPinValid = false;
+      myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+      if (!fromBiometric) {
+        enterPin.text = '';
+      }
+      setState(() {
+        pinColor = Colors.red[600]!;
+      });
+
+      String errorMessage;
+      bool isInvalidPin = false;
+
+      // Check for Invalid secret code (incorrect PIN)
+      if (e.toString().contains('Invalid secret code')) {
+        isInvalidPin = true;
+        errorMessage = 'incorrectPinCode'.tr();
+      } else if (e is TimeoutException) {
+        errorMessage = 'Timeout: ${e.message ?? 'Operation took too long'}';
+      } else {
+        errorMessage = 'Unlock failed: ${e.toString()}';
+      }
+
+      // Log error for debugging
+      // ignore: avoid_print
+      print('🔴 Unlock error: $errorMessage');
+
+      // For invalid PIN, just trigger the existing UI feedback
+      if (isInvalidPin) {
+        // The existing "thisIsNotAGoodCode" message will be shown
+        // by the UI when isPinValid is false
+        if (!fromBiometric) {
+          pinFocus.requestFocus();
+        }
+      } else {
+        // Show error snackbar for other errors (timeouts, network issues, etc.)
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red, duration: const Duration(seconds: 5)),
+          );
+        }
+        if (!fromBiometric) {
+          pinFocus.requestFocus();
+        }
+      }
+    }
+  }
+
   Future<void> _waitForSystemReady() async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
@@ -235,7 +392,23 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                             ),
                         ],
                       ),
-                      ScaledSizedBox(height: isTall ? 16 : 8),
+                      ScaledSizedBox(height: isTall ? 12 : 8),
+
+                      // Biometric authentication button
+                      BiometricAuthButton(
+                        onAuthSuccess: (String pin) {
+                          // Auto-fill PIN field and trigger completion with biometric flag
+                          enterPin.text = pin;
+                          _handlePinCompletion(pin, fromBiometric: true);
+                        },
+                        onAuthFailure: (String error) {
+                          // Error is already shown by the button widget
+                        },
+                        tooltip: 'useBiometricAuthentication'.tr(),
+                        size: 50.0,
+                      ),
+
+                      ScaledSizedBox(height: isTall ? 12 : 8),
                       if (canUnlock)
                         old_provider.Consumer<WalletOptionsProvider>(
                           builder: (context, sub, _) {
@@ -444,6 +617,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
   Widget pinForm(BuildContext context, int pinLenght) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final biometricState = ref.watch(biometricProvider);
+
+    // Don't auto-focus PIN field if biometric authentication is available and hasn't been triggered yet
+    // This prevents virtual keyboard from appearing when biometric popup will show instead
+    final shouldAutoFocus = !biometricState.canAuthenticate || _biometricTriggered;
 
     return Form(
       child: Padding(
@@ -452,7 +630,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           key: keyPinForm,
           textCapitalization: TextCapitalization.characters,
           focusNode: pinFocus,
-          autoFocus: true,
+          autoFocus: shouldAutoFocus,
           appContext: context,
           pastedTextStyle: scaledTextStyle(color: Colors.green.shade600, fontWeight: FontWeight.bold),
           length: pinLenght,
@@ -490,95 +668,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           controller: enterPin,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onCompleted: (pin) async {
-            try {
-              myWalletProvider.isPinLoading = true;
-              myWalletProvider.pinCode = pin.toUpperCase();
-
-              // Add timeout to the entire unlock operation
-              final unlockFuture = Future(() async {
-                final isValid = await ref
-                    .read(walletServiceProvider)
-                    .checkCode(pin: pin.toUpperCase(), safeBoxNumber: currentSafeNumber);
-                if (!isValid) {
-                  await Future.delayed(const Duration(milliseconds: 20));
-                  pinColor = Colors.red[600]!;
-                  myWalletProvider.isPinLoading = false;
-                  myWalletProvider.isPinValid = false;
-                  myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
-                  enterPin.text = '';
-                  pinFocus.requestFocus();
-                } else {
-                  myWalletProvider.isPinValid = true;
-                  pinColor = Colors.green[400]!;
-
-                  // Update the default safe to the currently selected one
-                  ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
-
-                  // Invalidate providers after changing default safe to fix state synchronization
-                  myWalletProvider.invalidateProviders();
-
-                  // Wait for Durt to be connected and wallets to be loaded before allowing access
-                  await _waitForSystemReady();
-
-                  myWalletProvider.isPinLoading = false;
-                  myWalletProvider.debounceResetPinCode();
-                  Navigator.pop(context, pin.toUpperCase());
-                }
-              });
-
-              // Apply global timeout to prevent hanging
-              await unlockFuture.timeout(
-                const Duration(seconds: 60),
-                onTimeout: () {
-                  throw TimeoutException('Unlock operation timeout after 60 seconds');
-                },
-              );
-            } catch (e) {
-              // Comprehensive error handling
-              myWalletProvider.isPinLoading = false;
-              myWalletProvider.isPinValid = false;
-              myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
-              enterPin.text = '';
-              pinColor = Colors.red[600]!;
-
-              String errorMessage;
-              bool isInvalidPin = false;
-
-              // Check for Invalid secret code (incorrect PIN)
-              if (e.toString().contains('Invalid secret code')) {
-                isInvalidPin = true;
-                errorMessage = 'incorrectPinCode'.tr();
-              } else if (e is TimeoutException) {
-                errorMessage = 'Timeout: ${e.message ?? 'Operation took too long'}';
-              } else {
-                errorMessage = 'Unlock failed: ${e.toString()}';
-              }
-
-              // Log error for debugging
-              // ignore: avoid_print
-              print('🔴 Unlock error: $errorMessage');
-
-              // For invalid PIN, just trigger the existing UI feedback
-              if (isInvalidPin) {
-                // The existing "thisIsNotAGoodCode" message will be shown
-                // by the UI when isPinValid is false
-                pinFocus.requestFocus();
-              } else {
-                // Show error snackbar for other errors (timeouts, network issues, etc.)
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(errorMessage),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 5),
-                    ),
-                  );
-                }
-                pinFocus.requestFocus();
-              }
-            }
-          },
+          onCompleted: (pin) => _handlePinCompletion(pin),
           onChanged: (value) {
             if (enterPin.text != '') myWalletProvider.isPinLoading = true;
             if (pinColor != const Color(0xFFA4B600)) {

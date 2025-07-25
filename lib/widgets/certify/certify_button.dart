@@ -5,13 +5,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/exceptions.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/routes.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
 import 'package:gecko/utils.dart';
@@ -66,21 +66,8 @@ class CertifyButton extends ConsumerWidget {
                   if (!result) return;
                   await ref.read(walletServiceProvider).setDefaultAddress(address);
 
-                  if (myWalletProvider.pinCode == '') {
-                    // Get effective certification wallet (respects developer selection)
-                    final idtyWallet = await ref.read(effectiveCertificationWalletProvider.future);
-                    if (idtyWallet == null) {
-                      throw Exception('No identity wallet found for certification');
-                    }
-
-                    final result = await Navigator.pushNamed(
-                      context,
-                      RouteNames.unlockingWallet,
-                      arguments: UnlockingWalletArguments(wallet: idtyWallet),
-                    );
-                    // Only continue if we actually got a valid PIN back
-                    if (result == null) return;
-                  }
+                  // Use askPinCode() method for authentication
+                  if (!await myWalletProvider.askPinCode()) return;
                   WalletsProfilesProvider walletViewProvider = old_provider.Provider.of<WalletsProfilesProvider>(
                     context,
                     listen: false,
@@ -119,6 +106,14 @@ class CertifyButton extends ConsumerWidget {
                         type: ConfirmationDialogType.error,
                         message: e.toString(),
                       );
+                    } else {
+                      log.e(e);
+                      showConfirmationDialog(
+                        context: context,
+                        type: ConfirmationDialogType.error,
+                        message: e.toString(),
+                      );
+                      return;
                     }
                   }
                 },

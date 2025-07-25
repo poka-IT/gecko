@@ -81,7 +81,7 @@
     "areYouSureToForgetSafe": "Are you sure you want to forget the safe \"{}\"?",
     "areYouSureForgetAllSafes": "Are you sure you want to forget all your safes?",
     "areYouSureToForgetWallet": "Are you sure you want to forget the wallet \"{}\"?",
-    "areYouSureToForgetWalletWithBalance": "Are you sure you want to forget the wallet \"{}\"?\n\nThe balance of {} {} will be automatically transferred to your default wallet \"{}\".",
+    "areYouSureToForgetWalletWithBalance": "Are you sure you want to forget the wallet \"{}\"?\n\nThe balance of {} will be automatically transferred to your default wallet \"{}\".",
     "defaultWallet": "Default wallet",
     "transferringFundsToDefaultWallet": "Transferring funds to wallet \"{}\" in progress...",
     "transactionFailedWalletNotDeleted": "Transaction failed: {}\n\nThe wallet has not been deleted.",
@@ -337,6 +337,7 @@
     "question": "Question",
     "thisMnemonicIsNotValid": "This recovery phrase is not valid",
     "setupNewSafe": "Set up new safe",
+    "accessThisSafe": "Access this safe",
     "send": "Send",
     "confirmMigrationTitle": "Migration Confirmation",
     "confirmMigrationMessage": "Are you sure you want to migrate all your wallets to this new safe?",
@@ -490,6 +491,5 @@
     "biometricSetupSuccessful": "Biometric authentication setup successful!",
     "biometricSetupFailed": "Failed to setup biometric authentication",
     "enterPinCode": "Enter PIN Code",
-    "pinCode": "PIN Code",
-    "confirm": "Confirm"
+    "pinCode": "PIN Code"
 }

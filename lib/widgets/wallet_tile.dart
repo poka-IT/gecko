@@ -5,31 +5,33 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/myWallets/wallet_options.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
-import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
 class WalletTile extends StatelessWidget {
-  const WalletTile({super.key, required this.repository, this.attachTutorialKey = false, required this.uniqueId});
+  const WalletTile({super.key, required this.repository, this.tutorialKey, required this.uniqueId});
 
   final WalletEntity repository;
-  final bool attachTutorialKey;
+  final GlobalKey? tutorialKey; // Changed from bool to receive the actual key
   final String uniqueId; // Add unique identifier to avoid key conflicts
 
   @override
   Widget build(BuildContext context) {
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final currentSafe = myWalletProvider.getCurrentSafe;
+
     return Padding(
       padding: EdgeInsets.all(scaleSize(11)),
       child: GestureDetector(
-        key: ValueKey('${keyOpenWallet(repository.address).toString()}_$uniqueId'),
+        key: ValueKey('${keyOpenWallet(repository.address).toString()}_safe${currentSafe}_$uniqueId'),
         onTap: () {
-          Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: repository)));
+          Navigator.pushNamed(context, RouteNames.walletOptions, arguments: WalletOptionsArguments(wallet: repository));
         },
         child: ScaledSizedBox(
-          key: attachTutorialKey ? keyTutorialTarget : null,
+          key: tutorialKey, // Use the passed tutorial key directly
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),

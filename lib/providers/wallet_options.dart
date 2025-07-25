@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 
@@ -90,6 +89,17 @@ class WalletOptionsProvider with ChangeNotifier {
     if (walletBalance.transferableBalance > BigInt.zero) {
       if (!await myWalletProvider.askPinCode()) return 0;
 
+      // Show loading dialog while transaction is processing
+      showConfirmationDialog(
+        context: context,
+        message: 'transferringFundsToDefaultWallet'.tr(args: [defaultWallet.name ?? 'defaultWallet'.tr()]),
+        type: ConfirmationDialogType.info,
+        customIcon: const CircularProgressIndicator(),
+        barrierDismissible: false,
+        hideCancelButton: true,
+        hideConfirmButton: true,
+      );
+
       final keypair = await _container
           .read(walletServiceProvider)
           .getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
@@ -108,39 +118,23 @@ class WalletOptionsProvider with ChangeNotifier {
             isUd: isUdUnit,
           );
 
-      // Show loading dialog while transaction is processing
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                ScaledSizedBox(height: 16),
-                Text(
-                  'transferringFundsToDefaultWallet'.tr(args: [defaultWallet.name ?? 'defaultWallet'.tr()]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        },
-      );
-
       // Wait for transaction completion and check if successful
       bool transactionSuccessful = false;
       String? errorMessage;
 
       await for (final status in transactionStatus) {
-        if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
-          transactionSuccessful = true;
-          break;
-        } else if (status.state == TransactionState.error) {
-          errorMessage = status.errorMessage ?? 'unknownError'.tr();
-          break;
+        switch (status.state) {
+          case TransactionState.finalized || TransactionState.inBlock:
+            transactionSuccessful = true;
+            break;
+          case TransactionState.error || TransactionState.timeout || TransactionState.none:
+            errorMessage = status.errorMessage ?? 'unknownError'.tr();
+            break;
+          case TransactionState.pending:
+            continue;
         }
+        // Exit the loop once we have a final state (success or error)
+        break;
       }
 
       // Close loading dialog

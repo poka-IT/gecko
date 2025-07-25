@@ -98,10 +98,26 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
   Future<bool> _checkEnrollmentForCurrentSafe() async {
     try {
       // Get current default safe number explicitly
-      final currentSafe = _ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      final walletService = _ref.read(walletServiceProvider);
+      final currentSafe = walletService.defaultSafeBoxNumber;
+
+      // Handle case where no default safe is set (e.g., after deleting all safes)
+      if (currentSafe == -1) {
+        log.d('No default safe set, biometric enrollment: false');
+        return false;
+      }
+
+      // Check if the safe still exists before checking enrollment
+      try {
+        walletService.getSafeBox(currentSafe);
+      } catch (e) {
+        // Safe doesn't exist anymore (probably deleted), return false
+        log.w('Safe $currentSafe not found during biometric check: $e');
+        return false;
+      }
 
       // Check enrollment for the specific current safe
-      final isEnrolled = await _ref.read(walletServiceProvider).isBiometricEnrolled(currentSafe);
+      final isEnrolled = await walletService.isBiometricEnrolled(currentSafe);
 
       log.d('Biometric enrollment check for safe $currentSafe: $isEnrolled');
       return isEnrolled;

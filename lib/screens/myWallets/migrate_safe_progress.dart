@@ -10,8 +10,10 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
+import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 enum MigrationStatus { pending, migrating, success, failed, empty }
@@ -47,6 +49,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
   late List<MigrationTask> _tasks;
   bool _migrationCompleted = false;
   bool _migrationSuccess = false;
+  int? _existingSafeNumber; // Track if safe already exists
   int get _completedSteps => _tasks.where((t) => t.isDone).length;
 
   @override
@@ -54,8 +57,88 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
     super.initState();
     _tasks = widget.walletsToMigrate.map((w) => MigrationTask(w)).toList();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkIfSafeExists();
       _startMigration();
     });
+  }
+
+  /// Check if a safe with the same mnemonic already exists
+  /// Uses the mnemonic fingerprint for fast and reliable detection
+  Future<void> _checkIfSafeExists() async {
+    try {
+      // Generate fingerprint from the new mnemonic
+      final fingerprint = SafeEntity.generateFingerprint(widget.newMnemonic);
+
+      // Check if any safe with this fingerprint already exists
+      final existingSafe = ref.read(walletServiceProvider).safeBox.getByFingerprint(fingerprint);
+
+      if (existingSafe != null) {
+        _existingSafeNumber = existingSafe.number;
+      } else {
+        _existingSafeNumber = null;
+      }
+    } catch (e) {
+      // If error occurs, assume safe doesn't exist
+      _existingSafeNumber = null;
+    }
+  }
+
+  /// Recreate the migrated wallets in the existing safe
+  /// This ensures consistency between the old and new safe
+  Future<void> _recreateWalletsInExistingSafe(int safeNumber) async {
+    try {
+      final walletService = ref.read(walletServiceProvider);
+
+      // Get all existing wallets in the safe
+      final existingWallets = walletService.getWalletDataList(safeNumber);
+
+      // Delete all existing wallets in the safe
+      for (final wallet in existingWallets) {
+        await walletService.deleteWallet(wallet.address);
+      }
+
+      // Get the safe entity
+      final safe = walletService.getSafeBox(safeNumber);
+
+      // Recreate wallets based on the migrated ones
+      for (int i = 0; i < widget.walletsToMigrate.length; i++) {
+        final originalWallet = widget.walletsToMigrate[i];
+
+        // Generate the keypair for this derivation
+        final keypair = await walletService.getKeyPairFromMnemonic(
+          widget.newMnemonic,
+          derivation: originalWallet.derivation ?? i,
+          keyPairType: Durt.defaultKeyPairType,
+        );
+
+        // Create the new wallet entity
+        final newWallet = WalletEntity.create(
+          address: keypair.address,
+          number: i, // Use sequential numbering
+          name: originalWallet.name,
+          derivation: originalWallet.derivation ?? i,
+          imagePath: originalWallet.imagePath,
+          keyPairType: Durt.defaultKeyPairType,
+        );
+
+        // Link to the existing safe
+        newWallet.safe.target = safe;
+
+        // Save the wallet
+        await walletService.walletBox.putAsync(newWallet);
+
+        // Set the first wallet as default
+        if (i == 0) {
+          safe.defaultAddress = newWallet.address;
+          safe.rootAddress = newWallet.address;
+          walletService.safeBox.put(safe);
+        }
+      }
+    } catch (e) {
+      // Log error but don't block the migration completion
+      // ignore: avoid_print
+      print('🚨 Error recreating wallets in existing safe: $e');
+    }
   }
 
   Future<void> _startMigration() async {
@@ -136,11 +219,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
         // Simple balance transfer for wallets without identity
         final transactionStatus = ref
             .read(duniterServiceProvider)
-            .pay(
-              keypair: sourceKeypair,
-              destAddress: destKeypair.address,
-              amount: balance.transferableBalance.toDouble() / 100,
-            );
+            .pay(keypair: sourceKeypair, destAddress: destKeypair.address, amount: -1);
 
         // Wait for transaction confirmation
         await for (final status in transactionStatus) {
@@ -218,27 +297,41 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                 child: PrimaryButton(
                   onPressed: () async {
                     if (_migrationSuccess) {
-                      final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
-                      genW.generatedMnemonic = widget.newMnemonic;
-                      genW.resetImportView();
+                      if (_existingSafeNumber != null) {
+                        // Safe already exists, clear its wallets and recreate migrated ones
+                        await _recreateWalletsInExistingSafe(_existingSafeNumber!);
 
-                      final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+                        // Switch to the existing safe
+                        ref.read(walletServiceProvider).setDefaultSafeBoxNumber(_existingSafeNumber!);
 
-                      // Clear all wallets from current safe
-                      await ref.read(walletServiceProvider).deleteSafe(currentSafeNumber);
+                        // Navigate to switch safe screen
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
+                      } else {
+                        // Create new safe
+                        final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
+                        genW.generatedMnemonic = widget.newMnemonic;
+                        genW.resetImportView();
 
-                      await AppNavigator.pushAndRemoveUntilWithFader(
-                        context,
-                        RouteNames.onboardingStepSeven,
-                        arguments: OnboardingStepsSevenToNineArguments(scanDerivation: true, fromRestore: true),
-                        isFast: true,
-                        (route) => false,
-                      );
+                        final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+
+                        // Clear all wallets from current safe
+                        await ref.read(walletServiceProvider).deleteSafe(currentSafeNumber);
+
+                        await AppNavigator.pushAndRemoveUntilWithFader(
+                          context,
+                          RouteNames.onboardingStepSeven,
+                          arguments: OnboardingStepsSevenToNineArguments(scanDerivation: true, fromRestore: true),
+                          isFast: true,
+                          (route) => false,
+                        );
+                      }
                     } else {
                       Navigator.of(context).pop();
                     }
                   },
-                  label: _migrationSuccess ? 'setupNewSafe'.tr() : 'close'.tr(),
+                  label: _migrationSuccess
+                      ? (_existingSafeNumber != null ? 'accessThisSafe'.tr() : 'setupNewSafe'.tr())
+                      : 'close'.tr(),
                 ),
               ),
           ],
@@ -276,14 +369,14 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
 
     VoidCallback? onTap;
     if (task.status == MigrationStatus.failed && task.details != null) {
-      onTap = () {
-        showDialog(
+      onTap = () async {
+        await showConfirmationDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text('migrationFailedTitle'.tr()),
-            content: SingleChildScrollView(child: SelectableText(task.details!)),
-            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: Text('close'.tr()))],
-          ),
+          title: 'migrationFailedTitle'.tr(),
+          message: task.details!,
+          type: ConfirmationDialogType.error,
+          barrierDismissible: false,
+          hideCancelButton: true,
         );
       };
     }

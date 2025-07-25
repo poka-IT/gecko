@@ -5,11 +5,10 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/myWallets/wallet_options.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/smart_avatar.dart';
-import 'package:gecko/widgets/commons/smooth_transition.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart';
 
@@ -21,15 +20,18 @@ class WalletTileMembre extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final currentSafe = myWalletProvider.getCurrentSafe;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
       child: GestureDetector(
-        key: keyOpenWallet(wallet.address),
+        key: ValueKey('${keyOpenWallet(wallet.address).toString()}_safe${currentSafe}_membre'),
         onTap: () {
-          Navigator.push(context, SmoothTransition(page: WalletOptions(wallet: wallet)));
+          Navigator.pushNamed(context, RouteNames.walletOptions, arguments: WalletOptionsArguments(wallet: wallet));
         },
         child: ScaledSizedBox(
-          key: attachTutorialKey ? keyDragAndDropMembre : null,
+          key: attachTutorialKey ? ValueKey('tutorial_membre_${wallet.address}_safe$currentSafe') : null,
           height: 180,
           child: Container(
             decoration: BoxDecoration(

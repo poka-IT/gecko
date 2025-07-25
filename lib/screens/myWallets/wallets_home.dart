@@ -10,8 +10,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
 import 'package:gecko/widgets/buttons/safe_options_buttons.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
@@ -36,8 +36,9 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
     if (myWalletProvider.listWallets.length == 1) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => WalletOptions(wallet: myWalletProvider.listWallets[0])),
+          Navigator.of(context).pushReplacementNamed(
+            RouteNames.walletOptions,
+            arguments: WalletOptionsArguments(wallet: myWalletProvider.listWallets[0]),
           );
         }
       });
@@ -52,6 +53,7 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
 class _WalletsHomeContent extends ConsumerWidget {
   // Static flag to prevent tutorial from showing multiple times in same session
   static bool _tutorialShownInSession = false; // Reset for testing
+  static int? _lastSafeNumber; // Track last safe to reset tutorial when safe changes
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,6 +69,12 @@ class _WalletsHomeContent extends ConsumerWidget {
 
     if (currentSafe == null) {
       return const Center(child: Text('Error: Safe not found'));
+    }
+
+    // Reset tutorial session flag when safe changes
+    if (_lastSafeNumber != currentSafe.number) {
+      _tutorialShownInSession = false;
+      _lastSafeNumber = currentSafe.number;
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
@@ -136,12 +144,17 @@ class _WalletsHomeContent extends ConsumerWidget {
     final int targetWalletIndex = walletsWithoutIdty.length > 1 ? 1 : 0;
     final bool shouldShowTutorial = walletsWithoutIdty.isNotEmpty;
 
-    // Build tutorial with simple target
+    // Create a unique tutorial key for the current safe and target wallet
+    final GlobalKey tutorialKey = shouldShowTutorial && walletsWithoutIdty.isNotEmpty
+        ? GlobalKey(debugLabel: 'tutorial_${walletsWithoutIdty[targetWalletIndex].address}_safe${currentSafe.number}')
+        : GlobalKey(debugLabel: 'tutorial_empty_safe${currentSafe.number}');
+
+    // Build tutorial with dynamic target
     final tutorialCoachMark = TutorialCoachMark(
       targets: [
         TargetFocus(
           identify: "drag_and_drop",
-          keyTarget: keyTutorialTarget,
+          keyTarget: tutorialKey,
           contents: [
             TargetContent(
               child: Column(
@@ -245,7 +258,7 @@ class _WalletsHomeContent extends ConsumerWidget {
                             wallet: stableWalletsWithoutIdty[i],
                             child: WalletTile(
                               repository: stableWalletsWithoutIdty[i],
-                              attachTutorialKey: i == stableTargetIndex,
+                              tutorialKey: i == stableTargetIndex ? tutorialKey : null,
                               uniqueId: 'grid_$i',
                             ),
                           ),

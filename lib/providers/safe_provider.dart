@@ -68,11 +68,36 @@ class SafeProvider with ChangeNotifier {
         } else {
           // Update to the new default safe
           final remainingSafes = walletService.safeBox.getAll();
+          if (remainingSafes.isEmpty) {
+            // Edge case: no safes left after deletion (race condition)
+            log.w('No remaining safes found after deletion');
+            walletService.setDefaultSafeBoxNumber(-1);
+            myWalletProvider.listWallets = [];
+
+            // Force refresh of biometric provider after safe state changes
+            await _container.read(biometricProvider.notifier).refresh();
+
+            // Navigate to home since no safes exist
+            Navigator.pushNamedAndRemoveUntil(
+              // ignore: use_build_context_synchronously
+              context,
+              RouteNames.home,
+              (route) => false,
+            );
+            return;
+          }
+
           final newDefaultSafe = remainingSafes.first.number;
           walletService.setDefaultSafeBoxNumber(newDefaultSafe);
 
           // Reload wallets for the new default safe
-          await myWalletProvider.readAllWallets(safeBoxNumber: newDefaultSafe);
+          try {
+            await myWalletProvider.readAllWallets(safeBoxNumber: newDefaultSafe);
+          } catch (e) {
+            log.e('Failed to reload wallets for safe $newDefaultSafe: $e');
+            // If we can't reload wallets, at least clear the list to prevent stale data
+            myWalletProvider.listWallets = [];
+          }
 
           // Force refresh of biometric provider after safe state changes
           await _container.read(biometricProvider.notifier).refresh();
@@ -85,8 +110,14 @@ class SafeProvider with ChangeNotifier {
           );
         }
 
-        myWalletProvider.notifyListeners();
-        notifyListeners();
+        // Add a small delay to ensure all async operations complete before notifying listeners
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Only notify listeners if the context is still valid
+        if (context.mounted) {
+          myWalletProvider.notifyListeners();
+          notifyListeners();
+        }
       } catch (e) {
         log.e('Failed to delete safe: $e');
         // Clear PIN on error for security

@@ -24,9 +24,7 @@ const keyImportG1v1 = Key('keyImportG1v1');
 const keyChangeSafe = Key('keyChangeSafe');
 const keyListWallets = Key('keyListWallets');
 const keyAddDerivation = Key('keyAddDerivation');
-final keyDragAndDrop = GlobalKey(debugLabel: 'keyDragAndDrop');
-final keyDragAndDropMembre = GlobalKey(debugLabel: 'keyDragAndDropMembre');
-final keyTutorialTarget = GlobalKey(debugLabel: 'keyTutorialTarget'); // Dedicated tutorial key
+// Removed problematic GlobalKeys - now using dynamic ValueKeys or local GlobalKeys
 
 // Wallet options
 const keyCopyAddress = Key('keyCopyAddress');

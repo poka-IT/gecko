@@ -285,7 +285,13 @@ class _GeckoBottomAppBarState extends State<_GeckoBottomAppBar> {
       builder: (context, currentRouteProvider, child) {
         // Get current route for immediate state updates
         final currentRoute = currentRouteProvider.currentRoute;
-        final lockAction = currentRoute == RouteNames.myWallets;
+
+        // Check if we're in mono wallet mode (only one wallet in the safe)
+        final isMonoWalletMode = myWalletProvider.listWallets.length == 1;
+
+        // Lock action when on myWallets route OR when on walletOptions in mono wallet mode
+        final lockAction =
+            currentRoute == RouteNames.myWallets || (currentRoute == RouteNames.walletOptions && isMonoWalletMode);
 
         return SafeArea(
           child: Container(

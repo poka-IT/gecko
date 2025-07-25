@@ -20,7 +20,10 @@ class DragTuleAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+
     return LongPressDraggable<String>(
+      key: ValueKey('drag_${wallet.address}_safe$currentSafe'),
       delay: const Duration(milliseconds: 200),
       data: wallet.address,
       dragAnchorStrategy: (Draggable<Object> _, BuildContext _, Offset _) => const Offset(55, 55),

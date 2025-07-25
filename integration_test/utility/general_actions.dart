@@ -179,6 +179,6 @@ Future skipWalletDragTutorial() async {
     timeout: const Duration(seconds: 5),
     settle: false,
   )) {
-    await tapKey(keyDragAndDrop, duration: 0);
+    // await tapKey(keyDragAndDrop, duration: 0);
   }
 }

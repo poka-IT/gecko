@@ -364,6 +364,7 @@
     "migrationSuccess": "Migración exitosa",
     "migrationFailedTitle": "Migración fallida",
     "setupNewSafe": "Configurar nuevo cofre",
+    "accessThisSafe": "Acceder a este cofre",
     "send": "Enviar",
     "confirmMigrationTitle": "Confirmación de migración",
     "confirmMigrationMessage": "¿Estás seguro de que quieres migrar todos tus monederos a este nuevo cofre?",
@@ -500,6 +501,5 @@
     "biometricSetupSuccessful": "¡Autenticación biométrica configurada con éxito!",
     "biometricSetupFailed": "Error al configurar la autenticación biométrica",
     "enterPinCode": "Introduce el código PIN",
-    "pinCode": "Código PIN",
-    "confirm": "Confirmar"
+    "pinCode": "Código PIN"
 }

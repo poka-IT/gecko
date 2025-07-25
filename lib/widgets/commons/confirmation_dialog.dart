@@ -55,6 +55,7 @@ Future<bool> showConfirmationDialog({
   Widget? customIcon,
   Color? customIconColor,
   bool hideCancelButton = false,
+  bool hideConfirmButton = false,
 }) async {
   final Color iconColorToShow = customIconColor ?? type.iconColor;
   final Widget iconToShow = customIcon ?? Icon(type.icon, color: iconColorToShow, size: 32);
@@ -134,19 +135,24 @@ Future<bool> showConfirmationDialog({
                     ),
                     SizedBox(width: 16),
                   ],
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: iconColorToShow,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  if (!hideConfirmButton) ...[
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: iconColorToShow,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          confirmTextToShow,
+                          style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        ),
                       ),
-                      child: Text(confirmTextToShow, style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ],

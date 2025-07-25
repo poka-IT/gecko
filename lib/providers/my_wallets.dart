@@ -165,12 +165,19 @@ class MyWalletsProvider with ChangeNotifier {
     } else {
       safe ??= getCurrentSafe;
 
-      final defaultWallet = _container.read(walletServiceProvider).safeBox.getNumber(safe).defaultAddress;
-      if (defaultWallet == null) {
+      // Check if the safe still exists before trying to access it
+      try {
+        final defaultWallet = _container.read(walletServiceProvider).safeBox.getNumber(safe).defaultAddress;
+        if (defaultWallet == null) {
+          return WalletEntity.create(address: '', number: 0, keyPairType: Durt.defaultKeyPairType);
+        }
+        return getWalletDataByAddress(defaultWallet) ??
+            WalletEntity.create(address: '', number: 0, keyPairType: Durt.defaultKeyPairType);
+      } catch (e) {
+        // Safe doesn't exist anymore (probably deleted), return a default wallet
+        log.w('Safe $safe not found in getDefaultWallet: $e');
         return WalletEntity.create(address: '', number: 0, keyPairType: Durt.defaultKeyPairType);
       }
-      return getWalletDataByAddress(defaultWallet) ??
-          WalletEntity.create(address: '', number: 0, keyPairType: Durt.defaultKeyPairType);
     }
   }
 

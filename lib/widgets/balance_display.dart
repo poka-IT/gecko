@@ -1,8 +1,13 @@
 import 'package:durt2/durt2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
+import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class BalanceDisplay extends ConsumerWidget {
   final BigInt value;
@@ -110,6 +115,12 @@ class BalanceDisplay extends ConsumerWidget {
       );
     }
 
+    // Get current route
+    final currentRoute = old_provider.Provider.of<CurrentRouteProvider>(homeContext, listen: false).currentRoute;
+    final isMyWallets = currentRoute == RouteNames.myWallets;
+
+    final currencyTextColor = isMyWallets ? color : homeContext.colorScheme.outline;
+
     if (displayMode == CurrencyDisplayMode.du || displayMode == CurrencyDisplayMode.moneyOverMembers) {
       // DU and mM/N modes: display like "prefix + [unit] + symbol as superscript"
       String unitText = displayMode == CurrencyDisplayMode.du ? 'DU' : 'mM/N';
@@ -126,10 +137,10 @@ class BalanceDisplay extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 1),
+          const SizedBox(width: 6),
           Text(
             unitText,
-            style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+            style: scaledTextStyle(fontSize: size, color: currencyTextColor, fontWeight: fontWeight),
           ),
           const SizedBox(width: 1.0),
           Column(
@@ -137,7 +148,7 @@ class BalanceDisplay extends ConsumerWidget {
             children: [
               Text(
                 Durt.i.network.symbol,
-                style: scaledTextStyle(fontSize: size * 0.6, fontWeight: fontWeight, color: color),
+                style: scaledTextStyle(fontSize: size * 0.6, fontWeight: fontWeight, color: currencyTextColor),
               ),
               const SizedBox(height: 12),
             ],
@@ -153,11 +164,11 @@ class BalanceDisplay extends ConsumerWidget {
             formattedNumber,
             style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: 6),
           if (valuePrefix.isNotEmpty) ...[prefixWidget, const SizedBox(width: 0.5)],
           Text(
             currencySymbol,
-            style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+            style: scaledTextStyle(fontSize: size, color: currencyTextColor, fontWeight: fontWeight),
           ),
         ],
       );

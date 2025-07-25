@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
-import 'package:gecko/widgets/commons/common_elements.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart' as pp;
@@ -229,8 +229,13 @@ class HomeProvider with ChangeNotifier {
       configBox.put('dataVersion', dataVersion);
     }
     if (configBox.get('dataVersion') < dataVersion) {
-      // ignore: use_build_context_synchronously
-      await infoPopup(context, "safeNotCompatibleMustReinstallGecko".tr());
+      await showConfirmationDialog(
+        context: context,
+        message: "safeNotCompatibleMustReinstallGecko".tr(),
+        confirmText: "gotit".tr(),
+        barrierDismissible: false,
+        hideCancelButton: true,
+      );
       await avatarsDirectory.create();
       await configBox.delete('defaultWallet');
       await configBox.clear();

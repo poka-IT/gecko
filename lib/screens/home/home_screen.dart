@@ -37,8 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _showCesiumImportInfoDialogIfNeeded() {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final bool isWalletsExists = myWalletProvider.isWalletsExists;
-    // final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
-    final bool alreadyShown = false;
+    final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
 
     if (!isWalletsExists && !alreadyShown) {
       showConfirmationDialog(
@@ -47,6 +46,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         message: "cesium_import_info_body".tr(),
         confirmText: "gotit".tr(),
         customIcon: SvgPicture.asset('assets/cesium_bw2.svg', semanticsLabel: 'CS', height: scaleSize(40)),
+        barrierDismissible: false,
         hideCancelButton: true,
       );
 

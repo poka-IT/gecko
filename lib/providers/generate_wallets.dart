@@ -12,7 +12,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
-import 'package:gecko/widgets/commons/common_elements.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 class GenerateWalletsProvider with ChangeNotifier {
@@ -385,8 +384,14 @@ class GenerateWalletsProvider with ChangeNotifier {
 
           // Display error message to user
           // ignore: use_build_context_synchronously
-          await infoPopup(context, "timeoutScanDerivations".tr());
-
+          await showConfirmationDialog(
+            // ignore: use_build_context_synchronously
+            context: context,
+            message: "timeoutScanDerivations".tr(),
+            confirmText: "gotit".tr(),
+            hideCancelButton: true,
+            type: ConfirmationDialogType.error,
+          );
           // Remove all wallets
           await _container.read(walletServiceProvider).walletBox.removeAllAsync();
           await _container.read(walletServiceProvider).safeBox.removeAllAsync();
@@ -401,8 +406,14 @@ class GenerateWalletsProvider with ChangeNotifier {
     } catch (e) {
       log.e('Error scanning derivations: $e');
       // Handle any other errors
-      // ignore: use_build_context_synchronously
-      await infoPopup(context, "errorScanDerivations".tr());
+      await showConfirmationDialog(
+        // ignore: use_build_context_synchronously
+        context: context,
+        message: "errorScanDerivations".tr(),
+        confirmText: "gotit".tr(),
+        hideCancelButton: true,
+        type: ConfirmationDialogType.error,
+      );
 
       // Remove all wallets
       await _container.read(walletServiceProvider).walletBox.removeAllAsync();

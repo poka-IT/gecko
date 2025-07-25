@@ -36,12 +36,14 @@ class CurrentRouteProvider extends ChangeNotifier {
 class BottomAppBarProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool _shouldShowBottomBar = true;
   bool _isKeyboardVisible = false;
+  bool _isDialogVisible = false;
 
   bool get shouldShowBottomBar => _shouldShowBottomBar;
   bool get isKeyboardVisible => _isKeyboardVisible;
+  bool get isDialogVisible => _isDialogVisible;
 
-  // Combined visibility: both route-based and keyboard-based
-  bool get isBottomBarActuallyVisible => _shouldShowBottomBar && !_isKeyboardVisible;
+  // Combined visibility: route-based, keyboard-based, and dialog-based
+  bool get isBottomBarActuallyVisible => _shouldShowBottomBar && !_isKeyboardVisible && !_isDialogVisible;
 
   BottomAppBarProvider() {
     WidgetsBinding.instance.addObserver(this);
@@ -109,6 +111,16 @@ class BottomAppBarProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     if (_shouldShowBottomBar != shouldShow) {
       _shouldShowBottomBar = shouldShow;
+      // Use addPostFrameCallback to avoid calling notifyListeners during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    }
+  }
+
+  void setDialogVisible(bool visible) {
+    if (_isDialogVisible != visible) {
+      _isDialogVisible = visible;
       // Use addPostFrameCallback to avoid calling notifyListeners during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
@@ -221,6 +233,11 @@ class PageWithBottomPaddingWrapper extends StatelessWidget {
       builder: (context, bottomBarProvider, _) {
         // If bottom bar should not be shown, return child as-is
         if (!bottomBarProvider.isBottomBarActuallyVisible) {
+          return child;
+        }
+
+        final myWalletsProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+        if (!myWalletsProvider.isWalletsExists) {
           return child;
         }
 

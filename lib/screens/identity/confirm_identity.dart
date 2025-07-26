@@ -129,6 +129,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
       appBar: WalletAppBar(address: widget.address, title: 'chooseIdentityName'.tr()),
       body: Column(
         children: [
+          // Scrollable content area
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
@@ -136,7 +137,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // En-tête avec icône
+                    // Header with icon
                     Center(
                       child: Container(
                         width: scaleSize(isSmallScreen ? 60 : 80),
@@ -154,7 +155,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                     ),
                     ScaledSizedBox(height: isSmallScreen ? 16 : 32),
 
-                    // Titre principal
+                    // Main title
                     Text(
                       'identityInDuniterNetwork'.tr(args: [Durt.i.network.symbol]),
                       style: scaledTextStyle(fontSize: isSmallScreen ? 20 : 24, fontWeight: FontWeight.bold),
@@ -162,11 +163,11 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                     ),
                     ScaledSizedBox(height: isSmallScreen ? 16 : 24),
 
-                    // Texte explicatif
+                    // Explanatory text
                     Text('identityExplanation'.tr(), style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
                     ScaledSizedBox(height: isSmallScreen ? 16 : 24),
 
-                    // Points importants
+                    // Important points
                     ...['identityNameUnique'.tr(), 'identityNameSearchable'.tr(), 'identityNamePermanent'.tr()].map(
                       (text) => Padding(
                         padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
@@ -185,9 +186,28 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                         ),
                       ),
                     ),
+                    // Add extra bottom padding to ensure content doesn't get cut off
                     ScaledSizedBox(height: isSmallScreen ? 24 : 32),
+                  ],
+                ),
+              ),
+            ),
+          ),
 
-                    // Champ de saisie
+          // Fixed input section at bottom
+          Container(
+            decoration: BoxDecoration(
+              color: context.colorScheme.surface,
+              border: Border(top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.all(scaleSize(16)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Identity name input field
                     TextField(
                       key: keyEnterIdentityUsername,
                       controller: _identityNameController,
@@ -209,29 +229,28 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                       ),
                       style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
                     ),
+                    ScaledSizedBox(height: 16),
+
+                    // Validate button
+                    SizedBox(
+                      width: double.infinity,
+                      height: scaleSize(isSmallScreen ? 44 : 50),
+                      child: ElevatedButton(
+                        key: keyConfirm,
+                        onPressed: _canValidate ? () => _confirmIdentity(context) : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.colorScheme.primary,
+                          disabledBackgroundColor: Colors.grey[300],
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(
+                          'validate'.tr(),
+                          style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16, color: Colors.white),
+                        ),
+                      ),
+                    ),
                   ],
-                ),
-              ),
-            ),
-          ),
-          // Bouton de validation en position fixe
-          Padding(
-            padding: EdgeInsets.all(scaleSize(16)),
-            child: SizedBox(
-              width: double.infinity,
-              height: scaleSize(isSmallScreen ? 44 : 50),
-              child: ElevatedButton(
-                key: keyConfirm,
-                onPressed: _canValidate ? () => _confirmIdentity(context) : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colorScheme.primary,
-                  disabledBackgroundColor: Colors.grey[300],
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: Text(
-                  'validate'.tr(),
-                  style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16, color: Colors.white),
                 ),
               ),
             ),

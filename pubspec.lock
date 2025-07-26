@@ -476,7 +476,7 @@ packages:
       path: "../durt2"
       relative: true
     source: path
-    version: "0.3.2"
+    version: "0.3.3"
   easy_localization:
     dependency: "direct main"
     description:

@@ -140,9 +140,16 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                   baseColor: context.colorScheme.primary,
                   offset: 0.66, // Deuxième bouton - décalage 2/3
                   onTap: () async {
+                    final hadToUnlock = myWalletProvider.pinCode.isEmpty;
                     if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
 
-                    Navigator.pushNamed(context, RouteNames.myWallets);
+                    if (hadToUnlock) {
+                      // Use smooth transition if we came from unlocking screen
+                      await _performSmoothTransition(context);
+                    } else {
+                      // Direct navigation if already unlocked
+                      Navigator.pushNamed(context, RouteNames.myWallets);
+                    }
                   },
                   child: Padding(
                     key: keyOpenWalletsHomme,
@@ -192,5 +199,46 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
         ScaledSizedBox(height: isTall ? 60 : 30),
       ],
     );
+  }
+
+  /// Performs a smooth transition to myWallets screen with overlay to hide intermediate navigation
+  Future<void> _performSmoothTransition(BuildContext context) async {
+    // Create an animated overlay with fade transition
+    late OverlayEntry overlayEntry;
+
+    // Animation controller for the overlay
+    bool showOverlay = false;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => AnimatedOpacity(
+        opacity: showOverlay ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 100),
+        child: Container(color: context.colorScheme.surface),
+      ),
+    );
+
+    // Insert overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Start fade in and navigation simultaneously
+    showOverlay = true;
+    overlayEntry.markNeedsBuild();
+
+    // Preload the page during fade in
+    Navigator.pushNamed(context, RouteNames.myWallets);
+
+    // Wait for fade in to complete
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    // Wait a bit then fade out the overlay
+    Future.delayed(const Duration(milliseconds: 50), () {
+      showOverlay = false;
+      overlayEntry.markNeedsBuild();
+
+      // Remove overlay after fade out
+      Future.delayed(const Duration(milliseconds: 100), () {
+        overlayEntry.remove();
+      });
+    });
   }
 }

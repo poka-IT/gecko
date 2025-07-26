@@ -22,6 +22,7 @@ class MigrationTask {
   final WalletEntity wallet;
   MigrationStatus status;
   String? details; // For TxID or error message
+  String? destinationAddress; // Address where funds are being sent
 
   MigrationTask(this.wallet, {this.status = MigrationStatus.pending});
 
@@ -100,23 +101,25 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
       // Get the safe entity
       final safe = walletService.getSafeBox(safeNumber);
 
-      // Recreate wallets based on the migrated ones
+      // Recreate wallets following correct derivation logic: root, //0, //1, //2, etc.
       for (int i = 0; i < widget.walletsToMigrate.length; i++) {
         final originalWallet = widget.walletsToMigrate[i];
 
-        // Generate the keypair for this derivation
-        final keypair = await walletService.getKeyPairFromMnemonic(
-          widget.newMnemonic,
-          derivation: originalWallet.derivation ?? i,
-          keyPairType: Durt.defaultKeyPairType,
-        );
+        // Generate keypair: first wallet = root (no derivation), others = derivation //0, //1, //2, etc.
+        final keypair = i == 0
+            ? await walletService.getKeyPairFromMnemonic(widget.newMnemonic, keyPairType: Durt.defaultKeyPairType)
+            : await walletService.getKeyPairFromMnemonic(
+                widget.newMnemonic,
+                derivation: i - 1, // First derived wallet gets //0, second gets //1, etc.
+                keyPairType: Durt.defaultKeyPairType,
+              );
 
         // Create the new wallet entity
         final newWallet = WalletEntity.create(
           address: keypair.address,
           number: i, // Use sequential numbering
           name: originalWallet.name,
-          derivation: originalWallet.derivation ?? i,
+          derivation: i == 0 ? null : i - 1, // Root has no derivation, others have derivation //0, //1, etc.
           imagePath: originalWallet.imagePath,
           keyPairType: Durt.defaultKeyPairType,
         );
@@ -164,9 +167,30 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
 
   Future<void> _migrateSingleWallet(MigrationTask task) async {
     if (!mounted) return;
-    setState(() => task.status = MigrationStatus.migrating);
 
     try {
+      // Get the index of this wallet in the migration list
+      final walletIndex = widget.walletsToMigrate.indexOf(task.wallet);
+
+      // Generate destination keypair: first wallet = root, others = derivation //0, //1, //2, etc.
+      final destKeypair = walletIndex == 0
+          ? await ref
+                .read(walletServiceProvider)
+                .getKeyPairFromMnemonic(widget.newMnemonic, keyPairType: Durt.defaultKeyPairType)
+          : await ref
+                .read(walletServiceProvider)
+                .getKeyPairFromMnemonic(
+                  widget.newMnemonic,
+                  derivation: walletIndex - 1, // First derived wallet gets //0, second gets //1, etc.
+                  keyPairType: Durt.defaultKeyPairType,
+                );
+
+      // Set destination address for display
+      setState(() {
+        task.destinationAddress = destKeypair.address;
+        task.status = MigrationStatus.migrating;
+      });
+
       // Check if wallet has any balance to migrate
       final balance = await ref.read(durtProvider).storage.getBalance(task.wallet.address);
 
@@ -185,15 +209,6 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
       final sourceKeypair = await ref
           .read(walletServiceProvider)
           .getKeyPairFromAddress(address: task.wallet.address, pinCode: myWalletProvider.pinCode);
-
-      // Get destination wallet keypair
-      final destKeypair = await ref
-          .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(
-            widget.newMnemonic,
-            derivation: task.wallet.derivation ?? 0,
-            keyPairType: Durt.defaultKeyPairType,
-          );
 
       // Migrate identity if wallet has one
       final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(task.wallet.address);
@@ -309,20 +324,16 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                       } else {
                         // Create new safe
                         final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
-                        genW.generatedMnemonic = widget.newMnemonic;
-                        genW.resetImportView();
 
-                        final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
-
-                        // Clear all wallets from current safe
-                        await ref.read(walletServiceProvider).deleteSafe(currentSafeNumber);
+                        // Properly set the mnemonic with language detection and English conversion
+                        await genW.setMnemonicFromExternal(widget.newMnemonic);
 
                         await AppNavigator.pushAndRemoveUntilWithFader(
                           context,
                           RouteNames.onboardingStepSeven,
                           arguments: OnboardingStepsSevenToNineArguments(scanDerivation: true, fromRestore: true),
                           isFast: true,
-                          (route) => false,
+                          (route) => route.settings.name == RouteNames.home,
                         );
                       }
                     } else {
@@ -385,8 +396,31 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: ListTile(
         leading: AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: leading),
-        title: Text(task.wallet.name ?? task.wallet.address),
-        subtitle: Text(statusText),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(task.wallet.name ?? 'Wallet'),
+            Text(
+              '${task.wallet.address.substring(0, 8)}...${task.wallet.address.substring(task.wallet.address.length - 8)}',
+              style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace'),
+            ),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(statusText),
+            if (task.destinationAddress != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '→ ${task.destinationAddress!.substring(0, 8)}...${task.destinationAddress!.substring(task.destinationAddress!.length - 8)}',
+                style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace'),
+              ),
+            ],
+          ],
+        ),
         onTap: onTap,
         trailing: onTap != null ? const Icon(Icons.info_outline, color: Colors.blueGrey) : null,
       ),

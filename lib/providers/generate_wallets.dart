@@ -198,6 +198,37 @@ class GenerateWalletsProvider with ChangeNotifier {
     return _originalMnemonicLanguage;
   }
 
+  /// Set a mnemonic from external source (migration, import, etc.)
+  /// This properly detects the language and sets both display and English versions
+  Future<void> setMnemonicFromExternal(String mnemonic) async {
+    try {
+      final multilangService = _container.read(walletServiceProvider).multilangService;
+      final words = mnemonic.split(' ');
+      final detectedLanguage = await multilangService.detectMnemonicLanguageFromWords(words);
+
+      if (detectedLanguage == null) {
+        throw Exception('Invalid mnemonic: no valid language detected');
+      }
+
+      // Set the display mnemonic (user's input)
+      generatedMnemonic = mnemonic;
+      _originalMnemonicLanguage = detectedLanguage;
+
+      if (detectedLanguage == BidouilleLang.english) {
+        // Input is already English, store directly
+        _englishMnemonic = mnemonic;
+      } else {
+        // Input is in another language, convert to English for crypto operations
+        _englishMnemonic = await _convertToEnglishForValidation(mnemonic, detectedLanguage);
+      }
+
+      log.i('Set external mnemonic: detected language=${detectedLanguage.code}, English ready for crypto ops');
+    } catch (e) {
+      log.e('Failed to set external mnemonic: $e');
+      throw Exception('Failed to process mnemonic: $e');
+    }
+  }
+
   /// Validate complete mnemonic integrity (checksum) by converting to English and using BIP39 validation
   Future<bool> isValidCompleteMnemonic(String mnemonic) async {
     try {

@@ -146,8 +146,7 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                     await ref.read(biometricProvider.notifier).refresh();
                     if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
 
-                    Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));
-                    Navigator.pushNamed(context, RouteNames.myWallets);
+                    await _performSmoothTransition(context);
                   },
                   child: Text(
                     'openThisSafe'.tr(),
@@ -160,5 +159,51 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
         ),
       ),
     );
+  }
+
+  /// Performs a smooth transition to myWallets screen with overlay to hide intermediate navigation
+  Future<void> _performSmoothTransition(BuildContext context) async {
+    // Create an animated overlay with fade transition
+    late OverlayEntry overlayEntry;
+
+    // Animation controller for the overlay
+    bool showOverlay = false;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => AnimatedOpacity(
+        opacity: showOverlay ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 100),
+        child: Container(color: context.colorScheme.surface),
+      ),
+    );
+
+    // Insert overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Fade in the overlay
+    showOverlay = true;
+    overlayEntry.markNeedsBuild();
+
+    // Wait for fade in to complete
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    // Perform the navigation steps
+    Navigator.pushNamedAndRemoveUntil(context, RouteNames.home, (route) => false);
+
+    // Navigate to myWallets
+    Future.microtask(() {
+      Navigator.pushNamed(context, RouteNames.myWallets);
+
+      // Wait a bit then fade out the overlay
+      Future.delayed(const Duration(milliseconds: 50), () {
+        showOverlay = false;
+        overlayEntry.markNeedsBuild();
+
+        // Remove overlay after fade out
+        Future.delayed(const Duration(milliseconds: 100), () {
+          overlayEntry.remove();
+        });
+      });
+    });
   }
 }

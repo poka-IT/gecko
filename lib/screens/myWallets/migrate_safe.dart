@@ -61,13 +61,13 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
       final nbrScan = configBox.get('scanDerivations') ?? 20;
       List<String> destAddresses = [];
 
-      // Generate root address using WalletService
+      // Generate root address (without derivation)
       final rootKeypair = await ref
           .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(newMnemonic, derivation: 0, keyPairType: Durt.defaultKeyPairType);
+          .getKeyPairFromMnemonic(newMnemonic, keyPairType: Durt.defaultKeyPairType);
       destAddresses.add(rootKeypair.address);
 
-      // Generate derived addresses
+      // Generate derived addresses (derivation //0, //1, //2, etc.)
       for (int i = 0; i < nbrScan; i++) {
         final derivedKeypair = await ref
             .read(walletServiceProvider)

@@ -14,7 +14,6 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallet_options.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/routes.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
@@ -29,8 +28,9 @@ import 'package:gecko/screens/identity/confirm_identity.dart';
 import 'package:gecko/utils/identity_utils.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
-  const WalletOptions({Key? keyMyWallets, required this.wallet}) : super(key: keyMyWallets);
+  const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated}) : super(key: keyMyWallets);
   final WalletEntity wallet;
+  final VoidCallback? onDerivationCreated;
 
   @override
   ConsumerState<WalletOptions> createState() => _WalletOptionsState();
@@ -157,7 +157,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                                   !IdentityUtils.hasIdentity(ref, widget.wallet.address))
                                 deleteWallet(context, ref, walletOptions, currentSafe),
                               if (IdentityUtils.hasIdentity(ref, widget.wallet.address)) const ManageMembershipButton(),
-                              if (isAlone) aloneWalletOptions(context, ref),
+                              if (isAlone)
+                                aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
                             ],
                           );
                         },
@@ -497,7 +498,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   }
 }
 
-Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
+Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? onDerivationCreated}) {
   final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
   return Column(
     children: [
@@ -533,7 +534,9 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref) {
             if (!await myWalletProvider.askPinCode()) return;
             String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
             await myWalletProvider.generateNewDerivation(context, newDerivationName);
-            Navigator.pushReplacementNamed(context, RouteNames.myWallets);
+
+            // Call the callback if provided (when embedded in WalletsHome)
+            onDerivationCreated?.call();
           }
         },
         child: Container(

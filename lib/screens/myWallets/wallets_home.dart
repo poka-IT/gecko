@@ -11,6 +11,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
+import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
 import 'package:gecko/widgets/buttons/safe_options_buttons.dart';
@@ -29,25 +30,44 @@ class WalletsHome extends ConsumerStatefulWidget {
 }
 
 class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProviderStateMixin {
+  bool _forceMultiWalletView = false;
+
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
-    // If only one wallet, navigate to WalletOptions instead of showing inline
-    if (myWalletProvider.listWallets.length == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          Navigator.of(context).pushReplacementNamed(
-            RouteNames.walletOptions,
-            arguments: WalletOptionsArguments(wallet: myWalletProvider.listWallets[0]),
+    // Use a Builder to properly handle state transitions
+    return Builder(
+      builder: (context) {
+        // If only one wallet and we're not forcing multi-wallet view, show WalletOptions directly
+        if (myWalletProvider.listWallets.length == 1 && !_forceMultiWalletView) {
+          return WalletOptions(
+            wallet: myWalletProvider.listWallets[0],
+            onDerivationCreated: () {
+              // When a derivation is created from single wallet context,
+              // force showing the multi-wallet view
+              setState(() {
+                _forceMultiWalletView = true;
+              });
+            },
           );
         }
-      });
-      // Show loading screen while navigation happens
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
 
-    return Scaffold(body: _WalletsHomeContent());
+        // Reset the force flag when we have multiple wallets
+        if (myWalletProvider.listWallets.length > 1 && _forceMultiWalletView) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _forceMultiWalletView = false;
+              });
+            }
+          });
+        }
+
+        // Show the wallets list
+        return Scaffold(body: _WalletsHomeContent());
+      },
+    );
   }
 }
 

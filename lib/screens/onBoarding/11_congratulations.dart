@@ -168,7 +168,7 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> {
 
     if (biometricState.canEnroll && !_biometricSetupAttempted) {
       // Add delay before showing the bottom sheet
-      await Future.delayed(const Duration(milliseconds: 1000));
+      await Future.delayed(const Duration(milliseconds: 300));
       if (mounted && !_biometricSetupAttempted && context.mounted) {
         _handleBiometricSetup(context, ref, pinCode);
       }

@@ -1,5 +1,5 @@
 {
-  "initial_monetary_mass": 100100,
+  "initial_monetary_mass": 110100,
   "current_block": {
     "number": 0,
     "medianTime": 1700000000
@@ -120,6 +120,20 @@
         "Ferdie": 2700000000
       },
       "owner_address": "5GAT6CJW8yVKwUuQc7sM5Kk9GZVTpbZYk9PfjNXtvnNgAJZ1"
+    },
+    "ChistCosmic": {
+      "index": 9,
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Charlie": 2700000000,
+        "Dave": 2700000000
+      },
+      "owner_address": "5Gq9Bucov9eW3rV772ek9MLyKSSC8YnfQ6WBAtnGYgkA1ymG"
     }
   },
   "wallets": {

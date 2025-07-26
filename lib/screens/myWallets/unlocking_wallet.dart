@@ -399,8 +399,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                       if (currentSafeIndex < allSafes.length)
                         BiometricAuthButton(
                           onAuthSuccess: (String pin) {
-                            // Auto-fill PIN field and trigger completion with biometric flag
-                            enterPin.text = pin;
                             _handlePinCompletion(pin, fromBiometric: true);
                           },
                           onAuthFailure: (String error) {

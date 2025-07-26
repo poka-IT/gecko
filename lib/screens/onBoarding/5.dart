@@ -13,6 +13,7 @@ import 'package:gecko/providers/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart';
 
@@ -67,77 +68,15 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
     await _generateMnemonicList();
   }
 
-  Widget sentanceArray() {
+  Widget sentenceArray() {
     if (mnemonicList == null) {
       return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
     }
 
-    return Container(
-      constraints: BoxConstraints(maxWidth: scaleSize(360)),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        color: const Color(0xffeeeedd),
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-      ),
-      padding: EdgeInsets.all(scaleSize(14)),
-      child: Stack(
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  arrayCell(1, mnemonicList![0]),
-                  arrayCell(2, mnemonicList![1]),
-                  arrayCell(3, mnemonicList![2]),
-                  arrayCell(4, mnemonicList![3]),
-                ],
-              ),
-              ScaledSizedBox(height: 15),
-              Row(
-                children: <Widget>[
-                  arrayCell(5, mnemonicList![4]),
-                  arrayCell(6, mnemonicList![5]),
-                  arrayCell(7, mnemonicList![6]),
-                  arrayCell(8, mnemonicList![7]),
-                ],
-              ),
-              ScaledSizedBox(height: 15),
-              Row(
-                children: <Widget>[
-                  arrayCell(9, mnemonicList![8]),
-                  arrayCell(10, mnemonicList![9]),
-                  arrayCell(11, mnemonicList![10]),
-                  arrayCell(12, mnemonicList![11]),
-                ],
-              ),
-            ],
-          ),
-          if (isLoading)
-            Container(
-              color: const Color(0xffeeeedd).withValues(alpha: 0.7),
-              child: Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2)),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget arrayCell(int index, String dataWord) {
-    return ScaledSizedBox(
-      width: 82,
-      child: Column(
-        children: <Widget>[
-          Text(index.toString(), style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52))),
-          Text(
-            dataWord,
-            key: keyMnemonicWord(index.toString()),
-            style: scaledTextStyle(fontSize: 15, color: Colors.black),
-          ),
-        ],
-      ),
+    return MnemonicDisplayWidget(
+      mnemonicWords: mnemonicList!,
+      isLoading: isLoading,
+      useWordAsKey: false, // Use index as key for onboarding
     );
   }
 
@@ -157,7 +96,7 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
                   ScaledSizedBox(height: isTall ? 25 : 5),
                   BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
                   ScaledSizedBox(height: isTall ? 15 : 5),
-                  sentanceArray(),
+                  sentenceArray(),
                   ScaledSizedBox(height: isTall ? 17 : 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

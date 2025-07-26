@@ -321,6 +321,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                 // Safe display - either slider (if canSwitch) or static (if locked)
                 widget.canSwitch ? _buildSafeSlider(context) : _buildStaticSafeDisplay(context),
                 ScaledSizedBox(height: isTall ? 30 : 15),
+
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: EdgeInsets.all(isTall ? 24 : 16),
@@ -395,18 +396,19 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                       ScaledSizedBox(height: isTall ? 12 : 8),
 
                       // Biometric authentication button
-                      BiometricAuthButton(
-                        onAuthSuccess: (String pin) {
-                          // Auto-fill PIN field and trigger completion with biometric flag
-                          enterPin.text = pin;
-                          _handlePinCompletion(pin, fromBiometric: true);
-                        },
-                        onAuthFailure: (String error) {
-                          // Error is already shown by the button widget
-                        },
-                        tooltip: 'useBiometricAuthentication'.tr(),
-                        size: 50.0,
-                      ),
+                      if (currentSafeIndex < allSafes.length)
+                        BiometricAuthButton(
+                          onAuthSuccess: (String pin) {
+                            // Auto-fill PIN field and trigger completion with biometric flag
+                            enterPin.text = pin;
+                            _handlePinCompletion(pin, fromBiometric: true);
+                          },
+                          onAuthFailure: (String error) {
+                            // Error is already shown by the button widget
+                          },
+                          tooltip: 'useBiometricAuthentication'.tr(),
+                          size: 50.0,
+                        ),
 
                       ScaledSizedBox(height: isTall ? 12 : 8),
                       if (canUnlock)
@@ -476,9 +478,14 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                   // Regular safe selected
                   currentSafe = allSafes[index];
                   currentSafeNumber = currentSafe.number;
+
+                  // Update the default safe to the currently selected one
+                  ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
+
                   // Reset PIN state when changing safes
                   enterPin.clear();
                   pinColor = const Color(0xffF9F9F1);
+                  ref.read(biometricProvider.notifier).refresh();
                 }
                 // If placeholder is selected, we don't update currentSafe
               });

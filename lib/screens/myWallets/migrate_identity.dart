@@ -252,7 +252,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                       ScaledSizedBox(height: isSmall ? 12 : 16),
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: context.colorScheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey[300]!),
                         ),
@@ -317,7 +317,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                       // Champ d'adresse
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: context.colorScheme.surfaceContainer,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey[300]!),
                         ),
@@ -390,7 +390,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
             Container(
               padding: EdgeInsets.all(scaleSize(isSmall ? 16 : 24)),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.colorScheme.surfaceContainer,
                 boxShadow: [
                   BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: Offset(0, -5)),
                 ],

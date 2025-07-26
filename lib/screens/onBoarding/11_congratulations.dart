@@ -32,20 +32,15 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> {
     final conffetiController = ConfettiController(duration: const Duration(milliseconds: 500));
     conffetiController.play();
 
-    final biometricState = ref.watch(biometricProvider);
-
     // Get PIN code from route arguments
     final args = ModalRoute.of(context)?.settings.arguments as OnboardingStepElevenArguments?;
     final pinCode = args?.pinCode;
 
     // Auto-trigger biometric setup bottom sheet if available, PIN is available, and not already attempted
-    if (biometricState.canEnroll && pinCode != null && !_biometricSetupAttempted) {
+    if (pinCode != null && !_biometricSetupAttempted) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        // Add 300ms delay before showing the bottom sheet
-        await Future.delayed(const Duration(milliseconds: 300));
-        if (mounted && !_biometricSetupAttempted && context.mounted) {
-          _handleBiometricSetup(context, ref, pinCode);
-        }
+        // Wait for biometric provider to finish loading, then check canEnroll
+        await _waitForBiometricAndSetup(context, ref, pinCode);
       });
     }
 
@@ -158,13 +153,32 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> {
     );
   }
 
+  /// Wait for biometric provider to load and setup biometric if possible
+  Future<void> _waitForBiometricAndSetup(BuildContext context, WidgetRef ref, String pinCode) async {
+    // Read the biometric provider and wait for it to finish loading
+    ref.read(biometricProvider.notifier);
+
+    // Keep checking until the provider is no longer loading
+    while (ref.read(biometricProvider).isLoading) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    // Now read the final state and check if we can enroll
+    final biometricState = ref.read(biometricProvider);
+
+    if (biometricState.canEnroll && !_biometricSetupAttempted) {
+      // Add delay before showing the bottom sheet
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (mounted && !_biometricSetupAttempted && context.mounted) {
+        _handleBiometricSetup(context, ref, pinCode);
+      }
+    }
+  }
+
   /// Handle biometric setup during onboarding
   Future<void> _handleBiometricSetup(BuildContext context, WidgetRef ref, String pinCode) async {
     try {
-      // Mark as attempted to prevent multiple openings
-      setState(() {
-        _biometricSetupAttempted = true;
-      });
+      _biometricSetupAttempted = true;
 
       // Show bottom sheet for biometric setup confirmation
       final shouldSetup = await showModalBottomSheet<bool>(

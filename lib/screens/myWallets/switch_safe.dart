@@ -143,6 +143,7 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                   onPressed: () async {
                     ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafe);
                     myWalletProvider.pinCode = '';
+                    await ref.read(biometricProvider.notifier).refresh();
                     if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
 
                     Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:gecko/providers/wallets_profiles.dart';
@@ -14,6 +13,7 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/loading.dart';
+import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -109,7 +109,11 @@ class ShowSeed extends ConsumerWidget {
                           children: [
                             BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
                             ScaledSizedBox(height: 35),
-                            sentanceArray(context, mnemonicWords),
+                            MnemonicDisplayWidget(
+                              mnemonicWords: mnemonicWords,
+                              isLoading: false,
+                              useWordAsKey: true, // Use word as key for show_seed
+                            ),
                             ScaledSizedBox(height: 20),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -218,67 +222,6 @@ class ShowSeed extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget sentanceArray(BuildContext context, List mnemonic) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: scaleSize(360)),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        color: const Color(0xffeeeedd),
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-      ),
-      padding: EdgeInsets.all(scaleSize(14)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              arrayCell(mnemonic[0], 1),
-              arrayCell(mnemonic[1], 2),
-              arrayCell(mnemonic[2], 3),
-              arrayCell(mnemonic[3], 4),
-            ],
-          ),
-          ScaledSizedBox(height: 15),
-          Row(
-            children: <Widget>[
-              arrayCell(mnemonic[4], 5),
-              arrayCell(mnemonic[5], 6),
-              arrayCell(mnemonic[6], 7),
-              arrayCell(mnemonic[7], 8),
-            ],
-          ),
-          ScaledSizedBox(height: 15),
-          Row(
-            children: <Widget>[
-              arrayCell(mnemonic[8], 9),
-              arrayCell(mnemonic[9], 10),
-              arrayCell(mnemonic[10], 11),
-              arrayCell(mnemonic[11], 12),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget arrayCell(String dataWord, int nbr) {
-    return ScaledSizedBox(
-      width: 82,
-      child: Column(
-        children: <Widget>[
-          Text(nbr.toString(), style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52))),
-          Text(
-            dataWord,
-            key: keyMnemonicWord(dataWord),
-            style: scaledTextStyle(fontSize: 15, color: Colors.black),
-          ),
-        ],
       ),
     );
   }

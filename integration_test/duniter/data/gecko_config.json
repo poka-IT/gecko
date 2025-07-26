@@ -38,13 +38,13 @@
     "distance_evaluation_period": 120
   },
   "clique_smiths": [
-    { "name": "test1" },
-    { "name": "test2" },
-    { "name": "test3" },
-    { "name": "test4" },
+    { "name": "Bob" },
+    { "name": "Charlie" },
+    { "name": "Dave" },
+    { "name": "Eve" },
     { "name": "Alice" }
   ],
-  "sudo_key": "5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa",
-  "treasury_funder_address": "5FeggKqw2AbnGZF9Y9WPM2QTgzENS3Hit94Ewgmzdg5a3LNa",
-  "technical_committee": ["test1", "test2", "test3"]
+  "sudo_key": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  "treasury_funder_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  "technical_committee": ["Bob", "Charlie", "Dave"]
 }

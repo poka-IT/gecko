@@ -1,0 +1,141 @@
+{
+  "first_ud_value": 1000,
+  "first_ud_reeval": 1700000100,
+  "current_block": {
+    "number": 1000,
+    "medianTime": 1700000000
+  },
+  "initial_monetary_mass": 110100,
+  "identities": {
+    "Alice": {
+      "index": 1,
+      "owner_pubkey": "FHNpKmJrUtusuvKPGomAygQqeiks98bdV6yD61Stb6vg",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Charlie": 2700000000,
+        "Dave": 2700000000,
+        "Eve": 2700000000,
+        "Ferdie": 2700000000,
+        "test1": 2700000000,
+        "testCesium1": 2700000000
+      }
+    },
+    "Bob": {
+      "index": 2,
+      "owner_pubkey": "AbygL37RheNZv327cMvZPqKYLLkZ6wqWYexRxgNiZyeP",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Charlie": 2700000000,
+        "Dave": 2700000000,
+        "Eve": 2700000000
+      }
+    },
+    "Charlie": {
+      "index": 3,
+      "owner_pubkey": "AjtNsBf2JLsVANbtsqLTLrGz5JxDRosGT8XXqn1cPvSd",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Dave": 2700000000,
+        "Eve": 2700000000
+      }
+    },
+    "Dave": {
+      "index": 4,
+      "owner_pubkey": "4Fwn759SGcdwkC1Pa59VFVNfhfKbFFsijuLUQenM2c9V",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Charlie": 2700000000,
+        "Eve": 2700000000
+      }
+    },
+    "Eve": {
+      "index": 5,
+      "owner_pubkey": "GWC4aPhxf4UAL67HP11RLkH3aEBhuotuybsGFMPfascH",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Charlie": 2700000000,
+        "Dave": 2700000000
+      }
+    },
+    "Ferdie": {
+      "index": 6,
+      "owner_pubkey": "2wBj26yH2rhgr6PLJCewz7W3EdVd9fyuwyrvbdah2R95",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Charlie": 2700000000,
+        "Dave": 2700000000
+      }
+    },
+    "test1": {
+      "index": 7,
+      "owner_pubkey": "3urnCrqWzBx3JofmPu2GPaffMmWZn1s7qt6tRGfjuBv5",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000
+      }
+    },
+    "testCesium1": {
+      "index": 8,
+      "owner_pubkey": "DCovzCEnQm9GUWe6mr8u42JR1JAuoj3HbQUGdCkfTzSr",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Charlie": 2700000000,
+        "Dave": 2700000000,
+        "Eve": 2700000000,
+        "Ferdie": 2700000000
+      }
+    },
+    "ChistCosmic": {
+      "index": 9,
+      "owner_pubkey": "FBzzzdnktXuH852r1X9SxdoXw3hSykLjtZjz4d3tUqCj",
+      "balance": 10000,
+      "revoked": false,
+      "membership_expire_on": 2700000000,
+      "membership_revokes_on": 2700000001,
+      "next_cert_issuable_on": 0,
+      "certs_received": {
+        "Bob": 2700000000,
+        "Charlie": 2700000000,
+        "Dave": 2700000000
+      }
+    }
+  }
+}

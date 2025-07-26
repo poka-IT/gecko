@@ -78,3 +78,8 @@ docker compose up -d
 
 echo "[INFO] Tailing last 50 lines of logs (follow mode)..."
 docker compose logs -f -n50
+
+# echo "[INFO] Waiting for Squid to be ready..."
+# cd ../squid
+# docker compose down -v
+# docker compose up -d

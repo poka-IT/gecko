@@ -1,0 +1,298 @@
+{
+    "name": "Ğdev Local Testnet",
+    "id": "gdev_local",
+    "chainType": "Local",
+    "bootNodes": [
+      "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWHwauePTJ2Ymfq7JzGVEr9VhsJzK27m6Kdm9nUSbGSXCZ"
+    ],
+    "telemetryEndpoints": null,
+    "protocolId": null,
+    "properties": {
+      "tokenDecimals": 2,
+      "tokenSymbol": "ĞD"
+    },
+    "codeSubstitutes": {},
+    "genesis": {
+      "runtimeGenesis": {
+        "patch": {
+          "account": {
+            "accounts": {
+              "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy": {
+                "balance": 1000000,
+                "idty_id": 4
+              },
+              "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": {
+                "balance": 1000000,
+                "idty_id": 2
+              },
+              "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": {
+                "balance": 1000000,
+                "idty_id": 3
+              },
+              "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": {
+                "balance": 1000000,
+                "idty_id": 1
+              }
+            },
+            "treasuryBalance": 100
+          },
+          "authorityMembers": {
+            "initialAuthorities": {
+              "1": [
+                "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                true
+              ],
+              "2": [
+                "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+                false
+              ],
+              "3": [
+                "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+                false
+              ]
+            }
+          },
+          "babe": {
+            "epochConfig": {
+              "allowed_slots": "PrimaryAndSecondaryVRFSlots",
+              "c": [
+                1,
+                4
+              ]
+            }
+          },
+          "balances": {
+            "totalIssuance": 4000000
+          },
+          "certification": {
+            "applyCertPeriodAtGenesis": false,
+            "certsByReceiver": {
+              "1": {
+                "2": 1000000,
+                "3": 1000000,
+                "4": 1000000
+              },
+              "2": {
+                "1": 1000000,
+                "3": 1000000,
+                "4": 1000000
+              },
+              "3": {
+                "1": 1000000,
+                "2": 1000000,
+                "4": 1000000
+              },
+              "4": {
+                "1": 1000000,
+                "2": 1000000,
+                "3": 1000000
+              }
+            }
+          },
+          "identity": {
+            "identities": [
+              {
+                "index": 1,
+                "name": [
+                  65,
+                  108,
+                  105,
+                  99,
+                  101
+                ],
+                "value": {
+                  "data": {
+                    "first_eligible_ud": 1
+                  },
+                  "next_creatable_identity_on": 0,
+                  "next_scheduled": 1000,
+                  "old_owner_key": null,
+                  "owner_key": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                  "status": "Member"
+                }
+              },
+              {
+                "index": 2,
+                "name": [
+                  66,
+                  111,
+                  98
+                ],
+                "value": {
+                  "data": {
+                    "first_eligible_ud": 1
+                  },
+                  "next_creatable_identity_on": 0,
+                  "next_scheduled": 1000,
+                  "old_owner_key": null,
+                  "owner_key": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+                  "status": "Member"
+                }
+              },
+              {
+                "index": 3,
+                "name": [
+                  67,
+                  104,
+                  97,
+                  114,
+                  108,
+                  105,
+                  101
+                ],
+                "value": {
+                  "data": {
+                    "first_eligible_ud": 1
+                  },
+                  "next_creatable_identity_on": 0,
+                  "next_scheduled": 1000,
+                  "old_owner_key": null,
+                  "owner_key": "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+                  "status": "Member"
+                }
+              },
+              {
+                "index": 4,
+                "name": [
+                  68,
+                  97,
+                  118,
+                  101
+                ],
+                "value": {
+                  "data": {
+                    "first_eligible_ud": 1
+                  },
+                  "next_creatable_identity_on": 0,
+                  "next_scheduled": 1000,
+                  "old_owner_key": null,
+                  "owner_key": "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+                  "status": "Member"
+                }
+              }
+            ]
+          },
+          "membership": {
+            "memberships": {
+              "1": {
+                "expire_on": 0
+              },
+              "2": {
+                "expire_on": 0
+              },
+              "3": {
+                "expire_on": 0
+              },
+              "4": {
+                "expire_on": 0
+              }
+            }
+          },
+          "parameters": {
+            "parameters": {
+              "babe_epoch_duration": 30,
+              "cert_max_by_issuer": 10,
+              "cert_min_received_cert_to_issue_cert": 2,
+              "cert_period": 15,
+              "cert_validity_period": 1000,
+              "idty_confirm_period": 40,
+              "idty_creation_period": 50,
+              "membership_period": 1000,
+              "membership_renewal_period": 1000,
+              "smith_cert_max_by_issuer": 8,
+              "smith_inactivity_max_duration": 48,
+              "smith_wot_min_cert_for_membership": 2,
+              "ud_creation_period": 60000,
+              "ud_reeval_period": 1200000,
+              "wot_first_cert_issuable_on": 20,
+              "wot_min_cert_for_create_idty_right": 2,
+              "wot_min_cert_for_membership": 2
+            }
+          },
+          "quota": {
+            "identities": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          "session": {
+            "keys": [
+              [
+                "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+                "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+                {
+                  "authority_discovery": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+                  "babe": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+                  "grandpa": "5GoNkf6WdbxCFnPdAnYYQyCjAKPJgLNxXwPjwTh6DGg6gN3E",
+                  "im_online": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+                }
+              ],
+              [
+                "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+                "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+                {
+                  "authority_discovery": "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+                  "babe": "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+                  "grandpa": "5DbKjhNLpqX3zqZdNBc9BGb4fHU1cRBaDhJUskrvkwfraDi6",
+                  "im_online": "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
+                }
+              ],
+              [
+                "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                {
+                  "authority_discovery": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                  "babe": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                  "grandpa": "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu",
+                  "im_online": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+                }
+              ]
+            ]
+          },
+          "smithMembers": {
+            "initialSmiths": {
+              "1": [
+                true,
+                [
+                  2,
+                  3
+                ]
+              ],
+              "2": [
+                true,
+                [
+                  1,
+                  3
+                ]
+              ],
+              "3": [
+                true,
+                [
+                  1,
+                  2
+                ]
+              ]
+            }
+          },
+          "sudo": {
+            "key": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+          },
+          "technicalCommittee": {
+            "members": [
+              "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+              "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+              "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
+            ]
+          },
+          "universalDividend": {
+            "firstReeval": null,
+            "firstUd": null,
+            "initialMonetaryMass": 4000000,
+            "ud": 1000
+          }
+        }
+      }
+    }
+  }

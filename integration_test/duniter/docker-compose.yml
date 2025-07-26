@@ -3,6 +3,8 @@ services:
     container_name: duniter-v2s-gecko-tests
     image: duniter/duniter-v2s-gdev-800
     command: --alice --force-authoring --reserved-only --no-mdns
+    networks:
+      - duniter
     #--sealing=manual
     ports:
       - "127.0.0.1:9615:9615"
@@ -16,3 +18,7 @@ services:
       DUNITER_GENESIS_DATA: "/var/lib/duniter/gecko_data.json"
     volumes:
       - ./data:/var/lib/duniter
+
+networks:
+  duniter:
+    name: gdev-default

@@ -1,0 +1,10 @@
+[
+    {
+      "blockNumber": 42,
+      "timestamp": 1412345678,
+      "from": "2ny7YAdmzReQxAayyJZsyVYwYhVyax2thKcGknmQy5nQ",
+      "to": "Com8rJukCozHZyFao6AheSsfDQdPApxQRnz7QYFf64mm",
+      "amount": 1,
+      "comment": "fake genesis tx"
+    }
+  ]

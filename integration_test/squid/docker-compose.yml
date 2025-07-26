@@ -1,0 +1,65 @@
+services:
+  processor:
+    image: h30x/duniter-squid-gtest
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'process:prod'"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=5432
+      - DB_HOST=db
+      - DB_PASS=${DB_PASSWORD}
+      - RPC_ENDPOINT=${RPC_ENDPOINT}
+      - GENESIS_FILE=${GENESIS_FILE}
+      - HIST_GEN_FILE=${HIST_GEN_FILE}
+      - HIST_BLOCK_FILE=${HIST_BLOCK_FILE}
+      - HIST_TX_FILE=${HIST_TX_FILE}
+      - HIST_CERT_FILE=${HIST_CERT_FILE}
+
+      # ports:
+      # prometheus metrics exposed at port 3000
+      # - "3000:3000"
+    command: ["sqd", "process:prod"]
+    volumes:
+      - ./data:/squid/data/
+    networks:
+      - default
+      - duniter
+  db:
+    image: postgres:15
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME}"]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+  hasura-squid:
+    image: poka/duniter-squid-hasura:latest
+    depends_on:
+      processor:
+        condition: service_healthy
+    restart: always
+    ports:
+      - "${HASURA_LISTEN_PORT}:8080"
+    environment:
+      PRODUCTION: "true"
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:${DB_PASSWORD}@db:5432/${DB_NAME}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "false"
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: public
+      HASURA_GRAPHQL_ENABLE_TELEMETRY: "false"
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+
+networks:
+  duniter:
+    name : gdev-default
+    external: true

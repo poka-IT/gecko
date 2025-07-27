@@ -464,6 +464,6 @@
     "certificationInactive": "Certificazione inattiva",
     "showOnlyActiveCertifications": "Mostra solo certificazioni attive",
     "issuer": "Emittente",
-      "receiver": "Ricevente",
-  "automaticIncome": "Reddito automatico"
+    "receiver": "Ricevente",
+    "automaticIncome": "Reddito automatico"
 }

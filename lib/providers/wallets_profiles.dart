@@ -70,7 +70,10 @@ class WalletsProfilesProvider with ChangeNotifier {
     }
     ScanResult? barcode;
     try {
-      barcode = await BarcodeScanner.scan();
+      final scanOptions = ScanOptions(
+        strings: {'cancel': 'cancel'.tr(), 'flash_on': 'Flash on', 'flash_off': 'Flash off'},
+      );
+      barcode = await BarcodeScanner.scan(options: scanOptions);
     } catch (e) {
       log.e("BarcodeScanner ERR: $e");
       return;

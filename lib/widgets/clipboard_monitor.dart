@@ -27,7 +27,7 @@ class ClipboardMonitor extends ChangeNotifier {
       _debounceTimer?.cancel();
       _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
         if (isAddress(newContent)) {
-          searchProvider.pastedAddress = newContent;
+          searchProvider.pastedAddress = isAddressValidToSs58(newContent);
           searchProvider.canPasteAddress = true;
           searchProvider.reload();
         } else if (isPubkey(newContent)) {

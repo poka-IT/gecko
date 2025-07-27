@@ -85,9 +85,10 @@ class WalletsProfilesProvider with ChangeNotifier {
 
     if (isAddressOrPubkey(barcodeContent)) {
       if (!(isAddress(barcodeContent))) {
-        address = _container.read(utilsProvider).pubkeyV1ToAddress(barcodeContent);
+        final addressTmp = _container.read(utilsProvider).pubkeyV1ToAddress(barcodeContent);
+        address = isAddressValidToSs58(addressTmp);
       } else {
-        address = barcodeContent;
+        address = isAddressValidToSs58(barcodeContent);
       }
 
       Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
@@ -148,6 +149,15 @@ bool isAddress(String address) {
   final container = ProviderContainer();
   try {
     return container.read(utilsProvider).isAddressValid(address);
+  } finally {
+    container.dispose();
+  }
+}
+
+String isAddressValidToSs58(String address) {
+  final container = ProviderContainer();
+  try {
+    return container.read(utilsProvider).isAddressValidToSs58(address);
   } finally {
     container.dispose();
   }

@@ -18,7 +18,7 @@ class SearchProvider with ChangeNotifier {
   Future<List<G1WalletsList>> searchAddress() async {
     late String address;
     if (isAddress(searchController.text)) {
-      address = searchController.text;
+      address = isAddressValidToSs58(searchController.text);
     } else if (isPubkey(searchController.text)) {
       address = ProviderContainer().read(utilsProvider).pubkeyV1ToAddress(searchController.text);
     } else {

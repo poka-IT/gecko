@@ -11,6 +11,7 @@ import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/my_wallets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -135,11 +136,8 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                 width: 300,
                 height: 50,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    backgroundColor: context.colorScheme.primary,
-                  ),
+                child: PrimaryButton(
+                  label: 'openThisSafe'.tr(),
                   onPressed: () async {
                     ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafe);
                     myWalletProvider.pinCode = '';

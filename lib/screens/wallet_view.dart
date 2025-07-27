@@ -395,6 +395,6 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     // Use askPinCode() method for authentication
     if (!await myWalletProvider.askPinCode()) return;
 
-    paymentPopup(ref: ref, toAddress: address, username: username);
+    paymentPopup(toAddress: address, username: username);
   }
 }

@@ -710,7 +710,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                               // Only add extra space if there's an identity name AND a comment
                               // Otherwise, let the Stack positioning handle the layout
                               final shouldAddSpace = hasIdentityName && _currentTransactionData.comment.isNotEmpty;
-                              final baseHeight = shouldAddSpace ? 50.0 : 0.0;
+                              final baseHeight = shouldAddSpace ? 50.0 : 20.0;
 
                               return ScaledSizedBox(height: baseHeight);
                             },

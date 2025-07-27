@@ -55,7 +55,6 @@ class DragTuleAction extends ConsumerWidget {
             await ref.read(walletServiceProvider).setDefaultAddress(walletData.address);
           }
           paymentPopup(
-            ref: ref,
             toAddress: wallet.address,
             username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!,
           );

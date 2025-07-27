@@ -83,7 +83,7 @@ class ContactsList extends ConsumerWidget {
                         horizontalTitleGap: 7,
                         contentPadding: const EdgeInsets.all(5),
                         dense: !isTall,
-                        leading: DatapodAvatar(address: g1Wallet.address, size: 47),
+                        leading: DatapodAvatar(address: g1Wallet.address, size: 47, name: g1Wallet.username),
                         title: Row(
                           children: <Widget>[
                             Expanded(

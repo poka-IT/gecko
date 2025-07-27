@@ -32,6 +32,12 @@ class TransactionTile extends StatelessWidget {
     final String? username = transaction.username == '' ? null : transaction.username;
     final BigInt finalAmount = transaction.isReceived ? transaction.amount : transaction.amount * BigInt.from(-1);
 
+    final shouldAddSpace =
+        transaction.comment != null &&
+        transaction.comment!.isNotEmpty &&
+        transaction.comment!.length > 14 &&
+        username != null;
+
     // Different UI for Universal Dividends
     if (transaction.type == TransactionType.universalDividend) {
       return _buildUniversalDividendTile(context, newKey, finalAmount);
@@ -159,9 +165,8 @@ class TransactionTile extends StatelessWidget {
                             ],
                           ),
 
-                          // Add space for comment when present (more space if there's also a username)
-                          if (transaction.comment != null && transaction.comment!.isNotEmpty)
-                            ScaledSizedBox(height: username != null ? 25 : 0),
+                          // Add space for comment when present (more space if there's also a username and comment is long)
+                          if (shouldAddSpace) ScaledSizedBox(height: 25),
                         ],
                       ),
 

@@ -32,12 +32,14 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
         return _buildAppBar(context, ref, isEmptyWallet);
       },
       loading: () {
-        // While loading, assume empty wallet (will show error color)
-        return _buildAppBar(context, ref, true);
+        // During loading, use neutral tertiary color to avoid flicker
+        // We don't know the balance yet, so don't assume empty wallet
+        return _buildAppBar(context, ref, false);
       },
       error: (error, stack) {
-        // On error, assume empty wallet (will show error color)
-        return _buildAppBar(context, ref, true);
+        // On error, use neutral tertiary color instead of error color
+        // This prevents red flash during navigation
+        return _buildAppBar(context, ref, false);
       },
     );
   }
@@ -57,8 +59,13 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
             // Contact Button
             old_provider.Consumer<WalletsProfilesProvider>(
               builder: (context, profile, _) {
+                // Only rebuild this specific widget when contact status changes
+                final isContactValue = profile.isContact(address);
                 return IconButton(
                   onPressed: () async {
+                    // Prevent multiple rapid taps during navigation
+                    if (!context.mounted) return;
+
                     G1WalletsList? newContact;
                     g1WalletsBox.toMap().forEach((key, value) {
                       if (key == address) newContact = value;
@@ -66,7 +73,7 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     await profile.addContact(newContact ?? G1WalletsList(address: address));
                   },
                   icon: Icon(
-                    profile.isContact(address) ? Icons.add_reaction_rounded : Icons.add_reaction_outlined,
+                    isContactValue ? Icons.add_reaction_rounded : Icons.add_reaction_outlined,
                     size: scaleSize(27),
                     color: context.colorScheme.onSecondaryContainer,
                   ),

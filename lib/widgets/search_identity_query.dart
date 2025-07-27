@@ -73,7 +73,7 @@ class SearchIdentityQuery extends ConsumerWidget {
       key: keySearchResult(identity.address),
       horizontalTitleGap: 10,
       contentPadding: const EdgeInsets.only(right: 2),
-      leading: DatapodAvatar(address: identity.address, size: avatarSize),
+      leading: DatapodAvatar(address: identity.address, size: avatarSize, name: identity.name),
       title: Row(
         children: <Widget>[
           Text(

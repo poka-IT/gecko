@@ -40,6 +40,7 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
   late String address;
   late String? username;
   late Future<WalletHeaderData> _headerDataFuture;
+  late WalletsProfilesProvider? _walletProfile;
 
   @override
   void initState() {
@@ -47,6 +48,14 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     address = widget.address;
     username = widget.username;
     _headerDataFuture = _loadWalletData();
+
+    // Set up wallet profile once during initialization to avoid rebuilds
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _walletProfile = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
+        _walletProfile?.address = address;
+      }
+    });
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
@@ -74,9 +83,8 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletProfile = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
-
-    walletProfile.address = address;
+    // Remove the provider assignment from build method to prevent rebuilds
+    // It's now handled in initState
 
     return FutureBuilder<WalletHeaderData>(
       future: _headerDataFuture,

@@ -26,6 +26,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Timer? debounce;
   final int debouneTime = 50;
   late FocusNode _searchFocusNode;
+  bool _isNavigating = false; // Add flag to prevent rebuilds during navigation
 
   @override
   void initState() {
@@ -47,7 +48,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
-        searchProvider.searchController.text = '';
+        // Only clear text if we're not navigating to prevent unnecessary rebuilds
+        if (!_isNavigating) {
+          searchProvider.searchController.text = '';
+        }
+        _isNavigating = false; // Reset flag
       },
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
@@ -63,12 +68,19 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: TextField(
                   onSubmitted: searchProvider.searchController.text.length >= 2
                       ? (_) {
+                          _isNavigating = true; // Set flag before navigation
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return const SearchResultScreen();
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => const SearchResultScreen(),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                // Fast fade transition to reduce visual jarring
+                                return FadeTransition(
+                                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                                  child: child,
+                                );
                               },
+                              transitionDuration: const Duration(milliseconds: 200),
                             ),
                           );
                         }
@@ -81,10 +93,17 @@ class _SearchScreenState extends State<SearchScreen> {
                   maxLines: 1,
                   textAlign: TextAlign.left,
                   onChanged: (v) => {
-                    if (debounce?.isActive ?? false) {debounce!.cancel()},
-                    debounce = Timer(Duration(milliseconds: debouneTime), () {
-                      searchProvider.reload();
-                    }),
+                    // Only trigger debounce if not navigating
+                    if (!_isNavigating)
+                      {
+                        if (debounce?.isActive ?? false) {debounce!.cancel()},
+                        debounce = Timer(Duration(milliseconds: debouneTime), () {
+                          if (!_isNavigating) {
+                            // Double check before triggering reload
+                            searchProvider.reload();
+                          }
+                        }),
+                      },
                   },
                   decoration: InputDecoration(
                     filled: true,
@@ -155,23 +174,38 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     onPressed: canValidate
                         ? () {
+                            _isNavigating = true; // Set flag before navigation
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return const SearchResultScreen();
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, secondaryAnimation) => const SearchResultScreen(),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  // Fast fade transition to reduce visual jarring
+                                  return FadeTransition(
+                                    opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                                    child: child,
+                                  );
                                 },
+                                transitionDuration: const Duration(milliseconds: 200),
                               ),
                             );
                           }
                         : searchProvider.canPasteAddress
                         ? () async {
+                            _isNavigating = true; // Set flag before navigation
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return WalletViewScreen(address: searchProvider.pastedAddress, username: null);
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation, secondaryAnimation) =>
+                                    WalletViewScreen(address: searchProvider.pastedAddress, username: null),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  // Fast fade transition to reduce visual jarring
+                                  return FadeTransition(
+                                    opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                                    child: child,
+                                  );
                                 },
+                                transitionDuration: const Duration(milliseconds: 200),
                               ),
                             );
                           }

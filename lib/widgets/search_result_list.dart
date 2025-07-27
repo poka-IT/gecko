@@ -54,7 +54,7 @@ class SearchResult extends StatelessWidget {
       key: keySearchResult(g1Wallet.address),
       horizontalTitleGap: 10,
       contentPadding: const EdgeInsets.all(5),
-      leading: DatapodAvatar(address: g1Wallet.address, size: avatarSize),
+      leading: DatapodAvatar(address: g1Wallet.address, size: avatarSize, name: g1Wallet.username),
       title: Row(
         children: <Widget>[
           Text(
@@ -84,10 +84,7 @@ class SearchResult extends StatelessWidget {
       subtitle: Row(
         children: <Widget>[
           NameByAddress(
-            wallet: WalletEntity.create(
-              address: g1Wallet.address,
-              keyPairType: Durt.defaultKeyPairType,
-            ),
+            wallet: WalletEntity.create(address: g1Wallet.address, keyPairType: Durt.defaultKeyPairType),
             size: 14,
           ),
         ],
@@ -98,11 +95,20 @@ class SearchResult extends StatelessWidget {
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) {
-              walletsProfilesClass.address = g1Wallet.address;
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) {
+              // Remove the provider address assignment to prevent rebuilds
+              // This will be handled in WalletViewScreen's initState
               return WalletViewScreen(address: g1Wallet.address, username: g1Wallet.username);
             },
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              // Fast fade transition to reduce visual jarring
+              return FadeTransition(
+                opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 200),
           ),
         );
       },

@@ -544,7 +544,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
             child: Row(
               children: [
                 // Avatar
-                DatapodAvatar(address: _currentTransactionData.toAddress, size: scaleSize(40), name: null),
+                DatapodAvatar(address: _currentTransactionData.toAddress, size: scaleSize(40)),
 
                 ScaledSizedBox(width: 12),
 
@@ -709,8 +709,13 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
 
                               // Only add extra space if there's an identity name AND a comment
                               // Otherwise, let the Stack positioning handle the layout
-                              final shouldAddSpace = hasIdentityName && _currentTransactionData.comment.isNotEmpty;
-                              final baseHeight = shouldAddSpace ? 50.0 : 20.0;
+
+                              final shouldAddSpace =
+                                  _currentTransactionData.comment.isNotEmpty &&
+                                  _currentTransactionData.comment.length > 14 &&
+                                  hasIdentityName;
+
+                              final baseHeight = shouldAddSpace ? 50.0 : 30.0;
 
                               return ScaledSizedBox(height: baseHeight);
                             },

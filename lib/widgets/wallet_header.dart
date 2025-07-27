@@ -118,6 +118,7 @@ class WalletHeaderContent extends StatelessWidget {
                 isOwner: isOwner,
                 customImagePath: customImagePath,
                 defaultImagePath: defaultImagePath,
+                identityName: identityName,
               ),
               ScaledSizedBox(width: 16),
               Expanded(
@@ -304,12 +305,14 @@ class WalletHeaderAvatar extends ConsumerStatefulWidget {
     required this.isOwner,
     this.customImagePath,
     this.defaultImagePath,
+    this.identityName,
   });
 
   final String address;
   final bool isOwner;
   final String? customImagePath;
   final String? defaultImagePath;
+  final String? identityName;
 
   @override
   ConsumerState<WalletHeaderAvatar> createState() => _WalletHeaderAvatarState();
@@ -361,7 +364,7 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                     child: _newCustomImagePath.isEmpty
                         ? (widget.defaultImagePath != null
                               ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
-                              : DatapodAvatar(address: widget.address, size: avatarSize))
+                              : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName))
                         : SmartAvatar(imagePath: _newCustomImagePath),
                   ),
                 ),

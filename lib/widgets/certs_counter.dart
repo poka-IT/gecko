@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
@@ -15,9 +16,23 @@ class CertsCounter extends ConsumerWidget {
 
     return certificationStream.when(
       data: (certsCounter) {
-        return Text(
-          '(${isSent ? certsCounter.sentCount : certsCounter.receivedCount})',
-          style: scaledTextStyle(fontSize: 16),
+        final count = isSent ? certsCounter.sentCount : certsCounter.receivedCount;
+
+        if (count == 0) {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(6), vertical: scaleSize(3)),
+          decoration: BoxDecoration(
+            color: context.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(scaleSize(12)),
+            border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.3), width: 1),
+          ),
+          child: Text(
+            count.toString(),
+            style: scaledTextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.colorScheme.primary),
+          ),
         );
       },
       error: (error, stackTrace) {
@@ -25,7 +40,11 @@ class CertsCounter extends ConsumerWidget {
         return const SizedBox.shrink();
       },
       loading: () {
-        return const SizedBox.shrink();
+        return SizedBox(
+          width: scaleSize(16),
+          height: scaleSize(16),
+          child: CircularProgressIndicator(strokeWidth: 2, color: context.colorScheme.primary.withValues(alpha: 0.6)),
+        );
       },
     );
   }

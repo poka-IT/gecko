@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
@@ -31,6 +30,7 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
   late ScrollController _scrollController;
   late AnimationController _newCertController;
   late Animation<double> _fadeInAnimation;
+  late Animation<double> _scaleAnimation;
   bool _showNewCertIndicator = false;
   bool _isInitialLoad = true;
   DateTime? _lastCertTimestamp;
@@ -43,12 +43,17 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
     super.initState();
     _scrollController = ScrollController();
 
-    // Animation for new certification indicator
-    _newCertController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
+    // Enhanced animation for new certification indicator
+    _newCertController = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
     _fadeInAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _newCertController, curve: Curves.easeInOut));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _newCertController, curve: Curves.elasticOut));
   }
 
   @override
@@ -70,8 +75,8 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
         _newCertController.forward();
       }
 
-      // Hide the indicator after 3 seconds
-      Future.delayed(const Duration(seconds: 3), () {
+      // Hide the indicator after 4 seconds
+      Future.delayed(const Duration(seconds: 4), () {
         if (mounted && !_isDisposed) {
           _hideNewCertIndicator();
         }
@@ -107,22 +112,27 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final appBarHeight = AppBar().preferredSize.height;
-    const bottomBarHeight = 30;
-
-    final windowHeight = screenHeight - appBarHeight - (isTall ? 170 : 140) - bottomBarHeight;
-
     // Check if we have network connection
     final connectionStatus = ref.watch(squidConnectionStatusProvider);
     final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
 
     if (!isNetworkAvailable) {
-      return Column(
-        children: <Widget>[
-          ScaledSizedBox(height: 50),
-          Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
-        ],
+      return Container(
+        padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.wifi_off, size: scaleSize(32), color: context.colorScheme.onSurface.withValues(alpha: 0.3)),
+              ScaledSizedBox(height: 12),
+              Text(
+                "noNetworkNoHistory".tr(),
+                textAlign: TextAlign.center,
+                style: scaledTextStyle(fontSize: 15, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -157,99 +167,200 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
 
     return Stack(
       children: [
-        SizedBox(
-          height: windowHeight,
-          child: Builder(
-            builder: (context) {
-              // Handle loading state
-              if (certState.isLoading && certState.certifications.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
+        Builder(
+          builder: (context) {
+            // Handle loading state
+            if (certState.isLoading && certState.certifications.isEmpty) {
+              return Container(
+                padding: EdgeInsets.symmetric(vertical: scaleSize(40)),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: context.colorScheme.primary),
+                      ScaledSizedBox(height: 12),
+                      Text(
+                        'loadingCertifications'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 13,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
 
-              // Handle error state
-              if (certState.hasError && certState.certifications.isEmpty) {
-                return Column(
-                  children: <Widget>[
-                    ScaledSizedBox(height: 50),
-                    Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
-                  ],
-                );
-              }
+            // Handle error state
+            if (certState.hasError && certState.certifications.isEmpty) {
+              return Container(
+                padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: scaleSize(32),
+                        color: context.colorScheme.error.withValues(alpha: 0.6),
+                      ),
+                      ScaledSizedBox(height: 12),
+                      Text(
+                        "noNetworkNoHistory".tr(),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(
+                          fontSize: 15,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
 
-              // Handle empty state
-              if (certState.certifications.isEmpty && !certState.isLoading) {
-                return Column(
-                  children: <Widget>[
-                    ScaledSizedBox(height: 50),
-                    Text("noDataToDisplay".tr(), style: scaledTextStyle(fontSize: 17)),
-                  ],
-                );
-              }
+            // Handle empty state
+            if (certState.certifications.isEmpty && !certState.isLoading) {
+              return Container(
+                padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        widget.direction == CertDirection.received ? Icons.call_received : Icons.call_made,
+                        size: scaleSize(32),
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.3),
+                      ),
+                      ScaledSizedBox(height: 12),
+                      Text(
+                        "noDataToDisplay".tr(),
+                        style: scaledTextStyle(
+                          fontSize: 15,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
 
-              // Handle success state with certifications
-              return RefreshIndicator(
-                color: context.colorScheme.primary,
-                onRefresh: () async {
-                  await ref
-                      .read(certificationListProvider((address: widget.address, direction: widget.direction)).notifier)
-                      .refresh();
+            // Handle success state with certifications
+            return RefreshIndicator(
+              color: context.colorScheme.primary,
+              onRefresh: () async {
+                await ref
+                    .read(certificationListProvider((address: widget.address, direction: widget.direction)).notifier)
+                    .refresh();
+              },
+              child: ShaderMask(
+                shaderCallback: (Rect bounds) {
+                  return LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.white, Colors.white, Colors.white.withValues(alpha: 0.0)],
+                    stops: const [0.0, 0.95, 1.0], // Fade starts at 95% of the height
+                  ).createShader(bounds);
                 },
+                blendMode: BlendMode.dstIn,
                 child: ListView(
                   key: keyListTransactions,
                   controller: _scrollController,
+                  shrinkWrap: true, // Allow ListView to shrink to content size
+                  padding: EdgeInsets.only(
+                    top: scaleSize(4),
+                    bottom: scaleSize(24),
+                    left: scaleSize(8),
+                    right: scaleSize(8),
+                  ), // Extra bottom padding for fade effect
                   children: <Widget>[
                     Column(children: <Widget>[CertTile(listCerts: certState.certifications)]),
-                    // Show a small loading indicator at the bottom when refreshing
+                    // Show loading indicator at the bottom when refreshing
                     if (certState.isLoading && certState.certifications.isNotEmpty)
                       Container(
-                        height: 30,
+                        padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
                         alignment: Alignment.center,
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: context.colorScheme.primary),
+                        child: Container(
+                          padding: EdgeInsets.all(scaleSize(8)),
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(scaleSize(16)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                height: scaleSize(14),
+                                width: scaleSize(14),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: context.colorScheme.primary),
+                              ),
+                              ScaledSizedBox(width: 6),
+                              Text(
+                                'refreshing'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 11,
+                                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                   ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
 
-        // New certification indicator
+        // Certification indicator
         if (_showNewCertIndicator)
           Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
+            top: scaleSize(12),
+            left: 0,
+            right: 0,
             child: FadeTransition(
               opacity: _fadeInAnimation,
-              child: GestureDetector(
-                onTap: _onIndicatorTapped,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.primary,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.verified, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        widget.direction == CertDirection.received
-                            ? "newCertificationReceived".tr()
-                            : "newCertificationSent".tr(),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: _onIndicatorTapped,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(8)),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [context.colorScheme.primary, context.colorScheme.primary.withValues(alpha: 0.8)],
+                        ),
+                        borderRadius: BorderRadius.circular(scaleSize(20)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: context.colorScheme.primary.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      if (!_isAtTop) Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 20),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.verified_user, color: Colors.white, size: scaleSize(14)),
+                          ScaledSizedBox(width: 6),
+                          Text(
+                            widget.direction == CertDirection.received
+                                ? "newCertificationReceived".tr()
+                                : "newCertificationSent".tr(),
+                            style: scaledTextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
+                          ),
+                          if (!_isAtTop) ...[
+                            ScaledSizedBox(width: 6),
+                            Icon(Icons.keyboard_arrow_up, color: Colors.white, size: scaleSize(14)),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

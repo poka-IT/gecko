@@ -56,7 +56,7 @@ const Color _darkBackgroundColor = Color(0xff121212);
 const Color _headerColor = Color(0xFFFFF3E0);
 const Color _darkHeaderColor = Color(0xff1E1E1E);
 
-const Color _cardColor = Colors.white;
+const Color _cardColor = Color(0xFFFFFEF7);
 const Color _darkCardColor = Color.fromARGB(255, 43, 43, 43);
 
 const Color _textColor = Colors.black87;

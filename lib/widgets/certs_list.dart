@@ -13,8 +13,9 @@ class CertDisplayItem {
   final String address;
   final String name;
   final DateTime date;
+  final DateTime? expireDate;
 
-  CertDisplayItem({required this.address, required this.name, required this.date});
+  CertDisplayItem({required this.address, required this.name, required this.date, this.expireDate});
 }
 
 class CertsList extends ConsumerStatefulWidget {

@@ -174,56 +174,83 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
   Future<List<CertDisplayItem>> _fetchCertifications() async {
     List<CertDisplayItem> listCerts = [];
 
-    if (direction == CertDirection.received) {
-      final certConnection = await d.SquidService.client.getCertsReceived(address);
-      if (certConnection == null) return [];
+    try {
+      // Get genesis time for block number conversion
+      final genesisTime = await ref.read(genesisTimeProvider.future);
 
-      for (final edge in certConnection.edges) {
-        final cert = edge.node;
-        if (!cert.isActive) continue;
+      if (direction == CertDirection.received) {
+        final certConnection = await d.SquidService.client.getCertsReceived(address);
+        if (certConnection == null) return [];
 
-        final String? personAddress = cert.issuer?.accountId;
-        final String? personName = cert.issuer?.name;
-        final String? timestampString = cert.updatedIn?.block?.timestamp;
+        for (final edge in certConnection.edges) {
+          final cert = edge.node;
+          if (!cert.isActive) continue;
 
-        if (timestampString != null) {
-          // Parse the timestamp as UTC and convert to local time
-          final timestamp =
-              timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
-              ? DateTime.parse(timestampString)
-                    .toLocal() // Already has timezone info
-              : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
+          final String? personAddress = cert.issuer?.accountId;
+          final String? personName = cert.issuer?.name;
+          final String? timestampString = cert.updatedIn?.block?.timestamp;
 
-          if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
-            listCerts.add(CertDisplayItem(address: personAddress ?? '', name: personName ?? '', date: timestamp));
+          if (timestampString != null && personAddress != null) {
+            // Parse the timestamp as UTC and convert to local time
+            final timestamp =
+                timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
+                ? DateTime.parse(timestampString)
+                      .toLocal() // Already has timezone info
+                : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
+
+            // Convert expiration block number to date
+            final expireDate = d.Durt.i.storage.blocNumberToDate(cert.expireOn, genesisTime);
+
+            if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
+              listCerts.add(
+                CertDisplayItem(
+                  address: personAddress,
+                  name: personName ?? '',
+                  date: timestamp,
+                  expireDate: expireDate,
+                ),
+              );
+            }
+          }
+        }
+      } else {
+        final certConnection = await d.SquidService.client.getCertsSent(address);
+        if (certConnection == null) return [];
+
+        for (final edge in certConnection.edges) {
+          final cert = edge.node;
+          if (!cert.isActive) continue;
+
+          final String? personAddress = cert.receiver?.accountId;
+          final String? personName = cert.receiver?.name;
+          final String? timestampString = cert.updatedIn?.block?.timestamp;
+
+          if (personAddress != null && timestampString != null) {
+            // Parse the timestamp as UTC and convert to local time
+            final timestamp =
+                timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
+                ? DateTime.parse(timestampString)
+                      .toLocal() // Already has timezone info
+                : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
+
+            // Convert expiration block number to date
+            final expireDate = d.Durt.i.storage.blocNumberToDate(cert.expireOn, genesisTime);
+
+            if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
+              listCerts.add(
+                CertDisplayItem(
+                  address: personAddress,
+                  name: personName ?? '',
+                  date: timestamp,
+                  expireDate: expireDate,
+                ),
+              );
+            }
           }
         }
       }
-    } else {
-      final certConnection = await d.SquidService.client.getCertsSent(address);
-      if (certConnection == null) return [];
-
-      for (final edge in certConnection.edges) {
-        final cert = edge.node;
-        if (!cert.isActive) continue;
-
-        final String? personAddress = cert.receiver?.accountId;
-        final String? personName = cert.receiver?.name;
-        final String? timestampString = cert.updatedIn?.block?.timestamp;
-
-        if (personAddress != null && timestampString != null) {
-          // Parse the timestamp as UTC and convert to local time
-          final timestamp =
-              timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
-              ? DateTime.parse(timestampString)
-                    .toLocal() // Already has timezone info
-              : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
-
-          if (!listCerts.any((existingCert) => existingCert.address == personAddress)) {
-            listCerts.add(CertDisplayItem(address: personAddress, name: personName ?? '', date: timestamp));
-          }
-        }
-      }
+    } catch (e) {
+      log.e('Error fetching certifications: $e');
     }
 
     return listCerts;

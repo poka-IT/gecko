@@ -11,6 +11,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/generate_wallets.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -271,23 +272,13 @@ class RestoreSafe extends ConsumerWidget {
   }
 
   Future<bool?> badMnemonicPopup(BuildContext context) async {
-    return showDialog<bool>(
+    return await showConfirmationDialog(
       context: context,
+      title: 'incorrectPhrase'.tr(),
+      message: 'incorrectPhraseDescription'.tr(),
+      type: ConfirmationDialogType.error,
+      hideCancelButton: true,
       barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('incorrectPhrase'.tr()),
-          content: Text('incorrectPhraseDescription'.tr()),
-          actions: <Widget>[
-            TextButton(
-              child: Text("OK"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

@@ -538,9 +538,16 @@
     "reset": "Réinitialiser",
     "apply": "Appliquer",
     "certificationExpired": "Certification expirée",
+    "certificationExpiredShort": "Expirée",
     "certificationActive": "Certification active",
     "expiresIn": "Expire dans",
     "expiredSince": "Expirée depuis",
+    "expiresInDays": "Expire dans {} jours",
+    "expiresInDay": "Expire dans 1 jour",
+    "expiresInDaysShort": "Exp. {} jours",
+    "expiresInDayShort": "Exp. 1 jour",
+    "expiresInMonthsShort": "Exp. {} mois",
+    "expiresInMonthShort": "Exp. 1 mois",
     "selectAll": "Tout sélectionner",
     "nameForCopiedTx": "Nom pour cette transaction copiée",
     "nameSearch": "Recherche par nom",
@@ -561,5 +568,6 @@
     "showOnlyActiveCertifications": "Afficher uniquement les certifications actives",
     "issuer": "Émetteur",
     "receiver": "Récepteur",
-    "automaticIncome": "Revenu automatique"
+    "automaticIncome": "Revenu automatique",
+    "enterWalletName": "Entrer le nom du portefeuille"
 }

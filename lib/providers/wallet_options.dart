@@ -4,19 +4,17 @@ import 'dart:io';
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 
 import 'package:gecko/providers/trm_data_provider.dart';
 
 import 'package:gecko/providers/my_wallets.dart';
-// import 'package:gecko/providers/v2s_datapod.dart';
-import 'package:gecko/utils.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -239,194 +237,137 @@ class WalletOptionsProvider with ChangeNotifier {
     }
   }
 
-  Future<String?> confirmIdentityPopup(BuildContext context) async {
-    final idtyName = TextEditingController();
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
-    bool canValidate = false;
-    bool idtyExist = false;
-
-    return showDialog<String>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'confirmYourIdentity'.tr(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          content: SizedBox(
-            height: 100,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                TextField(
-                  key: keyEnterIdentityUsername,
-                  onChanged: (_) async {
-                    idtyExist = await SquidService.client.isIdtyExist(idtyName.text);
-                    canValidate = !idtyExist && idtyName.text.length >= 2 && idtyName.text.length <= 32;
-
-                    notifyListeners();
-                  },
-                  inputFormatters: <TextInputFormatter>[
-                    // FilteringTextInputFormatter.allow(RegExp("[0-9a-zA-Z]")),
-                    FilteringTextInputFormatter.deny(RegExp(r'^ ')),
-                    // FilteringTextInputFormatter.deny(RegExp(r' $')),
-                  ],
-                  textAlign: TextAlign.center,
-                  autofocus: true,
-                  controller: idtyName,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 10),
-                old_provider.Consumer<WalletOptionsProvider>(
-                  builder: (context, wOptions, _) {
-                    return Text(
-                      idtyExist ? "thisIdentityAlreadyExist".tr() : '',
-                      style: TextStyle(color: Colors.red[500]),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                old_provider.Consumer<WalletOptionsProvider>(
-                  builder: (context, wOptions, _) {
-                    return TextButton(
-                      key: keyConfirm,
-                      onPressed: canValidate
-                          ? () async {
-                              idtyName.text = idtyName.text.trim().replaceAll('  ', '');
-
-                              if (idtyName.text.length.clamp(3, 32) != idtyName.text.length) {
-                                return;
-                              }
-
-                              if (!await myWalletProvider.askPinCode()) return;
-
-                              final wallet = myWalletProvider.getWalletDataByAddress(address.text);
-                              await _container.read(walletServiceProvider).setDefaultAddress(wallet!.address);
-                              final keypair = await _container
-                                  .read(walletServiceProvider)
-                                  .getKeyPairFromAddress(address: wallet.address, pinCode: myWalletProvider.pinCode);
-                              final transactionStatus = _container
-                                  .read(duniterServiceProvider)
-                                  .confirmIdentity(keypair: keypair, name: idtyName.text);
-                              Navigator.pop(context);
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return TransactionInProgressScreen(
-                                      transactionStatus: transactionStatus,
-                                      transType: 'comfirmIdty',
-                                      fromAddress: getShortPubkey(wallet.address),
-                                      toAddress: getShortPubkey(wallet.address),
-                                    );
-                                  },
-                                ),
-                              );
-                            }
-                          : null,
-                      child: Text(
-                        "validate".tr(),
-                        style: TextStyle(fontSize: 20, color: canValidate ? const Color(0xffD80000) : Colors.grey[500]),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 5),
-          ],
-        );
-      },
-    );
-  }
-
   Future<String?> editWalletName(BuildContext context, WalletEntity wallet) async {
     final walletName = TextEditingController();
     canValidateNameBool = false;
 
-    return showDialog<String>(
+    final result = await showDialog<String>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'chooseWalletName'.tr(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w500),
-          ),
-          content: SizedBox(
-            height: 100,
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surface,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: context.colorScheme.primary.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.edit_rounded, color: context.colorScheme.primary, size: 32),
+                ),
                 const SizedBox(height: 20),
+
+                // Title
+                Text(
+                  'chooseWalletName'.tr(),
+                  style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                // Text field
                 TextField(
                   onChanged: (_) => canValidateName(context, walletName),
                   textAlign: TextAlign.center,
                   autofocus: true,
                   controller: walletName,
-                  style: const TextStyle(fontSize: 18),
+                  style: scaledTextStyle(fontSize: 16),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: context.colorScheme.outline),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    hintText: 'enterWalletName'.tr(),
+                    hintStyle: scaledTextStyle(
+                      fontSize: 16,
+                      color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Cancel button
+                    Expanded(
+                      child: TextButton(
+                        key: keyCancel,
+                        onPressed: () => Navigator.of(context).pop(null),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          "cancel".tr(),
+                          style: scaledTextStyle(fontSize: 15, color: Colors.grey[600], fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+
+                    // Validate button
+                    Expanded(
+                      child: old_provider.Consumer<WalletOptionsProvider>(
+                        builder: (context, wOptions, _) {
+                          return ElevatedButton(
+                            key: keyInfoPopup,
+                            onPressed: canValidateNameBool
+                                ? () async {
+                                    nameController.text = walletName.text;
+                                    _renameWallet(wallet, walletName.text, isCesium: false);
+                                    Navigator.pop(context, walletName.text);
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: canValidateNameBool ? context.colorScheme.primary : Colors.grey,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Text(
+                              "validate".tr(),
+                              style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                old_provider.Consumer<WalletOptionsProvider>(
-                  builder: (context, wOptions, _) {
-                    return TextButton(
-                      key: keyInfoPopup,
-                      child: Text(
-                        "validate".tr(),
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: canValidateNameBool ? const Color(0xffD80000) : Colors.grey,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      onPressed: () async {
-                        if (canValidateNameBool) {
-                          nameController.text = walletName.text;
-                          _renameWallet(wallet, walletName.text, isCesium: false);
-                          Navigator.pop(context);
-                        }
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  key: keyCancel,
-                  child: Text(
-                    "cancel".tr(),
-                    style: TextStyle(fontSize: 17, color: Colors.grey[800], fontWeight: FontWeight.w300),
-                  ),
-                  onPressed: () async {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-          ],
         );
       },
     );
+
+    return result;
   }
 
   bool canValidateName(BuildContext context, final walletName) {

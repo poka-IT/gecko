@@ -8,10 +8,18 @@ import 'package:gecko/widgets/certs_counter.dart';
 import 'package:accordion/accordion.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
-class CertificationsScreen extends StatelessWidget {
+class CertificationsScreen extends StatefulWidget {
   const CertificationsScreen({super.key, required this.address, required this.username});
   final String address;
   final String username;
+
+  @override
+  State<CertificationsScreen> createState() => _CertificationsScreenState();
+}
+
+class _CertificationsScreenState extends State<CertificationsScreen> {
+  bool _isReceivedOpen = true;
+  bool _isSentOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +30,12 @@ class CertificationsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
-      appBar: GeckoAppBar('certificationsOf'.tr(args: [username])),
+      appBar: GeckoAppBar('certificationsOf'.tr(args: [widget.username])),
       body: SafeArea(
         child: Accordion(
           paddingListTop: scaleSize(4),
           paddingListBottom: scaleSize(0),
-          paddingListHorizontal: scaleSize(0), // Remove horizontal padding from accordion
+          paddingListHorizontal: 0, // Remove horizontal padding from accordion
           maxOpenSections: 1,
           headerBackgroundColorOpened: Colors.transparent,
           scaleWhenAnimating: false,
@@ -37,50 +45,68 @@ class CertificationsScreen extends StatelessWidget {
           sectionClosingHapticFeedback: SectionHapticFeedback.light,
           children: [
             AccordionSection(
-              isOpen: true,
+              isOpen: _isReceivedOpen,
               leftIcon: const SizedBox.shrink(),
               headerBackgroundColor: context.colorScheme.surface,
               headerBackgroundColorOpened: context.colorScheme.surface,
               contentBackgroundColor: context.colorScheme.surface,
+              rightIcon: const SizedBox.shrink(),
+              onOpenSection: () => setState(() {
+                _isReceivedOpen = true;
+                _isSentOpen = false;
+              }),
+              onCloseSection: () => setState(() {
+                _isReceivedOpen = false;
+              }),
               header: _buildModernHeader(
                 context: context,
                 title: 'received'.tr(),
                 icon: Icons.call_received,
-                address: address,
+                address: widget.address,
                 isSent: false,
                 isReceived: true,
+                isOpen: _isReceivedOpen,
               ),
               content: Container(
                 color: context.colorScheme.surface,
                 constraints: BoxConstraints(
                   maxHeight: availableHeight * 0.8, // Use calculated available height
                 ),
-                child: CertsList(address: address, direction: CertDirection.received),
+                child: CertsList(address: widget.address, direction: CertDirection.received),
               ),
               contentHorizontalPadding: 0,
               contentBorderWidth: 0,
               paddingBetweenOpenSections: scaleSize(2),
             ),
             AccordionSection(
-              isOpen: false,
+              isOpen: _isSentOpen,
               leftIcon: const SizedBox.shrink(),
               headerBackgroundColor: context.colorScheme.surface,
               headerBackgroundColorOpened: context.colorScheme.surface,
               contentBackgroundColor: context.colorScheme.surface,
+              rightIcon: const SizedBox.shrink(),
+              onOpenSection: () => setState(() {
+                _isSentOpen = true;
+                _isReceivedOpen = false;
+              }),
+              onCloseSection: () => setState(() {
+                _isSentOpen = false;
+              }),
               header: _buildModernHeader(
                 context: context,
                 title: 'sent'.tr(),
                 icon: Icons.call_made,
-                address: address,
+                address: widget.address,
                 isSent: true,
                 isReceived: false,
+                isOpen: _isSentOpen,
               ),
               content: Container(
                 color: context.colorScheme.surface,
                 constraints: BoxConstraints(
                   maxHeight: availableHeight * 0.8, // Use calculated available height
                 ),
-                child: CertsList(address: address, direction: CertDirection.sent),
+                child: CertsList(address: widget.address, direction: CertDirection.sent),
               ),
               contentHorizontalPadding: 0,
               contentBorderWidth: 0,
@@ -99,6 +125,7 @@ class CertificationsScreen extends StatelessWidget {
     required String address,
     required bool isSent,
     required bool isReceived,
+    required bool isOpen,
   }) {
     // Define distinct colors for received (green) and sent (blue)
     final sectionColor = isReceived ? Colors.green.withValues(alpha: 0.05) : Colors.blue.withValues(alpha: 0.05);
@@ -148,17 +175,21 @@ class CertificationsScreen extends StatelessWidget {
               ),
             ),
 
-            // Compact expand/collapse indicator
-            Container(
-              padding: EdgeInsets.all(scaleSize(2)),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: context.colorScheme.outline.withValues(alpha: 0.08),
-              ),
-              child: Icon(
-                Icons.expand_more,
-                size: scaleSize(16),
-                color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+            // Animated expand/collapse indicator that changes based on open state
+            AnimatedRotation(
+              turns: isOpen ? 0.5 : 0.0, // 180 degrees rotation when open
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                padding: EdgeInsets.all(scaleSize(2)),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: context.colorScheme.outline.withValues(alpha: 0.08),
+                ),
+                child: Icon(
+                  Icons.expand_more,
+                  size: scaleSize(16),
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ),
           ],

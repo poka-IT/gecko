@@ -526,9 +526,16 @@
     "reset": "Reset",
     "apply": "Apply",
     "certificationExpired": "Certification expired",
+    "certificationExpiredShort": "Expired",
     "certificationActive": "Certification active",
     "expiresIn": "Expires in",
     "expiredSince": "Expired since",
+    "expiresInDays": "Expires in {} days",
+    "expiresInDay": "Expires in 1 day",
+    "expiresInDaysShort": "Exp. {} days",
+    "expiresInDayShort": "Exp. 1 day",
+    "expiresInMonthsShort": "Exp. {} months",
+    "expiresInMonthShort": "Exp. 1 month",
     "selectAll": "Select all",
     "nameForCopiedTx": "Name for this copied transaction",
     "nameSearch": "Search by name",
@@ -549,5 +556,6 @@
     "showOnlyActiveCertifications": "Show only active certifications",
     "issuer": "Issuer",
     "receiver": "Receiver",
-    "automaticIncome": "Automatic income"
+    "automaticIncome": "Automatic income",
+    "enterWalletName": "Enter wallet name"
 }

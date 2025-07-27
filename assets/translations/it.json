@@ -441,9 +441,16 @@
     "reset": "Reimposta",
     "apply": "Applica",
     "certificationExpired": "Certificazione scaduta",
+    "certificationExpiredShort": "Scaduta",
     "certificationActive": "Certificazione attiva",
     "expiresIn": "Scade tra",
     "expiredSince": "Scaduta da",
+    "expiresInDays": "Scade tra {} giorni",
+    "expiresInDay": "Scade tra 1 giorno",
+    "expiresInDaysShort": "Scad. {} giorni",
+    "expiresInDayShort": "Scad. 1 giorno",
+    "expiresInMonthsShort": "Scad. {} mesi",
+    "expiresInMonthShort": "Scad. 1 mese",
     "selectAll": "Seleziona tutto",
     "done": "Fatto",
     "nameForCopiedTx": "Nome per questa transazione copiata",
@@ -465,5 +472,6 @@
     "showOnlyActiveCertifications": "Mostra solo certificazioni attive",
     "issuer": "Emittente",
     "receiver": "Ricevente",
-    "automaticIncome": "Reddito automatico"
+    "automaticIncome": "Reddito automatico",
+    "enterWalletName": "Inserisci il nome del portafoglio"
 }

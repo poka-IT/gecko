@@ -516,7 +516,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
       humanStatus = statusStatusMap[_status.state] ?? 'Unknown status: ${_status.state}';
     }
 
-    final statusIcon = TransactionStateIcon(_status.state, size: 21, stroke: 2);
+    final statusIcon = TransactionStateIcon(_status.state, size: scaleSize(14), stroke: 2);
 
     return FadeAndTranslate(
       visible: _isVisible,
@@ -529,82 +529,293 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
         // Cache the final 'none' status to prevent reappearance
         TransactionStatusCache.setLastKnownStatus(_currentTransactionData, _status);
       },
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: context.colorScheme.primary, width: 2),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 10),
-              Text(
-                'Transaction en cours',
-                style: scaledTextStyle(fontSize: 19, color: Colors.blueAccent, fontWeight: FontWeight.w400),
-              ),
-              ListTile(
-                key: const Key('transactionInProgress'),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
-                leading: DatapodAvatar(address: widget.transactionData.toAddress, size: 50),
-                title: Padding(
-                  padding: const EdgeInsets.only(bottom: 5),
-                  child: Text(
-                    getShortPubkey(widget.transactionData.toAddress),
-                    style: scaledTextStyle(fontSize: 16, fontFamily: 'Monospace'),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
+        decoration: BoxDecoration(
+          color: context.colorScheme.surface,
+          borderRadius: BorderRadius.circular(scaleSize(12)),
+          border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.3), width: 2),
+        ),
+        child: Material(
+          color: context.colorScheme.primaryContainer.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(scaleSize(12)),
+          child: Padding(
+            padding: EdgeInsets.all(scaleSize(12)),
+            child: Row(
+              children: [
+                // Avatar
+                DatapodAvatar(address: _currentTransactionData.toAddress, size: scaleSize(40), name: null),
+
+                ScaledSizedBox(width: 12),
+
+                // Main content area
+                Expanded(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Top row: Address and Amount
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Left: Address and optionally identity name
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Identity name if available
+                                    Consumer(
+                                      builder: (context, ref, child) {
+                                        final identityName = ref.watch(
+                                          identityNameProvider(_currentTransactionData.toAddress),
+                                        );
+
+                                        return identityName.when(
+                                          data: (name) {
+                                            if (name != null && name.isNotEmpty) {
+                                              return Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    name,
+                                                    style: scaledTextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: context.colorScheme.onSurface,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  ScaledSizedBox(height: 2),
+                                                  Text(
+                                                    getShortPubkey(_currentTransactionData.toAddress),
+                                                    style: scaledTextStyle(
+                                                      fontSize: 13,
+                                                      color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                                                      fontFamily: 'monospace',
+                                                      fontWeight: FontWeight.normal,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              );
+                                            } else {
+                                              // No identity name, show only address
+                                              return Text(
+                                                getShortPubkey(_currentTransactionData.toAddress),
+                                                style: scaledTextStyle(
+                                                  fontSize: 16,
+                                                  color: context.colorScheme.onSurface.withValues(alpha: 1.0),
+                                                  fontFamily: 'monospace',
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              );
+                                            }
+                                          },
+                                          loading: () => Text(
+                                            getShortPubkey(_currentTransactionData.toAddress),
+                                            style: scaledTextStyle(
+                                              fontSize: 16,
+                                              color: context.colorScheme.onSurface.withValues(alpha: 1.0),
+                                              fontFamily: 'monospace',
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          error: (_, _) => Text(
+                                            getShortPubkey(_currentTransactionData.toAddress),
+                                            style: scaledTextStyle(
+                                              fontSize: 16,
+                                              color: context.colorScheme.onSurface.withValues(alpha: 1.0),
+                                              fontFamily: 'monospace',
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              ScaledSizedBox(width: 12),
+
+                              // Right: Amount
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  // Amount
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        finalAmount.toString(),
+                                        style: scaledTextStyle(
+                                          fontSize: 16,
+                                          color: context.colorScheme.primary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      ScaledSizedBox(width: 4),
+                                      Text(
+                                        ref.watch(currencySymbolProvider),
+                                        style: scaledTextStyle(
+                                          fontSize: 13,
+                                          color: context.colorScheme.primary.withValues(alpha: 0.8),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  ScaledSizedBox(height: 4),
+
+                                  // Status badge
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: scaleSize(6), vertical: scaleSize(2)),
+                                    decoration: BoxDecoration(
+                                      color: context.colorScheme.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(scaleSize(4)),
+                                      border: Border.all(
+                                        color: context.colorScheme.primary.withValues(alpha: 0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Transaction en cours',
+                                      style: scaledTextStyle(
+                                        fontSize: 10,
+                                        color: context.colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          // Add space for status and comment when present
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final identityName = ref.watch(identityNameProvider(_currentTransactionData.toAddress));
+                              final hasIdentityName = identityName.maybeWhen(
+                                data: (name) => name != null && name.isNotEmpty,
+                                orElse: () => false,
+                              );
+
+                              // Only add extra space if there's an identity name AND a comment
+                              // Otherwise, let the Stack positioning handle the layout
+                              final shouldAddSpace = hasIdentityName && _currentTransactionData.comment.isNotEmpty;
+                              final baseHeight = shouldAddSpace ? 50.0 : 0.0;
+
+                              return ScaledSizedBox(height: baseHeight);
+                            },
+                          ),
+                        ],
+                      ),
+
+                      // Status icon and text positioned as overlay
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final identityName = ref.watch(identityNameProvider(_currentTransactionData.toAddress));
+                          final hasIdentityName = identityName.maybeWhen(
+                            data: (name) => name != null && name.isNotEmpty,
+                            orElse: () => false,
+                          );
+
+                          return Positioned(
+                            left: 0,
+                            top: hasIdentityName ? scaleSize(48) : scaleSize(30),
+                            child: statusIcon,
+                          );
+                        },
+                      ),
+
+                      // Status text positioned as overlay
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final identityName = ref.watch(identityNameProvider(_currentTransactionData.toAddress));
+                          final hasIdentityName = identityName.maybeWhen(
+                            data: (name) => name != null && name.isNotEmpty,
+                            orElse: () => false,
+                          );
+
+                          return Positioned(
+                            left: scaleSize(20), // Start after the status icon
+                            right: scaleSize(55), // Leave space for amount/status badge
+                            top: hasIdentityName ? scaleSize(48) : scaleSize(30),
+                            child: Text(
+                              humanStatus,
+                              style: scaledTextStyle(
+                                fontSize: 13,
+                                color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                                fontStyle: FontStyle.italic,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Comment positioned as overlay (if present)
+                      if (_currentTransactionData.comment.isNotEmpty)
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final identityName = ref.watch(identityNameProvider(_currentTransactionData.toAddress));
+                            final hasIdentityName = identityName.maybeWhen(
+                              data: (name) => name != null && name.isNotEmpty,
+                              orElse: () => false,
+                            );
+
+                            return Positioned(
+                              left: scaleSize(20), // Start after space for direction arrow
+                              right: scaleSize(55), // Leave space for amount/status
+                              top: hasIdentityName ? scaleSize(68) : scaleSize(50), // Below status
+                              child: Text(
+                                _currentTransactionData.comment,
+                                style: scaledTextStyle(
+                                  fontSize: 13,
+                                  color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          },
+                        ),
+
+                      // Direction arrow for comment (if present)
+                      if (_currentTransactionData.comment.isNotEmpty)
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final identityName = ref.watch(identityNameProvider(_currentTransactionData.toAddress));
+                            final hasIdentityName = identityName.maybeWhen(
+                              data: (name) => name != null && name.isNotEmpty,
+                              orElse: () => false,
+                            );
+
+                            return Positioned(
+                              left: 0,
+                              top: hasIdentityName ? scaleSize(68) : scaleSize(50), // Below status
+                              child: Icon(
+                                Icons.call_made, // Always outgoing for transaction in progress
+                                size: scaleSize(14),
+                                color: Colors.blue,
+                              ),
+                            );
+                          },
+                        ),
+                    ],
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        statusIcon,
-                        ScaledSizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            humanStatus,
-                            style: scaledTextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: Theme.of(context).textTheme.titleLarge!.color,
-                              fontSize: 13,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_currentTransactionData.comment.isNotEmpty) ...[
-                      ScaledSizedBox(height: 4),
-                      Text(
-                        _currentTransactionData.comment,
-                        style: scaledTextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      finalAmount.toString(),
-                      style: scaledTextStyle(fontSize: 15, color: greenColor, fontWeight: FontWeight.w500),
-                    ),
-                    ScaledSizedBox(width: 5),
-                    Text(
-                      ref.watch(currencySymbolProvider),
-                      style: scaledTextStyle(fontSize: 15, color: greenColor, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-                dense: !isTall,
-                isThreeLine: false,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

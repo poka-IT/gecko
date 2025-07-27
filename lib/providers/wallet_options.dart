@@ -227,6 +227,9 @@ class WalletOptionsProvider with ChangeNotifier {
 
       await _container.read(walletServiceProvider).walletBox.putAsync(walletData);
       notifyListeners();
+
+      // Notify MyWalletsProvider to update UI components that depend on wallet data
+      old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false).reload();
       // datapod.setAvatar(address.text, newPath);
 
       return newPath;

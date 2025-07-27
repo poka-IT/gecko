@@ -275,9 +275,16 @@ class _WalletsHomeContent extends ConsumerWidget {
                 // Identity wallet section
                 if (idtyWallet != null)
                   SliverToBoxAdapter(
-                    child: DragTuleAction(
-                      wallet: idtyWallet,
-                      child: WalletTileMembre(wallet: idtyWallet, attachTutorialKey: false),
+                    child: old_provider.Consumer<MyWalletsProvider>(
+                      builder: (context, myWalletProvider, child) {
+                        // Get the latest wallet data to ensure avatar updates are reflected
+                        final latestIdtyWallet =
+                            myWalletProvider.getWalletDataByAddress(idtyWallet.address) ?? idtyWallet;
+                        return DragTuleAction(
+                          wallet: latestIdtyWallet,
+                          child: WalletTileMembre(wallet: latestIdtyWallet, attachTutorialKey: false),
+                        );
+                      },
                     ),
                   ),
                 // Regular wallets grid - isolated from provider rebuilds

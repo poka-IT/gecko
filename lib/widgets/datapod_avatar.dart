@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
@@ -8,20 +9,27 @@ import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class DatapodAvatar extends ConsumerWidget {
-  const DatapodAvatar({super.key, required this.address, this.size = 15});
+  const DatapodAvatar({super.key, required this.address, this.size = 15, this.name});
 
   final String address;
   final double size;
+  final String? name;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final isLocalWallet = myWalletProvider.isOwner(address);
 
-    return ScaledSizedBox(
-      width: size,
-      height: size,
-      child: isLocalWallet ? _buildLocalWalletAvatar() : _buildRemoteAvatar(ref),
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: context.colorScheme.onSecondaryContainer, width: 0.2),
+      ),
+      child: ScaledSizedBox(
+        width: size,
+        height: size,
+        child: isLocalWallet ? _buildLocalWalletAvatar() : _buildRemoteAvatar(ref),
+      ),
     );
   }
 
@@ -68,6 +76,21 @@ class DatapodAvatar extends ConsumerWidget {
   }
 
   Widget _buildDefaultAvatar() {
+    // If a name is provided, show name circle instead of icon_user.png
+    if (name != null && name!.isNotEmpty) {
+      return CircleAvatar(
+        radius: size / 2,
+        backgroundColor: Theme.of(homeContext).colorScheme.primary.withValues(alpha: 0.1),
+        child: Text(
+          name![0].toUpperCase(),
+          style: scaledTextStyle(
+            fontSize: size * 0.4, // Scale font size based on avatar size
+            fontWeight: FontWeight.w600,
+            color: Theme.of(homeContext).colorScheme.primary,
+          ),
+        ),
+      );
+    }
     return Image.asset('assets/icon_user.png', height: size, fit: BoxFit.fill);
   }
 

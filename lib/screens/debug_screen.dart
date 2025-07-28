@@ -8,7 +8,7 @@ import 'package:gecko/providers.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/providers_deprecated/block_height_provider.dart';
 
 class DebugScreen extends ConsumerWidget {
   const DebugScreen({super.key});

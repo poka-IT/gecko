@@ -4,8 +4,8 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 
-import 'package:gecko/providers/search.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/search.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';

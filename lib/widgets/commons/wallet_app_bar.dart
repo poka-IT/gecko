@@ -6,8 +6,8 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 
-import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/wallet_options.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:qr_flutter/qr_flutter.dart';

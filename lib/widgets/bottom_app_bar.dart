@@ -5,169 +5,13 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/search.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/search.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
-import 'package:provider/provider.dart';
-
-// Global RouteObserver for bottom app bar state updates
-final RouteObserver<PageRoute> globalRouteObserver = RouteObserver<PageRoute>();
-
-/// Simple provider to track the current route name
-class CurrentRouteProvider extends ChangeNotifier {
-  String _currentRoute = '';
-
-  String get currentRoute => _currentRoute;
-
-  void updateRoute(String route) {
-    if (_currentRoute != route) {
-      _currentRoute = route;
-      // Use addPostFrameCallback to avoid calling notifyListeners during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
-      });
-    }
-  }
-}
-
-/// Provider to track the current page and determine if bottom bar should be shown
-class BottomAppBarProvider extends ChangeNotifier with WidgetsBindingObserver {
-  bool _shouldShowBottomBar = true;
-  bool _isKeyboardVisible = false;
-  bool _isDialogVisible = false;
-
-  bool get shouldShowBottomBar => _shouldShowBottomBar;
-  bool get isKeyboardVisible => _isKeyboardVisible;
-  bool get isDialogVisible => _isDialogVisible;
-
-  // Combined visibility: route-based, keyboard-based, and dialog-based
-  bool get isBottomBarActuallyVisible => _shouldShowBottomBar && !_isKeyboardVisible && !_isDialogVisible;
-
-  BottomAppBarProvider() {
-    WidgetsBinding.instance.addObserver(this);
-    // Initialize with correct state for initial route (home)
-    // NavigatorObserver is not called for initial route, so we need to set this manually
-    _shouldShowBottomBar = false; // Home route should not show bottom bar
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeMetrics() {
-    super.didChangeMetrics();
-
-    try {
-      // Safe access to viewInsets without context dependency
-      final views = WidgetsBinding.instance.platformDispatcher.views;
-      if (views.isEmpty) return;
-
-      final viewInsets = views.first.viewInsets;
-      final bool keyboardVisible = viewInsets.bottom > 0;
-
-      if (_isKeyboardVisible != keyboardVisible) {
-        _isKeyboardVisible = keyboardVisible;
-        // Use addPostFrameCallback to avoid calling notifyListeners during build
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          notifyListeners();
-        });
-      }
-    } catch (e) {
-      // Silently handle any access errors during widget disposal
-      return;
-    }
-  }
-
-  void updateCurrentPage(String? routeName, Widget? page) {
-    // Determine if bottom bar should be shown based on route name or page type
-    bool shouldShow = true;
-
-    const excludedRoutes = [
-      RouteNames.home,
-      RouteNames.unlockingWallet,
-      RouteNames.restoreSafe,
-      RouteNames.onboardingStepOne,
-      RouteNames.onboardingStepTwo,
-      RouteNames.onboardingStepThree,
-      RouteNames.onboardingStepFour,
-      RouteNames.onboardingStepFive,
-      RouteNames.onboardingStepSix,
-      RouteNames.onboardingStepSeven,
-      RouteNames.onboardingStepEight,
-      RouteNames.onboardingStepNine,
-      RouteNames.onboardingStepTen,
-      RouteNames.onboardingStepEleven,
-      RouteNames.printWallet,
-    ];
-
-    if (excludedRoutes.contains(routeName)) {
-      shouldShow = false;
-    }
-
-    if (_shouldShowBottomBar != shouldShow) {
-      _shouldShowBottomBar = shouldShow;
-      // Use addPostFrameCallback to avoid calling notifyListeners during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
-      });
-    }
-  }
-
-  void setDialogVisible(bool visible) {
-    if (_isDialogVisible != visible) {
-      _isDialogVisible = visible;
-      // Use addPostFrameCallback to avoid calling notifyListeners during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
-      });
-    }
-  }
-}
-
-/// NavigatorObserver to track page changes
-class BottomAppBarNavigatorObserver extends NavigatorObserver {
-  final BottomAppBarProvider bottomBarProvider;
-  final CurrentRouteProvider currentRouteProvider;
-
-  BottomAppBarNavigatorObserver(this.bottomBarProvider, this.currentRouteProvider);
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPush(route, previousRoute);
-    _updateProviders(route);
-  }
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPop(route, previousRoute);
-    if (previousRoute != null) {
-      _updateProviders(previousRoute);
-    }
-  }
-
-  @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    if (newRoute != null) {
-      _updateProviders(newRoute);
-    }
-  }
-
-  void _updateProviders(Route<dynamic> route) {
-    final routeName = route.settings.name ?? '';
-
-    // Update current route immediately
-    currentRouteProvider.updateRoute(routeName);
-
-    // Update bottom bar visibility
-    bottomBarProvider.updateCurrentPage(routeName, null);
-  }
-}
+import 'package:provider/provider.dart' as old_provider;
 
 /// Global widget that shows bottom app bar when appropriate
 class GlobalBottomAppBar extends StatelessWidget {
@@ -175,20 +19,20 @@ class GlobalBottomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<BottomAppBarProvider>(
+    return old_provider.Consumer<BottomAppBarProvider>(
       builder: (context, bottomBarProvider, child) {
         if (!bottomBarProvider.isBottomBarActuallyVisible) {
           return const SizedBox.shrink(); // Hidden
         }
 
         // Also check if wallets exist - never show bottom bar without safes
-        return Consumer<MyWalletsProvider>(
+        return old_provider.Consumer<MyWalletsProvider>(
           builder: (context, myWalletsProvider, child) {
             if (!myWalletsProvider.isWalletsExists) {
               return const SizedBox.shrink(); // Hidden - no safes
             }
 
-            return Consumer<CurrentRouteProvider>(
+            return old_provider.Consumer<CurrentRouteProvider>(
               builder: (context, currentRouteProvider, child) {
                 final currentRoute = currentRouteProvider.currentRoute;
 
@@ -229,14 +73,14 @@ class PageWithBottomPaddingWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<BottomAppBarProvider>(
+    return old_provider.Consumer<BottomAppBarProvider>(
       builder: (context, bottomBarProvider, _) {
         // If bottom bar should not be shown, return child as-is
         if (!bottomBarProvider.isBottomBarActuallyVisible) {
           return child;
         }
 
-        final myWalletsProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+        final myWalletsProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
         if (!myWalletsProvider.isWalletsExists) {
           return child;
         }
@@ -275,13 +119,13 @@ class _GeckoBottomAppBarState extends State<_GeckoBottomAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
-    final historyProvider = Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
+    final searchProvider = old_provider.Provider.of<SearchProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
 
-    return Consumer<CurrentRouteProvider>(
+    return old_provider.Consumer<CurrentRouteProvider>(
       builder: (context, currentRouteProvider, child) {
         // Get current route for immediate state updates
         final currentRoute = currentRouteProvider.currentRoute;

@@ -4,8 +4,8 @@ import 'package:gecko/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 
-import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/providers/search.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/search.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/search_result_list.dart';
 import 'package:provider/provider.dart' as old_provider;

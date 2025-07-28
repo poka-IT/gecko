@@ -3,8 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
-import 'package:provider/provider.dart';
+import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 /// Type de message pour le dialogue de confirmation
 enum ConfirmationDialogType { info, warning, success, error, question }
@@ -63,7 +63,7 @@ Future<bool> showConfirmationDialog({
   final String confirmTextToShow = confirmText ?? type.confirmText;
 
   // Get bottom app bar provider to hide it while dialog is shown
-  final bottomAppBarProvider = context.read<BottomAppBarProvider>();
+  final bottomAppBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context, listen: false);
 
   // Hide bottom app bar when dialog is shown
   bottomAppBarProvider.setDialogVisible(true);

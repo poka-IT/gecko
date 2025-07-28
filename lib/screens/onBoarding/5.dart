@@ -7,15 +7,15 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/generate_wallets.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/generate_wallets.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class OnboardingStepFive extends StatefulWidget {
   const OnboardingStepFive({super.key, this.skipIntro = false});
@@ -32,7 +32,7 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
   List<String>? mnemonicList;
   bool isLoading = false;
   bool _hasInitialized = false;
-  final generateWalletProvider = Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
+  final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
   bool get isMnemonicGenerated => generateWalletProvider.generatedMnemonic != null;
 
   @override
@@ -185,7 +185,7 @@ class _ChooseSafeState extends State<OnboardingStepFive> {
   }
 
   Widget nextButton(BuildContext context, String text, bool isFast, bool skipIntro) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     return ScaledSizedBox(
       width: 350,
       height: 55,

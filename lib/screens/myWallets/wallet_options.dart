@@ -11,9 +11,9 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallet_options.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/wallet_options.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
@@ -63,7 +63,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
-        walletOptions.isEditing = false;
         // Reload wallets from database to catch avatar updates
         myWalletProvider.readAllWallets();
         myWalletProvider.reload();

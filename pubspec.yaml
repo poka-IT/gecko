@@ -30,7 +30,6 @@ dependencies:
   truncate: ^3.0.1
   unorm_dart: ^0.3.1+1
   dio: ^5.8.0+1
-  durt: ^0.1.9
   package_info_plus: ^8.3.0
   dots_indicator: ^4.0.1
   connectivity_plus: ^6.1.4

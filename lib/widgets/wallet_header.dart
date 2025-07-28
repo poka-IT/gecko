@@ -11,8 +11,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -21,7 +21,7 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
-import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers_deprecated/wallet_options.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/commons/storage_builder.dart';
 

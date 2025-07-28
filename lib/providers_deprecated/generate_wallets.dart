@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:durt/durt.dart' as durt;
 import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt, BidouilleLang;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -26,7 +25,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     super.dispose();
   }
 
-  final walletNameFocus = FocusNode();
   Color? askedWordColor = Colors.black;
   bool isAskedWordValid = false;
   var scanStatus = ScanDerivationsStatus.none;
@@ -40,18 +38,6 @@ class GenerateWalletsProvider with ChangeNotifier {
   String? generatedMnemonic; // Mnemonic in user's language (for display/copy/validation)
   String? _englishMnemonic; // English mnemonic for crypto operations
   BidouilleLang? _originalMnemonicLanguage; // Language in which the mnemonic was originally entered/generated
-  bool walletIsGenerated = true;
-
-  final mnemonicController = TextEditingController();
-
-  // Import wallet
-  final cesiumID = TextEditingController();
-  final cesiumPWD = TextEditingController();
-  final cesiumPubkey = TextEditingController();
-  bool isCesiumIDVisible = false;
-  bool isCesiumPWDVisible = false;
-  bool canImport = false;
-  late durt.CesiumWallet cesiumWallet;
 
   // Import safe
   final cellController0 = TextEditingController();
@@ -81,17 +67,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     }
   }
 
-  String removeDiacritics(String str) {
-    var withDia = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
-    var withoutDia = 'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
-
-    for (int i = 0; i < withDia.length; i++) {
-      str = str.replaceAll(withDia[i], withoutDia[i]);
-    }
-
-    return str;
-  }
-
   int getRandomInt() {
     var rng = Random();
     return rng.nextInt(12);
@@ -115,27 +90,6 @@ class GenerateWalletsProvider with ChangeNotifier {
     nbrWordAlpha = nbrToString[nbr];
 
     return nbrWordAlpha;
-  }
-
-  void nameChanged() {
-    notifyListeners();
-  }
-
-  Future<void> generateCesiumWalletPubkey(String cesiumID, String cesiumPWD) async {
-    cesiumWallet = durt.CesiumWallet(cesiumID, cesiumPWD);
-    String walletPubkey = cesiumWallet.pubkey;
-
-    cesiumPubkey.text = walletPubkey;
-  }
-
-  void cesiumIDisVisible() {
-    isCesiumIDVisible = !isCesiumIDVisible;
-    notifyListeners();
-  }
-
-  void cesiumPWDisVisible() {
-    isCesiumPWDVisible = !isCesiumPWDVisible;
-    notifyListeners();
   }
 
   Future<List<String>?> generateWordList(BuildContext context) async {
@@ -230,7 +184,7 @@ class GenerateWalletsProvider with ChangeNotifier {
   }
 
   /// Validate complete mnemonic integrity (checksum) by converting to English and using BIP39 validation
-  Future<bool> isValidCompleteMnemonic(String mnemonic) async {
+  Future<bool> _isValidCompleteMnemonic(String mnemonic) async {
     try {
       final words = mnemonic.split(' ');
       final multilangService = _container.read(walletServiceProvider).multilangService;
@@ -342,7 +296,7 @@ class GenerateWalletsProvider with ChangeNotifier {
       // If all words are valid, check the complete mnemonic integrity (checksum)
       final completeMnemonic = allWords.join(' ');
 
-      if (await isValidCompleteMnemonic(completeMnemonic)) {
+      if (await _isValidCompleteMnemonic(completeMnemonic)) {
         if (isFirstTimeSentenceComplete) {
           // ignore: use_build_context_synchronously
           FocusScope.of(homeContext).unfocus();
@@ -398,10 +352,6 @@ class GenerateWalletsProvider with ChangeNotifier {
 
     // Trigger validation and UI update after pasting all words
     await onMnemonicWordChanged();
-  }
-
-  void reloadBuild() {
-    notifyListeners();
   }
 
   Future<ScanDerivationsResult> scanDerivations(BuildContext context) async {
@@ -470,7 +420,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     // 1. SCAN ROOT BALANCE
     scanStatus = ScanDerivationsStatus.rootScanning;
     notifyListeners();
-    final hasRoot = await scanRootBalance();
+    final hasRoot = await _scanRootBalance();
     if (hasRoot) {
       isAlive = true;
     }
@@ -631,7 +581,7 @@ class GenerateWalletsProvider with ChangeNotifier {
     return isAlive ? ScanDerivationsResult.walletExists : ScanDerivationsResult.walletNotFound;
   }
 
-  Future<bool> scanRootBalance() async {
+  Future<bool> _scanRootBalance() async {
     if (generatedMnemonic == null) return false;
 
     // Convert stored mnemonic (in user's language) to English for crypto operations

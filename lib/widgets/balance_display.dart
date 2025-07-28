@@ -5,8 +5,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
+import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
 import 'package:gecko/routes.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class BalanceDisplay extends ConsumerWidget {

@@ -7,7 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
-import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/providers_deprecated/settings_provider.dart';
 import 'package:gecko/models/transaction_filters.dart';
 
 /// State for network activity history
@@ -329,7 +329,7 @@ final networkActivityProvider = StateNotifierProvider<NetworkActivityNotifier, N
 
 /// Provider for Universal Dividends toggle in network view
 final networkUniversalDividendsToggleProvider = StateNotifierProvider<UniversalDividendsToggleNotifier, bool>((ref) {
-  return UniversalDividendsToggleNotifier(ref);
+  return UniversalDividendsToggleNotifier();
 });
 
 /// Server-side filtered network activity notifier

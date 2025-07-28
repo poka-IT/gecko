@@ -11,10 +11,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-
 import 'package:gecko/providers/trm_data_provider.dart';
-
-import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -35,24 +33,12 @@ class WalletOptionsProvider with ChangeNotifier {
   }
 
   final address = TextEditingController();
-  final _newWalletName = TextEditingController();
-  bool isWalletUnlock = false;
-  bool ischangedPin = false;
-  final newPin = TextEditingController();
-  bool isEditing = false;
-  final nameController = TextEditingController();
   bool isDefaultWallet = false;
-  bool canValidateNameBool = false;
-
-  int getPinLenght() {
-    return pinLength;
-  }
+  bool _canValidateName = false;
 
   void _renameWallet(WalletEntity wallet, String newName, {required bool isCesium}) async {
     wallet.name = newName;
     _container.read(walletServiceProvider).walletBox.put(wallet);
-
-    _newWalletName.text = '';
   }
 
   Future<int> deleteWallet(BuildContext context, WalletEntity wallet) async {
@@ -239,7 +225,7 @@ class WalletOptionsProvider with ChangeNotifier {
 
   Future<String?> editWalletName(BuildContext context, WalletEntity wallet) async {
     final walletName = TextEditingController();
-    canValidateNameBool = false;
+    _canValidateName = false;
 
     final result = await showDialog<String>(
       context: context,
@@ -336,15 +322,14 @@ class WalletOptionsProvider with ChangeNotifier {
                         builder: (context, wOptions, _) {
                           return ElevatedButton(
                             key: keyInfoPopup,
-                            onPressed: canValidateNameBool
+                            onPressed: _canValidateName
                                 ? () async {
-                                    nameController.text = walletName.text;
                                     _renameWallet(wallet, walletName.text, isCesium: false);
                                     Navigator.pop(context, walletName.text);
                                   }
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: canValidateNameBool ? context.colorScheme.primary : Colors.grey,
+                              backgroundColor: _canValidateName ? context.colorScheme.primary : Colors.grey,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -378,16 +363,16 @@ class WalletOptionsProvider with ChangeNotifier {
     if (isNameValid) {
       for (var wallet in myWalletProvider.listWallets) {
         if (walletName.text == wallet.name!) {
-          canValidateNameBool = false;
+          _canValidateName = false;
           break;
         }
-        canValidateNameBool = true;
+        _canValidateName = true;
       }
     } else {
-      canValidateNameBool = false;
+      _canValidateName = false;
     }
     notifyListeners();
-    return canValidateNameBool;
+    return _canValidateName;
   }
 
   void reload() {

@@ -7,12 +7,12 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/generate_wallets.dart';
+import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class OnboardingStepSix extends StatefulWidget {
   const OnboardingStepSix({super.key, required this.skipIntro, required this.generatedMnemonic});
@@ -49,7 +49,7 @@ class _OnboardingStepSixState extends State<OnboardingStepSix> {
 
   @override
   Widget build(BuildContext context) {
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: true);
+    final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: true);
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -174,7 +174,7 @@ Widget nextButton({
         shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
       ),
       onPressed: () {
-        final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context, listen: false);
+        final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
         generateWalletProvider.isAskedWordValid = false;
         generateWalletProvider.askedWordColor = Colors.black;
         AppNavigator.pushWithFader(context, nextScreen, arguments: arguments, isFast: isFast);

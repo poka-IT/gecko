@@ -12,8 +12,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -291,8 +291,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
-    final pinLenght = walletOptions.getPinLenght();
-
     return PopScope(
       onPopInvokedWithResult: (_, _) {
         myWalletProvider.isPinValid = false;
@@ -359,8 +357,8 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          pinForm(context, pinLenght),
-                          if (myWalletProvider.isPinLoading && enterPin.text.length == pinLenght)
+                          pinForm(context, pinLength),
+                          if (myWalletProvider.isPinLoading && enterPin.text.length == pinLength)
                             Container(
                               width: double.infinity,
                               height: scaleSize(80),

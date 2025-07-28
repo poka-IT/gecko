@@ -4,13 +4,13 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_state_icon.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:easy_localization/easy_localization.dart';
 
 class TransactionInProgressScreen extends StatefulWidget {
@@ -38,8 +38,8 @@ class _TransactionInProgressScreenState extends State<TransactionInProgressScree
 
   @override
   void initState() {
-    final walletProfiles = Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
-    final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
+    final walletProfiles = old_provider.Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
     String defaultWalletAddress = myWalletProvider.getDefaultWallet().address;
     String defaultWalletName = myWalletProvider.getDefaultWallet().name ?? '';

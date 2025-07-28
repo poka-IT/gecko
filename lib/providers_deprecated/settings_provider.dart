@@ -10,22 +10,21 @@ final _container = ProviderContainer();
 
 /// Global provider for Universal Dividends toggle state
 final universalDividendsToggleProvider = StateNotifierProvider<UniversalDividendsToggleNotifier, bool>((ref) {
-  return UniversalDividendsToggleNotifier(ref);
+  return UniversalDividendsToggleNotifier();
 });
 
 /// StateNotifier for managing the global Universal Dividends toggle state
 class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
   static const String _storageKey = 'include_universal_dividends_global';
-  final Ref ref;
 
-  UniversalDividendsToggleNotifier(this.ref) : super(false) {
+  UniversalDividendsToggleNotifier() : super(false) {
     _loadFromStorage();
   }
 
   /// Load the toggle state from storage
   void _loadFromStorage() {
     try {
-      final durt = ref.read(durtProvider);
+      final durt = _container.read(durtProvider);
       final storedValue = durt.configBox.getValue(_storageKey, defaultValue: 'false');
       state = storedValue == 'true';
     } catch (e) {
@@ -41,18 +40,10 @@ class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
     _saveToStorage();
   }
 
-  /// Set the Universal Dividends state
-  void setIncludeUniversalDividends(bool include) {
-    if (state != include) {
-      state = include;
-      _saveToStorage();
-    }
-  }
-
   /// Save the toggle state to storage
   void _saveToStorage() {
     try {
-      final durt = ref.read(durtProvider);
+      final durt = _container.read(durtProvider);
       durt.configBox.putValue(_storageKey, state.toString());
     } catch (e) {
       log.e('Error saving UD toggle state: $e');
@@ -88,19 +79,6 @@ class SettingsProvider with ChangeNotifier {
       reload(); // Notify listeners that caches have been cleared
     } catch (e) {
       log.e('❌ Error clearing caches: $e');
-      rethrow;
-    }
-  }
-
-  /// Clear only endpoint caches (Squid and Duniter RPC)
-  Future<void> clearEndpointCaches() async {
-    try {
-      log.i('🧹 Clearing endpoint caches...');
-      await _clearEndpointCaches();
-      log.i('✅ Endpoint caches cleared successfully');
-      reload();
-    } catch (e) {
-      log.e('❌ Error clearing endpoint caches: $e');
       rethrow;
     }
   }
@@ -151,23 +129,6 @@ class SettingsProvider with ChangeNotifier {
     if (config != null) {
       durt.configBox.remove(config.id);
       log.d('Cleared cache entry: $cacheKey');
-    }
-  }
-
-  /// Get cache statistics
-  Map<String, dynamic> getCacheStats() {
-    try {
-      final rpcCount = Networks.listDuniterEndpoints.length;
-      final squidCount = Networks.listSquidEndpoints.length;
-
-      return {
-        'discoveredRpcEndpoints': rpcCount,
-        'discoveredSquidEndpoints': squidCount,
-        'status': 'Cache stats retrieved successfully (no caching)',
-      };
-    } catch (e) {
-      log.e('Error getting cache stats: $e');
-      return {'error': e.toString()};
     }
   }
 }

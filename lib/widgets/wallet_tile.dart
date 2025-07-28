@@ -4,12 +4,12 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class WalletTile extends StatelessWidget {
   const WalletTile({super.key, required this.repository, this.tutorialKey, required this.uniqueId});
@@ -20,7 +20,7 @@ class WalletTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final currentSafe = myWalletProvider.getCurrentSafe;
 
     return Padding(
@@ -109,5 +109,6 @@ class WalletTile extends StatelessWidget {
   }
 
   bool get isDefault =>
-      repository.address == Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
+      repository.address ==
+      old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

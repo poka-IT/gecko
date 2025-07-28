@@ -10,12 +10,12 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/providers_deprecated/block_height_provider.dart';
 import 'package:gecko/providers/currency_provider.dart';
 
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/settings_provider.dart';
-import 'package:gecko/providers/theme_provider.dart' as theme_provider;
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/settings_provider.dart';
+import 'package:gecko/providers_deprecated/theme_provider.dart' as theme_provider;
 import 'package:gecko/providers/trm_data_provider.dart';
 
 import 'package:gecko/widgets/commons/loading.dart';

@@ -6,7 +6,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/debug_screen.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:gecko/screens/currency_page.dart';

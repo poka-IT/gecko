@@ -5,7 +5,7 @@ import 'package:durt2/objectbox.g.dart' show Box;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/home.dart';
+import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/models/migration_data.dart';
 import 'dart:async';
 import 'package:provider/provider.dart' as old_provider;

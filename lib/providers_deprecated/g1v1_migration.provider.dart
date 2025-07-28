@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers.dart';
 
-class G1v1MigrationProvider extends ChangeNotifier {
+class G1v1MigrationProvider with ChangeNotifier {
   late ProviderContainer _container;
 
   G1v1MigrationProvider() {

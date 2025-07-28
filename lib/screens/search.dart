@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/search.dart';
+import 'package:gecko/providers_deprecated/search.dart';
 import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/network_activity_screen.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
-import 'package:gecko/widgets/clipboard_monitor.dart';
+import 'package:gecko/services/clipboard_monitor.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -43,7 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final searchProvider = Provider.of<SearchProvider>(context);
+    final searchProvider = old_provider.Provider.of<SearchProvider>(context);
     final canValidate = searchProvider.searchController.text.length >= 2;
 
     return PopScope(

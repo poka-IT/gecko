@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/utils.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'dart:io' as io;
 import 'package:gecko/main.dart' as app;
 
@@ -211,7 +211,7 @@ Future bkSetNode([String? endpoint]) async {
 
 // Restore safe in background
 Future bkRestoreSafe([String mnemonic = testMnemonic]) async {
-  final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
+  final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
   for (int number = 0; number <= 4; number++) {
     await _addImportAccount(
@@ -249,7 +249,7 @@ Future<WalletEntity> _addImportAccount({
 
 // Delete all wallets in background
 Future bkDeleteAllWallets() async {
-  final myWalletProvider = Provider.of<MyWalletsProvider>(homeContext, listen: false);
+  final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
   final isWalletsPresents = await isPresent('scanQRCode'.tr(), timeout: const Duration(milliseconds: 300));
   if (isWalletsPresents) {
     await Durt.i.wallets.clearWallets();

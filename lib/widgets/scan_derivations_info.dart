@@ -2,15 +2,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/generate_wallets.dart';
-import 'package:provider/provider.dart';
+import 'package:gecko/providers_deprecated/generate_wallets.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class ScanDerivationsInfo extends StatelessWidget {
   const ScanDerivationsInfo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final generateWalletProvider = Provider.of<GenerateWalletsProvider>(context);
+    final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
     return Visibility(
       visible: generateWalletProvider.scanStatus != ScanDerivationsStatus.none,
       child: Padding(

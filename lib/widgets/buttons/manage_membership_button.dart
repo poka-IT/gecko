@@ -2,16 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers_deprecated/wallet_options.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class ManageMembershipButton extends StatelessWidget {
   const ManageMembershipButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions = Provider.of<WalletOptionsProvider>(context, listen: false);
+    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     return InkWell(
       onTap: () {
         Navigator.push(

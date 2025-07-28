@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -22,10 +22,6 @@ class SafeProvider with ChangeNotifier {
   void dispose() {
     _container.dispose();
     super.dispose();
-  }
-
-  void reload() {
-    notifyListeners();
   }
 
   Future forgetSafe(BuildContext context, SafeEntity safe) async {
@@ -131,10 +127,6 @@ class SafeProvider with ChangeNotifier {
         }
       }
     }
-  }
-
-  List<String> getSafeWallets(SafeEntity safe) {
-    return safe.wallets.map((wallet) => wallet.address).toList();
   }
 
   Future<bool?> _confirmDeletingSafe(BuildContext context, String walletName) async {

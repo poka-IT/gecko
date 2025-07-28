@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:gecko/services/karaoke_service.dart';
-import 'package:gecko/providers/home.dart';
+import 'package:gecko/providers_deprecated/home.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/globals.dart';
 

@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/safe_provider.dart';
-import 'package:gecko/providers/home.dart';
+import 'package:gecko/providers_deprecated/safe_provider.dart';
+import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/widgets/animated_background.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';

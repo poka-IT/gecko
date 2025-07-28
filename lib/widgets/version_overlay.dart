@@ -3,11 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as flutter_provider;
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/home.dart';
-import 'package:gecko/providers/connection_provider.dart';
-import 'package:gecko/providers/settings_provider.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/theme_provider.dart';
+import 'package:gecko/providers_deprecated/home.dart';
+import 'package:gecko/providers_deprecated/settings_provider.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/theme_provider.dart';
 import 'package:gecko/providers.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -56,8 +55,8 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
         'pin_loading': myWalletsProvider.isPinLoading,
       };
 
-      final connectionProvider = flutter_provider.Provider.of<ConnectionProvider>(context, listen: false);
-      providerStates['connection'] = {'status': connectionProvider.connectionStatus.name};
+      final connectionStatus = ref.read(connectionStatusProvider);
+      providerStates['connection'] = {'status': connectionStatus.name};
 
       final themeProvider = flutter_provider.Provider.of<ThemeProvider>(context, listen: false);
       providerStates['theme'] = {'mode': themeProvider.currentThemeMode.name};

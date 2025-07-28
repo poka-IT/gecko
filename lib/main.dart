@@ -18,27 +18,27 @@ import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/safe_provider.dart';
-import 'package:gecko/providers/connection_provider.dart';
-import 'package:gecko/providers/g1v1_migration.provider.dart';
-import 'package:gecko/providers/generate_wallets.dart';
-import 'package:gecko/providers/settings_provider.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
-import 'package:gecko/providers/home.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/search.dart';
-import 'package:gecko/providers/wallet_options.dart';
+import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers_deprecated/safe_provider.dart';
+import 'package:gecko/providers_deprecated/g1v1_migration.provider.dart';
+import 'package:gecko/providers_deprecated/generate_wallets.dart';
+import 'package:gecko/providers_deprecated/settings_provider.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/home.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/search.dart';
+import 'package:gecko/providers_deprecated/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/version_overlay.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/providers/theme_provider.dart';
-import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/providers_deprecated/theme_provider.dart';
+import 'package:gecko/providers_deprecated/block_height_provider.dart';
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 
@@ -119,28 +119,27 @@ class Gecko extends StatelessWidget {
     // To configure multi_endpoints GraphQLProvider: https://stackoverflow.com/q/70656513/8301867
 
     return ProviderScope(
-      child: MultiProvider(
+      child: old_provider.MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => HomeProvider()),
-          ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
-          ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => SafeProvider()),
-          ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
-          ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-          ChangeNotifierProvider(create: (_) => SearchProvider()),
-          ChangeNotifierProvider(create: (_) => SettingsProvider()),
-          ChangeNotifierProvider(create: (_) => ThemeProvider()),
-          ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
-          ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
-          ChangeNotifierProvider(create: (_) => ConnectionProvider()),
-          ChangeNotifierProvider(create: (_) => BottomAppBarProvider()),
-          ChangeNotifierProvider(create: (_) => CurrentRouteProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => HomeProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
+          old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => SafeProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => SearchProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => BottomAppBarProvider()),
+          old_provider.ChangeNotifierProvider(create: (_) => CurrentRouteProvider()),
         ],
-        child: Consumer<ThemeProvider>(
+        child: old_provider.Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
             // Create the bottom app bar provider and observer
-            final bottomAppBarProvider = Provider.of<BottomAppBarProvider>(context, listen: false);
-            final currentRouteProvider = Provider.of<CurrentRouteProvider>(context, listen: false);
+            final bottomAppBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context, listen: false);
+            final currentRouteProvider = old_provider.Provider.of<CurrentRouteProvider>(context, listen: false);
             final navigatorObserver = BottomAppBarNavigatorObserver(bottomAppBarProvider, currentRouteProvider);
 
             return MaterialApp(

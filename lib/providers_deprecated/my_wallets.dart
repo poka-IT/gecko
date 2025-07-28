@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:durt2/durt2.dart' show WalletEntity, SafeEntity, SafeEntityExt, Durt, IdtyStatus;
+import 'package:durt2/durt2.dart' show WalletEntity, SafeEntity, SafeEntityExt, Durt;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -44,44 +44,6 @@ class MyWalletsProvider with ChangeNotifier {
 
   bool get isWalletsExists => !_container.read(walletServiceProvider).safeBox.isEmpty();
 
-  // Removed sync version - use getIdtyWalletAsync() instead
-
-  // New async method to get identity wallet based on real-time status
-  Future<WalletEntity?> getIdtyWalletAsync() async {
-    try {
-      final storageService = _container.read(storageServiceProvider);
-
-      // Check each wallet for member status first, then identity status
-      for (final wallet in listWallets) {
-        final status = await storageService.getIdtyStatus(wallet.address);
-        if (status == IdtyStatus.validated) {
-          return wallet; // Return first member wallet
-        }
-      }
-
-      // If no member found, look for any identity
-      for (final wallet in listWallets) {
-        final status = await storageService.getIdtyStatus(wallet.address);
-        if (status != IdtyStatus.none && status != IdtyStatus.unknown) {
-          return wallet; // Return first wallet with identity
-        }
-      }
-
-      return null; // No identity found
-    } catch (e) {
-      log.e('Error getting identity wallet: $e');
-      return listWallets.isNotEmpty ? listWallets.first : null;
-    }
-  }
-
-  // Removed sync version - use getWalletsWithoutIdtyAsync() instead
-
-  // New async method to get wallets without identity
-  Future<List<WalletEntity>> getWalletsWithoutIdtyAsync() async {
-    final idtyWallet = await getIdtyWalletAsync();
-    return listWallets.where((w) => w.address != idtyWallet?.address).toList();
-  }
-
   Future<List<WalletEntity>> readAllWallets({WidgetRef? ref, int? safeBoxNumber}) async {
     final sbn = safeBoxNumber ?? _container.read(walletServiceProvider).defaultSafeBoxNumber;
 
@@ -121,23 +83,6 @@ class MyWalletsProvider with ChangeNotifier {
     listWallets = wallets;
 
     return wallets;
-  }
-
-  WalletEntity? getWalletDataById(List<int?> id) {
-    if (id.length < 2 || id[0] == null || id[1] == null) {
-      return null;
-    }
-
-    final int safeNumber = id[0]!;
-    final int walletNumber = id[1]!;
-
-    final qBuilder = _container.read(walletServiceProvider).walletBox.query(WalletEntity_.number.equals(walletNumber));
-
-    qBuilder.link(WalletEntity_.safe, SafeEntity_.number.equals(safeNumber));
-
-    final wallet = qBuilder.build().findFirst();
-
-    return wallet;
   }
 
   Future<bool> askPinCode({bool force = false, bool canSwitch = false}) async {

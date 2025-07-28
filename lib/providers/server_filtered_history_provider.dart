@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/transaction_filters.dart';
-import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/providers_deprecated/settings_provider.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers.dart';

@@ -6,10 +6,10 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/utils/flower_power_colors.dart';
 
 class HomeButtons extends StatefulWidget {
@@ -96,8 +96,8 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = Provider.of<MyWalletsProvider>(context);
-    final historyProvider = Provider.of<WalletsProfilesProvider>(context);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context);
 
     return Column(
       children: <Widget>[

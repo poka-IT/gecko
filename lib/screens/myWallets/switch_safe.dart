@@ -8,7 +8,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers/my_wallets.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';

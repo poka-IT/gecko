@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/my_wallets.dart' show MyWalletsProvider;
+import 'package:gecko/providers_deprecated/my_wallets.dart' show MyWalletsProvider;
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -18,8 +18,6 @@ import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:flutter/services.dart';
-
-import 'package:gecko/providers/trm_data_provider.dart';
 
 class HomeProvider with ChangeNotifier {
   late ProviderContainer _container;
@@ -84,22 +82,6 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
-  // Legacy method for backward compatibility
-  Future changeCurrencyUnit(BuildContext context) async {
-    // This method is now handled by the new currency display mode system
-    // It cycles between G1 and DU modes for backward compatibility
-    final container = ProviderContainer();
-    try {
-      final currentMode = container.read(currencyDisplayModeProvider);
-      final newMode = currentMode == CurrencyDisplayMode.g1 ? CurrencyDisplayMode.du : CurrencyDisplayMode.g1;
-      container.read(currencyDisplayModeProvider.notifier).setDisplayMode(newMode);
-    } finally {
-      container.dispose();
-    }
-
-    notifyListeners();
-  }
-
   Future<String> getAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final version = packageInfo.version;
@@ -133,12 +115,9 @@ class HomeProvider with ChangeNotifier {
     }
   }
 
-  void reload() {
-    notifyListeners();
-  }
-
   /// Calculate the day of the year (1-365/366)
   int _getDayOfYear(DateTime date) {
+    
     final startOfYear = DateTime(date.year, 1, 1);
     final difference = date.difference(startOfYear).inDays;
     return difference + 1; // Add 1 because we want 1-based indexing

@@ -1,15 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/search.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/search.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class ClipboardMonitor extends ChangeNotifier {
+class ClipboardMonitor {
   String? _lastClipboardContent;
   Timer? _debounceTimer;
   final searchProvider = old_provider.Provider.of<SearchProvider>(homeContext, listen: false);
@@ -44,12 +43,5 @@ class ClipboardMonitor extends ChangeNotifier {
     }
 
     Future.delayed(const Duration(seconds: 1), _checkClipboard);
-  }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    searchProvider.canPasteAddress = false;
-    super.dispose();
   }
 }

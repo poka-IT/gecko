@@ -16,8 +16,8 @@ import 'package:gecko/models/widgets_keys.dart';
 
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
-import 'package:gecko/providers/my_wallets.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
 
 import 'package:gecko/utils.dart';

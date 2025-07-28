@@ -9,9 +9,9 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
+import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/screens/wallet_view.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
@@ -31,14 +31,9 @@ class WalletsProfilesProvider with ChangeNotifier {
   }
 
   String address = '';
-  String pubkeyShort = '';
 
-  bool isHistoryScreen = false;
-  String historySwitchButtun = "Voir l'historique";
-  String? rawSvg;
   final payAmount = TextEditingController();
   final payComment = TextEditingController();
-  num? _balance;
 
   bool isCommentVisible = false;
 
@@ -107,20 +102,8 @@ class WalletsProfilesProvider with ChangeNotifier {
     }
   }
 
-  void resetdHistory() {
-    notifyListeners();
-  }
-
   String generateIdenticon(String pubkey) {
     return Jdenticon.toSvg(pubkey);
-  }
-
-  Future<num?> getBalance(String? pubkey) async {
-    while (_balance == null) {
-      await Future.delayed(const Duration(milliseconds: 50));
-    }
-
-    return _balance;
   }
 
   bool isContact(String address) {

@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 
 class SearchProvider with ChangeNotifier {
   final searchController = TextEditingController();
-  List searchResult = [];
-  int resultLenght = 0;
   bool canPasteAddress = false;
   String pastedAddress = '';
 

@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/contacts_list.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as old_provider;
 
 class ContactsScreen extends StatefulWidget {
   const ContactsScreen({super.key});
@@ -26,7 +26,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<WalletsProfilesProvider>(context, listen: true);
+    old_provider.Provider.of<WalletsProfilesProvider>(context, listen: true);
     final allContacts = contactsBox.toMap().values.toList();
 
     // Order contacts by username

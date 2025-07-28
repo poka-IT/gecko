@@ -174,14 +174,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.13"
-  bip32_ed25519:
-    dependency: transitive
-    description:
-      name: bip32_ed25519
-      sha256: "6eca0f5027602372b996d8b6da8d6d7431a5fedb04b548900149f25425357051"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.2"
   bip39_mnemonic:
     dependency: transitive
     description:
@@ -190,14 +182,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.9"
-  bip39_multi_nullsafety:
-    dependency: transitive
-    description:
-      name: bip39_multi_nullsafety
-      sha256: e6f4757c2c5b4c7588ed2ec63e664e80850931e6f91fec5a1b73729431cf4fe0
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.7"
   boolean_selector:
     dependency: transitive
     description:
@@ -462,21 +446,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.1"
-  durt:
-    dependency: "direct main"
-    description:
-      name: durt
-      sha256: cd8d2ad3db75edad7d8d4bfab49b9a9d57d20a54185cd2d0e9a6c97d4569b761
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.9"
   durt2:
     dependency: "direct main"
     description:
       path: "../durt2"
       relative: true
     source: path
-    version: "0.3.3"
+    version: "0.3.4"
   easy_localization:
     dependency: "direct main"
     description:

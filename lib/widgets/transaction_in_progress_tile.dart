@@ -12,6 +12,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
+import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
 
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
@@ -21,7 +22,6 @@ import 'package:gecko/widgets/transaction_state_icon.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:fade_and_translate/fade_and_translate.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
-import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 // Static cache to preserve transaction status across widget reconstructions

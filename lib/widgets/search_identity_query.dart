@@ -6,8 +6,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers.dart';
-import 'package:gecko/providers/search.dart';
-import 'package:gecko/providers/wallets_profiles.dart';
+import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -21,7 +20,6 @@ class SearchIdentityQuery extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final walletsProfiles = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final searchProvider = old_provider.Provider.of<SearchProvider>(context, listen: false);
 
     // Check if we have network connection
     final connectionStatus = ref.watch(connectionStatusProvider);
@@ -38,10 +36,6 @@ class SearchIdentityQuery extends ConsumerWidget {
         if (identities.isEmpty) {
           return Text('noResult'.tr());
         }
-
-        // Update search provider result count
-        searchProvider.resultLenght = identities.length;
-
         const double avatarSize = 45;
         return Expanded(
           child: ListView(

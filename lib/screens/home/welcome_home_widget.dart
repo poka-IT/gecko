@@ -42,6 +42,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                   child: Text(
                     "fastAppDescription".tr(args: [Durt.i.network.symbol]),
                     textAlign: TextAlign.center,
+                    textScaler: TextScaler.noScaling,
                     style: scaledTextStyle(
                       color: Colors.white,
                       fontSize: isTall ? 19 : 17,
@@ -96,74 +97,89 @@ class WelcomeHomeWidget extends StatelessWidget {
                       ),
                       SafeArea(
                         top: false,
-                        child: Column(
-                          children: [
-                            ScaledSizedBox(
-                              width: 330,
-                              height: 60,
-                              child: ElevatedButton(
-                                key: keyOnboardingNewSafe,
-                                style:
-                                    ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: homeContext.colorScheme.primary,
-                                      elevation: 0,
-                                      padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    ).copyWith(
-                                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                        if (states.contains(WidgetState.pressed)) return 0;
-                                        return 8;
-                                      }),
-                                      shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+                          child: Column(
+                            children: [
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: scaleSize(330), minHeight: scaleSize(60)),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    key: keyOnboardingNewSafe,
+                                    style:
+                                        ElevatedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          backgroundColor: homeContext.colorScheme.primary,
+                                          elevation: 0,
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: scaleSize(12),
+                                            horizontal: scaleSize(16),
+                                          ),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        ).copyWith(
+                                          elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                            if (states.contains(WidgetState.pressed)) return 0;
+                                            return 8;
+                                          }),
+                                          shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
+                                        ),
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, RouteNames.onboardingStepOne);
+                                    },
+                                    child: Text(
+                                      'createWallet'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                onPressed: () {
-                                  Navigator.pushNamed(context, RouteNames.onboardingStepOne);
-                                },
-                                child: Text(
-                                  'createWallet'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
                                   ),
                                 ),
                               ),
-                            ),
-                            ScaledSizedBox(height: scaleSize(17)),
-                            ScaledSizedBox(
-                              width: 330,
-                              height: 60,
-                              child: OutlinedButton(
-                                key: keyRestoreSafe,
-                                style:
-                                    OutlinedButton.styleFrom(
-                                      side: BorderSide(width: scaleSize(4), color: homeContext.colorScheme.primary),
-                                      padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      backgroundColor: Colors.white.withValues(alpha: 0.1),
-                                    ).copyWith(
-                                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                        if (states.contains(WidgetState.pressed)) return 0;
-                                        return 4;
-                                      }),
-                                      shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                              ScaledSizedBox(height: scaleSize(17)),
+                              ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: scaleSize(330), minHeight: scaleSize(60)),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                    key: keyRestoreSafe,
+                                    style:
+                                        OutlinedButton.styleFrom(
+                                          side: BorderSide(width: scaleSize(4), color: homeContext.colorScheme.primary),
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: scaleSize(12),
+                                            horizontal: scaleSize(16),
+                                          ),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                                        ).copyWith(
+                                          elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                            if (states.contains(WidgetState.pressed)) return 0;
+                                            return 4;
+                                          }),
+                                          shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                        ),
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, RouteNames.restoreSafe);
+                                    },
+                                    child: Text(
+                                      "restoreWallet".tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: 20,
+                                        color: homeContext.colorScheme.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                onPressed: () {
-                                  Navigator.pushNamed(context, RouteNames.restoreSafe);
-                                },
-                                child: Text(
-                                  "restoreWallet".tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 20,
-                                    color: homeContext.colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
-                            ),
-                            const TestWalletButton(),
-                          ],
+                              const TestWalletButton(),
+                            ],
+                          ),
                         ),
                       ),
                       const Spacer(flex: 1),

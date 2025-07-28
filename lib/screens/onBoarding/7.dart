@@ -18,19 +18,14 @@ class OnboardingStepSeven extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: InfoIntro(
-            text: 'geckoWillGenerateAPassword'.tr(),
-            assetName: 'coffre-fort-code-secret-dans-telephone.png',
-            buttonText: '>',
-            nextScreen: RouteNames.onboardingStepEight,
-            routeArguments: OnboardingStepsSevenToNineArguments(
-              scanDerivation: scanDerivation,
-              fromRestore: fromRestore,
-            ),
-            pagePosition: 6,
-            boxHeight: 320,
-          ),
+        child: InfoIntro(
+          text: 'geckoWillGenerateAPassword'.tr(),
+          assetName: 'coffre-fort-code-secret-dans-telephone.png',
+          buttonText: '>',
+          nextScreen: RouteNames.onboardingStepEight,
+          routeArguments: OnboardingStepsSevenToNineArguments(scanDerivation: scanDerivation, fromRestore: fromRestore),
+          pagePosition: 6,
+          boxHeight: 320,
         ),
       ),
     );

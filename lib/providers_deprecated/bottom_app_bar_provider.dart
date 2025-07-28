@@ -7,17 +7,26 @@ final RouteObserver<PageRoute> globalRouteObserver = RouteObserver<PageRoute>();
 /// Simple provider to track the current route name
 class CurrentRouteProvider with ChangeNotifier {
   String _currentRoute = '';
+  bool _disposed = false;
 
   String get currentRoute => _currentRoute;
 
   void updateRoute(String route) {
-    if (_currentRoute != route) {
+    if (_currentRoute != route && !_disposed) {
       _currentRoute = route;
       // Use addPostFrameCallback to avoid calling notifyListeners during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        if (!_disposed) {
+          notifyListeners();
+        }
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }
 
@@ -26,6 +35,7 @@ class BottomAppBarProvider with ChangeNotifier, WidgetsBindingObserver {
   bool _shouldShowBottomBar = true;
   bool _isKeyboardVisible = false;
   bool _isDialogVisible = false;
+  bool _disposed = false;
 
   bool get shouldShowBottomBar => _shouldShowBottomBar;
   bool get isKeyboardVisible => _isKeyboardVisible;
@@ -43,6 +53,7 @@ class BottomAppBarProvider with ChangeNotifier, WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _disposed = true;
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -98,21 +109,25 @@ class BottomAppBarProvider with ChangeNotifier, WidgetsBindingObserver {
       shouldShow = false;
     }
 
-    if (_shouldShowBottomBar != shouldShow) {
+    if (_shouldShowBottomBar != shouldShow && !_disposed) {
       _shouldShowBottomBar = shouldShow;
       // Use addPostFrameCallback to avoid calling notifyListeners during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        if (!_disposed) {
+          notifyListeners();
+        }
       });
     }
   }
 
   void setDialogVisible(bool visible) {
-    if (_isDialogVisible != visible) {
+    if (_isDialogVisible != visible && !_disposed) {
       _isDialogVisible = visible;
       // Use addPostFrameCallback to avoid calling notifyListeners during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        if (!_disposed) {
+          notifyListeners();
+        }
       });
     }
   }

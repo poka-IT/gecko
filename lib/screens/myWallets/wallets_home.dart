@@ -169,9 +169,11 @@ class _WalletsHomeContent extends ConsumerWidget {
     List<WalletEntity> walletsWithoutIdty,
     int nTule,
   ) {
+    // Freeze the wallet list to prevent mutations during layout
+    final frozenWalletsWithoutIdty = List<WalletEntity>.unmodifiable(walletsWithoutIdty);
     // SIMPLE tutorial logic: attach key to second wallet in grid if exists, otherwise first
-    final int targetWalletIndex = walletsWithoutIdty.length > 1 ? 1 : 0;
-    final bool shouldShowTutorial = walletsWithoutIdty.isNotEmpty;
+    final int targetWalletIndex = frozenWalletsWithoutIdty.length > 1 ? 1 : 0;
+    final bool shouldShowTutorial = frozenWalletsWithoutIdty.isNotEmpty;
 
     // Create a stable tutorial key using static map to avoid recreating keys
     final String tutorialKeyId = shouldShowTutorial && walletsWithoutIdty.isNotEmpty
@@ -287,36 +289,58 @@ class _WalletsHomeContent extends ConsumerWidget {
                       },
                     ),
                   ),
-                // Regular wallets grid - isolated from provider rebuilds
-                old_provider.Consumer<MyWalletsProvider>(
-                  builder: (context, myWalletProvider, child) {
-                    // Create stable lists that won't change during layout
-                    final stableWalletsWithoutIdty = List.from(walletsWithoutIdty);
-                    final stableTargetIndex = targetWalletIndex;
+                // Regular wallets - manual grid using Column/Row
+                SliverToBoxAdapter(
+                  key: keyListWallets,
+                  child: Builder(
+                    builder: (context) {
+                      // Calculate tile size once, outside of any complex layout
+                      final screenWidth = MediaQuery.of(context).size.width;
+                      final availableWidth = screenWidth - 10; // Account for horizontal padding (5px each side)
+                      final tileWidth = (availableWidth / nTule) - 0.1; // Slight reduction to prevent overflow
+                      final tileHeight = tileWidth;
 
-                    return SliverGrid.count(
-                      key: keyListWallets,
-                      crossAxisCount: nTule,
-                      childAspectRatio: 1,
-                      crossAxisSpacing: 0,
-                      mainAxisSpacing: 0,
-                      children: <Widget>[
-                        for (var i = 0; i < stableWalletsWithoutIdty.length; i++)
+                      // Create list of all items including add button
+                      final allItems = <Widget>[
+                        for (var i = 0; i < frozenWalletsWithoutIdty.length; i++)
                           DragTuleAction(
-                            key: ValueKey('wallet_container_${stableWalletsWithoutIdty[i].address}_$i'),
-                            wallet: stableWalletsWithoutIdty[i],
+                            key: ValueKey('wallet_container_${frozenWalletsWithoutIdty[i].address}_$i'),
+                            wallet: frozenWalletsWithoutIdty[i],
                             child: WalletTile(
-                              repository: stableWalletsWithoutIdty[i],
-                              tutorialKey: i == stableTargetIndex ? tutorialKey : null,
+                              repository: frozenWalletsWithoutIdty[i],
+                              tutorialKey: i == targetWalletIndex ? tutorialKey : null,
                               uniqueId: 'grid_$i',
+                              currentSafe: currentSafe.number,
                             ),
                           ),
-                        ref.read(durtProvider).isConnected && myWalletProvider.listWallets.length < maxWalletsInSafe
-                            ? const AddNewDerivationButton()
-                            : const Text(''),
-                      ],
-                    );
-                  },
+                        if (ref.read(durtProvider).isConnected && frozenWalletsWithoutIdty.length < maxWalletsInSafe)
+                          const AddNewDerivationButton(),
+                      ];
+
+                      // Build rows manually using Expanded to avoid overflow
+                      final rows = <Widget>[];
+                      for (int i = 0; i < allItems.length; i += nTule) {
+                        final rowItems = <Widget>[];
+                        for (int j = 0; j < nTule; j++) {
+                          if (i + j < allItems.length) {
+                            rowItems.add(
+                              Expanded(
+                                child: SizedBox(height: tileHeight, child: allItems[i + j]),
+                              ),
+                            );
+                          } else {
+                            rowItems.add(Expanded(child: SizedBox(height: tileHeight)));
+                          }
+                        }
+                        rows.add(Row(children: rowItems));
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Column(children: rows),
+                      );
+                    },
+                  ),
                 ),
                 const SliverToBoxAdapter(child: SafeOptionsButtons()),
               ],

@@ -74,96 +74,96 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ? ref.read(squidServiceProvider).walletNameIndexer[walletOptions.address.text]!
               : currentWalletName,
         ),
-        body: Column(
-          children: [
-            WalletHeader(
-              address: widget.wallet.address,
-              customImagePath: widget.wallet.imagePath,
-              defaultImagePath: widget.wallet.imagePath,
+        body: CustomScrollView(
+          slivers: [
+            // Wallet header as a sliver
+            SliverToBoxAdapter(
+              child: WalletHeader(
+                address: widget.wallet.address,
+                customImagePath: widget.wallet.imagePath,
+                defaultImagePath: widget.wallet.imagePath,
+              ),
             ),
-            // Corps avec les options
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // ScaledSizedBox(height: 16),
-                      old_provider.Consumer<WalletOptionsProvider>(
-                        builder: (context, walletProvider, _) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            spacing: 8,
-                            children: [
-                              buildConfirmIdentitySection(context, ref, walletProvider),
-                              if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                buildRenewMembershipSection(context, ref, walletProvider),
-                              buildOptionsSection(context, walletProvider, historyProvider),
-                              if (!isAlone)
-                                buildDefaultWalletSection(
-                                  context,
-                                  ref,
-                                  walletProvider,
-                                  myWalletProvider,
-                                  walletOptions,
-                                  currentSafe,
-                                ),
-                              if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                InkWell(
-                                  key: keyRenameWallet,
-                                  onTap: () async {
-                                    await walletProvider.editWalletName(context, widget.wallet);
-                                    // Reload wallets data to update the UI
-                                    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
-                                    // Reload the wallet object to get the updated name
-                                    final updatedWallet = myWalletProvider.getWalletDataByAddress(
-                                      widget.wallet.address,
-                                    );
-                                    if (updatedWallet != null) {
-                                      widget.wallet.name = updatedWallet.name;
-                                      // Update the local state to rebuild the UI
-                                      setState(() {
-                                        currentWalletName = updatedWallet.name!;
-                                      });
-                                    }
-                                    myWalletProvider.reload();
-                                    walletProvider.reload();
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                          'assets/walletOptions/edit.png',
-                                          height: scaleSize(22),
-                                          color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+            // Content as a sliver with proper padding
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ScaledSizedBox(height: 16), // Add some top spacing
+                    old_provider.Consumer<WalletOptionsProvider>(
+                      builder: (context, walletProvider, _) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          spacing: 8,
+                          children: [
+                            buildConfirmIdentitySection(context, ref, walletProvider),
+                            if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                              buildRenewMembershipSection(context, ref, walletProvider),
+                            buildOptionsSection(context, walletProvider, historyProvider),
+                            if (!isAlone)
+                              buildDefaultWalletSection(
+                                context,
+                                ref,
+                                walletProvider,
+                                myWalletProvider,
+                                walletOptions,
+                                currentSafe,
+                              ),
+                            if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                              InkWell(
+                                key: keyRenameWallet,
+                                onTap: () async {
+                                  await walletProvider.editWalletName(context, widget.wallet);
+                                  // Reload wallets data to update the UI
+                                  await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
+                                  // Reload the wallet object to get the updated name
+                                  final updatedWallet = myWalletProvider.getWalletDataByAddress(widget.wallet.address);
+                                  if (updatedWallet != null) {
+                                    widget.wallet.name = updatedWallet.name;
+                                    // Update the local state to rebuild the UI
+                                    setState(() {
+                                      currentWalletName = updatedWallet.name!;
+                                    });
+                                  }
+                                  myWalletProvider.reload();
+                                  walletProvider.reload();
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        'assets/walletOptions/edit.png',
+                                        height: scaleSize(22),
+                                        color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                                      ),
+                                      ScaledSizedBox(width: 18),
+                                      Expanded(
+                                        child: Text(
+                                          "editWalletName".tr(),
+                                          style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                                          softWrap: true,
                                         ),
-                                        ScaledSizedBox(width: 18),
-                                        Expanded(
-                                          child: Text(
-                                            "editWalletName".tr(),
-                                            style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
-                                            softWrap: true,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              if (!walletProvider.isDefaultWallet &&
-                                  !IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                                deleteWallet(context, ref, walletOptions, currentSafe),
-                              if (IdentityUtils.hasIdentity(ref, widget.wallet.address)) const ManageMembershipButton(),
-                              if (isAlone)
-                                aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                              ),
+                            if (!walletProvider.isDefaultWallet &&
+                                !IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                              deleteWallet(context, ref, walletOptions, currentSafe),
+                            if (IdentityUtils.hasIdentity(ref, widget.wallet.address)) const ManageMembershipButton(),
+                            if (isAlone)
+                              aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+                            ScaledSizedBox(height: 32), // Add bottom padding for better scrolling
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),

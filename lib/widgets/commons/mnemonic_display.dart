@@ -37,7 +37,11 @@ class MnemonicDisplayWidget extends StatelessWidget {
     }
 
     return Container(
-      constraints: BoxConstraints(maxWidth: scaleSize(360)),
+      width: double.infinity, // Make container fully adaptive
+      constraints: BoxConstraints(
+        maxWidth: scaleSize(450), // Increased max width to accommodate larger text
+        minWidth: scaleSize(320), // Minimum width for small screens
+      ),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
         color: context.colorScheme.surfaceContainer,
@@ -51,6 +55,7 @@ class MnemonicDisplayWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              // First row: words 1-4
               Row(
                 children: <Widget>[
                   _arrayCell(context, 1, mnemonicWords[0]),
@@ -60,6 +65,7 @@ class MnemonicDisplayWidget extends StatelessWidget {
                 ],
               ),
               ScaledSizedBox(height: 15),
+              // Second row: words 5-8
               Row(
                 children: <Widget>[
                   _arrayCell(context, 5, mnemonicWords[4]),
@@ -69,6 +75,7 @@ class MnemonicDisplayWidget extends StatelessWidget {
                 ],
               ),
               ScaledSizedBox(height: 15),
+              // Third row: words 9-12
               Row(
                 children: <Widget>[
                   _arrayCell(context, 9, mnemonicWords[8]),
@@ -90,17 +97,24 @@ class MnemonicDisplayWidget extends StatelessWidget {
   }
 
   Widget _arrayCell(BuildContext context, int index, String dataWord) {
-    return ScaledSizedBox(
-      width: 82,
-      child: Column(
-        children: <Widget>[
-          Text(index.toString(), style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52))),
-          Text(
-            dataWord,
-            key: useWordAsKey ? keyMnemonicWord(dataWord) : keyMnemonicWord(index.toString()),
-            style: scaledTextStyle(fontSize: 15, color: context.colorScheme.onSurface),
-          ),
-        ],
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(4)), // Add horizontal padding for spacing
+        child: Column(
+          children: <Widget>[
+            Text(index.toString(), style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52))),
+            ScaledSizedBox(height: 2),
+            Text(
+              dataWord,
+              key: useWordAsKey ? keyMnemonicWord(dataWord) : keyMnemonicWord(index.toString()),
+              style: scaledTextStyle(fontSize: 15, color: context.colorScheme.onSurface),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.visible, // Allow text to be fully visible
+              softWrap: true, // Allow text to wrap if absolutely necessary
+              maxLines: 2, // Allow up to 2 lines for very long words
+            ),
+          ],
+        ),
       ),
     );
   }

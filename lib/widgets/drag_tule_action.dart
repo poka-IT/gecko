@@ -19,7 +19,7 @@ class DragTuleAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
     return LongPressDraggable<String>(
@@ -54,18 +54,13 @@ class DragTuleAction extends ConsumerWidget {
           if (walletData != null) {
             await ref.read(walletServiceProvider).setDefaultAddress(walletData.address);
           }
-          paymentPopup(
-            toAddress: wallet.address,
-            username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!,
-          );
+          paymentPopup(toAddress: wallet.address, username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!);
         },
         onMove: (details) {
           if (wallet.address != myWalletProvider.lastFlyBy?.address) {
             myWalletProvider.lastFlyBy = wallet;
-            // Defer reload to prevent layout mutations during drag
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              myWalletProvider.reload();
-            });
+            // Don't call reload during drag to prevent layout mutations
+            // The UI will update via the Consumer in bottom_app_bar.dart
           }
         },
         onWillAcceptWithDetails: (senderAddress) => senderAddress.data != wallet.address,

@@ -23,9 +23,80 @@ class OnboardingStepEleven extends ConsumerStatefulWidget {
   ConsumerState<OnboardingStepEleven> createState() => _OnboardingStepElevenState();
 }
 
-class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> {
+class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> with TickerProviderStateMixin {
   // Instance flag to prevent multiple bottom sheet openings
   bool _biometricSetupAttempted = false;
+
+  // Scroll detection variables
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollIndicator = false;
+  bool _isAtBottom = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize scroll detection
+    _scrollController.addListener(_scrollListener);
+
+    // Initialize animation
+    _animationController = AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    _fadeAnimation = Tween<double>(
+      begin: 0.7,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+
+    // Start pulsing animation
+    _animationController.repeat(reverse: true);
+
+    // Check if content is scrollable after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkScrollable();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (!_scrollController.hasClients) return;
+
+    final bool isAtBottom = _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 10;
+
+    if (_isAtBottom != isAtBottom) {
+      setState(() {
+        _isAtBottom = isAtBottom;
+      });
+    }
+  }
+
+  void _checkScrollable() {
+    if (!_scrollController.hasClients) return;
+
+    // Only show indicator if there's meaningful scroll content (more than 10 pixels)
+    final bool isScrollable = _scrollController.position.maxScrollExtent > 10;
+    if (_showScrollIndicator != isScrollable) {
+      setState(() {
+        _showScrollIndicator = isScrollable;
+      });
+    }
+  }
+
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) return;
+
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +124,7 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> {
           child: Stack(
             children: [
               SingleChildScrollView(
+                controller: _scrollController,
                 child: SizedBox(
                   width: double.infinity,
                   child: Column(
@@ -146,6 +218,45 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> {
                   maximumSize: const Size(12, 12),
                 ),
               ),
+              // Scroll indicator at bottom
+              if (_showScrollIndicator && !_isAtBottom)
+                Positioned(
+                  bottom: 16,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: AnimatedBuilder(
+                      animation: _fadeAnimation,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: _fadeAnimation.value,
+                          child: GestureDetector(
+                            onTap: _scrollToBottom,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'scrollToContinue'.tr(),
+                                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

@@ -15,62 +15,74 @@ class SafeOptionsButtons extends StatelessWidget {
     return Column(
       children: [
         ScaledSizedBox(height: 50),
-        ScaledSizedBox(
-          height: 60,
-          width: 300,
-          child: ElevatedButton.icon(
-            icon: Image.asset('assets/safes/config.png', height: scaleSize(40)),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: context.colorScheme.surfaceTint,
-              elevation: 2,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              shadowColor: context.colorScheme.surfaceTint.withValues(alpha: 0.3),
-            ),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return SafeOptions();
-                },
+        // Make the button adaptive with flexible sizing
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: Image.asset('assets/safes/config.png', height: scaleSize(40)),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black,
+                backgroundColor: context.colorScheme.surfaceTint,
+                elevation: 2,
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shadowColor: context.colorScheme.surfaceTint.withValues(alpha: 0.3),
+                minimumSize: Size(0, scaleSize(60)), // Minimum height but flexible width
               ),
-            ),
-            label: Text(
-              "   ${"manageSafe".tr()}",
-              style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xff8a3c0f)),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return SafeOptions();
+                  },
+                ),
+              ),
+              label: Text(
+                "manageSafe".tr(),
+                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xff8a3c0f)),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.visible, // Allow text to wrap if needed
+              ),
             ),
           ),
         ),
         ScaledSizedBox(height: 20),
-        InkWell(
-          key: keyImportG1v1,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return const ImportG1v1();
-                },
-              ),
-            );
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset('assets/cesium_bw2.svg', semanticsLabel: 'CS', height: scaleSize(40)),
-              ScaledSizedBox(
-                width: 155,
-                height: 60,
-                child: Center(
-                  child: Text(
-                    'importIdPasswordAccount'.tr(),
-                    style: scaledTextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.w500),
-                    textAlign: TextAlign.center,
-                  ),
+        // Make the import button adaptive as well
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+          child: InkWell(
+            key: keyImportG1v1,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return const ImportG1v1();
+                  },
                 ),
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset('assets/cesium_bw2.svg', semanticsLabel: 'CS', height: scaleSize(40)),
+                  ScaledSizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      'importIdPasswordAccount'.tr(),
+                      style: scaledTextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.visible, // Allow text to wrap if needed
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         ScaledSizedBox(height: 50),

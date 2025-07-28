@@ -21,6 +21,7 @@ class BubbleSpeak extends StatelessWidget {
       child: Text(
         text,
         key: textKey,
+        textScaler: TextScaler.noScaling,
         style: scaledTextStyle(
           color: context.colorScheme.onSecondaryContainer,
           fontSize: isTall ? fontSize : fontSize * 0.9,

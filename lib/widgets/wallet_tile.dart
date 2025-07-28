@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -11,27 +10,49 @@ import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class WalletTile extends StatelessWidget {
-  const WalletTile({super.key, required this.repository, this.tutorialKey, required this.uniqueId});
+class WalletTile extends StatefulWidget {
+  const WalletTile({
+    super.key,
+    required this.repository,
+    this.tutorialKey,
+    required this.uniqueId,
+    required this.currentSafe,
+  });
 
   final WalletEntity repository;
   final GlobalKey? tutorialKey; // Changed from bool to receive the actual key
   final String uniqueId; // Add unique identifier to avoid key conflicts
+  final int currentSafe; // Pass currentSafe to avoid provider access during layout
+
+  @override
+  State<WalletTile> createState() => _WalletTileState();
+}
+
+class _WalletTileState extends State<WalletTile> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // Keep alive to prevent rebuilds
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final currentSafe = myWalletProvider.getCurrentSafe;
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    // Cache scale size to prevent recalculation during layout
+    final padding = EdgeInsets.all(scaleSize(11));
+    // Create stable key once
+    final gestureKey = ValueKey('wallet_${widget.repository.address}_safe${widget.currentSafe}_${widget.uniqueId}');
 
     return Padding(
-      padding: EdgeInsets.all(scaleSize(11)),
+      padding: padding,
       child: GestureDetector(
-        key: ValueKey('${keyOpenWallet(repository.address).toString()}_safe${currentSafe}_$uniqueId'),
+        key: gestureKey,
         onTap: () {
-          Navigator.pushNamed(context, RouteNames.walletOptions, arguments: WalletOptionsArguments(wallet: repository));
+          Navigator.pushNamed(
+            context,
+            RouteNames.walletOptions,
+            arguments: WalletOptionsArguments(wallet: widget.repository),
+          );
         },
         child: ScaledSizedBox(
-          key: tutorialKey, // Use the passed tutorial key directly
+          key: widget.tutorialKey, // Use the passed tutorial key directly
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -53,17 +74,17 @@ class WalletTile extends StatelessWidget {
                       ),
                       color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
                     ),
-                    child: repository.imagePath == null || repository.imagePath == ''
+                    child: widget.repository.imagePath == null || widget.repository.imagePath == ''
                         ? Padding(
                             padding: EdgeInsets.all(scaleSize(16)),
                             child: Image.asset(
-                              'assets/avatars/${repository.number % 4}.png',
+                              'assets/avatars/${widget.repository.number % 4}.png',
                               alignment: Alignment.bottomCenter,
                             ),
                           )
                         : Container(
                             margin: EdgeInsets.all(scaleSize(16)),
-                            child: SmartAvatar(imagePath: repository.imagePath!),
+                            child: SmartAvatar(imagePath: widget.repository.imagePath!),
                           ),
                   ),
                 ),
@@ -84,14 +105,14 @@ class WalletTile extends StatelessWidget {
                       Column(
                         children: [
                           NameByAddress(
-                            wallet: repository,
+                            wallet: widget.repository,
                             size: 16,
                             color: isDefault ? Colors.white : context.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                           ScaledSizedBox(height: 4),
                           Balance(
-                            address: repository.address,
+                            address: widget.repository.address,
                             size: 14,
                             color: isDefault ? Colors.white : context.colorScheme.onSurface,
                           ),
@@ -109,6 +130,6 @@ class WalletTile extends StatelessWidget {
   }
 
   bool get isDefault =>
-      repository.address ==
+      widget.repository.address ==
       old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

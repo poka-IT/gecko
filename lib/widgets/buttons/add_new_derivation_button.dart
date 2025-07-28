@@ -50,13 +50,20 @@ class AddNewDerivationButton extends StatelessWidget {
                             width: 50,
                             child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 6),
                           )
-                        : Text(
-                            '+',
-                            style: scaledTextStyle(
-                              fontSize: 100,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFFFCB437),
-                            ),
+                        : LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Calculate an appropriate size based on container dimensions
+                              // Use the smaller dimension and scale it up for better visibility
+                              final double containerSize = constraints.biggest.shortestSide;
+                              final double iconSize = (containerSize * 0.75).clamp(60.0, 120.0);
+
+                              return Icon(
+                                Icons.add,
+                                size: iconSize,
+                                color: const Color(0xFFFCB437),
+                                weight: 900, // Maximum weight for boldness
+                              );
+                            },
                           ),
                   ),
                 ),

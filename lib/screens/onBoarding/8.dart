@@ -18,17 +18,15 @@ class OnboardingStepEight extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: InfoIntro(
-            text: 'thisPasswordProtectsYourWalletsInASecureSafe'.tr(),
-            assetName: 'coffre-fort-protege-les-portefeuilles.png',
-            buttonText: '>',
-            nextScreen: RouteNames.onboardingStepNine,
-            routeArguments: OnboardingStepsSevenToNineArguments(scanDerivation: scanDerivation, fromRestore: fromRestore),
-            pagePosition: 7,
-            isMd: true,
-            boxHeight: 320,
-          ),
+        child: InfoIntro(
+          text: 'thisPasswordProtectsYourWalletsInASecureSafe'.tr(),
+          assetName: 'coffre-fort-protege-les-portefeuilles.png',
+          buttonText: '>',
+          nextScreen: RouteNames.onboardingStepNine,
+          routeArguments: OnboardingStepsSevenToNineArguments(scanDerivation: scanDerivation, fromRestore: fromRestore),
+          pagePosition: 7,
+          isMd: true,
+          boxHeight: 320,
         ),
       ),
     );

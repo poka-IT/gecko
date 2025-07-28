@@ -37,38 +37,60 @@ class RestoreSafe extends ConsumerWidget {
                 ScaledSizedBox(height: isTall ? 20 : 3),
                 bubbleSpeak('toRestoreEnterMnemonic'.tr()),
                 ScaledSizedBox(height: isTall ? 20 : 5),
-                Column(
-                  children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        arrayCell(context, genW.cellController0),
-                        arrayCell(context, genW.cellController1),
-                        arrayCell(context, genW.cellController2),
-                        arrayCell(context, genW.cellController3),
-                      ],
-                    ),
-                    ScaledSizedBox(height: isTall ? 10 : 3),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        arrayCell(context, genW.cellController4),
-                        arrayCell(context, genW.cellController5),
-                        arrayCell(context, genW.cellController6),
-                        arrayCell(context, genW.cellController7),
-                      ],
-                    ),
-                    ScaledSizedBox(height: isTall ? 10 : 3),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        arrayCell(context, genW.cellController8),
-                        arrayCell(context, genW.cellController9),
-                        arrayCell(context, genW.cellController10),
-                        arrayCell(context, genW.cellController11),
-                      ],
-                    ),
-                  ],
+                // Flexible layout that adapts to screen size and text scaling
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final textScaler = MediaQuery.textScalerOf(context);
+                    final isTextScaled = textScaler.scale(1.0) > 1.3;
+
+                    // Calculate optimal cell size based on available space
+                    final horizontalPadding = scaleSize(32); // Total horizontal padding
+                    final availableWidth = constraints.maxWidth - horizontalPadding;
+                    final spacing = scaleSize(8);
+
+                    // Determine cells per row based on text scaling and available space
+                    int cellsPerRow;
+                    if (isTextScaled) {
+                      cellsPerRow = 3;
+                    } else if (availableWidth < scaleSize(300)) {
+                      cellsPerRow = 2; // Very small screens
+                    } else {
+                      cellsPerRow = 4; // Default
+                    }
+
+                    // Calculate cell width to use available space efficiently
+                    final cellWidth = (availableWidth - (spacing * (cellsPerRow - 1))) / cellsPerRow;
+                    final cellHeight = scaleSize(44);
+
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                      child: Wrap(
+                        spacing: spacing,
+                        runSpacing: scaleSize(isTall ? 10 : 6),
+                        alignment: WrapAlignment.center,
+                        children:
+                            [
+                                  genW.cellController0,
+                                  genW.cellController1,
+                                  genW.cellController2,
+                                  genW.cellController3,
+                                  genW.cellController4,
+                                  genW.cellController5,
+                                  genW.cellController6,
+                                  genW.cellController7,
+                                  genW.cellController8,
+                                  genW.cellController9,
+                                  genW.cellController10,
+                                  genW.cellController11,
+                                ]
+                                .map(
+                                  (controller) =>
+                                      arrayCell(context, controller, cellWidth: cellWidth, cellHeight: cellHeight),
+                                )
+                                .toList(),
+                      ),
+                    );
+                  },
                 ),
                 FutureBuilder(
                   future: genW.isSentenceComplete(),
@@ -79,9 +101,8 @@ class RestoreSafe extends ConsumerWidget {
                           padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
                           child: Align(
                             alignment: Alignment.center,
-                            child: ScaledSizedBox(
-                              width: 340,
-                              height: 55,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
                               child: ElevatedButton(
                                 key: keyGoNext,
                                 style:
@@ -89,8 +110,12 @@ class RestoreSafe extends ConsumerWidget {
                                       foregroundColor: Colors.white,
                                       backgroundColor: context.colorScheme.primary,
                                       elevation: 0,
-                                      padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                                      padding: EdgeInsets.symmetric(vertical: scaleSize(16), horizontal: scaleSize(24)),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      minimumSize: Size(
+                                        scaleSize(280),
+                                        scaleSize(56),
+                                      ), // Minimum size for accessibility
                                     ).copyWith(
                                       elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
                                         if (states.contains(WidgetState.pressed)) return 0;
@@ -102,8 +127,6 @@ class RestoreSafe extends ConsumerWidget {
                                   // The provider already handles validation and conversion automatically
                                   if (await genW.isSentenceComplete()) {
                                     try {
-                                      // DON'T overwrite generatedMnemonic - it already contains the user's original input
-                                      // The English conversion will be handled automatically by createSafe in Durt2
                                       genW.resetImportView();
                                       await AppNavigator.pushWithFader(
                                         context,
@@ -128,7 +151,11 @@ class RestoreSafe extends ConsumerWidget {
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
+                                    height: 1.3, // Better line height for accessibility
                                   ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2, // Allow text to wrap if needed
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
@@ -138,8 +165,8 @@ class RestoreSafe extends ConsumerWidget {
                         return Column(
                           children: [
                             ScaledSizedBox(height: 20),
-                            ScaledSizedBox(
-                              width: 180,
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
                               child: ElevatedButton(
                                 key: keyPastMnemonic,
                                 style:
@@ -147,8 +174,12 @@ class RestoreSafe extends ConsumerWidget {
                                       foregroundColor: Colors.black,
                                       backgroundColor: context.colorScheme.secondary,
                                       elevation: 0,
-                                      padding: EdgeInsets.symmetric(vertical: scaleSize(8), horizontal: scaleSize(16)),
+                                      padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(20)),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      minimumSize: Size(
+                                        scaleSize(180),
+                                        scaleSize(48),
+                                      ), // Minimum size for accessibility
                                     ).copyWith(
                                       elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
                                         if (states.contains(WidgetState.pressed)) return 0;
@@ -160,17 +191,28 @@ class RestoreSafe extends ConsumerWidget {
                                   genW.pasteMnemonic(context);
                                 },
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisSize: MainAxisSize.min, // Allow button to shrink/grow with content
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.content_paste_go,
-                                      size: scaleSize(24),
+                                      size: scaleSize(20),
                                       color: Colors.black.withValues(alpha: 0.7),
                                     ),
-                                    Text(
-                                      'pasteFromClipboard'.tr(),
-                                      textAlign: TextAlign.center,
-                                      style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w400, height: 1.2),
+                                    SizedBox(width: scaleSize(8)), // Fixed spacing instead of spaceAround
+                                    Flexible(
+                                      // Allow text to wrap if needed
+                                      child: Text(
+                                        'pasteFromClipboard'.tr(),
+                                        textAlign: TextAlign.center,
+                                        style: scaledTextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500, // Slightly bolder for better readability
+                                          height: 1.3, // Better line height for accessibility
+                                        ),
+                                        maxLines: 2, // Allow text to wrap on 2 lines if needed
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -213,16 +255,25 @@ class RestoreSafe extends ConsumerWidget {
     );
   }
 
-  Widget arrayCell(BuildContext context, TextEditingController cellCtl) {
+  Widget arrayCell(
+    BuildContext context,
+    TextEditingController cellCtl, {
+    required double cellWidth,
+    required double cellHeight,
+  }) {
     final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
 
     return Container(
-      width: scaleSize(87),
-      height: scaleSize(37),
+      width: cellWidth,
+      height: cellHeight,
+      constraints: BoxConstraints(minWidth: cellWidth, minHeight: cellHeight),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
+        border: Border.all(
+          color: Colors.grey[400]!, // Better contrast
+          width: 1.5, // Slightly thicker border for better visibility
+        ),
         color: context.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(6), // Slightly more rounded for modern look
       ),
       child: TextField(
         autofocus: true,
@@ -230,8 +281,16 @@ class RestoreSafe extends ConsumerWidget {
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
           border: InputBorder.none,
-          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
-          contentPadding: EdgeInsets.zero,
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: context.colorScheme.primary,
+              width: 2, // Thicker focus indicator
+            ),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: scaleSize(4),
+            vertical: scaleSize(8),
+          ), // Better padding for text scaling
         ),
         onChanged: (v) async {
           if (v.contains(' ')) {
@@ -266,7 +325,7 @@ class RestoreSafe extends ConsumerWidget {
           await generateWalletProvider.onMnemonicWordChanged();
         },
         textAlign: TextAlign.center,
-        style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSecondaryContainer),
+        style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSecondaryContainer, height: 0.8),
       ),
     );
   }

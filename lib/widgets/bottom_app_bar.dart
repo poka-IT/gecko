@@ -19,50 +19,51 @@ class GlobalBottomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return old_provider.Consumer<BottomAppBarProvider>(
-      builder: (context, bottomBarProvider, child) {
-        if (!bottomBarProvider.isBottomBarActuallyVisible) {
-          return const SizedBox.shrink(); // Hidden
-        }
+    try {
+      final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context);
+      if (!bottomBarProvider.isBottomBarActuallyVisible) {
+        return const SizedBox.shrink(); // Hidden
+      }
 
-        // Also check if wallets exist - never show bottom bar without safes
+      // Also check if wallets exist - never show bottom bar without safes
+      final myWalletsProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+      if (!myWalletsProvider.isWalletsExists) {
+        return const SizedBox.shrink(); // Hidden - no safes
+      }
+
+      final currentRouteProvider = old_provider.Provider.of<CurrentRouteProvider>(context);
+      final currentRoute = currentRouteProvider.currentRoute;
+
+      // Special case for wallets home with drag functionality
+      if (currentRoute == RouteNames.myWallets) {
+        // Use Consumer only for MyWalletsProvider to listen to drag state changes
         return old_provider.Consumer<MyWalletsProvider>(
-          builder: (context, myWalletsProvider, child) {
-            if (!myWalletsProvider.isWalletsExists) {
-              return const SizedBox.shrink(); // Hidden - no safes
-            }
-
-            return old_provider.Consumer<CurrentRouteProvider>(
-              builder: (context, currentRouteProvider, child) {
-                final currentRoute = currentRouteProvider.currentRoute;
-
-                // Special case for wallets home with drag functionality
-                if (currentRoute == RouteNames.myWallets) {
-                  return myWalletsProvider.lastFlyBy == null
-                      ? const _GeckoBottomAppBar(actualRoute: 'safeHome')
-                      : SafeArea(
-                          child: DragWalletsInfo(
-                            lastFlyBy: myWalletsProvider.lastFlyBy!,
-                            dragAddress: myWalletsProvider.dragAddress!,
-                          ),
-                        );
-                }
-
-                // Default bottom app bar
-                String actualRoute = '';
-                if (currentRoute.contains('scan')) {
-                  actualRoute = 'scan';
-                } else if (currentRoute.contains('wallet')) {
-                  actualRoute = 'wallet';
-                }
-
-                return _GeckoBottomAppBar(actualRoute: actualRoute);
-              },
-            );
+          builder: (context, myWalletsProviderDrag, child) {
+            return myWalletsProviderDrag.lastFlyBy == null
+                ? const _GeckoBottomAppBar(actualRoute: 'safeHome')
+                : SafeArea(
+                    child: DragWalletsInfo(
+                      lastFlyBy: myWalletsProviderDrag.lastFlyBy!,
+                      dragAddress: myWalletsProviderDrag.dragAddress!,
+                    ),
+                  );
           },
         );
-      },
-    );
+      }
+
+      // Default bottom app bar
+      String actualRoute = '';
+      if (currentRoute.contains('scan')) {
+        actualRoute = 'scan';
+      } else if (currentRoute.contains('wallet')) {
+        actualRoute = 'wallet';
+      }
+
+      return _GeckoBottomAppBar(actualRoute: actualRoute);
+    } catch (e) {
+      // If provider access fails during navigation, return empty widget
+      return const SizedBox.shrink();
+    }
   }
 }
 
@@ -73,28 +74,31 @@ class PageWithBottomPaddingWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return old_provider.Consumer<BottomAppBarProvider>(
-      builder: (context, bottomBarProvider, _) {
-        // If bottom bar should not be shown, return child as-is
-        if (!bottomBarProvider.isBottomBarActuallyVisible) {
-          return child;
-        }
+    try {
+      final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context);
 
-        final myWalletsProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-        if (!myWalletsProvider.isWalletsExists) {
-          return child;
-        }
+      // If bottom bar should not be shown, return child as-is
+      if (!bottomBarProvider.isBottomBarActuallyVisible) {
+        return child;
+      }
 
-        // Add bottom padding to prevent content from being hidden behind bottom bar
-        // Use a fixed value since scaleSize depends on homeContext which might not be ready
-        const bottomPadding = 67.0;
+      final myWalletsProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+      if (!myWalletsProvider.isWalletsExists) {
+        return child;
+      }
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: bottomPadding),
-          child: child,
-        );
-      },
-    );
+      // Add bottom padding to prevent content from being hidden behind bottom bar
+      // Use a fixed value since scaleSize depends on homeContext which might not be ready
+      const bottomPadding = 67.0;
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: bottomPadding),
+        child: child,
+      );
+    } catch (e) {
+      // If provider access fails (during navigation), just return child without padding
+      return child;
+    }
   }
 }
 

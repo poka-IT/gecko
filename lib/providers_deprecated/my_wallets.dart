@@ -33,8 +33,17 @@ class MyWalletsProvider with ChangeNotifier {
   late String mnemonic;
   int? pinLenght;
   bool isNewDerivationLoading = false;
-  WalletEntity? lastFlyBy;
+  WalletEntity? _lastFlyBy;
   WalletEntity? dragAddress;
+
+  WalletEntity? get lastFlyBy => _lastFlyBy;
+  set lastFlyBy(WalletEntity? value) {
+    if (_lastFlyBy != value) {
+      _lastFlyBy = value;
+      notifyListeners();
+    }
+  }
+
   bool isPinValid = false;
   bool isPinLoading = true;
 

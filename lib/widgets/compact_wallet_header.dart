@@ -47,41 +47,43 @@ class CompactWalletHeader extends ConsumerWidget {
                 DatapodAvatar(address: address, size: 32),
 
               const SizedBox(width: 12),
-              // Essential information (left side)
+              // Essential information (left side) - takes 2/3 of available space
               Expanded(
-                flex: 3,
+                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Truncated address
-                    Flexible(
-                      child: GestureDetector(
-                        onTap: () {
-                          Clipboard.setData(ClipboardData(text: address));
-                          snackCopyKey(context);
+                    // Truncated address with smart truncation
+                    GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: address));
+                        snackCopyKey(context);
+                      },
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return buildSmartAddressText(
+                            address: address,
+                            maxWidth: constraints.maxWidth,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          );
                         },
-                        child: Text(
-                          getShortPubkey(address),
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
                       ),
                     ),
                     // Compact balance
-                    Flexible(child: Balance(address: address, size: 15)),
+                    Balance(address: address, size: 15),
                   ],
                 ),
               ),
-              // Identity and status (centered in remaining space)
+              const SizedBox(width: 8),
+              // Identity and status (right side) - max 1/3 of available space
               Expanded(
-                flex: 2,
+                flex: 1,
                 child: Consumer(
                   builder: (context, ref, child) {
                     final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
@@ -100,9 +102,9 @@ class CompactWalletHeader extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Identity name - larger and more prominent
+                            // Identity name - larger and more prominent with proper truncation
                             Text(
-                              identityName.length > 20 ? '${identityName.substring(0, 20)}...' : identityName,
+                              identityName,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -137,6 +139,7 @@ class CompactWalletHeader extends ConsumerWidget {
                   },
                 ),
               ),
+              const SizedBox(width: 16),
             ],
           ),
         ),

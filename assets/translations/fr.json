@@ -570,5 +570,11 @@
     "issuer": "Émetteur",
     "receiver": "Récepteur",
     "automaticIncome": "Revenu automatique",
-    "enterWalletName": "Entrer le nom du portefeuille"
+    "enterWalletName": "Entrer le nom du portefeuille",
+    "textSize": "Taille du texte",
+    "textSizeSmall": "Petit",
+    "textSizeNormal": "Normal",
+    "textSizeLarge": "Grand",
+    "textSizeExtraLarge": "Très grand",
+    "textSizeDescription": "Ajuster la taille du texte pour une meilleure lisibilité"
 }

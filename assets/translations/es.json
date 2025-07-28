@@ -568,5 +568,11 @@
     "issuer": "Emisor",
     "receiver": "Receptor",
     "automaticIncome": "Ingreso automático",
-    "enterWalletName": "Introducir el nombre de la cartera"
+    "enterWalletName": "Introducir el nombre de la cartera",
+    "textSize": "Tamaño del texto",
+    "textSizeSmall": "Pequeño",
+    "textSizeNormal": "Normal",
+    "textSizeLarge": "Grande",
+    "textSizeExtraLarge": "Muy Grande",
+    "textSizeDescription": "Ajustar el tamaño del texto para una mejor legibilidad"
 }

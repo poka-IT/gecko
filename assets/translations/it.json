@@ -474,5 +474,11 @@
     "issuer": "Emittente",
     "receiver": "Ricevente",
     "automaticIncome": "Reddito automatico",
-    "enterWalletName": "Inserisci il nome del portafoglio"
+    "enterWalletName": "Inserisci il nome del portafoglio",
+    "textSize": "Dimensione del testo",
+    "textSizeSmall": "Piccola",
+    "textSizeNormal": "Normale",
+    "textSizeLarge": "Grande",
+    "textSizeExtraLarge": "Molto Grande",
+    "textSizeDescription": "Regola la dimensione del testo per una migliore leggibilità"
 }

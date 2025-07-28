@@ -16,8 +16,9 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType;
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope;
+import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Consumer;
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/safe_provider.dart';
 import 'package:gecko/providers_deprecated/g1v1_migration.provider.dart';
@@ -142,46 +143,63 @@ class Gecko extends StatelessWidget {
             final currentRouteProvider = old_provider.Provider.of<CurrentRouteProvider>(context, listen: false);
             final navigatorObserver = BottomAppBarNavigatorObserver(bottomAppBarProvider, currentRouteProvider);
 
-            return MaterialApp(
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              theme: lightTheme,
-              darkTheme: darkTheme,
-              themeMode: themeProvider.currentThemeMode,
-              navigatorKey: _navigatorKey,
-              navigatorObservers: [
-                navigatorObserver,
-                // Add RouteObserver for immediate bottom bar state updates
-                globalRouteObserver,
-              ],
-              builder: (context, child) {
-                final responsiveChild = ResponsiveBreakpoints.builder(
-                  child: child!,
-                  breakpoints: [
-                    const Breakpoint(start: 0, end: 450, name: MOBILE),
-                    const Breakpoint(start: 451, end: 800, name: TABLET),
-                    const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+            return Consumer(
+              builder: (context, ref, _) {
+                final textScale = ref.watch(textScalingProvider);
+
+                return MaterialApp(
+                  localizationsDelegates: context.localizationDelegates,
+                  supportedLocales: context.supportedLocales,
+                  locale: context.locale,
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  themeMode: themeProvider.currentThemeMode,
+                  navigatorKey: _navigatorKey,
+                  navigatorObservers: [
+                    navigatorObserver,
+                    // Add RouteObserver for immediate bottom bar state updates
+                    globalRouteObserver,
                   ],
-                );
+                  builder: (context, child) {
+                    // Apply text scaling using Builder to preserve original MediaQuery context
+                    final scaledChild = Builder(
+                      builder: (builderContext) {
+                        final originalData = MediaQuery.of(builderContext);
+                        return MediaQuery(
+                          data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
+                          child: child!,
+                        );
+                      },
+                    );
 
-                // Wrap with padding wrapper to avoid content being hidden behind bottom bar
-                final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
+                    final responsiveChild = ResponsiveBreakpoints.builder(
+                      child: scaledChild,
+                      breakpoints: [
+                        const Breakpoint(start: 0, end: 450, name: MOBILE),
+                        const Breakpoint(start: 451, end: 800, name: TABLET),
+                        const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                      ],
+                    );
 
-                // Wrap with offline overlay and version overlay
-                final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
+                    // Wrap with padding wrapper to avoid content being hidden behind bottom bar
+                    final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
 
-                // Add the global bottom app bar as an overlay
-                return Stack(
-                  children: [
-                    GlobalOfflineOverlay(child: finalChild),
-                    Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
-                  ],
+                    // Wrap with offline overlay and version overlay
+                    final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
+
+                    // Add the global bottom app bar as an overlay
+                    return Stack(
+                      children: [
+                        GlobalOfflineOverlay(child: finalChild),
+                        Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                      ],
+                    );
+                  },
+                  title: 'Ğecko',
+                  initialRoute: AppRoutes.initialRoute,
+                  routes: AppRoutes.getRoutes(),
                 );
               },
-              title: 'Ğecko',
-              initialRoute: AppRoutes.initialRoute,
-              routes: AppRoutes.getRoutes(),
             );
           },
         ),

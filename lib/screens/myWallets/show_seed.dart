@@ -109,10 +109,13 @@ class ShowSeed extends ConsumerWidget {
                           children: [
                             BuildText(text: 'keepYourMnemonicSecret'.tr(), size: 16),
                             ScaledSizedBox(height: 35),
-                            MnemonicDisplayWidget(
-                              mnemonicWords: mnemonicWords,
-                              isLoading: false,
-                              useWordAsKey: true, // Use word as key for show_seed
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: scaleSize(12)),
+                              child: MnemonicDisplayWidget(
+                                mnemonicWords: mnemonicWords,
+                                isLoading: false,
+                                useWordAsKey: true, // Use word as key for show_seed
+                              ),
                             ),
                             ScaledSizedBox(height: 20),
                             Row(

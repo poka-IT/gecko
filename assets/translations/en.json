@@ -558,5 +558,11 @@
     "issuer": "Issuer",
     "receiver": "Receiver",
     "automaticIncome": "Automatic income",
-    "enterWalletName": "Enter wallet name"
+    "enterWalletName": "Enter wallet name",
+    "textSize": "Text size",
+    "textSizeSmall": "Small",
+    "textSizeNormal": "Normal",
+    "textSizeLarge": "Large",
+    "textSizeExtraLarge": "Very Large",
+    "textSizeDescription": "Adjust the text size for better readability"
 }

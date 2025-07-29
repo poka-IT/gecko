@@ -55,6 +55,7 @@ class _SearchScreenState extends State<SearchScreen> {
         _isNavigating = false; // Reset flag
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('search'.tr()),
         body: SafeArea(

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 
 double scaleSize(double size) {
-  final scale = MediaQuery.of(homeContext).size.width / 375;
+  // Use view size instead of MediaQuery to avoid scaling changes when keyboard shows/hides
+  final view = View.of(homeContext);
+  final viewSize = view.physicalSize / view.devicePixelRatio;
+  final scale = viewSize.width / 375;
   return size * scale.clamp(0.8, 1.3);
 }
 

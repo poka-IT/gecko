@@ -66,15 +66,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     old_provider.Provider.of<SafeProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists;
 
-    isTall = (MediaQuery.of(context).size.height / MediaQuery.of(context).size.width) > 1.75;
+    // Use view size instead of MediaQuery to avoid rebuilds when keyboard shows/hides
+    final viewSize = View.of(context).physicalSize / View.of(context).devicePixelRatio;
+    isTall = (viewSize.height / viewSize.width) > 1.75;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       drawer: MainDrawer(isWalletsExists: isWalletsExists),
       backgroundColor: context.colorScheme.secondary,
-      body: isWalletsExists
-          ? GeckoHomeWidget(isEasterEggActive: _isEasterEggActive, onEasterEggStateChange: _handleEasterEggStateChange)
-          : const WelcomeHomeWidget(),
+      body: SizedBox.expand(
+        child: isWalletsExists
+            ? GeckoHomeWidget(
+                isEasterEggActive: _isEasterEggActive,
+                onEasterEggStateChange: _handleEasterEggStateChange,
+              )
+            : const WelcomeHomeWidget(),
+      ),
     );
   }
 }

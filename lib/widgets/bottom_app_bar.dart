@@ -5,7 +5,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
@@ -14,14 +14,14 @@ import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 /// Global widget that shows bottom app bar when appropriate
-class GlobalBottomAppBar extends StatelessWidget {
+class GlobalBottomAppBar extends ConsumerWidget {
   const GlobalBottomAppBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     try {
-      final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context);
-      if (!bottomBarProvider.isBottomBarActuallyVisible) {
+      final bottomBarState = ref.watch(bottomAppBarProvider);
+      if (!bottomBarState.isBottomBarActuallyVisible) {
         return const SizedBox.shrink(); // Hidden
       }
 
@@ -31,8 +31,7 @@ class GlobalBottomAppBar extends StatelessWidget {
         return const SizedBox.shrink(); // Hidden - no safes
       }
 
-      final currentRouteProvider = old_provider.Provider.of<CurrentRouteProvider>(context);
-      final currentRoute = currentRouteProvider.currentRoute;
+      final currentRoute = ref.watch(currentRouteProvider);
 
       // Special case for wallets home with drag functionality
       if (currentRoute == RouteNames.myWallets) {
@@ -68,17 +67,17 @@ class GlobalBottomAppBar extends StatelessWidget {
 }
 
 /// Wrapper that automatically adds bottom app bar to pages when needed
-class PageWithBottomPaddingWrapper extends StatelessWidget {
+class PageWithBottomPaddingWrapper extends ConsumerWidget {
   const PageWithBottomPaddingWrapper({super.key, required this.child});
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     try {
-      final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context);
+      final bottomBarState = ref.watch(bottomAppBarProvider);
 
       // If bottom bar should not be shown, return child as-is
-      if (!bottomBarProvider.isBottomBarActuallyVisible) {
+      if (!bottomBarState.isBottomBarActuallyVisible) {
         return child;
       }
 
@@ -127,70 +126,64 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
     final historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
+    final currentRoute = ref.watch(currentRouteProvider);
 
-    return old_provider.Consumer<CurrentRouteProvider>(
-      builder: (context, currentRouteProvider, child) {
-        // Get current route for immediate state updates
-        final currentRoute = currentRouteProvider.currentRoute;
+    // Check if we're in mono wallet mode (only one wallet in the safe)
+    final isMonoWalletMode = myWalletProvider.listWallets.length == 1;
 
-        // Check if we're in mono wallet mode (only one wallet in the safe)
-        final isMonoWalletMode = myWalletProvider.listWallets.length == 1;
+    // Lock action when on myWallets route OR when on walletOptions in mono wallet mode
+    final lockAction =
+        currentRoute == RouteNames.myWallets || (currentRoute == RouteNames.walletOptions && isMonoWalletMode);
 
-        // Lock action when on myWallets route OR when on walletOptions in mono wallet mode
-        final lockAction =
-            currentRoute == RouteNames.myWallets || (currentRoute == RouteNames.walletOptions && isMonoWalletMode);
-
-        return SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.colorScheme.tertiary,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.08), offset: const Offset(0, -4), blurRadius: 10),
-              ],
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.colorScheme.tertiary,
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.08), offset: const Offset(0, -4), blurRadius: 10),
+          ],
+        ),
+        width: size.width,
+        height: scaleSize(67),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(
+              key: keyAppBarHome,
+              icon: Icons.home_outlined,
+              isSelected: false,
+              onTap: () {
+                Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
+              },
             ),
-            width: size.width,
-            height: scaleSize(67),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildNavItem(
-                  key: keyAppBarHome,
-                  icon: Icons.home_outlined,
-                  isSelected: false,
-                  onTap: () {
-                    Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
-                  },
-                ),
-                _buildNavItem(
-                  key: keyAppBarQrcode,
-                  imagePath: 'assets/qrcode-scan.png',
-                  isSelected: widget.actualRoute == 'scan',
-                  onTap: () async {
-                    historyProvider.scan(context);
-                  },
-                ),
-                _buildNavItem(
-                  key: keyAppBarSafe,
-                  imagePath: 'assets/wallet.png',
-                  isSelected: lockAction,
-                  isDisabled: lockAction,
-                  onTap: lockAction
-                      ? null
-                      : () async {
-                          if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
-
-                          Navigator.pushNamedAndRemoveUntil(
-                            homeContext,
-                            RouteNames.myWallets,
-                            ModalRoute.withName(RouteNames.home),
-                          );
-                        },
-                ),
-              ],
+            _buildNavItem(
+              key: keyAppBarQrcode,
+              imagePath: 'assets/qrcode-scan.png',
+              isSelected: widget.actualRoute == 'scan',
+              onTap: () async {
+                historyProvider.scan(context);
+              },
             ),
-          ),
-        );
-      },
+            _buildNavItem(
+              key: keyAppBarSafe,
+              imagePath: 'assets/wallet.png',
+              isSelected: lockAction,
+              isDisabled: lockAction,
+              onTap: lockAction
+                  ? null
+                  : () async {
+                      if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
+
+                      Navigator.pushNamedAndRemoveUntil(
+                        homeContext,
+                        RouteNames.myWallets,
+                        ModalRoute.withName(RouteNames.home),
+                      );
+                    },
+            ),
+          ],
+        ),
+      ),
     );
   }
 

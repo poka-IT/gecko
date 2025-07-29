@@ -19,7 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Consumer;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
-import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/safe_provider.dart';
 import 'package:gecko/providers_deprecated/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
@@ -131,18 +131,13 @@ class Gecko extends StatelessWidget {
           old_provider.ChangeNotifierProvider(create: (_) => SettingsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
-          old_provider.ChangeNotifierProvider(create: (_) => BottomAppBarProvider()),
-          old_provider.ChangeNotifierProvider(create: (_) => CurrentRouteProvider()),
         ],
         child: old_provider.Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
-            // Create the bottom app bar provider and observer
-            final bottomAppBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context, listen: false);
-            final currentRouteProvider = old_provider.Provider.of<CurrentRouteProvider>(context, listen: false);
-            final navigatorObserver = BottomAppBarNavigatorObserver(bottomAppBarProvider, currentRouteProvider);
-
             return Consumer(
               builder: (context, ref, _) {
+                // Create the navigator observer with Riverpod ref
+                final navigatorObserver = BottomAppBarNavigatorObserver(ref);
                 final textScale = ref.watch(textScalingProvider);
 
                 return MaterialApp(

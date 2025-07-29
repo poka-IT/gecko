@@ -5,9 +5,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
-import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/routes.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class BalanceDisplay extends ConsumerWidget {
   final BigInt value;
@@ -116,7 +115,8 @@ class BalanceDisplay extends ConsumerWidget {
     }
 
     // Get current route
-    final currentRoute = old_provider.Provider.of<CurrentRouteProvider>(homeContext, listen: false).currentRoute;
+    final container = ProviderScope.containerOf(homeContext);
+    final currentRoute = container.read(currentRouteProvider);
     final isMyWallets = currentRoute == RouteNames.myWallets;
 
     final currencyTextColor = isMyWallets ? color : homeContext.colorScheme.outline;

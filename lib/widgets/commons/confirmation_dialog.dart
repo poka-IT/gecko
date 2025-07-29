@@ -3,8 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
-import 'package:provider/provider.dart' as old_provider;
+import 'package:gecko/providers/bottom_app_bar_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Type de message pour le dialogue de confirmation
 enum ConfirmationDialogType { info, warning, success, error, question }
@@ -63,10 +63,10 @@ Future<bool> showConfirmationDialog({
   final String confirmTextToShow = confirmText ?? type.confirmText;
 
   // Get bottom app bar provider to hide it while dialog is shown
-  final bottomAppBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context, listen: false);
+  final container = ProviderScope.containerOf(context);
 
   // Hide bottom app bar when dialog is shown
-  bottomAppBarProvider.setDialogVisible(true);
+  container.read(bottomAppBarProvider.notifier).setDialogVisible(true);
 
   final result = await showDialog<bool>(
     context: context,
@@ -163,7 +163,7 @@ Future<bool> showConfirmationDialog({
   );
 
   // Show bottom app bar again when dialog is closed
-  bottomAppBarProvider.setDialogVisible(false);
+  container.read(bottomAppBarProvider.notifier).setDialogVisible(false);
 
   return result ?? false;
 }

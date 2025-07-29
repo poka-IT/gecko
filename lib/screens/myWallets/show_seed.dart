@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/security_providers.dart';
-import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
@@ -176,11 +176,9 @@ class ShowSeed extends ConsumerWidget {
                                     Clipboard.setData(ClipboardData(text: englishMnemonic));
 
                                     // Calculate bottom margin based on bottom app bar visibility
-                                    final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(
-                                      context,
-                                      listen: false,
-                                    );
-                                    final isBottomBarVisible = bottomBarProvider.isBottomBarActuallyVisible;
+                                    final container = ProviderScope.containerOf(context);
+                                    final bottomBarState = container.read(bottomAppBarProvider);
+                                    final isBottomBarVisible = bottomBarState.isBottomBarActuallyVisible;
                                     final bottomMargin = isBottomBarVisible
                                         ? scaleSize(67) + 16.0
                                         : 16.0; // Bottom bar height + standard margin

@@ -9,13 +9,12 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/screens/wallet_view.dart';
 import 'package:jdenticon_dart/jdenticon_dart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class WalletsProfilesProvider with ChangeNotifier {
   late ProviderContainer _container;
@@ -156,8 +155,9 @@ bool isPubkey(String pubkey) {
 // Utility function to calculate appropriate snackbar margin considering bottom app bar
 EdgeInsets _getSnackBarMargin(BuildContext context) {
   try {
-    final bottomBarProvider = old_provider.Provider.of<BottomAppBarProvider>(context, listen: false);
-    final isBottomBarVisible = bottomBarProvider.isBottomBarActuallyVisible;
+    final container = ProviderScope.containerOf(context);
+    final bottomBarState = container.read(bottomAppBarProvider);
+    final isBottomBarVisible = bottomBarState.isBottomBarActuallyVisible;
     final bottomMargin = isBottomBarVisible ? scaleSize(67) + 16.0 : 16.0; // Bottom bar height + standard margin
     return EdgeInsets.only(left: 16, right: 16, top: 16, bottom: bottomMargin);
   } catch (e) {

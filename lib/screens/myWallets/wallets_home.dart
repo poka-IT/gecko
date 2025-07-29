@@ -10,7 +10,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
+import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
@@ -364,9 +364,10 @@ class _WalletsHomeContent extends ConsumerWidget {
           myWalletProvider.reload();
 
           // Fix route if it's empty (the main bug!)
-          final currentRouteProvider = old_provider.Provider.of<CurrentRouteProvider>(context, listen: false);
-          if (currentRouteProvider.currentRoute.isEmpty || currentRouteProvider.currentRoute != RouteNames.myWallets) {
-            currentRouteProvider.updateRoute(RouteNames.myWallets);
+          final container = ProviderScope.containerOf(context);
+          final currentRoute = container.read(currentRouteProvider);
+          if (currentRoute.isEmpty || currentRoute != RouteNames.myWallets) {
+            container.read(currentRouteProvider.notifier).state = RouteNames.myWallets;
           }
         } catch (e) {
           // Silent fallback

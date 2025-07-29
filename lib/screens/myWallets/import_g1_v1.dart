@@ -12,7 +12,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/g1v1_migration.provider.dart';
+import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
@@ -39,6 +39,7 @@ class ImportG1v1 extends StatefulWidget {
 class _ImportG1v1State extends State<ImportG1v1> {
   Timer? debounce;
   bool _keyboardDismissed = false;
+  WalletEntity? _selectedWallet;
 
   /// Effectue la migration G1v1 vers v2 avec affichage immédiat de l'écran de transaction
   Stream<TransactionStatus> _performG1v1Migration({
@@ -73,7 +74,9 @@ class _ImportG1v1State extends State<ImportG1v1> {
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
-    WalletEntity selectedWallet = myWalletProvider.getDefaultWallet();
+    // Initialize selected wallet only once or when explicitly changed
+    _selectedWallet ??= myWalletProvider.getDefaultWallet();
+    var selectedWallet = _selectedWallet!;
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -181,7 +184,6 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                         setState(() {
                                           _keyboardDismissed = false;
                                         });
-                                        g1v1Migration.reload();
                                         g1v1Migration.csToV2Address();
                                       }
                                     });
@@ -194,7 +196,6 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                       setState(() {
                                         _keyboardDismissed = false;
                                       });
-                                      g1v1Migration.reload();
                                       g1v1Migration.csToV2Address();
                                     }
                                   },
@@ -239,7 +240,6 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                         setState(() {
                                           _keyboardDismissed = false;
                                         });
-                                        g1v1Migration.reload();
                                         g1v1Migration.csToV2Address();
                                       }
                                     });
@@ -253,7 +253,6 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                       setState(() {
                                         _keyboardDismissed = false;
                                       });
-                                      g1v1Migration.reload();
                                       g1v1Migration.csToV2Address();
                                     }
                                   },
@@ -451,8 +450,11 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                         );
                                       }).toList(),
                                       onChanged: (String? newSelectedWallet) {
-                                        selectedWallet = myWalletProvider.getWalletDataByAddress(newSelectedWallet!)!;
-                                        g1v1Migration.reload();
+                                        setState(() {
+                                          _selectedWallet = myWalletProvider.getWalletDataByAddress(
+                                            newSelectedWallet!,
+                                          )!;
+                                        });
                                       },
                                     ),
                                   ),

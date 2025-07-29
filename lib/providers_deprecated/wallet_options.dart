@@ -114,7 +114,7 @@ class WalletOptionsProvider with ChangeNotifier {
           case TransactionState.error || TransactionState.timeout || TransactionState.none:
             errorMessage = status.errorMessage ?? 'unknownError'.tr();
             break;
-          case TransactionState.pending:
+          case TransactionState.pending || TransactionState.futureNonce:
             continue;
         }
         // Exit the loop once we have a final state (success or error)

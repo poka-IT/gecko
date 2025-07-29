@@ -11,7 +11,7 @@ class TransactionStateIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => switch (state) {
-    TransactionState.pending => Loading(size: size, stroke: stroke),
+    TransactionState.pending || TransactionState.futureNonce => Loading(size: size, stroke: stroke),
     TransactionState.inBlock => Icon(Icons.done, size: scaleSize(size), color: Colors.green),
     TransactionState.finalized => Icon(Icons.done_all, size: scaleSize(size), color: Colors.green),
     TransactionState.error || TransactionState.timeout => Icon(Icons.close, size: scaleSize(size), color: Colors.red),

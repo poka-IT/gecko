@@ -21,7 +21,8 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/safe_provider.dart';
-import 'package:gecko/providers_deprecated/g1v1_migration.provider.dart';
+
+import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/providers_deprecated/settings_provider.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';

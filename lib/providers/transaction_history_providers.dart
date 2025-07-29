@@ -5,7 +5,7 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers_deprecated/settings_provider.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/server_filtered_history_provider.dart';

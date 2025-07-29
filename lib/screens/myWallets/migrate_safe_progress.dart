@@ -6,7 +6,7 @@ import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';

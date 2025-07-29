@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:durt2/durt2.dart';
 import 'package:local_auth_android/local_auth_android.dart' show AndroidAuthMessages;
 import 'package:local_auth_ios/types/auth_messages_ios.dart' show IOSAuthMessages;

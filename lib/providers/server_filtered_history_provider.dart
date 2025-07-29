@@ -7,7 +7,7 @@ import 'package:gecko/models/transaction_filters.dart';
 import 'package:gecko/providers_deprecated/settings_provider.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 /// State for server-filtered transaction history
 class ServerFilteredHistoryState {

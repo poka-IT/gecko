@@ -1,6 +1,6 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 /// Utility functions for identity status checks using Riverpod providers
 class IdentityUtils {

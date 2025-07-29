@@ -14,7 +14,7 @@ import 'package:gecko/models/text_input_formaters.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:gecko/models/widgets_keys.dart';
 
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/history_end_indicator.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:durt2/durt2.dart' as d;
 
 const double filterPadding = 8;

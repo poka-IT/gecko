@@ -3,7 +3,7 @@ import 'package:durt2/durt2.dart';
 import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 // Helper to access Riverpod services
 final _container = ProviderContainer();

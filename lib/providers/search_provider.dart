@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 /// Search state model
 class SearchState {

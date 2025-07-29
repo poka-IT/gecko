@@ -3,7 +3,7 @@
 import 'package:durt2/durt2.dart'
     show MigrateWalletChecks, MigrateWalletValidationError, Durt, TransactionStatus, TransactionState, DurtKeyPair;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/models/identity_display_item.dart';
 import 'package:gecko/providers/identity_filters_provider.dart';
 import 'package:gecko/models/identity_filters.dart';

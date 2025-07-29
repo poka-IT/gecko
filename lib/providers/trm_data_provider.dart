@@ -1,7 +1,7 @@
 import 'package:durt2/durt2.dart' hide Provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:durt2/durt2.dart' as durt2;
 
 /// Enum for currency display modes

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 /// Provider that watches storage initialization status with better error handling
 final storageReadyProvider = StreamProvider<bool>((ref) async* {

@@ -7,7 +7,7 @@ import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/providers_deprecated/settings_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/theme_provider.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'dart:convert';
 import 'dart:io';
 

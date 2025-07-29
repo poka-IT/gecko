@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';

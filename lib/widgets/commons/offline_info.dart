@@ -2,7 +2,7 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 class OfflineInfo extends ConsumerWidget {
   const OfflineInfo({super.key, this.forceHide = false});

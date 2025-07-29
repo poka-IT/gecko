@@ -2,7 +2,7 @@ import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/widgets/certify/certify_button.dart';
 import 'package:gecko/widgets/certify/wait_to_cert.dart';
 

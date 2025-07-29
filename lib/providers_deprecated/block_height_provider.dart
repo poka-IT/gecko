@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:durt2/durt2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 class BlockHeightProvider with ChangeNotifier {
   late ProviderContainer _container;

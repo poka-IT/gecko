@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/commons/storage_builder.dart';
 

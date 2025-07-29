@@ -5,6 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/providers_deprecated/wallet_options.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';

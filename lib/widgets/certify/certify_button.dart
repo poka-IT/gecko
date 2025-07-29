@@ -8,6 +8,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 
 import 'package:gecko/providers_deprecated/my_wallets.dart';

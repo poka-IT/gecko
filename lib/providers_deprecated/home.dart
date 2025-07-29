@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart' show MyWalletsProvider;
 import 'package:gecko/services/image_cache_service.dart';

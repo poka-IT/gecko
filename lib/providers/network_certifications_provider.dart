@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/providers/certification_filters_provider.dart';
 import 'package:gecko/models/certification_filters.dart';

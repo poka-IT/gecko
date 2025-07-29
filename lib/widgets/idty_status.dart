@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers/providers.dart';
 
 class IdentityStatus extends ConsumerWidget {
   const IdentityStatus({super.key, required this.address, required this.color});

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:provider/provider.dart' as flutter_provider;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers_deprecated/home.dart';

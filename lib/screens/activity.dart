@@ -7,6 +7,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/widgets/history_query.dart';
 

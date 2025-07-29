@@ -1,36 +1,31 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/search.dart';
+import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/network_activity_screen.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/wallet_view.dart';
-import 'package:gecko/services/clipboard_monitor.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
-  Timer? debounce;
-  final int debouneTime = 50;
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   late FocusNode _searchFocusNode;
   bool _isNavigating = false; // Add flag to prevent rebuilds during navigation
 
   @override
   void initState() {
-    ClipboardMonitor().startMonitoring();
     _searchFocusNode = FocusNode();
     super.initState();
   }
@@ -43,14 +38,19 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final searchProvider = old_provider.Provider.of<SearchProvider>(context);
-    final canValidate = searchProvider.searchController.text.length >= 2;
+    // Start clipboard monitoring - this initializes the clipboard monitoring
+    ref.read(startClipboardMonitoringProvider);
+
+    final searchState = ref.watch(searchStateProvider);
+    final searchController = ref.read(searchControllerProvider);
+    final clearSearch = ref.read(clearSearchProvider);
+    final canValidate = searchState.canValidate;
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
         // Only clear text if we're not navigating to prevent unnecessary rebuilds
         if (!_isNavigating) {
-          searchProvider.searchController.text = '';
+          clearSearch();
         }
         _isNavigating = false; // Reset flag
       },
@@ -67,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 17),
                 child: TextField(
-                  onSubmitted: searchProvider.searchController.text.length >= 2
+                  onSubmitted: canValidate
                       ? (_) {
                           _isNavigating = true; // Set flag before navigation
                           Navigator.push(
@@ -88,38 +88,24 @@ class _SearchScreenState extends State<SearchScreen> {
                       : (value) {},
                   textInputAction: TextInputAction.search,
                   key: keySearchField,
-                  controller: searchProvider.searchController,
+                  controller: searchController,
                   focusNode: _searchFocusNode,
                   autofocus: true,
                   maxLines: 1,
                   textAlign: TextAlign.left,
-                  onChanged: (v) => {
-                    // Only trigger debounce if not navigating
-                    if (!_isNavigating)
-                      {
-                        if (debounce?.isActive ?? false) {debounce!.cancel()},
-                        debounce = Timer(Duration(milliseconds: debouneTime), () {
-                          if (!_isNavigating) {
-                            // Double check before triggering reload
-                            searchProvider.reload();
-                          }
-                        }),
-                      },
-                  },
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
                     prefixIconConstraints: const BoxConstraints(minHeight: 32),
-                    suffixIcon: searchProvider.searchController.text == ''
+                    suffixIcon: searchState.searchText == ''
                         ? null
                         : Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: IconButton(
-                              onPressed: (() async => {
-                                searchProvider.searchController.text = '',
-                                searchProvider.reload(),
-                                _searchFocusNode.requestFocus(),
-                              }),
+                              onPressed: () {
+                                clearSearch();
+                                _searchFocusNode.requestFocus();
+                              },
                               icon: Icon(Icons.close, color: Colors.grey[600], size: scaleSize(28)),
                             ),
                           ),
@@ -147,7 +133,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: canValidate || searchProvider.canPasteAddress
+                    boxShadow: canValidate || searchState.canPasteAddress
                         ? [
                             BoxShadow(
                               color: context.colorScheme.primary.withValues(alpha: 0.3),
@@ -191,14 +177,14 @@ class _SearchScreenState extends State<SearchScreen> {
                               ),
                             );
                           }
-                        : searchProvider.canPasteAddress
+                        : searchState.canPasteAddress
                         ? () async {
                             _isNavigating = true; // Set flag before navigation
                             Navigator.push(
                               context,
                               PageRouteBuilder(
                                 pageBuilder: (context, animation, secondaryAnimation) =>
-                                    WalletViewScreen(address: searchProvider.pastedAddress, username: null),
+                                    WalletViewScreen(address: searchState.pastedAddress, username: null),
                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                   // Fast fade transition to reduce visual jarring
                                   return FadeTransition(
@@ -214,7 +200,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Text(
                       canValidate
                           ? 'search'.tr()
-                          : searchProvider.canPasteAddress
+                          : searchState.canPasteAddress
                           ? 'pasteAddress'.tr()
                           : 'search'.tr(),
                       textAlign: TextAlign.center,

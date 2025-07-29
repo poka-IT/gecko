@@ -5,6 +5,13 @@ set -euo pipefail
 export LANG=C
 export LC_ALL=C
 
+trap clean_duniter EXIT ERR
+
+clean_duniter() {
+  docker compose down -v
+  rm -rf data/chains/gdev
+}
+
 #############################################
 # Ensure Docker daemon is running
 #############################################

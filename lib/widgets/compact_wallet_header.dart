@@ -87,7 +87,7 @@ class CompactWalletHeader extends ConsumerWidget {
                 child: Consumer(
                   builder: (context, ref, child) {
                     final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
-                    final identityNameAsync = ref.watch(identityNameStreamProvider(address));
+                    final identityNameAsync = ref.watch(identityNameProvider(address));
 
                     if (idtyStatusAsync.hasValue && identityNameAsync.hasValue) {
                       final idtyStatus = idtyStatusAsync.value!;

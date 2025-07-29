@@ -7,7 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers_deprecated/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/search.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
@@ -102,15 +102,15 @@ class PageWithBottomPaddingWrapper extends StatelessWidget {
   }
 }
 
-class _GeckoBottomAppBar extends StatefulWidget {
+class _GeckoBottomAppBar extends ConsumerStatefulWidget {
   const _GeckoBottomAppBar({this.actualRoute = ''});
   final String actualRoute;
 
   @override
-  State<_GeckoBottomAppBar> createState() => _GeckoBottomAppBarState();
+  ConsumerState<_GeckoBottomAppBar> createState() => _GeckoBottomAppBarState();
 }
 
-class _GeckoBottomAppBarState extends State<_GeckoBottomAppBar> {
+class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
   @override
   void initState() {
     super.initState();
@@ -125,7 +125,6 @@ class _GeckoBottomAppBarState extends State<_GeckoBottomAppBar> {
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
-    final searchProvider = old_provider.Provider.of<SearchProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
 
@@ -159,7 +158,6 @@ class _GeckoBottomAppBarState extends State<_GeckoBottomAppBar> {
                   icon: Icons.home_outlined,
                   isSelected: false,
                   onTap: () {
-                    searchProvider.reload();
                     Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
                   },
                 ),

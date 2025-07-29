@@ -119,9 +119,27 @@ create_changelog_file() {
         FASTLANE_METADATA_PATH="/tmp/fastlane_metadata"
         return 0
     else
-        # No changelog provided, skip metadata upload
-        FASTLANE_METADATA_PATH=""
-        return 0
+        # If no changelog provided but we're submitting for review, use a default one
+        if [ "$SKIP_REVIEW" != "true" ] && [ "$APP_STORE_RELEASE_STATUS" != "hold" ]; then
+            echo "Warning: No changelog provided, but App Store Connect requires 'What's New' for review submission."
+            echo "Using default changelog: 'Bug fixes and improvements'"
+            
+            # Create temporary metadata directory structure
+            METADATA_DIR="/tmp/fastlane_metadata/en-US"
+            mkdir -p "$METADATA_DIR"
+            
+            # Create release notes file with default content
+            echo "Bug fixes and improvements" > "$METADATA_DIR/release_notes.txt"
+            echo "Created default changelog file: $METADATA_DIR/release_notes.txt"
+            
+            # Set metadata path for fastlane
+            FASTLANE_METADATA_PATH="/tmp/fastlane_metadata"
+            return 0
+        else
+            # No changelog needed for upload-only mode
+            FASTLANE_METADATA_PATH=""
+            return 0
+        fi
     fi
 }
 
@@ -193,6 +211,11 @@ show_help() {
     echo "  $0 -c \"New features added\"          Deploy with changelog (short form)"
     echo "  $0 --changelog \"Fix\" --auto-release  Submit with changelog and auto-release"
     echo "  $0 --help                           Show this help"
+    echo ""
+    echo "IMPORTANT NOTES:"
+    echo "  • App Store Connect requires a 'What's New' description for review submissions"
+    echo "  • If no --changelog is provided, a default 'Bug fixes and improvements' will be used"
+    echo "  • Use --skip-review to upload without submitting for review if you prefer to add changelog manually"
     echo ""
     echo "ENVIRONMENT VARIABLES (App Store Connect API - Recommended):"
     echo "  APP_STORE_CONNECT_API_KEY_PATH      Path to .p8 key file"
@@ -482,7 +505,17 @@ else
     if [ -n "$VALIDATE_ONLY" ]; then
         echo "Validation failed - please check your configuration"
     else
-        echo "Failed to upload IPA to App Store Connect"
+        echo "❌ Failed to upload or submit IPA to App Store Connect"
+        echo ""
+        echo "Common solutions:"
+        echo "  • If missing 'whatsNew' error: The build was uploaded but submission failed"
+        echo "    → Go to App Store Connect and manually add 'What's New' description"
+        echo "    → Or re-run with: $0 --changelog \"Your update description\""
+        echo "  • If authentication error: Check your .env file credentials"
+        echo "  • If build processing error: Wait a few minutes and try again"
+        echo "  • If copyright date warning: Update your app metadata in App Store Connect"
+        echo ""
+        echo "🔍 Check the error messages above for specific details"
     fi
     exit 1
 fi

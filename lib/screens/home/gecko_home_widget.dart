@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers_deprecated/safe_provider.dart';
+
 import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/widgets/optimized_background.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
@@ -20,8 +20,6 @@ class GeckoHomeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    old_provider.Provider.of<SafeProvider>(context);
-
     final statusBarHeight = MediaQuery.of(context).padding.top;
     return EasterEggDetector(
       onPlayingStateChanged: onEasterEggStateChange,

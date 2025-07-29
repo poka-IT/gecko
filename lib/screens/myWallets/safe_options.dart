@@ -8,7 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/safe_provider.dart';
+import 'package:gecko/providers/safe_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
@@ -52,7 +52,7 @@ class SafeOptionsContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final safeProvider = old_provider.Provider.of<SafeProvider>(context, listen: false);
+    final safeManager = ref.read(safeManagerProvider);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final currentSafe = ref.watch(walletServiceProvider).defaultSafeBox;
     final isAlone = myWalletProvider.listWallets.length == 1;
@@ -217,7 +217,7 @@ class SafeOptionsContent extends ConsumerWidget {
           onTap: () async {
             if (!await myWalletProvider.askPinCode(force: true)) return;
 
-            await safeProvider.forgetSafe(context, currentSafe);
+            await safeManager.deleteSafe(context, currentSafe);
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),

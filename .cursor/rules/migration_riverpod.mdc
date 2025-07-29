@@ -26,6 +26,8 @@ class Counter extends _$Counter {
 
 ### Contraintes
 
+* Ne jamais utiliser le codegen pour riverpod
+* Créer un nouveau fichier du même nom, mais dans ./lib/providers au lieu de ./lib/providers_deprecated
 * Préférer `AsyncNotifier` lorsque l'état dépend d'appels asynchrones.
 * Éviter les `StateProvider` persistants dans la logique métier.
 * Bien séparer la logique métier dans des services du dossier ./lib/services, des providers. Les providers Riverpod ne doivent avoir QUE de la logique lié au state manager pure.

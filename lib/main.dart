@@ -20,7 +20,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Cons
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
-import 'package:gecko/providers_deprecated/safe_provider.dart';
 
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
@@ -126,7 +125,6 @@ class Gecko extends StatelessWidget {
           old_provider.ChangeNotifierProvider(create: (_) => HomeProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
           old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-          old_provider.ChangeNotifierProvider(create: (_) => SafeProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => SettingsProvider()),

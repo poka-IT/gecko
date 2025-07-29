@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers_deprecated/safe_provider.dart';
+
 import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
@@ -63,7 +63,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    old_provider.Provider.of<SafeProvider>(context);
     final isWalletsExists = myWalletProvider.isWalletsExists;
 
     // Use view size instead of MediaQuery to avoid rebuilds when keyboard shows/hides

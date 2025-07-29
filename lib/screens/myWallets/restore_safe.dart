@@ -13,6 +13,7 @@ import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/mnemonic_scanner.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class RestoreSafe extends ConsumerWidget {
@@ -167,55 +168,124 @@ class RestoreSafe extends ConsumerWidget {
                             ScaledSizedBox(height: 20),
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                              child: ElevatedButton(
-                                key: keyPastMnemonic,
-                                style:
-                                    ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.black,
-                                      backgroundColor: context.colorScheme.secondary,
-                                      elevation: 0,
-                                      padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(20)),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      minimumSize: Size(
-                                        scaleSize(180),
-                                        scaleSize(48),
-                                      ), // Minimum size for accessibility
-                                    ).copyWith(
-                                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                        if (states.contains(WidgetState.pressed)) return 0;
-                                        return 4;
-                                      }),
-                                      shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
-                                    ),
-                                onPressed: () {
-                                  genW.pasteMnemonic(context);
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min, // Allow button to shrink/grow with content
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.content_paste_go,
-                                      size: scaleSize(20),
-                                      color: Colors.black.withValues(alpha: 0.7),
-                                    ),
-                                    SizedBox(width: scaleSize(8)), // Fixed spacing instead of spaceAround
-                                    Flexible(
-                                      // Allow text to wrap if needed
-                                      child: Text(
-                                        'pasteFromClipboard'.tr(),
-                                        textAlign: TextAlign.center,
-                                        style: scaledTextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500, // Slightly bolder for better readability
-                                          height: 1.3, // Better line height for accessibility
-                                        ),
-                                        maxLines: 2, // Allow text to wrap on 2 lines if needed
-                                        overflow: TextOverflow.ellipsis,
+                              child: Row(
+                                children: [
+                                  // Paste button
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      key: keyPastMnemonic,
+                                      style:
+                                          ElevatedButton.styleFrom(
+                                            foregroundColor: Colors.black,
+                                            backgroundColor: context.colorScheme.secondary,
+                                            elevation: 0,
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: scaleSize(12),
+                                              horizontal: scaleSize(16),
+                                            ),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            minimumSize: Size(scaleSize(120), scaleSize(48)),
+                                          ).copyWith(
+                                            elevation: WidgetStateProperty.resolveWith<double>((
+                                              Set<WidgetState> states,
+                                            ) {
+                                              if (states.contains(WidgetState.pressed)) return 0;
+                                              return 4;
+                                            }),
+                                            shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                          ),
+                                      onPressed: () {
+                                        genW.pasteMnemonic(context);
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.content_paste_go,
+                                            size: scaleSize(18),
+                                            color: Colors.black.withValues(alpha: 0.7),
+                                          ),
+                                          SizedBox(width: scaleSize(6)),
+                                          Flexible(
+                                            child: Text(
+                                              'pasteFromClipboard'.tr(),
+                                              textAlign: TextAlign.center,
+                                              style: scaledTextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.3,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  SizedBox(width: scaleSize(12)),
+                                  // Scan button
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      style:
+                                          ElevatedButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                            backgroundColor: context.colorScheme.primary,
+                                            elevation: 0,
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: scaleSize(12),
+                                              horizontal: scaleSize(16),
+                                            ),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            minimumSize: Size(scaleSize(120), scaleSize(48)),
+                                          ).copyWith(
+                                            elevation: WidgetStateProperty.resolveWith<double>((
+                                              Set<WidgetState> states,
+                                            ) {
+                                              if (states.contains(WidgetState.pressed)) return 0;
+                                              return 4;
+                                            }),
+                                            shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                          ),
+                                      onPressed: () async {
+                                        // Navigate to the OCR scanner
+                                        await Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => MnemonicScanner(
+                                              onMnemonicDetected: (List<String> words) async {
+                                                // Fill the mnemonic words from OCR scan
+                                                await genW.scanMnemonic(words);
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.camera_alt, size: scaleSize(18), color: Colors.white),
+                                          SizedBox(width: scaleSize(6)),
+                                          Flexible(
+                                            child: Text(
+                                              'scanMnemonic'.tr(),
+                                              textAlign: TextAlign.center,
+                                              style: scaledTextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.3,
+                                                color: Colors.white,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

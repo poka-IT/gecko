@@ -354,6 +354,43 @@ class GenerateWalletsProvider with ChangeNotifier {
     await onMnemonicWordChanged();
   }
 
+  /// Fill mnemonic words from OCR scanning
+  Future<void> scanMnemonic(List<String> scannedWords) async {
+    if (scannedWords.length != 12) {
+      return;
+    }
+
+    List<TextEditingController> cells = [
+      cellController0,
+      cellController1,
+      cellController2,
+      cellController3,
+      cellController4,
+      cellController5,
+      cellController6,
+      cellController7,
+      cellController8,
+      cellController9,
+      cellController10,
+      cellController11,
+    ];
+
+    // Clear all cells first
+    for (var cell in cells) {
+      cell.text = '';
+    }
+
+    // Fill cells with scanned words
+    for (int i = 0; i < scannedWords.length && i < 12; i++) {
+      if (scannedWords[i].isNotEmpty) {
+        cells[i].text = scannedWords[i].toLowerCase();
+      }
+    }
+
+    // Trigger validation and UI update after filling all words
+    await onMnemonicWordChanged();
+  }
+
   Future<ScanDerivationsResult> scanDerivations(BuildContext context) async {
     try {
       return await _scanDerivations(context).timeout(

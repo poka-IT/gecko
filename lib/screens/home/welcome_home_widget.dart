@@ -7,6 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/screens/home/test_wallet_button.dart';
+import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 
@@ -17,10 +18,11 @@ class WelcomeHomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
+    final imageCache = ImageCacheService();
 
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(image: AssetImage("assets/home/background.jpg"), fit: BoxFit.cover),
+      decoration: BoxDecoration(
+        image: DecorationImage(image: imageCache.getImageProvider("assets/home/background.jpg"), fit: BoxFit.cover),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,7 +31,7 @@ class WelcomeHomeWidget extends StatelessWidget {
             children: <Widget>[
               Positioned(top: statusBarHeight + scaleSize(10), left: scaleSize(15), child: IconHomeSettings()),
               Align(
-                child: Image(image: const AssetImage('assets/home/header.png'), height: scaleSize(165)),
+                child: Image(image: imageCache.getImageProvider('assets/home/header.png'), height: scaleSize(165)),
               ),
             ],
           ),
@@ -81,7 +83,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                 Padding(
                                   padding: EdgeInsets.only(top: scaleSize(isTall ? 55 : 0)),
                                   child: Image(
-                                    image: const AssetImage('assets/home/gecko-bienvenue.png'),
+                                    image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'),
                                     height: scaleSize(isTall ? 180 : 160),
                                   ),
                                 ),

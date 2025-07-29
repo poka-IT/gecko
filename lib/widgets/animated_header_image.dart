@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/utils/flower_power_colors.dart';
+import 'package:gecko/services/image_cache_service.dart';
 
 class AnimatedHeaderImage extends StatefulWidget {
   final bool isEasterEggActive;
@@ -16,6 +17,7 @@ class _AnimatedHeaderImageState extends State<AnimatedHeaderImage> with TickerPr
   late AnimationController _flipController;
   late Animation<double> _colorAnimation;
   late Animation<double> _flipAnimation;
+  final ImageCacheService _imageCache = ImageCacheService();
 
   @override
   void initState() {
@@ -70,19 +72,22 @@ class _AnimatedHeaderImageState extends State<AnimatedHeaderImage> with TickerPr
               ? Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Image originale
-                    Image(image: const AssetImage('assets/home/header.png'), height: widget.height),
-                    // Couleur flower power avec masque
+                    // Original image using cached provider
+                    Image(image: _imageCache.getImageProvider('assets/home/header.png'), height: widget.height),
+                    // Flower power color with mask
                     ColorFiltered(
                       colorFilter: ColorFilter.mode(
                         FlowerPowerColors.getFlowerPowerColor(_colorAnimation.value),
                         BlendMode.srcATop,
                       ),
-                      child: Image(image: const AssetImage('assets/home/header.png'), height: widget.height),
+                      child: Image(
+                        image: _imageCache.getImageProvider('assets/home/header.png'),
+                        height: widget.height,
+                      ),
                     ),
                   ],
                 )
-              : Image(image: const AssetImage('assets/home/header.png'), height: widget.height),
+              : Image(image: _imageCache.getImageProvider('assets/home/header.png'), height: widget.height),
         );
       },
     );

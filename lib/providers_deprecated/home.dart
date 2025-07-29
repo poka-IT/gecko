@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart' show MyWalletsProvider;
+import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -117,7 +118,6 @@ class HomeProvider with ChangeNotifier {
 
   /// Calculate the day of the year (1-365/366)
   int _getDayOfYear(DateTime date) {
-    
     final startOfYear = DateTime(date.year, 1, 1);
     final difference = date.difference(startOfYear).inDays;
     return difference + 1; // Add 1 because we want 1-based indexing
@@ -203,12 +203,18 @@ class HomeProvider with ChangeNotifier {
     final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
+    // Start preloading images in background (fire and forget)
+    ImageCacheService().preloadCriticalImages(context).catchError((e) {
+      log.w('Failed to preload images: $e');
+    });
+
     // Check if versionData non compatible, drop everything
     if (configBox.get('dataVersion') == null) {
       configBox.put('dataVersion', dataVersion);
     }
     if (configBox.get('dataVersion') < dataVersion) {
       await showConfirmationDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         message: "safeNotCompatibleMustReinstallGecko".tr(),
         confirmText: "gotit".tr(),

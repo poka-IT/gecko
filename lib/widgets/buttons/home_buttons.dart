@@ -9,6 +9,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/image_cache_service.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/utils/flower_power_colors.dart';
 
@@ -22,6 +23,7 @@ class HomeButtons extends StatefulWidget {
 }
 
 class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin {
+  final ImageCacheService _imageCache = ImageCacheService();
   late AnimationController _colorController;
   late Animation<double> _colorAnimation;
 
@@ -62,7 +64,12 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
     return AnimatedBuilder(
       animation: _colorAnimation,
       builder: (context, _) {
+        // Fixed button size to prevent oval/round resizing issue
+        final buttonSize = scaleSize(90);
+
         return Container(
+          width: buttonSize,
+          height: buttonSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.black.withValues(alpha: 0.1),
@@ -115,7 +122,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                   },
                   child: Padding(
                     padding: EdgeInsets.all(scaleSize(15)),
-                    child: Image(image: const AssetImage('assets/home/loupe.png'), height: scaleSize(58)),
+                    child: Image(image: _imageCache.getImageProvider('assets/home/loupe.png'), height: scaleSize(58)),
                   ),
                 ),
                 ScaledSizedBox(height: 10),
@@ -154,7 +161,7 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                   child: Padding(
                     key: keyOpenWalletsHomme,
                     padding: EdgeInsets.all(scaleSize(14.5)),
-                    child: Image(image: const AssetImage('assets/home/wallet.png'), height: scaleSize(61)),
+                    child: Image(image: _imageCache.getImageProvider('assets/home/wallet.png'), height: scaleSize(61)),
                   ),
                 ),
                 ScaledSizedBox(height: 10),
@@ -182,7 +189,10 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                     },
                     child: Padding(
                       padding: EdgeInsets.all(scaleSize(14)),
-                      child: Image(image: const AssetImage('assets/home/qrcode.png'), height: scaleSize(62)),
+                      child: Image(
+                        image: _imageCache.getImageProvider('assets/home/qrcode.png'),
+                        height: scaleSize(62),
+                      ),
                     ),
                   ),
                   ScaledSizedBox(height: 10),

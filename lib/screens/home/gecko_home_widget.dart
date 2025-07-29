@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers_deprecated/safe_provider.dart';
 import 'package:gecko/providers_deprecated/home.dart';
-import 'package:gecko/widgets/animated_background.dart';
+import 'package:gecko/widgets/optimized_background.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
@@ -25,7 +25,7 @@ class GeckoHomeWidget extends StatelessWidget {
     final statusBarHeight = MediaQuery.of(context).padding.top;
     return EasterEggDetector(
       onPlayingStateChanged: onEasterEggStateChange,
-      child: AnimatedBackground(
+      child: OptimizedBackground(
         isEasterEggActive: isEasterEggActive,
         child: Stack(
           children: [

@@ -6,9 +6,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
-import 'package:gecko/providers_deprecated/block_height_provider.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 
 class DebugScreen extends ConsumerWidget {
   const DebugScreen({super.key});
@@ -64,10 +63,11 @@ class DebugScreen extends ConsumerWidget {
                           style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                         ),
                         ScaledSizedBox(height: 8),
-                        old_provider.Consumer<BlockHeightProvider>(
-                          builder: (context, blockHeightProvider, child) {
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final blockHeight = ref.watch(blockHeightProvider);
                             return Text(
-                              'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
+                              'blockN'.tr(args: [blockHeight.toString()]),
                               style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                             );
                           },

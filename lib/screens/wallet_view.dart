@@ -12,7 +12,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/providers_deprecated/block_height_provider.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
@@ -157,8 +157,10 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
                                     );
                                   },
                                 ),
-                                old_provider.Consumer<BlockHeightProvider>(
-                                  builder: (context, _, _) {
+                                Consumer(
+                                  builder: (context, ref, _) {
+                                    // Watch block height to trigger rebuilds when connection changes
+                                    ref.watch(blockHeightProvider);
                                     return _buildCertificationSection(ref);
                                   },
                                 ),
@@ -238,8 +240,10 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
   }
 
   Widget _buildTransferButton(WidgetRef ref) {
-    return old_provider.Consumer<BlockHeightProvider>(
-      builder: (context, _, _) {
+    return Consumer(
+      builder: (context, ref, _) {
+        // Watch block height to trigger rebuilds when connection changes
+        ref.watch(blockHeightProvider);
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [

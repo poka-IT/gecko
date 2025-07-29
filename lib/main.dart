@@ -39,7 +39,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers_deprecated/theme_provider.dart';
-import 'package:gecko/providers_deprecated/block_height_provider.dart';
+
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 
@@ -130,7 +130,6 @@ class Gecko extends StatelessWidget {
           old_provider.ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => SettingsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
-          old_provider.ChangeNotifierProvider(create: (_) => BlockHeightProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => BottomAppBarProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => CurrentRouteProvider()),

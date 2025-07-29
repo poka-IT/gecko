@@ -13,7 +13,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/text_size_mode.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/block_height_provider.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/currency_provider.dart';
 
 import 'package:gecko/providers_deprecated/my_wallets.dart';
@@ -222,8 +222,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Refresh BlockHeightProvider after successful node change
   void _refreshBlockHeightProvider() {
     try {
-      final blockHeightProvider = old_provider.Provider.of<BlockHeightProvider>(context, listen: false);
-      blockHeightProvider.refresh();
+      _container.invalidate(blockHeightProvider);
       // ignore: avoid_print
       print('🔔 BlockHeightProvider refreshed after node change');
     } catch (e) {
@@ -1191,14 +1190,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             );
           },
         ),
-        old_provider.Consumer<BlockHeightProvider>(
-          builder: (context, blockHeightProvider, _) {
+        Consumer(
+          builder: (context, ref, _) {
+            final blockHeight = ref.watch(blockHeightProvider);
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ScaledSizedBox(height: 4),
                 Text(
-                  'blockN'.tr(args: [blockHeightProvider.blockHeight.toString()]),
+                  'blockN'.tr(args: [blockHeight.toString()]),
                   style: scaledTextStyle(
                     fontSize: 13,
                     color: Theme.of(context).textTheme.bodySmall?.color,

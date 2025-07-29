@@ -1,0 +1,172 @@
+----------------------------------------------------------------
+
+## Objectif
+
+Migrer les providers hérités de `package:provider` vers **Riverpod 3**.
+
+### Étapes automatiques
+
+1. Pour chaque `ChangeNotifier`, créer un `Notifier` équivalent :
+
+```dart
+@riverpod
+class Counter extends _$Counter {
+  @override
+  int build() => 0;
+
+  void increment() => state++;
+}
+```
+
+2. Remplacer `context.watch<MyModel>()` par `ref.watch(counterProvider)`.
+
+3. Supprimer l'import `provider.dart` dès qu'il n'est plus utilisé.
+
+4. Supprimer le fichier de l'ancien provider deprecated à la fin de la migration
+
+### Contraintes
+
+* Utiliser **`riverpod_generator`** pour tous les nouveaux providers.
+* Préférer `AsyncNotifier` lorsque l'état dépend d'appels asynchrones.
+* Éviter les `StateProvider` persistants dans la logique métier.
+* Bien séparer la logique métier dans des services du dossier ./lib/services, des providers. Les providers Riverpod ne doivent avoir QUE de la logique lié au state manager pure.
+* Bien faire attention à changer tous les appels de l'ancien provider vers quelque chose de plus idiomatique Riverpod, optimisé, de sorte de ne jamais changer le comportement attendu.
+
+## Rester Idiomatique avec Riverpod
+
+### Inspiration des Providers Existants
+
+**TOUJOURS** s'inspirer des patterns établis dans `lib/providers/providers.dart` :
+
+#### 1. Providers de Service (Pattern Principal)
+
+```dart
+/// Provides the [d.WalletService] for managing wallets, safes, and cryptographic keys.
+final walletServiceProvider = Provider<d.WalletService>((ref) {
+  return ref.watch(durtProvider).wallets;
+});
+```
+
+**Principes à respecter :**
+- Documentation claire en anglais avec triple slash `///`
+- Typage explicite `Provider<ServiceType>`
+- Utilisation de `ref.watch()` pour les dépendances
+- Nommage consistant avec suffixe `Provider`
+
+#### 2. FutureProvider pour Opérations Async
+
+```dart
+/// Provides the genesis blockchain time for transaction date calculations.
+final genesisTimeProvider = FutureProvider<DateTime>((ref) async {
+  final storageService = ref.watch(storageServiceProvider);
+  return await storageService.getGenesisBlockchainTime();
+});
+```
+
+**Utiliser quand :**
+- Opération asynchrone unique
+- Données cachées automatiquement
+- Pas besoin de mutation d'état
+
+#### 3. Structure et Organisation
+
+**Hiérarchie des dépendances :**
+1. `durtProvider` (racine)
+2. Providers de services dérivés
+3. Providers de données/état spécifiques
+
+### Patterns Interdits
+
+❌ **NE PAS créer de providers redondants**
+```dart
+// MAUVAIS - déjà couvert par walletServiceProvider
+final walletsProvider = Provider((ref) => ref.watch(durtProvider).wallets);
+```
+
+❌ **NE PAS ignorer les providers existants**
+```dart
+// MAUVAIS - utiliser storageServiceProvider à la place
+final myStorageProvider = Provider((ref) => d.Durt.i.storage);
+```
+
+### Patterns Recommandés
+
+✅ **Réutiliser les providers de base**
+```dart
+@riverpod
+class WalletBalance extends _$WalletBalance {
+  @override
+  FutureOr<double> build(String walletId) async {
+    final storage = ref.watch(storageServiceProvider);
+    return await storage.getBalance(walletId);
+  }
+}
+```
+
+✅ **Composer avec les services existants**
+```dart
+@riverpod
+Future<bool> isIdentityValid(IsIdentityValidRef ref, String identity) async {
+  final squid = ref.watch(squidServiceProvider);
+  final utils = ref.watch(utilsProvider);
+  
+  // Logic combining multiple services
+  return await squid.checkIdentity(identity) && utils.validateFormat(identity);
+}
+```
+
+### Migration Checklist
+
+Avant de créer un nouveau provider :
+
+1. ✅ Vérifier si un provider existant couvre le besoin
+2. ✅ S'assurer de la cohérence avec `providers.dart`
+3. ✅ Utiliser `riverpod_generator` (`@riverpod`)
+4. ✅ Documentation en anglais
+5. ✅ Typage explicite
+6. ✅ Tests des dépendances avec `ref.watch()`
+
+### Types de Providers par Cas d'Usage
+
+| Cas d'Usage | Provider Type | Exemple |
+|-------------|---------------|---------|
+| Service statique | `Provider<T>` | `walletServiceProvider` |
+| Données async cachées | `FutureProvider<T>` | `genesisTimeProvider` |
+| État mutable simple | `@riverpod class extends Notifier` | Compteurs, flags |
+| État async mutable | `@riverpod class extends AsyncNotifier` | Listes, données API |
+| Données paramétrées | `@riverpod FutureOr<T> myProvider(Ref ref, String param)` | Balance par wallet |
+
+### Exemple Complet de Migration
+
+**Avant (Provider legacy) :**
+```dart
+class WalletNotifier extends ChangeNotifier {
+  List<Wallet> _wallets = [];
+  List<Wallet> get wallets => _wallets;
+  
+  Future<void> loadWallets() async {
+    _wallets = await WalletService.getAll();
+    notifyListeners();
+  }
+}
+```
+
+**Après (Riverpod idiomatique) :**
+```dart
+@riverpod
+class WalletList extends _$WalletList {
+  @override
+  FutureOr<List<Wallet>> build() async {
+    final walletService = ref.watch(walletServiceProvider);
+    return await walletService.getAll();
+  }
+  
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final walletService = ref.read(walletServiceProvider);
+      return await walletService.getAll();
+    });
+  }
+}
+```

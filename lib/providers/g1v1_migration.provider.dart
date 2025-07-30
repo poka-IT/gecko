@@ -173,18 +173,3 @@ class G1v1MigrationProvider extends ChangeNotifier {
     }
   }
 }
-
-/// Convenience methods for backward compatibility with the legacy provider
-extension G1v1MigrationProviderExtensions on WidgetRef {
-  /// Get the migration state
-  G1v1MigrationState get g1v1MigrationState => watch(g1v1MigrationProvider);
-
-  /// Get the migration notifier
-  G1v1MigrationNotifier get g1v1MigrationNotifier => read(g1v1MigrationProvider.notifier);
-
-  /// Get the salt controller
-  TextEditingController get csSaltController => watch(csSaltControllerProvider);
-
-  /// Get the password controller
-  TextEditingController get csPasswordController => watch(csPasswordControllerProvider);
-}

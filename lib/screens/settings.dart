@@ -18,13 +18,12 @@ import 'package:gecko/providers/currency_provider.dart';
 
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers/settings_provider.dart';
-import 'package:gecko/providers_deprecated/theme_provider.dart' as theme_provider;
+import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
@@ -1639,7 +1638,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget chooseThemeMode(BuildContext context) {
-    final themeProvider = old_provider.Provider.of<theme_provider.ThemeProvider>(context, listen: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1649,29 +1647,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Flexible(
-              child: old_provider.Consumer<theme_provider.ThemeProvider>(
-                builder: (context, theme, _) {
-                  return SegmentedButton<theme_provider.ThemeModeSetting>(
-                    segments: <ButtonSegment<theme_provider.ThemeModeSetting>>[
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final currentThemeSetting = ref.watch(themeProvider);
+                  return SegmentedButton<ThemeModeSetting>(
+                    segments: <ButtonSegment<ThemeModeSetting>>[
                       ButtonSegment(
-                        value: theme_provider.ThemeModeSetting.light,
+                        value: ThemeModeSetting.light,
                         label: Text('light'.tr()),
                         icon: const Icon(Icons.light_mode),
                       ),
                       ButtonSegment(
-                        value: theme_provider.ThemeModeSetting.system,
+                        value: ThemeModeSetting.system,
                         label: Text('system'.tr()),
                         icon: const Icon(Icons.brightness_auto),
                       ),
                       ButtonSegment(
-                        value: theme_provider.ThemeModeSetting.dark,
+                        value: ThemeModeSetting.dark,
                         label: Text('dark'.tr()),
                         icon: const Icon(Icons.dark_mode),
                       ),
                     ],
-                    selected: {theme.themeModeSetting},
-                    onSelectionChanged: (Set<theme_provider.ThemeModeSetting> newSelection) {
-                      themeProvider.setThemeMode(newSelection.first);
+                    selected: {currentThemeSetting},
+                    onSelectionChanged: (Set<ThemeModeSetting> newSelection) {
+                      ref.read(themeProvider.notifier).setThemeMode(newSelection.first);
                     },
                     style: SegmentedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,

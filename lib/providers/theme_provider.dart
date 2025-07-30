@@ -1,46 +1,9 @@
+import 'package:durt2/durt2.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers/providers.dart';
 
-enum ThemeModeSetting { system, light, dark }
-
-class ThemeProvider with ChangeNotifier {
-  ThemeModeSetting _themeModeSetting = ThemeModeSetting.system;
-
-  ThemeModeSetting get themeModeSetting => _themeModeSetting;
-
-  ThemeMode get currentThemeMode {
-    if (_themeModeSetting == ThemeModeSetting.light) {
-      return ThemeMode.light;
-    } else if (_themeModeSetting == ThemeModeSetting.dark) {
-      return ThemeMode.dark;
-    } else {
-      return ThemeMode.system;
-    }
-  }
-
-  ThemeProvider() {
-    _loadThemePreference();
-  }
-
-  void _loadThemePreference() {
-    final String? themeString = configBox.get('themeMode');
-    if (themeString == 'light') {
-      _themeModeSetting = ThemeModeSetting.light;
-    } else if (themeString == 'dark') {
-      _themeModeSetting = ThemeModeSetting.dark;
-    } else {
-      _themeModeSetting = ThemeModeSetting.system;
-    }
-    notifyListeners();
-  }
-
-  Future<void> setThemeMode(ThemeModeSetting setting) async {
-    _themeModeSetting = setting;
-    await configBox.put('themeMode', setting.toString().split('.').last);
-    notifyListeners();
-  }
-}
-
+// Theme color constants
 const Color _orangeC = Color(0xffd07316);
 const Color _darkOrangeC = Color.fromARGB(255, 132, 71, 11);
 
@@ -63,7 +26,7 @@ const Color _textColor = Colors.black87;
 const Color _darkTextColor = Colors.white70;
 
 const Color _textOnContainerColor = Colors.black87;
-Color _darkTextOnContainerColor = Colors.grey[300]!;
+const Color _darkTextOnContainerColor = Color.fromRGBO(224, 224, 224, 1);
 
 const Color _textSecondaryColor = Colors.black54;
 const Color _darkTextSecondaryColor = Colors.white60;
@@ -71,12 +34,89 @@ const Color _darkTextSecondaryColor = Colors.white60;
 const Color _iconColor = Colors.black54;
 const Color _darkIconColor = Colors.white54;
 
-Color _disabledColor = Colors.grey[700]!;
-Color _darkDisabledColor = Colors.grey[400]!;
+const Color _disabledColor = Color.fromRGBO(97, 97, 97, 1);
+const Color _darkDisabledColor = Color.fromRGBO(189, 189, 189, 1);
 
 const Color _errorColor = Color.fromARGB(255, 232, 211, 211);
 const Color _darkErrorColor = Color.fromARGB(255, 90, 38, 38);
 
+/// Enum representing the available theme mode settings.
+enum ThemeModeSetting { system, light, dark }
+
+/// Provider for managing theme mode state with persistent storage.
+///
+/// This provider handles the app's theme mode selection (system, light, dark)
+/// and persists the state using Durt's config storage for consistency across app restarts.
+final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeModeSetting>((ref) {
+  return ThemeNotifier(ref);
+});
+
+/// StateNotifier for managing the global theme mode state.
+///
+/// Automatically loads the state from storage on initialization and saves
+/// changes back to storage when the theme mode is modified.
+class ThemeNotifier extends StateNotifier<ThemeModeSetting> {
+  static const String _storageKey = 'themeMode';
+  final Ref _ref;
+
+  ThemeNotifier(this._ref) : super(ThemeModeSetting.system) {
+    _loadThemePreference();
+  }
+
+  /// Load the theme preference from persistent storage
+  void _loadThemePreference() {
+    try {
+      final configBox = _ref.read(configBoxProvider);
+      final themeString = configBox.getValue(_storageKey, defaultValue: 'system');
+
+      switch (themeString) {
+        case 'light':
+          state = ThemeModeSetting.light;
+          break;
+        case 'dark':
+          state = ThemeModeSetting.dark;
+          break;
+        default:
+          state = ThemeModeSetting.system;
+      }
+    } catch (e) {
+      // Fallback to system theme if loading fails
+      state = ThemeModeSetting.system;
+    }
+  }
+
+  /// Set the theme mode and persist to storage
+  Future<void> setThemeMode(ThemeModeSetting setting) async {
+    state = setting;
+    await _saveToStorage();
+  }
+
+  /// Save the current theme mode to persistent storage
+  Future<void> _saveToStorage() async {
+    try {
+      final configBox = _ref.read(configBoxProvider);
+      configBox.putValue(_storageKey, state.toString().split('.').last);
+    } catch (e) {
+      // Silent fail - theme will revert to system on next restart
+    }
+  }
+}
+
+/// Provider for converting theme mode setting to Flutter's ThemeMode
+///
+/// This derived provider automatically converts the ThemeModeSetting enum
+/// to Flutter's native ThemeMode for use in MaterialApp.
+final currentThemeModeProvider = Provider<ThemeMode>((ref) {
+  final themeModeSetting = ref.watch(themeProvider);
+
+  return switch (themeModeSetting) {
+    ThemeModeSetting.light => ThemeMode.light,
+    ThemeModeSetting.dark => ThemeMode.dark,
+    ThemeModeSetting.system => ThemeMode.system,
+  };
+});
+
+/// Light theme configuration for the application
 final ThemeData lightTheme = ThemeData(
   primaryColor: _orangeC,
   scaffoldBackgroundColor: _backgroundColor,
@@ -129,6 +169,7 @@ final ThemeData lightTheme = ThemeData(
   dividerColor: Colors.grey[300],
 );
 
+/// Dark theme configuration for the application
 final ThemeData darkTheme = ThemeData(
   primaryColor: _darkOrangeC,
   scaffoldBackgroundColor: _darkBackgroundColor,

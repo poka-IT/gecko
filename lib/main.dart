@@ -38,7 +38,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:gecko/providers_deprecated/theme_provider.dart';
+import 'package:gecko/providers/theme_provider.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -128,70 +128,66 @@ class Gecko extends StatelessWidget {
           old_provider.ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
 
-          old_provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
         ],
-        child: old_provider.Consumer<ThemeProvider>(
-          builder: (context, themeProvider, child) {
-            return Consumer(
-              builder: (context, ref, _) {
-                // Create the navigator observer with Riverpod ref
-                final navigatorObserver = BottomAppBarNavigatorObserver(ref);
-                final textScale = ref.watch(textScalingProvider);
+        child: Consumer(
+          builder: (context, ref, _) {
+            // Create the navigator observer with Riverpod ref
+            final navigatorObserver = BottomAppBarNavigatorObserver(ref);
+            final textScale = ref.watch(textScalingProvider);
+            final themeMode = ref.watch(currentThemeModeProvider);
 
-                return MaterialApp(
-                  localizationsDelegates: context.localizationDelegates,
-                  supportedLocales: context.supportedLocales,
-                  locale: context.locale,
-                  theme: lightTheme,
-                  darkTheme: darkTheme,
-                  themeMode: themeProvider.currentThemeMode,
-                  navigatorKey: _navigatorKey,
-                  navigatorObservers: [
-                    navigatorObserver,
-                    // Add RouteObserver for immediate bottom bar state updates
-                    globalRouteObserver,
-                  ],
-                  builder: (context, child) {
-                    // Apply text scaling using Builder to preserve original MediaQuery context
-                    final scaledChild = Builder(
-                      builder: (builderContext) {
-                        final originalData = MediaQuery.of(builderContext);
-                        return MediaQuery(
-                          data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
-                          child: child!,
-                        );
-                      },
-                    );
-
-                    final responsiveChild = ResponsiveBreakpoints.builder(
-                      child: scaledChild,
-                      breakpoints: [
-                        const Breakpoint(start: 0, end: 450, name: MOBILE),
-                        const Breakpoint(start: 451, end: 800, name: TABLET),
-                        const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-                      ],
-                    );
-
-                    // Wrap with padding wrapper to avoid content being hidden behind bottom bar
-                    final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
-
-                    // Wrap with offline overlay and version overlay
-                    final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
-
-                    // Add the global bottom app bar as an overlay
-                    return Stack(
-                      children: [
-                        GlobalOfflineOverlay(child: finalChild),
-                        Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
-                      ],
+            return MaterialApp(
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              locale: context.locale,
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: themeMode,
+              navigatorKey: _navigatorKey,
+              navigatorObservers: [
+                navigatorObserver,
+                // Add RouteObserver for immediate bottom bar state updates
+                globalRouteObserver,
+              ],
+              builder: (context, child) {
+                // Apply text scaling using Builder to preserve original MediaQuery context
+                final scaledChild = Builder(
+                  builder: (builderContext) {
+                    final originalData = MediaQuery.of(builderContext);
+                    return MediaQuery(
+                      data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
+                      child: child!,
                     );
                   },
-                  title: 'Ğecko',
-                  initialRoute: AppRoutes.initialRoute,
-                  routes: AppRoutes.getRoutes(),
+                );
+
+                final responsiveChild = ResponsiveBreakpoints.builder(
+                  child: scaledChild,
+                  breakpoints: [
+                    const Breakpoint(start: 0, end: 450, name: MOBILE),
+                    const Breakpoint(start: 451, end: 800, name: TABLET),
+                    const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                  ],
+                );
+
+                // Wrap with padding wrapper to avoid content being hidden behind bottom bar
+                final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
+
+                // Wrap with offline overlay and version overlay
+                final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
+
+                // Add the global bottom app bar as an overlay
+                return Stack(
+                  children: [
+                    GlobalOfflineOverlay(child: finalChild),
+                    Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                  ],
                 );
               },
+              title: 'Ğecko',
+              initialRoute: AppRoutes.initialRoute,
+              routes: AppRoutes.getRoutes(),
             );
           },
         ),

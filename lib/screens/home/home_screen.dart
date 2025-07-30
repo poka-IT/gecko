@@ -6,8 +6,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
-import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
 import 'package:gecko/screens/home/welcome_home_widget.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -29,7 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await old_provider.Provider.of<HomeProvider>(context, listen: false).initHome(context: context, ref: ref);
+      await ref.read(appInitProvider.notifier).initApp(context: context, ref: ref);
       _showCesiumImportInfoDialogIfNeeded();
     });
   }

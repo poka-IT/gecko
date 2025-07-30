@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/home_providers.dart';
 import 'package:provider/provider.dart' as flutter_provider;
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers/theme_provider.dart';
@@ -44,8 +44,8 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
 
     try {
       // Flutter Provider states
-      final homeProvider = flutter_provider.Provider.of<HomeProvider>(context, listen: false);
-      providerStates['home'] = {'message': homeProvider.homeMessage};
+      final homeMessage = ref.read(homeMessageProvider);
+      providerStates['home'] = {'message': homeMessage};
 
       final myWalletsProvider = flutter_provider.Provider.of<MyWalletsProvider>(context, listen: false);
       providerStates['wallets'] = {

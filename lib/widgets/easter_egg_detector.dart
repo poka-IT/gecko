@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/services/karaoke_service.dart';
-import 'package:gecko/providers_deprecated/home.dart';
-import 'package:provider/provider.dart' as old_provider;
+
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/home_providers.dart';
 
 enum TapSide { left, right }
 
@@ -14,7 +15,7 @@ class TapEvent {
   TapEvent(this.time, this.side);
 }
 
-class EasterEggDetector extends StatefulWidget {
+class EasterEggDetector extends ConsumerStatefulWidget {
   final Widget child;
   final VoidCallback? onEasterEggTriggered;
   final ValueChanged<bool> onPlayingStateChanged;
@@ -27,10 +28,10 @@ class EasterEggDetector extends StatefulWidget {
   });
 
   @override
-  State<EasterEggDetector> createState() => _EasterEggDetectorState();
+  ConsumerState<EasterEggDetector> createState() => _EasterEggDetectorState();
 }
 
-class _EasterEggDetectorState extends State<EasterEggDetector> {
+class _EasterEggDetectorState extends ConsumerState<EasterEggDetector> {
   static const int tapTimeout = 3000; // 3 seconds timeout
   static const double cornerSize = 120; // Size of each corner area
 
@@ -135,15 +136,14 @@ class _EasterEggDetectorState extends State<EasterEggDetector> {
       widget.onPlayingStateChanged(true);
 
       // Sauvegarder le message original du homeProvider
-      final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
-      _originalMessage = homeProvider.homeMessage;
+      _originalMessage = ref.read(homeMessageProvider);
 
       await _audioPlayer?.play(AssetSource('sounds/gecko.mp3'));
 
       // Démarrer le karaoké
       _karaokeService.startKaraoke((text) {
         if (mounted) {
-          homeProvider.changeMessage(text.isEmpty ? '♪ ♫ ♪' : text);
+          ref.read(homeMessageProvider.notifier).changeMessage(text.isEmpty ? '♪ ♫ ♪' : text);
         }
       });
 
@@ -185,8 +185,7 @@ class _EasterEggDetectorState extends State<EasterEggDetector> {
 
     // Restaurer le message original
     if (mounted && _originalMessage != null) {
-      final homeProvider = old_provider.Provider.of<HomeProvider>(context, listen: false);
-      homeProvider.changeMessage(_originalMessage!, true);
+      ref.read(homeMessageProvider.notifier).changeMessage(_originalMessage!, true);
       _originalMessage = null;
     }
   }

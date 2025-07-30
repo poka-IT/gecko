@@ -1,25 +1,25 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 
-import 'package:gecko/providers_deprecated/home.dart';
+import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/widgets/optimized_background.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 /// Home screen widget displayed when wallets exist
-class GeckoHomeWidget extends StatelessWidget {
+class GeckoHomeWidget extends ConsumerWidget {
   final bool isEasterEggActive;
   final ValueChanged<bool> onEasterEggStateChange;
 
   const GeckoHomeWidget({super.key, required this.isEasterEggActive, required this.onEasterEggStateChange});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
     return EasterEggDetector(
       onPlayingStateChanged: onEasterEggStateChange,
@@ -57,17 +57,20 @@ class GeckoHomeWidget extends StatelessWidget {
                               const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
                             ],
                           ),
-                          child: old_provider.Consumer<HomeProvider>(
-                            builder: (context, homeP, _) {
+                          child: Consumer(
+                            builder: (context, ref, _) {
+                              final homeMessage = ref.watch(homeMessageProvider);
+                              final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+
                               return GestureDetector(
                                 onTap: () {
                                   // Easter egg: only trigger when message is "noLizard"
-                                  if (homeP.homeMessage == "noLizard".tr()) {
-                                    homeP.showWisdomOfTheDay(context);
+                                  if (homeMessage == "noLizard".tr()) {
+                                    homeMessageNotifier.showWisdomOfTheDay(context);
                                   }
                                 },
                                 child: AnimatedFadeOutIn<String>(
-                                  data: homeP.homeMessage,
+                                  data: homeMessage,
                                   duration: const Duration(milliseconds: 200),
                                   builder: (value) => Text(value),
                                 ),

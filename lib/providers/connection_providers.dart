@@ -4,20 +4,18 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/globals.dart';
-import 'package:gecko/providers_deprecated/home.dart';
-import 'package:provider/provider.dart' as old_provider;
+import 'package:gecko/providers/home_providers.dart';
 
 /// Connection status notifier that listens to both Duniter and Squid streams
 class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
-  final homeProvider = old_provider.Provider.of<HomeProvider>(homeContext, listen: false);
+  final Ref _ref;
   StreamSubscription<d.ConnectionStatus>? _duniterSubscription;
   StreamSubscription<d.ConnectionStatus>? _squidSubscription;
 
   d.ConnectionStatus _duniterStatus = d.ConnectionStatus.disconnected;
   d.ConnectionStatus _squidStatus = d.ConnectionStatus.disconnected;
 
-  ConnectionStatusNotifier() : super(d.ConnectionStatus.disconnected) {
+  ConnectionStatusNotifier(this._ref) : super(d.ConnectionStatus.disconnected) {
     _initializeStreams();
   }
 
@@ -30,18 +28,19 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
         _duniterStatus = status;
 
         // Update home message based on Duniter status
+        final homeMessageNotifier = _ref.read(homeMessageProvider.notifier);
         switch (status) {
           case d.ConnectionStatus.connecting:
-            homeProvider.changeMessage("connecting".tr());
+            homeMessageNotifier.changeMessage("connecting".tr());
             break;
           case d.ConnectionStatus.connected:
-            homeProvider.changeMessage("connected".tr(args: [durt.network.displayName]), true);
+            homeMessageNotifier.changeMessage("connected".tr(args: [durt.network.displayName]), true);
             break;
           case d.ConnectionStatus.error:
-            homeProvider.changeMessage("networkGenesisError".tr());
+            homeMessageNotifier.changeMessage("networkGenesisError".tr());
             break;
           case d.ConnectionStatus.disconnected:
-            homeProvider.changeMessage("networkConnectionError".tr());
+            homeMessageNotifier.changeMessage("networkConnectionError".tr());
             break;
         }
 
@@ -52,15 +51,16 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
       _squidSubscription = durt.squidConnectionStatusStream.listen((status) {
         _squidStatus = status;
 
+        final homeMessageNotifier = _ref.read(homeMessageProvider.notifier);
         switch (status) {
           case d.ConnectionStatus.connected:
-            // homeProvider.changeMessage("nodeAndIndexerSynced".tr(), true);
+            // homeMessageNotifier.changeMessage("nodeAndIndexerSynced".tr(), true);
             break;
           case d.ConnectionStatus.disconnected:
-            homeProvider.changeMessage("noValidIndexerFound".tr());
+            homeMessageNotifier.changeMessage("noValidIndexerFound".tr());
             break;
           case d.ConnectionStatus.error:
-            homeProvider.changeMessage("indexerError".tr());
+            homeMessageNotifier.changeMessage("indexerError".tr());
             break;
           case d.ConnectionStatus.connecting:
             break;
@@ -75,7 +75,7 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
       _updateCombinedStatus();
     } catch (e) {
       state = d.ConnectionStatus.error;
-      homeProvider.changeMessage("networkConnectionError".tr());
+      _ref.read(homeMessageProvider.notifier).changeMessage("networkConnectionError".tr());
     }
   }
 
@@ -175,7 +175,7 @@ class SquidConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
 
 /// Combined connection status provider (default)
 final connectionStatusProvider = StateNotifierProvider<ConnectionStatusNotifier, d.ConnectionStatus>((ref) {
-  return ConnectionStatusNotifier();
+  return ConnectionStatusNotifier(ref);
 });
 
 /// Duniter-only connection status provider

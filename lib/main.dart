@@ -25,7 +25,6 @@ import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
-import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 
 import 'package:gecko/providers_deprecated/wallet_options.dart';
@@ -39,6 +38,8 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
+import 'package:gecko/services/storage_init_service.dart';
+import 'package:gecko/services/app_info_service.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -50,11 +51,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  final homeProvider = HomeProvider();
-
-  // Initialize Hive first to access configBox
+  // Initialize storage service
+  final storageService = StorageInitService();
   await initHiveForFlutter();
-  await homeProvider.initHive();
+  await storageService.initHive();
 
   // Get saved network from config or default to gtest
   final savedNetworkName = configBox.get('selectedNetwork') ?? 'gtest';
@@ -66,7 +66,10 @@ Future<void> main() async {
   //Init durt2 with selected network and keypair type
   await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519);
 
-  appVersion = await homeProvider.getAppVersion();
+  // Initialize app info service and get version
+  final appInfoService = AppInfoService();
+  await appInfoService.init();
+  appVersion = appInfoService.appVersion;
 
   if (kReleaseMode && enableSentry) {
     await SentryFlutter.init(
@@ -122,12 +125,10 @@ class Gecko extends StatelessWidget {
     return ProviderScope(
       child: old_provider.MultiProvider(
         providers: [
-          old_provider.ChangeNotifierProvider(create: (_) => HomeProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
           old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-
           old_provider.ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
         ],
         child: Consumer(

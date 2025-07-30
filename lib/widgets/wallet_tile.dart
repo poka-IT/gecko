@@ -20,7 +20,7 @@ class WalletTile extends StatefulWidget {
   });
 
   final WalletEntity repository;
-  final GlobalKey? tutorialKey; // Changed from bool to receive the actual key
+  final GlobalKey? tutorialKey; // GlobalKey needed for tutorial targeting
   final String uniqueId; // Add unique identifier to avoid key conflicts
   final int currentSafe; // Pass currentSafe to avoid provider access during layout
 
@@ -28,13 +28,9 @@ class WalletTile extends StatefulWidget {
   State<WalletTile> createState() => _WalletTileState();
 }
 
-class _WalletTileState extends State<WalletTile> with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true; // Keep alive to prevent rebuilds
-
+class _WalletTileState extends State<WalletTile> {
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
     // Cache scale size to prevent recalculation during layout
     final padding = EdgeInsets.all(scaleSize(11));
     // Create stable key once

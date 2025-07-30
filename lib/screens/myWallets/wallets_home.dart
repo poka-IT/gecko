@@ -23,6 +23,11 @@ import 'package:gecko/widgets/wallet_tile_membre.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
+/// Clean up all static GlobalKey state in WalletsHome - useful for safe switching
+void cleanupWalletsHomeKeys() {
+  _WalletsHomeContent.cleanupStaticState();
+}
+
 class WalletsHome extends ConsumerStatefulWidget {
   const WalletsHome({super.key});
 
@@ -76,10 +81,21 @@ class _WalletsHomeContent extends ConsumerWidget {
   // Static flag to prevent tutorial from showing multiple times in same session
   static bool _tutorialShownInSession = false;
   static int? _lastSafeNumber; // Track last safe to reset tutorial when safe changes
-  // Static GlobalKey to ensure key stability across rebuilds
-  static final Map<String, GlobalKey> _tutorialKeys = {};
+  // Static GlobalKey counter to ensure unique keys for each safe
+  static int _keyCounter = 0;
   // Flag to prevent multiple tutorial calls during the same build cycle
   static bool _tutorialScheduled = false;
+  // Current tutorial key for the active safe
+  static GlobalKey? _currentTutorialKey;
+
+  /// Clean up all static state - useful for safe switching
+  static void cleanupStaticState() {
+    _keyCounter++; // Increment counter to ensure new unique keys
+    _tutorialShownInSession = false;
+    _tutorialScheduled = false;
+    _lastSafeNumber = null;
+    _currentTutorialKey = null; // Clear current tutorial key
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -103,8 +119,17 @@ class _WalletsHomeContent extends ConsumerWidget {
       _tutorialScheduled = false;
       _lastSafeNumber = currentSafe.number;
 
-      // Clean up old tutorial keys when switching safes
-      _tutorialKeys.removeWhere((key, _) => !key.contains('safe${currentSafe.number}'));
+      // Increment key counter and create new tutorial key for new safe
+      _keyCounter++;
+      _currentTutorialKey = null; // Reset current tutorial key
+
+      // Reset tutorial session flags for new safe
+      _tutorialScheduled = false; // Allow tutorial scheduling for new safe
+
+      // Force a small delay to ensure previous widgets are fully disposed
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Additional cleanup after frame is built
+      });
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
@@ -172,22 +197,23 @@ class _WalletsHomeContent extends ConsumerWidget {
   ) {
     // Freeze the wallet list to prevent mutations during layout
     final frozenWalletsWithoutIdty = List<WalletEntity>.unmodifiable(walletsWithoutIdty);
-    // SIMPLE tutorial logic: attach key to second wallet in grid if exists, otherwise first
+    // Tutorial logic: only show when user has at least 2 wallets (drag & drop becomes useful)
     final int targetWalletIndex = frozenWalletsWithoutIdty.length > 1 ? 1 : 0;
-    final bool shouldShowTutorial = frozenWalletsWithoutIdty.isNotEmpty;
+    final bool shouldShowTutorial = frozenWalletsWithoutIdty.length >= 2;
 
     // Create a stable tutorial key using static map to avoid recreating keys
     final String tutorialKeyId = shouldShowTutorial && walletsWithoutIdty.isNotEmpty
         ? 'tutorial_${walletsWithoutIdty[targetWalletIndex].address}_safe${currentSafe.number}'
         : 'tutorial_empty_safe${currentSafe.number}';
 
-    final GlobalKey tutorialKey = _tutorialKeys.putIfAbsent(tutorialKeyId, () => GlobalKey(debugLabel: tutorialKeyId));
+    // Create or reuse tutorial key for current safe to ensure stability during tutorial
+    _currentTutorialKey ??= GlobalKey(debugLabel: '${tutorialKeyId}_$_keyCounter');
+    final GlobalKey tutorialKey = _currentTutorialKey!;
 
-    // Check if tutorial should be shown - use per-safe configuration
-    final String tutorialConfigKey = 'showDraggableTutorial_safe${currentSafe.number}';
+    // Check if tutorial should be shown - global configuration (once for all safes)
+    const String tutorialConfigKey = 'showDraggableTutorial_global';
     final bool showDraggableTutorial = configBox.get(tutorialConfigKey) ?? true;
-
-    // Show tutorial only once per session and per safe, and only if not already scheduled
+    // Show tutorial only once EVER (global) when user has at least 2 wallets
     if (shouldShowTutorial && showDraggableTutorial && !_tutorialShownInSession && !_tutorialScheduled) {
       _tutorialScheduled = true; // Prevent multiple scheduling
 
@@ -235,7 +261,7 @@ class _WalletsHomeContent extends ConsumerWidget {
           if (context.mounted) {
             tutorialCoachMark.show(context: context);
             _tutorialShownInSession = true; // Mark as shown for this session
-            // Mark tutorial as shown for this specific safe
+            // Mark tutorial as shown GLOBALLY (never show again)
             configBox.put(tutorialConfigKey, false);
           }
         });

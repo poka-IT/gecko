@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
@@ -13,6 +14,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
+import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class SwitchSafe extends ConsumerStatefulWidget {
@@ -185,22 +187,31 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
     // Wait for fade in to complete
     await Future.delayed(const Duration(milliseconds: 100));
 
-    // Perform the navigation steps
-    Navigator.pushNamedAndRemoveUntil(context, RouteNames.home, (route) => false);
+    // Clear GlobalKey state to avoid conflicts when rebuilding with new safe
+    try {
+      // Force cleanup of previous WalletsHome static state
+      cleanupWalletsHomeKeys();
 
-    // Navigate to myWallets
-    Future.microtask(() {
-      Navigator.pushNamed(context, RouteNames.myWallets);
+      if (context.mounted) {
+        // Clean dismount of current route before navigation
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    } catch (e) {
+      // Handle any errors during cleanup
+      log.w('Error during state cleanup: $e');
+    }
 
-      // Wait a bit then fade out the overlay
-      Future.delayed(const Duration(milliseconds: 50), () {
-        showOverlay = false;
-        overlayEntry.markNeedsBuild();
+    // Navigate directly to myWallets and remove all previous routes to avoid widget conflicts
+    Navigator.pushNamedAndRemoveUntil(context, RouteNames.myWallets, (route) => false);
 
-        // Remove overlay after fade out
-        Future.delayed(const Duration(milliseconds: 100), () {
-          overlayEntry.remove();
-        });
+    // Wait a bit then fade out the overlay
+    Future.delayed(const Duration(milliseconds: 50), () {
+      showOverlay = false;
+      overlayEntry.markNeedsBuild();
+
+      // Remove overlay after fade out
+      Future.delayed(const Duration(milliseconds: 100), () {
+        overlayEntry.remove();
       });
     });
   }

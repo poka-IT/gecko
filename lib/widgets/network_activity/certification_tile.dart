@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/certification_display_item.dart';
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 
 /// Tile widget for displaying certification activity
@@ -30,7 +30,7 @@ class CertificationTile extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => WalletViewScreen(
+                builder: (context) => ProfileViewScreen(
                   address: certification.issuerAccountId,
                   username: certification.issuerName?.isNotEmpty == true ? certification.issuerName : null,
                 ),

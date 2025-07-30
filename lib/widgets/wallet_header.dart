@@ -13,8 +13,8 @@ import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/certifications.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/certifications.dart';
@@ -399,18 +399,18 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
 }
 
 /// Address section with copy functionality
-class WalletHeaderAddress extends StatelessWidget {
+class WalletHeaderAddress extends ConsumerWidget {
   const WalletHeaderAddress({super.key, required this.address});
 
   final String address;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       key: keyCopyAddress,
       onTap: () {
         Clipboard.setData(ClipboardData(text: address));
-        snackCopyKey(context);
+        SnackbarService.showAddressCopied(context);
       },
       child: Row(
         children: [
@@ -435,7 +435,7 @@ class WalletHeaderAddress extends StatelessWidget {
             icon: Icon(Icons.copy, size: scaleSize(20), color: context.colorScheme.primary.withValues(alpha: 0.5)),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: address));
-              snackCopyKey(context);
+              SnackbarService.showAddressCopied(context);
             },
           ),
         ],

@@ -8,8 +8,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/security_providers.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -132,7 +132,7 @@ class ShowSeed extends ConsumerWidget {
                                     ),
                                     onPressed: () {
                                       Clipboard.setData(ClipboardData(text: displayMnemonic));
-                                      snackCopySeed(context);
+                                      SnackbarService.showMnemonicCopied(context);
                                     },
                                     child: Row(
                                       children: <Widget>[

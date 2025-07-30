@@ -8,7 +8,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/providers_deprecated/wallet_options.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:qr_flutter/qr_flutter.dart';
@@ -58,10 +58,10 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
         Row(
           children: [
             // Contact Button
-            old_provider.Consumer<WalletsProfilesProvider>(
-              builder: (context, profile, _) {
-                // Only rebuild this specific widget when contact status changes
-                final isContactValue = profile.isContact(address);
+            Consumer(
+              builder: (context, ref, _) {
+                // Watch contact status for reactive updates
+                final isContactValue = ref.watch(isContactProvider(address));
                 return IconButton(
                   onPressed: () async {
                     // Prevent multiple rapid taps during navigation
@@ -71,7 +71,9 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     g1WalletsBox.toMap().forEach((key, value) {
                       if (key == address) newContact = value;
                     });
-                    await profile.addContact(newContact ?? G1WalletsList(address: address));
+
+                    final toggleContact = ref.read(toggleContactProvider);
+                    await toggleContact(newContact ?? G1WalletsList(address: address), context);
                   },
                   icon: Icon(
                     isContactValue ? Icons.add_reaction_rounded : Icons.add_reaction_outlined,

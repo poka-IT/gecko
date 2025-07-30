@@ -8,7 +8,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -123,7 +123,6 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
 
     final size = MediaQuery.of(context).size;
     final currentRoute = ref.watch(currentRouteProvider);
@@ -161,7 +160,8 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
               imagePath: 'assets/qrcode-scan.png',
               isSelected: widget.actualRoute == 'scan',
               onTap: () async {
-                historyProvider.scan(context);
+                final scanQr = ref.read(qrScanProvider);
+                await scanQr(context);
               },
             ),
             _buildNavItem(

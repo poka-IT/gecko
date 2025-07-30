@@ -14,9 +14,9 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -28,15 +28,15 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
 
-class ImportG1v1 extends StatefulWidget {
+class ImportG1v1 extends ConsumerStatefulWidget {
   const ImportG1v1({super.key});
   static const int debouneTime = 600;
 
   @override
-  State<ImportG1v1> createState() => _ImportG1v1State();
+  ConsumerState<ImportG1v1> createState() => _ImportG1v1State();
 }
 
-class _ImportG1v1State extends State<ImportG1v1> {
+class _ImportG1v1State extends ConsumerState<ImportG1v1> {
   Timer? debounce;
   bool _keyboardDismissed = false;
   WalletEntity? _selectedWallet;
@@ -322,7 +322,7 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                               key: keyCopyPubkey,
                                               onTap: () {
                                                 Clipboard.setData(ClipboardData(text: g1v1Migration.g1V1OldPubkey));
-                                                snackCopyKey(context);
+                                                SnackbarService.showAddressCopied(context);
                                               },
                                               child: Row(
                                                 children: [
@@ -351,7 +351,7 @@ class _ImportG1v1State extends State<ImportG1v1> {
                                               key: keyCopyAddress,
                                               onTap: () {
                                                 Clipboard.setData(ClipboardData(text: g1v1Migration.g1V1NewAddress));
-                                                snackCopyKey(context);
+                                                SnackbarService.showAddressCopied(context);
                                               },
                                               child: Row(
                                                 children: [

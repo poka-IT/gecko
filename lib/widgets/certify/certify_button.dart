@@ -12,9 +12,9 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+// import 'package:gecko/providers_deprecated/wallets_profiles.dart'; // Removed - no longer needed
 import 'package:gecko/screens/transaction_in_progress.dart';
-import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
+import 'package:gecko/screens/profile_view.dart' show buttonSize, buttonFontSize;
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -69,10 +69,6 @@ class CertifyButton extends ConsumerWidget {
 
                   // Use askPinCode() method for authentication
                   if (!await myWalletProvider.askPinCode()) return;
-                  WalletsProfilesProvider walletViewProvider = old_provider.Provider.of<WalletsProfilesProvider>(
-                    context,
-                    listen: false,
-                  );
                   final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
 
                   if (identityWallet == null) {
@@ -85,7 +81,7 @@ class CertifyButton extends ConsumerWidget {
                         .getKeyPairFromAddress(address: identityWallet.address, pinCode: myWalletProvider.pinCode);
                     final transactionStatus = ref
                         .read(duniterServiceProvider)
-                        .certify(keypair: keypair, destAddress: walletViewProvider.address);
+                        .certify(keypair: keypair, destAddress: address);
                     Navigator.push(
                       context,
                       MaterialPageRoute(

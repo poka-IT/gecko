@@ -14,8 +14,8 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/activity.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
@@ -28,20 +28,19 @@ import 'package:gecko/utils.dart';
 const double buttonSize = 75;
 const double buttonFontSize = 13;
 
-class WalletViewScreen extends ConsumerStatefulWidget {
-  const WalletViewScreen({required this.address, required this.username, super.key});
+class ProfileViewScreen extends ConsumerStatefulWidget {
+  const ProfileViewScreen({required this.address, required this.username, super.key});
   final String address;
   final String? username;
 
   @override
-  ConsumerState<WalletViewScreen> createState() => _WalletViewScreenState();
+  ConsumerState<ProfileViewScreen> createState() => _ProfileViewScreenState();
 }
 
-class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
+class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   late String address;
   late String? username;
   late Future<WalletHeaderData> _headerDataFuture;
-  late WalletsProfilesProvider? _walletProfile;
 
   @override
   void initState() {
@@ -49,14 +48,6 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
     address = widget.address;
     username = widget.username;
     _headerDataFuture = _loadWalletData();
-
-    // Set up wallet profile once during initialization to avoid rebuilds
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _walletProfile = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
-        _walletProfile?.address = address;
-      }
-    });
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
@@ -171,7 +162,7 @@ class _WalletViewScreenState extends ConsumerState<WalletViewScreen> {
                                   label: "copyAddress".tr(),
                                   onTap: () {
                                     Clipboard.setData(ClipboardData(text: address));
-                                    snackCopyKey(context);
+                                    SnackbarService.showAddressCopied(context);
                                   },
                                 ),
                               ],

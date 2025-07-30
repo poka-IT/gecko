@@ -15,7 +15,7 @@ import 'package:pointycastle/api.dart' show InvalidCipherTextException;
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/wallet_options.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+// import 'package:gecko/providers_deprecated/wallets_profiles.dart'; // Deprecated - using utils directly
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
@@ -114,7 +114,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
     bool isSmall = !isTall;
 
     Future scanDerivations() async {
-      if (!isAddress(newWalletAddress.text) ||
+      if (!_container.read(utilsProvider).isAddressValid(newWalletAddress.text) ||
           !_container.read(walletServiceProvider).isMnemonicValid(newMnemonicSentence.text) ||
           !migrationChecks.canMigrate) {
         setState(() {
@@ -359,7 +359,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 ),
                               ),
                               onChanged: (newAddress) async {
-                                if (isAddress(newAddress)) {
+                                if (_container.read(utilsProvider).isAddressValid(newAddress)) {
                                   final checks = await _container
                                       .read(storageServiceProvider)
                                       .getMigrateWalletChecks(fromAddress: fromAddress, toAddress: newAddress);

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -60,7 +60,7 @@ class CompactWalletHeader extends ConsumerWidget {
                     GestureDetector(
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: address));
-                        snackCopyKey(context);
+                        SnackbarService.showAddressCopied(context);
                       },
                       child: LayoutBuilder(
                         builder: (context, constraints) {

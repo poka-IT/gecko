@@ -7,22 +7,23 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:gecko/providers/profile_view_providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/image_cache_service.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/utils/flower_power_colors.dart';
 
-class HomeButtons extends StatefulWidget {
+class HomeButtons extends ConsumerStatefulWidget {
   final bool isEasterEggActive;
 
   const HomeButtons({super.key, this.isEasterEggActive = false});
 
   @override
-  State<HomeButtons> createState() => _HomeButtonsState();
+  ConsumerState<HomeButtons> createState() => _HomeButtonsState();
 }
 
-class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin {
+class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderStateMixin {
   final ImageCacheService _imageCache = ImageCacheService();
   late AnimationController _colorController;
   late Animation<double> _colorAnimation;
@@ -104,7 +105,6 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    final historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context);
 
     return Column(
       children: <Widget>[
@@ -185,7 +185,8 @@ class _HomeButtonsState extends State<HomeButtons> with TickerProviderStateMixin
                     baseColor: context.colorScheme.primary,
                     offset: 0.0, // Troisième bouton - pas de décalage
                     onTap: () async {
-                      await historyProvider.scan(context);
+                      final scanQr = ref.read(qrScanProvider);
+                      await scanQr(context);
                     },
                     child: Padding(
                       padding: EdgeInsets.all(scaleSize(14)),

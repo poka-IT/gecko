@@ -14,7 +14,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/wallet_options.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+// import 'package:gecko/providers_deprecated/wallets_profiles.dart'; // Removed - no longer needed
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
@@ -49,7 +49,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   @override
   Widget build(BuildContext context) {
     final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
-    WalletsProfilesProvider historyProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     walletOptions.address.text = widget.wallet.address;
@@ -102,7 +101,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                             buildConfirmIdentitySection(context, ref, walletProvider),
                             if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
                               buildRenewMembershipSection(context, ref, walletProvider),
-                            buildOptionsSection(context, walletProvider, historyProvider),
+                            buildOptionsSection(context, walletProvider),
                             if (!isAlone)
                               buildDefaultWalletSection(
                                 context,
@@ -221,11 +220,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     );
   }
 
-  Widget activityWidget(
-    BuildContext context,
-    WalletsProfilesProvider historyProvider,
-    WalletOptionsProvider walletProvider,
-  ) {
+  Widget activityWidget(BuildContext context, WalletOptionsProvider walletProvider) {
     return InkWell(
       key: keyOpenActivity,
       onTap: () async {
@@ -397,12 +392,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     );
   }
 
-  Widget buildOptionsSection(
-    BuildContext context,
-    WalletOptionsProvider walletProvider,
-    WalletsProfilesProvider historyProvider,
-  ) {
-    return activityWidget(context, historyProvider, walletProvider);
+  Widget buildOptionsSection(BuildContext context, WalletOptionsProvider walletProvider) {
+    return activityWidget(context, walletProvider);
   }
 
   Widget buildDefaultWalletSection(

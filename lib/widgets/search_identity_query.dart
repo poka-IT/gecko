@@ -7,12 +7,10 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class SearchIdentityQuery extends ConsumerWidget {
   const SearchIdentityQuery({super.key, required this.name});
@@ -20,8 +18,6 @@ class SearchIdentityQuery extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletsProfiles = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
-
     // Check if we have network connection
     final connectionStatus = ref.watch(connectionStatusProvider);
     final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
@@ -41,14 +37,7 @@ class SearchIdentityQuery extends ConsumerWidget {
         return Expanded(
           child: ListView(
             children: identities
-                .map(
-                  (identity) => _buildIdentityTile(
-                    context: context,
-                    identity: identity,
-                    avatarSize: avatarSize,
-                    walletsProfiles: walletsProfiles,
-                  ),
-                )
+                .map((identity) => _buildIdentityTile(context: context, identity: identity, avatarSize: avatarSize))
                 .toList(),
           ),
         );
@@ -62,7 +51,6 @@ class SearchIdentityQuery extends ConsumerWidget {
     required BuildContext context,
     required d.IdentitySuggestion identity,
     required double avatarSize,
-    required WalletsProfilesProvider walletsProfiles,
   }) {
     return ListTile(
       key: keySearchResult(identity.address),
@@ -106,7 +94,7 @@ class SearchIdentityQuery extends ConsumerWidget {
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) {
-              return WalletViewScreen(address: identity.address, username: identity.name);
+              return ProfileViewScreen(address: identity.address, username: identity.name);
             },
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               // Smooth slide transition from right to left

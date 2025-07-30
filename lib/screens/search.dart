@@ -10,7 +10,7 @@ import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/network_activity_screen.dart';
 import 'package:gecko/screens/search_result.dart';
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -184,7 +184,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               context,
                               PageRouteBuilder(
                                 pageBuilder: (context, animation, secondaryAnimation) =>
-                                    WalletViewScreen(address: searchState.pastedAddress, username: null),
+                                    ProfileViewScreen(address: searchState.pastedAddress, username: null),
                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                   // Fast fade transition to reduce visual jarring
                                   return FadeTransition(

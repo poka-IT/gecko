@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/screens/wallet_view.dart' show buttonSize, buttonFontSize;
+import 'package:gecko/screens/profile_view.dart' show buttonSize, buttonFontSize;
 
 class WaitToCertWidget extends StatelessWidget {
   final String label;

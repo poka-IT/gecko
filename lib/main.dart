@@ -24,9 +24,7 @@ import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-
 import 'package:gecko/providers_deprecated/wallet_options.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/routes.dart';
@@ -125,7 +123,6 @@ class Gecko extends StatelessWidget {
     return ProviderScope(
       child: old_provider.MultiProvider(
         providers: [
-          old_provider.ChangeNotifierProvider(create: (_) => WalletsProfilesProvider('')),
           old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),

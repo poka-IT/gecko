@@ -17,7 +17,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/screens/activity.dart';
 
 import 'package:gecko/utils.dart';
@@ -64,7 +64,6 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   BigInt? toAddressBalance;
   bool balancesLoaded = false;
 
-  late WalletsProfilesProvider walletViewProvider;
   late MyWalletsProvider myWalletProvider;
 
   @override
@@ -72,7 +71,6 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     super.initState();
 
     // Initialize providers
-    walletViewProvider = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
     myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Initialize default wallet
@@ -104,10 +102,15 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   }
 
   void resetState() {
-    walletViewProvider.payAmount.text = '';
-    walletViewProvider.isCommentVisible = false;
-    walletViewProvider.comment = '';
-    walletViewProvider.payComment.text = '';
+    // Reset form data for the target address
+    ref.read(profileViewProvider(widget.toAddress).notifier).clearForm();
+
+    // Reset controllers to match the state
+    final amountController = ref.read(payAmountControllerProvider(widget.toAddress));
+    amountController.clear();
+
+    final commentController = ref.read(payCommentControllerProvider(widget.toAddress));
+    commentController.clear();
   }
 
   // Load balances asynchronously with proper widget lifecycle management
@@ -172,7 +175,8 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
       final displayMode = ref.read(currencyDisplayModeProvider);
       final isUdUnit = displayMode == CurrencyDisplayMode.du;
-      final inputAmount = double.parse(walletViewProvider.payAmount.text);
+      final payAmountText = ref.read(profileViewProvider(widget.toAddress)).payAmount;
+      final inputAmount = double.parse(payAmountText);
 
       // Convert amount based on display mode
       double amountInG1;
@@ -202,7 +206,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
             keypair: keypair,
             destAddress: widget.toAddress,
             amount: amountInG1,
-            comment: walletViewProvider.comment,
+            comment: ref.read(profileViewProvider(widget.toAddress)).payComment,
             isUd: isUdUnit,
           );
 
@@ -234,8 +238,8 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     final transactionData = TransactionInProgressData(
       status: statusController.stream.asBroadcastStream(),
       toAddress: widget.toAddress,
-      amount: double.parse(walletViewProvider.payAmount.text),
-      comment: walletViewProvider.comment,
+      amount: double.parse(ref.read(profileViewProvider(widget.toAddress)).payAmount),
+      comment: ref.read(profileViewProvider(widget.toAddress)).payComment,
     );
 
     // Navigate immediately to activity screen with loading state
@@ -256,7 +260,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     if (!mounted) return false;
 
     // Vérification du montant saisi
-    final payAmount = walletViewProvider.payAmount.text;
+    final payAmount = ref.read(profileViewProvider(widget.toAddress)).payAmount;
     if (payAmount.isEmpty) return false;
 
     // Wait for balances to be loaded before validating
@@ -507,21 +511,24 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                           child: TextField(
                             textInputAction: TextInputAction.done,
                             onEditingComplete: () async {
-                              if (walletViewProvider.isCommentVisible) {
+                              final isCommentVisible = ref.read(profileViewProvider(widget.toAddress)).isCommentVisible;
+                              if (isCommentVisible) {
                                 commentFocus.requestFocus();
                               } else if (canValidate) {
                                 await executeTransfert();
                               }
                             },
                             key: keyAmountField,
-                            controller: walletViewProvider.payAmount,
+                            controller: ref.read(payAmountControllerProvider(widget.toAddress)),
                             autofocus: true,
                             focusNode: amountFocus,
                             maxLines: 1,
                             textAlign: TextAlign.center,
                             autocorrect: false,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            onChanged: (_) async {
+                            onChanged: (value) async {
+                              // Update Riverpod state
+                              ref.read(profileViewProvider(widget.toAddress).notifier).setPayAmount(value);
                               setState(() {});
                             },
                             inputFormatters: <TextInputFormatter>[
@@ -577,87 +584,104 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                             ),
                           ),
                         ),
-                        if (walletViewProvider.isCommentVisible) const SizedBox(height: 8),
-                        old_provider.Consumer<WalletsProfilesProvider>(
-                          builder: (context, profileProvider, _) {
-                            return AnimatedCrossFade(
-                              duration: const Duration(milliseconds: 200),
-                              crossFadeState: profileProvider.isCommentVisible
-                                  ? CrossFadeState.showSecond
-                                  : CrossFadeState.showFirst,
-                              firstChild: TextButton.icon(
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(2)),
-                                ),
-                                icon: Icon(Icons.add_comment_outlined, size: scaleSize(18), color: Colors.grey[600]),
-                                label: Text(
-                                  'addComment'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                onPressed: () {
-                                  profileProvider.toggleCommentVisibility();
-                                  Future.delayed(const Duration(milliseconds: 250), () {
-                                    if (context.mounted) {
-                                      amountFocus.unfocus();
-                                      commentFocus.requestFocus();
-                                    }
-                                  });
-                                },
-                              ),
-                              secondChild: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextField(
-                                    controller: profileProvider.payComment,
-                                    focusNode: commentFocus,
-                                    onChanged: (value) => profileProvider.comment = value,
-                                    inputFormatters: [Utf8LengthLimitingTextInputFormatter(146)],
-                                    textInputAction: TextInputAction.done,
-                                    onEditingComplete: () async {
-                                      if (canValidate) {
-                                        await executeTransfert();
-                                      }
-                                    },
-                                    maxLines: 1,
-                                    style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
-                                    decoration: InputDecoration(
-                                      hintText: 'optionalComment'.tr(),
-                                      hintStyle: TextStyle(color: Colors.grey[400]),
-                                      filled: true,
-                                      fillColor: Colors.white.withAlpha(128),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: scaleSize(8),
-                                        vertical: scaleSize(4),
-                                      ),
-                                      counterText: '',
-                                      suffixIcon: IconButton(
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                        icon: Icon(Icons.close, size: scaleSize(16), color: Colors.grey[600]),
-                                        onPressed: () {
-                                          profileProvider.comment = '';
-                                          profileProvider.toggleCommentVisibility();
-                                          commentFocus.unfocus();
-                                          amountFocus.requestFocus();
-                                        },
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: Colors.grey[400]!, width: 1.5),
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final isCommentVisible = ref.watch(profileViewProvider(widget.toAddress)).isCommentVisible;
+                            return Column(
+                              children: [
+                                if (isCommentVisible) const SizedBox(height: 8),
+                                AnimatedCrossFade(
+                                  duration: const Duration(milliseconds: 200),
+                                  crossFadeState: isCommentVisible
+                                      ? CrossFadeState.showSecond
+                                      : CrossFadeState.showFirst,
+                                  firstChild: TextButton.icon(
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(2)),
+                                    ),
+                                    icon: Icon(
+                                      Icons.add_comment_outlined,
+                                      size: scaleSize(18),
+                                      color: Colors.grey[600],
+                                    ),
+                                    label: Text(
+                                      'addComment'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
+                                    onPressed: () {
+                                      ref
+                                          .read(profileViewProvider(widget.toAddress).notifier)
+                                          .toggleCommentVisibility();
+                                      Future.delayed(const Duration(milliseconds: 250), () {
+                                        if (context.mounted) {
+                                          amountFocus.unfocus();
+                                          commentFocus.requestFocus();
+                                        }
+                                      });
+                                    },
                                   ),
-                                ],
-                              ),
+                                  secondChild: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextField(
+                                        controller: ref.read(payCommentControllerProvider(widget.toAddress)),
+                                        focusNode: commentFocus,
+                                        onChanged: (value) => ref
+                                            .read(profileViewProvider(widget.toAddress).notifier)
+                                            .setPayComment(value),
+                                        inputFormatters: [Utf8LengthLimitingTextInputFormatter(146)],
+                                        textInputAction: TextInputAction.done,
+                                        onEditingComplete: () async {
+                                          if (canValidate) {
+                                            await executeTransfert();
+                                          }
+                                        },
+                                        maxLines: 1,
+                                        style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
+                                        decoration: InputDecoration(
+                                          hintText: 'optionalComment'.tr(),
+                                          hintStyle: TextStyle(color: Colors.grey[400]),
+                                          filled: true,
+                                          fillColor: Colors.white.withAlpha(128),
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: scaleSize(8),
+                                            vertical: scaleSize(4),
+                                          ),
+                                          counterText: '',
+                                          suffixIcon: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            icon: Icon(Icons.close, size: scaleSize(16), color: Colors.grey[600]),
+                                            onPressed: () {
+                                              ref
+                                                  .read(profileViewProvider(widget.toAddress).notifier)
+                                                  .setPayComment('');
+                                              ref
+                                                  .read(profileViewProvider(widget.toAddress).notifier)
+                                                  .toggleCommentVisibility();
+                                              commentFocus.unfocus();
+                                              amountFocus.requestFocus();
+                                            },
+                                          ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.5),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         ),

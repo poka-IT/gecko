@@ -3,32 +3,33 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
-class OnboardingStepFive extends StatefulWidget {
+class OnboardingStepFive extends ConsumerStatefulWidget {
   const OnboardingStepFive({super.key, this.skipIntro = false});
   final bool skipIntro;
 
   @override
-  State<StatefulWidget> createState() {
+  ConsumerState<OnboardingStepFive> createState() {
     return _ChooseSafeState();
   }
 }
 
 // ignore: unused_element
-class _ChooseSafeState extends State<OnboardingStepFive> with TickerProviderStateMixin {
+class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProviderStateMixin {
   List<String>? mnemonicList;
   bool isLoading = false;
   bool _hasInitialized = false;
@@ -236,7 +237,7 @@ class _ChooseSafeState extends State<OnboardingStepFive> with TickerProviderStat
                             onPressed: isMnemonicGenerated
                                 ? () {
                                     Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
-                                    snackCopySeed(context);
+                                    SnackbarService.showMnemonicCopied(context);
                                   }
                                 : null,
                             child: Row(

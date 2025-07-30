@@ -1,20 +1,21 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/contacts_list.dart';
-import 'package:provider/provider.dart' as old_provider;
 
-class ContactsScreen extends StatefulWidget {
+class ContactsScreen extends ConsumerStatefulWidget {
   const ContactsScreen({super.key});
 
   @override
-  State<ContactsScreen> createState() => _ContactsScreenState();
+  ConsumerState<ContactsScreen> createState() => _ContactsScreenState();
 }
 
-class _ContactsScreenState extends State<ContactsScreen> {
+class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   String searchQuery = '';
   final FocusNode _searchFocus = FocusNode();
 
@@ -26,23 +27,49 @@ class _ContactsScreenState extends State<ContactsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    old_provider.Provider.of<WalletsProfilesProvider>(context, listen: true);
-    final allContacts = contactsBox.toMap().values.toList();
+    // Watch the contacts provider for reactive updates
+    final allContacts = ref.watch(allContactsProvider);
+    final squidService = ref.watch(squidServiceProvider);
 
-    // Order contacts by username
-    allContacts.sort((p1, p2) {
-      return Comparable.compare(p1.username?.toLowerCase() ?? 'zz', p2.username?.toLowerCase() ?? 'zz');
-    });
-
-    // Filter contacts based on search query
+    // Filter contacts based on search query and ensure we have a mutable list
     final filteredContacts = searchQuery.isEmpty
-        ? allContacts
+        ? List<G1WalletsList>.from(allContacts) // Create a copy to allow sorting
         : allContacts.where((contact) {
-            final username = (contact.username ?? '').toLowerCase();
+            // Use resolved name from squid service for search
+            final resolvedName = squidService.walletNameIndexer[contact.address];
+            final displayName = resolvedName ?? contact.username ?? '';
+            final username = displayName.toLowerCase();
             final address = contact.address.toLowerCase();
             final query = searchQuery.toLowerCase();
             return username.contains(query) || address.contains(query);
           }).toList();
+
+    // Order contacts by resolved display name (same as what's shown in UI)
+    // Contacts with names first, then contacts without names at the end
+    filteredContacts.sort((p1, p2) {
+      final resolvedName1 = squidService.walletNameIndexer[p1.address] ?? p1.username;
+      final resolvedName2 = squidService.walletNameIndexer[p2.address] ?? p2.username;
+
+      final hasName1 = resolvedName1 != null && resolvedName1.isNotEmpty;
+      final hasName2 = resolvedName2 != null && resolvedName2.isNotEmpty;
+
+      // If both have names, sort alphabetically
+      if (hasName1 && hasName2) {
+        return resolvedName1.toLowerCase().compareTo(resolvedName2.toLowerCase());
+      }
+      // If only p1 has a name, p1 comes first
+      else if (hasName1 && !hasName2) {
+        return -1;
+      }
+      // If only p2 has a name, p2 comes first
+      else if (!hasName1 && hasName2) {
+        return 1;
+      }
+      // If neither has a name, sort by address
+      else {
+        return p1.address.compareTo(p2.address);
+      }
+    });
 
     return GestureDetector(
       onTap: () {

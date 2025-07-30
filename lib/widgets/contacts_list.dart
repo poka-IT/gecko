@@ -9,22 +9,19 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/providers/profile_view_providers.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class ContactsList extends ConsumerWidget {
   const ContactsList({super.key, required this.myContacts});
 
   final List<G1WalletsList> myContacts;
 
-  void _showContactMenu(BuildContext context, G1WalletsList contact) {
-    final walletsProfilesClass = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
-
+  void _showContactMenu(BuildContext context, WidgetRef ref, G1WalletsList contact) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -46,9 +43,10 @@ class ContactsList extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
                 title: Text('removeContact'.tr(), style: const TextStyle(color: Colors.red)),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  walletsProfilesClass.addContact(contact);
+                  final toggleContact = ref.read(toggleContactProvider);
+                  await toggleContact(contact, context);
                 },
               ),
               const SizedBox(height: 20),
@@ -61,8 +59,6 @@ class ContactsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletsProfilesClass = old_provider.Provider.of<WalletsProfilesProvider>(context, listen: false);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
@@ -129,14 +125,13 @@ class ContactsList extends ConsumerWidget {
                           ],
                         ),
                         isThreeLine: false,
-                        onLongPress: () => _showContactMenu(context, g1Wallet),
+                        onLongPress: () => _showContactMenu(context, ref, g1Wallet),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) {
-                                walletsProfilesClass.address = g1Wallet.address;
-                                return WalletViewScreen(
+                                return ProfileViewScreen(
                                   address: g1Wallet.address,
                                   username: ref.read(squidServiceProvider).walletNameIndexer[g1Wallet.address],
                                 );

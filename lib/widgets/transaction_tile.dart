@@ -5,7 +5,7 @@ import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -63,7 +63,7 @@ class TransactionTile extends StatelessWidget {
             Navigator.push(
               context,
               PageNoTransit(
-                builder: (context) => WalletViewScreen(address: transaction.address, username: username),
+                builder: (context) => ProfileViewScreen(address: transaction.address, username: username),
               ),
             );
           },
@@ -295,7 +295,7 @@ class TransactionTile extends StatelessWidget {
             Navigator.push(
               context,
               PageNoTransit(
-                builder: (context) => WalletViewScreen(address: transaction.address, username: transaction.username),
+                builder: (context) => ProfileViewScreen(address: transaction.address, username: transaction.username),
               ),
             );
           },
@@ -395,7 +395,7 @@ class TransactionTile extends StatelessWidget {
             Navigator.push(
               context,
               PageNoTransit(
-                builder: (context) => WalletViewScreen(address: transaction.address, username: transaction.username),
+                builder: (context) => ProfileViewScreen(address: transaction.address, username: transaction.username),
               ),
             );
           },

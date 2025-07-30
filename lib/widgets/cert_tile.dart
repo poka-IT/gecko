@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/certs_list.dart';
@@ -41,7 +41,7 @@ class CertTile extends StatelessWidget {
                       context,
                       PageNoTransit(
                         builder: (context) =>
-                            WalletViewScreen(address: cert.address, username: cert.name.isNotEmpty ? cert.name : null),
+                            ProfileViewScreen(address: cert.address, username: cert.name.isNotEmpty ? cert.name : null),
                       ),
                     );
                   }

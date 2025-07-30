@@ -2,22 +2,23 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/screens/debug_screen.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:gecko/screens/currency_page.dart';
+import 'package:gecko/services/snackbar_service.dart';
 
-class MainDrawer extends StatelessWidget {
+class MainDrawer extends ConsumerWidget {
   const MainDrawer({super.key, required this.isWalletsExists});
 
   final bool isWalletsExists;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final listStyle = scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurface);
 
     final appVersionShort = appVersion.split('+').first;
@@ -119,7 +120,7 @@ class MainDrawer extends StatelessWidget {
                   ),
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: 'Ğecko v$appVersion'));
-                    snackMessage(
+                    SnackbarService.showMessage(
                       context,
                       message: 'Le numéro de version de Ğecko a été copié dans votre presse papier',
                       duration: 4,

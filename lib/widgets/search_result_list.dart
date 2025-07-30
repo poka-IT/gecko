@@ -6,7 +6,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 
 import 'package:gecko/providers/search_provider.dart';
-import 'package:gecko/screens/wallet_view.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -88,7 +88,7 @@ class SearchResult extends ConsumerWidget {
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) {
-              return WalletViewScreen(address: g1Wallet.address, username: g1Wallet.username);
+              return ProfileViewScreen(address: g1Wallet.address, username: g1Wallet.username);
             },
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               // Fast fade transition to reduce visual jarring

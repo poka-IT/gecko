@@ -5,7 +5,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/transaction_status.dart';
@@ -38,7 +37,6 @@ class _TransactionInProgressScreenState extends State<TransactionInProgressScree
 
   @override
   void initState() {
-    final walletProfiles = old_provider.Provider.of<WalletsProfilesProvider>(homeContext, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
 
     String defaultWalletAddress = myWalletProvider.getDefaultWallet().address;
@@ -46,8 +44,11 @@ class _TransactionInProgressScreenState extends State<TransactionInProgressScree
     String? walletDataName = myWalletProvider.getWalletDataByAddress(widget.toAddress ?? '')?.name;
 
     fromAddressFormat = widget.fromAddress ?? g1WalletsBox.get(defaultWalletAddress)?.username ?? defaultWalletName;
-    toAddressFormat = widget.toAddress ?? walletProfiles.address;
-    toUsernameFormat = widget.toUsername ?? walletDataName ?? getShortPubkey(toAddressFormat);
+    toAddressFormat = widget.toAddress ?? ''; // No fallback - should not happen in normal flow
+    toUsernameFormat =
+        widget.toUsername ??
+        walletDataName ??
+        (toAddressFormat.isNotEmpty ? getShortPubkey(toAddressFormat) : 'Unknown');
 
     super.initState();
   }

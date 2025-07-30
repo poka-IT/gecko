@@ -226,7 +226,7 @@
     "youCannotMigrateIdentityToExistingIdentity": "No se puede migrar una identidad\na una cuenta que ya tiene una identidad",
     "importOldAccount": "Migrar mi cuenta antigua",
     "cesium_import_info_title": "¿Importar una billetera Cesium?",
-    "cesium_import_info_body": "Para importar una billetera Cesium (con usuario y contraseña), primero debe crear una bóveda en Ğecko. Una vez creada su bóveda, podrá migrar su antigua billetera a este nuevo formato, más simple y seguro.",
+    "cesium_import_info_body": "Para importar una billetera Cesium (con usuario y contraseña), primero debe crear una billetera en Ğecko. Una vez creada su billetera, podrá migrar su antigua billetera a este nuevo formato, más simple y seguro.",
     "migrate_cesium_account_info": "Esta pantalla le permite migrar una cuenta antigua de Cesium (usuario/contraseña) a una billetera en su bóveda. Si su cuenta de Cesium está vinculada a una identidad de la Red de Confianza, también se migrará junto con su saldo.",
     "enterCesiumId": "Ingresa tu frase secreta de Cesium",
     "enterCesiumPassword": "Ingresa tu contraseña de Cesium",

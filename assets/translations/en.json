@@ -391,7 +391,7 @@
     "universalDividend": "Universal Dividend",
     "importOldAccount": "Migrate my old account",
     "cesium_import_info_title": "Importing a Cesium wallet?",
-    "cesium_import_info_body": "To import a Cesium wallet (with username and password), you first need to create a vault in Ğecko. Once your vault is created, you can migrate your old wallet to this new, simpler, and more secure format.",
+    "cesium_import_info_body": "To import a Cesium wallet (with username and password), you first need to create a wallet in Ğecko. Once your wallet is created, you can migrate your old wallet to this new, simpler, and more secure format.",
     "migrate_cesium_account_info": "This screen allows you to migrate an old Cesium account (username/password) to a wallet in your vault. If your Cesium account is linked to a Web of Trust identity, it will also be migrated along with your balance.",
     "udShort": "UD",
     "offline": "Offline",

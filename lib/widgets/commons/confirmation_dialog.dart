@@ -5,6 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/widgets/commons/text_markdown.dart';
 
 /// Type de message pour le dialogue de confirmation
 enum ConfirmationDialogType { info, warning, success, error, question }
@@ -107,10 +108,10 @@ Future<bool> showConfirmationDialog({
 
                   return Padding(
                     padding: EdgeInsets.only(bottom: 8),
-                    child: Text(
+                    child: TextMarkDown(
                       cleanText,
                       style: scaledTextStyle(fontSize: 15, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
-                      textAlign: TextAlign.center,
+                      textAlign: WrapAlignment.center,
                     ),
                   );
                 }).toList(),

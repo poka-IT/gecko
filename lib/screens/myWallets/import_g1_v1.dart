@@ -410,63 +410,65 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                         ),
 
                         // Section de sélection du portefeuille
-                        Card(
-                          color: context.colorScheme.surfaceContainer,
-                          elevation: 2,
-                          margin: EdgeInsets.only(bottom: scaleSize(8)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: Padding(
-                            padding: EdgeInsets.all(scaleSize(12)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'migrateToThisWallet'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: context.colorScheme.onSecondaryContainer,
-                                  ),
-                                ),
-                                ScaledSizedBox(height: 8),
-                                Container(
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey[300]!),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
-                                  child: DropdownButtonHideUnderline(
-                                    key: keySelectWallet,
-                                    child: DropdownButton(
-                                      isExpanded: true,
-                                      value: selectedWallet.address,
-                                      icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                                      items: myWalletProvider.listWallets.map((wallet) {
-                                        return DropdownMenuItem(
-                                          key: keySelectThisWallet(wallet.address),
-                                          value: wallet.address,
-                                          child: Text(wallet.name!, style: scaledTextStyle(fontSize: 13)),
-                                        );
-                                      }).toList(),
-                                      onChanged: (String? newSelectedWallet) {
-                                        setState(() {
-                                          _selectedWallet = myWalletProvider.getWalletDataByAddress(
-                                            newSelectedWallet!,
-                                          )!;
-                                        });
-                                      },
+                        if (myWalletProvider.listWallets.length > 1)
+                          Card(
+                            color: context.colorScheme.surfaceContainer,
+                            elevation: 2,
+                            margin: EdgeInsets.only(bottom: scaleSize(8)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: EdgeInsets.all(scaleSize(12)),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'migrateToThisWallet'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: context.colorScheme.onSecondaryContainer,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  ScaledSizedBox(height: 8),
+                                  Container(
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey[300]!),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
+                                    child: DropdownButtonHideUnderline(
+                                      key: keySelectWallet,
+                                      child: DropdownButton(
+                                        isExpanded: true,
+                                        value: selectedWallet.address,
+                                        icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                                        items: myWalletProvider.listWallets.map((wallet) {
+                                          return DropdownMenuItem(
+                                            key: keySelectThisWallet(wallet.address),
+                                            value: wallet.address,
+                                            child: Text(wallet.name!, style: scaledTextStyle(fontSize: 13)),
+                                          );
+                                        }).toList(),
+                                        onChanged: (String? newSelectedWallet) {
+                                          setState(() {
+                                            _selectedWallet = myWalletProvider.getWalletDataByAddress(
+                                              newSelectedWallet!,
+                                            )!;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
 
                         // Bouton de validation et message de status
                         Column(
                           children: [
+                            ScaledSizedBox(height: 12),
                             ScaledSizedBox(
                               width: double.infinity,
                               height: 40,

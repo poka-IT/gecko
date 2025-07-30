@@ -84,6 +84,8 @@ final _convertToAddressProvider = Provider<String? Function(String)>((ref) {
     final isValidAddress = ref.read(_isValidAddressProvider);
     final isValidPubkey = ref.read(_isValidPubkeyProvider);
 
+    input = input.trim().split(':')[0];
+
     try {
       if (isValidAddress(input)) {
         return utils.isAddressValidToSs58(input);

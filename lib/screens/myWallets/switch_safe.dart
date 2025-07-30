@@ -11,7 +11,6 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
@@ -201,8 +200,9 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       log.w('Error during state cleanup: $e');
     }
 
-    // Navigate directly to myWallets and remove all previous routes to avoid widget conflicts
-    Navigator.pushNamedAndRemoveUntil(context, RouteNames.myWallets, (route) => false);
+    // Simply pop back to the previous MyWallets screen instead of creating a new one
+    // This maintains the proper navigation stack: Home -> MyWallets (refreshed with new safe)
+    Navigator.pop(context);
 
     // Wait a bit then fade out the overlay
     Future.delayed(const Duration(milliseconds: 50), () {

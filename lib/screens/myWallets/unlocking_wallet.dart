@@ -13,7 +13,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallet_options.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -288,7 +288,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     return PopScope(
@@ -408,19 +407,20 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
                       ScaledSizedBox(height: isTall ? 12 : 8),
                       if (canUnlock)
-                        old_provider.Consumer<WalletOptionsProvider>(
-                          builder: (context, sub, _) {
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final pinCacheState = ref.watch(pinCacheToggleProvider);
                             return InkWell(
                               key: keyCachePassword,
                               onTap: () {
-                                walletOptions.changePinCacheChoice();
+                                ref.read(pinCacheToggleProvider.notifier).toggle();
                               },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    configBox.get('isCacheChecked') ? Icons.check_box : Icons.check_box_outline_blank,
+                                    pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
                                     color: context.colorScheme.primary,
                                     size: scaleSize(20),
                                   ),

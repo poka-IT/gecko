@@ -727,6 +727,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
 
                               // Status badge
                               Container(
+                                width: scaleSize(80),
                                 padding: EdgeInsets.symmetric(horizontal: scaleSize(6), vertical: scaleSize(2)),
                                 decoration: BoxDecoration(
                                   color: context.colorScheme.primary.withValues(alpha: 0.1),
@@ -738,6 +739,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                 ),
                                 child: Text(
                                   'Transaction en cours',
+                                  textAlign: TextAlign.center,
                                   style: scaledTextStyle(
                                     fontSize: 10,
                                     color: context.colorScheme.primary,

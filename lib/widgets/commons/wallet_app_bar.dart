@@ -7,10 +7,9 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
-import 'package:gecko/providers_deprecated/wallet_options.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
-import 'package:provider/provider.dart' as old_provider;
+
 import 'package:qr_flutter/qr_flutter.dart';
 
 class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -49,11 +48,7 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       titleSpacing: 10,
-      title: old_provider.Consumer<WalletOptionsProvider>(
-        builder: (context, walletOptions, _) {
-          return Text(title ?? titleBuilder!(ref.watch(squidServiceProvider).walletNameIndexer[address]));
-        },
-      ),
+      title: Text(title ?? titleBuilder!(ref.watch(squidServiceProvider).walletNameIndexer[address])),
       actions: [
         Row(
           children: [

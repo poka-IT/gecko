@@ -127,7 +127,7 @@ class ManageMembership extends ConsumerWidget {
             context,
             MaterialPageRoute(
               builder: (context) {
-                return MigrateIdentityScreen();
+                return MigrateIdentityScreen(address: address);
               },
             ),
           );

@@ -22,7 +22,7 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
-import 'package:gecko/providers_deprecated/wallet_options.dart';
+import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/commons/storage_builder.dart';
 
@@ -341,58 +341,51 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
         color: Colors.white.withValues(alpha: 25),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 2))],
       ),
-      child: old_provider.Consumer<WalletOptionsProvider>(
-        builder: (context, walletOptionsProvider, child) {
-          return Stack(
-            children: [
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: widget.isOwner && !_isPickerOpen
-                      ? () async {
-                          setState(() => _isPickerOpen = true);
-                          walletOptionsProvider.reload();
-                          final newPath = await walletOptionsProvider.changeAvatar();
-                          setState(() {
-                            _newCustomImagePath = newPath;
-                            _isPickerOpen = false;
-                          });
-                          walletOptionsProvider.reload();
-                        }
-                      : null,
-                  customBorder: const CircleBorder(),
-                  child: ClipOval(
-                    child: _newCustomImagePath.isEmpty
-                        ? (widget.defaultImagePath != null
-                              ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
-                              : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName))
-                        : SmartAvatar(imagePath: _newCustomImagePath),
-                  ),
-                ),
+      child: Stack(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.isOwner && !_isPickerOpen
+                  ? () async {
+                      setState(() => _isPickerOpen = true);
+                      final newPath = await WalletManagementService.changeAvatar(widget.address);
+                      setState(() {
+                        _newCustomImagePath = newPath;
+                        _isPickerOpen = false;
+                      });
+                      // Notify MyWalletsProvider to update UI components
+                      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+                      myWalletProvider.reload();
+                    }
+                  : null,
+              customBorder: const CircleBorder(),
+              child: ClipOval(
+                child: _newCustomImagePath.isEmpty
+                    ? (widget.defaultImagePath != null
+                          ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
+                          : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName))
+                    : SmartAvatar(imagePath: _newCustomImagePath),
               ),
-              if (widget.isOwner)
-                Positioned(
-                  right: scaleSize(5),
-                  bottom: scaleSize(5),
-                  child: Container(
-                    padding: EdgeInsets.all(scaleSize(4)),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Icon(Icons.camera_alt, size: scaleSize(12), color: Colors.black54),
-                  ),
+            ),
+          ),
+          if (widget.isOwner)
+            Positioned(
+              right: scaleSize(5),
+              bottom: scaleSize(5),
+              child: Container(
+                padding: EdgeInsets.all(scaleSize(4)),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 1)),
+                  ],
                 ),
-            ],
-          );
-        },
+                child: Icon(Icons.camera_alt, size: scaleSize(12), color: Colors.black54),
+              ),
+            ),
+        ],
       ),
     );
   }

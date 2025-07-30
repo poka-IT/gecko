@@ -14,8 +14,7 @@ import 'package:pointycastle/api.dart' show InvalidCipherTextException;
 
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallet_options.dart';
-// import 'package:gecko/providers_deprecated/wallets_profiles.dart'; // Deprecated - using utils directly
+
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
@@ -39,7 +38,9 @@ String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
 }
 
 class MigrateIdentityScreen extends ConsumerStatefulWidget {
-  const MigrateIdentityScreen({super.key});
+  const MigrateIdentityScreen({super.key, required this.address});
+
+  final String address;
 
   @override
   ConsumerState<MigrateIdentityScreen> createState() => _MigrateIdentityScreenState();
@@ -105,11 +106,10 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context, listen: false);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final generatedWalletsProvider = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
 
-    final fromAddress = walletOptions.address.text;
+    final fromAddress = widget.address;
 
     bool isSmall = !isTall;
 
@@ -121,7 +121,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
           mnemonicIsValid = false;
           matchInfo = '';
         });
-        walletOptions.reload();
+
         return;
       }
       log.d('Scan derivations to find a match');
@@ -137,7 +137,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
           matchDerivationNbr = null;
           mnemonicIsValid = true;
         });
-        walletOptions.reload();
+
         return;
       }
 
@@ -171,7 +171,6 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
           matchInfo = "addressNotBelongToMnemonic".tr();
         });
       }
-      walletOptions.reload();
     }
 
     return Scaffold(
@@ -372,7 +371,6 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                     migrationChecks = const MigrateWalletChecks.defaultValues();
                                     matchInfo = '';
                                   });
-                                  walletOptions.reload();
                                 }
                               },
                             ),
@@ -398,29 +396,25 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  old_provider.Consumer<WalletOptionsProvider>(
-                    builder: (context, _, _) {
-                      final validationStatus = mapValidationErrors(migrationChecks.errors);
-                      return Column(
-                        children: [
-                          if (validationStatus.isNotEmpty)
-                            Text(
-                              validationStatus,
-                              textAlign: TextAlign.center,
-                              style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
-                            ),
-                          if (matchInfo.isNotEmpty) ...[
-                            if (validationStatus.isNotEmpty) ScaledSizedBox(height: isSmall ? 4 : 8),
-                            Text(
-                              matchInfo,
-                              textAlign: TextAlign.center,
-                              style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
-                            ),
-                          ],
-                          ScaledSizedBox(height: isSmall ? 12 : 16),
-                        ],
-                      );
-                    },
+                  Column(
+                    children: [
+                      if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
+                        Text(
+                          mapValidationErrors(migrationChecks.errors),
+                          textAlign: TextAlign.center,
+                          style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
+                        ),
+                      if (matchInfo.isNotEmpty) ...[
+                        if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
+                          ScaledSizedBox(height: isSmall ? 4 : 8),
+                        Text(
+                          matchInfo,
+                          textAlign: TextAlign.center,
+                          style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
+                        ),
+                      ],
+                      ScaledSizedBox(height: isSmall ? 12 : 16),
+                    ],
                   ),
                   SizedBox(
                     width: double.infinity,

@@ -59,3 +59,16 @@ final genesisTimeProvider = FutureProvider<DateTime>((ref) async {
   final storageService = ref.watch(storageServiceProvider);
   return await storageService.getGenesisBlockchainTime();
 });
+
+/// Provides the current default wallet for reactive UI updates.
+/// This provider watches for changes to the default wallet and rebuilds dependents automatically.
+final defaultWalletProvider = Provider<d.WalletEntity?>((ref) {
+  final walletService = ref.watch(walletServiceProvider);
+
+  try {
+    return walletService.defaultWallet;
+  } catch (e) {
+    // Return null if no default wallet or error
+    return null;
+  }
+});

@@ -15,7 +15,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/wallet_options.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -59,7 +59,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletOptions = old_provider.Provider.of<WalletOptionsProvider>(context);
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final pinLenght = widget.pinCode.length;
     GifView.preFetchImage(AssetImage('assets/onBoarding/gecko-clin.gif'));
@@ -94,23 +93,22 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                   },
                 ),
                 ScaledSizedBox(height: isTall ? 20 : 0),
-                pinForm(context, walletOptions, pinLenght, 1, 2),
-                old_provider.Consumer<WalletOptionsProvider>(
-                  builder: (context, walletOptions, _) {
+                pinForm(context, pinLenght, 1, 2),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final pinCacheState = ref.watch(pinCacheToggleProvider);
                     return ref.read(durtProvider).isConnected
                         ? InkWell(
                             key: keyCachePassword,
                             onTap: () {
-                              walletOptions.changePinCacheChoice();
+                              ref.read(pinCacheToggleProvider.notifier).toggle();
                             },
                             child: Row(
                               children: [
                                 ScaledSizedBox(height: isTall ? 30 : 0),
                                 const Spacer(),
                                 Icon(
-                                  configBox.get('isCacheChecked') ?? false
-                                      ? Icons.check_box
-                                      : Icons.check_box_outline_blank,
+                                  pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
                                   color: context.colorScheme.primary,
                                   size: scaleSize(22),
                                 ),
@@ -134,13 +132,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     );
   }
 
-  Widget pinForm(
-    BuildContext context,
-    WalletOptionsProvider walletOptions,
-    int pinLenght,
-    int walletNbr,
-    int derivation,
-  ) {
+  Widget pinForm(BuildContext context, int pinLenght, int walletNbr, int derivation) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
 

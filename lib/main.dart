@@ -23,7 +23,7 @@ import 'package:gecko/providers/bottom_app_bar_provider.dart';
 
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/generate_wallets.dart';
-import 'package:gecko/providers_deprecated/settings_provider.dart';
+
 import 'package:gecko/providers_deprecated/wallets_profiles.dart';
 import 'package:gecko/providers_deprecated/home.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
@@ -127,7 +127,7 @@ class Gecko extends StatelessWidget {
           old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => GenerateWalletsProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => WalletOptionsProvider()),
-          old_provider.ChangeNotifierProvider(create: (_) => SettingsProvider()),
+
           old_provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
           old_provider.ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
         ],

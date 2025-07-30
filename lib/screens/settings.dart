@@ -17,7 +17,7 @@ import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/currency_provider.dart';
 
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers_deprecated/settings_provider.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers_deprecated/theme_provider.dart' as theme_provider;
 import 'package:gecko/providers/trm_data_provider.dart';
 
@@ -426,8 +426,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       if (confirm) {
                         try {
                           // Clear cache
-                          final settingsProvider = old_provider.Provider.of<SettingsProvider>(context, listen: false);
-                          await settingsProvider.clearAllCaches();
+                          final settingsService = ref.read(settingsServiceProvider);
+                          await settingsService.clearAllCaches();
 
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -749,8 +749,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     String selectedEndpoint,
     TextEditingController controller,
   ) async {
-    final set = old_provider.Provider.of<SettingsProvider>(context, listen: false);
-
     String? result = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -830,7 +828,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _duniterConnectionFailed = false;
               });
             }
-            set.reload();
           } catch (e) {
             // If connection fails after test passed, show error and mark as failed
             if (mounted) {
@@ -921,155 +918,138 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   },
                 ),
                 const Spacer(),
-                old_provider.Consumer<SettingsProvider>(
-                  builder: (context, set, _) {
-                    return PopupMenuButton<String>(
-                      key: keySelectDuniterNodeDropDown,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[300]!),
+                PopupMenuButton<String>(
+                  key: keySelectDuniterNodeDropDown,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          getDisplayMode(),
+                          style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              getDisplayMode(),
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).textTheme.bodyMedium?.color,
-                              ),
-                            ),
-                            ScaledSizedBox(width: 4),
-                            Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: scaleSize(20)),
-                          ],
-                        ),
-                      ),
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          key: keySelectDuniterNode('Auto'),
-                          value: 'Auto',
-                          child: Row(
-                            children: [
-                              Icon(
-                                configBox.get('autoEndpoint') == true
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_unchecked,
-                                color: configBox.get('autoEndpoint') == true
-                                    ? context.colorScheme.primary
-                                    : Colors.grey[400],
-                                size: scaleSize(20),
-                              ),
-                              ScaledSizedBox(width: 12),
-                              Text(
-                                'Auto',
-                                style: scaledTextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          key: keySelectDuniterNode('manual'.tr()),
-                          value: 'manual'.tr(),
-                          child: Row(
-                            children: [
-                              Icon(
-                                configBox.get('autoEndpoint') != true
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_unchecked,
-                                color: configBox.get('autoEndpoint') != true
-                                    ? context.colorScheme.primary
-                                    : Colors.grey[400],
-                                size: scaleSize(20),
-                              ),
-                              ScaledSizedBox(width: 12),
-                              Text(
-                                'manual'.tr(),
-                                style: scaledTextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          key: keySelectDuniterNode('select'.tr()),
-                          value: 'select'.tr(),
-                          child: Row(
-                            children: [
-                              Icon(Icons.list_alt, color: Colors.grey[400], size: scaleSize(20)),
-                              ScaledSizedBox(width: 12),
-                              Text(
-                                'select'.tr(),
-                                style: scaledTextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        ScaledSizedBox(width: 4),
+                        Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: scaleSize(20)),
                       ],
-                      onSelected: (String value) async {
-                        if (value == 'select'.tr()) {
-                          // Get available endpoints dynamically
-                          final availableEndpoints = await _getAvailableDuniterEndpoints();
-                          await _showNodeSelectionDialog(
-                            context,
-                            availableEndpoints,
-                            selectedDuniterEndpoint ?? '',
-                            endpointController,
-                          );
-                        } else if (value == 'Auto') {
-                          if (!mounted) return;
+                    ),
+                  ),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      key: keySelectDuniterNode('Auto'),
+                      value: 'Auto',
+                      child: Row(
+                        children: [
+                          Icon(
+                            configBox.get('autoEndpoint') == true
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: configBox.get('autoEndpoint') == true
+                                ? context.colorScheme.primary
+                                : Colors.grey[400],
+                            size: scaleSize(20),
+                          ),
+                          ScaledSizedBox(width: 12),
+                          Text(
+                            'Auto',
+                            style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      key: keySelectDuniterNode('manual'.tr()),
+                      value: 'manual'.tr(),
+                      child: Row(
+                        children: [
+                          Icon(
+                            configBox.get('autoEndpoint') != true
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: configBox.get('autoEndpoint') != true
+                                ? context.colorScheme.primary
+                                : Colors.grey[400],
+                            size: scaleSize(20),
+                          ),
+                          ScaledSizedBox(width: 12),
+                          Text(
+                            'manual'.tr(),
+                            style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      key: keySelectDuniterNode('select'.tr()),
+                      value: 'select'.tr(),
+                      child: Row(
+                        children: [
+                          Icon(Icons.list_alt, color: Colors.grey[400], size: scaleSize(20)),
+                          ScaledSizedBox(width: 12),
+                          Text(
+                            'select'.tr(),
+                            style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (String value) async {
+                    if (value == 'select'.tr()) {
+                      // Get available endpoints dynamically
+                      final availableEndpoints = await _getAvailableDuniterEndpoints();
+                      await _showNodeSelectionDialog(
+                        context,
+                        availableEndpoints,
+                        selectedDuniterEndpoint ?? '',
+                        endpointController,
+                      );
+                    } else if (value == 'Auto') {
+                      if (!mounted) return;
+                      setState(() {
+                        _duniterConnectionFailed = false;
+                      });
+
+                      try {
+                        // Clean up existing subscriptions before changing nodes
+                        await _cleanupDuniterSubscriptions();
+
+                        configBox.delete('customEndpoint');
+                        configBox.put('autoEndpoint', true);
+
+                        await _container.read(durtProvider).connect(verbose: true);
+                        _syncDuniterEndpointController(); // Synchronize controller
+                        _refreshBlockHeightProvider(); // Refresh block height provider
+                      } catch (e) {
+                        if (mounted) {
                           setState(() {
-                            _duniterConnectionFailed = false;
+                            _duniterConnectionFailed = true;
                           });
-
-                          try {
-                            // Clean up existing subscriptions before changing nodes
-                            await _cleanupDuniterSubscriptions();
-
-                            configBox.delete('customEndpoint');
-                            configBox.put('autoEndpoint', true);
-
-                            await _container.read(durtProvider).connect(verbose: true);
-                            _syncDuniterEndpointController(); // Synchronize controller
-                            _refreshBlockHeightProvider(); // Refresh block height provider
-                            set.reload();
-                          } catch (e) {
-                            if (mounted) {
-                              setState(() {
-                                _duniterConnectionFailed = true;
-                              });
-                            }
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
-                              );
-                            }
-                          } finally {
-                            // Connection attempt finished
-                          }
-                        } else {
-                          configBox.put('autoEndpoint', false);
-                          if (!configBox.containsKey('customEndpoint')) {
-                            configBox.put('customEndpoint', _endpointController.text);
-                          }
-                          _syncDuniterEndpointController(); // Synchronize controller
-                          set.reload();
-                          _duniterFocusNode.requestFocus();
-                          _endpointController.selection = TextSelection.fromPosition(
-                            TextPosition(offset: _endpointController.text.length),
-                          );
                         }
-                      },
-                    );
+                        if (mounted) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
+                        }
+                      } finally {
+                        // Connection attempt finished
+                      }
+                    } else {
+                      configBox.put('autoEndpoint', false);
+                      if (!configBox.containsKey('customEndpoint')) {
+                        configBox.put('customEndpoint', _endpointController.text);
+                      }
+                      _syncDuniterEndpointController(); // Synchronize controller
+
+                      _duniterFocusNode.requestFocus();
+                      _endpointController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: _endpointController.text.length),
+                      );
+                    }
                   },
                 ),
               ],
@@ -1089,86 +1069,70 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ],
         ),
-        old_provider.Consumer<SettingsProvider>(
-          builder: (context, set, _) {
-            if (configBox.get('autoEndpoint') == true) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ScaledSizedBox(height: 8),
-                  Text(
-                    Networks.duniterEndpoint,
-                    style: scaledTextStyle(
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
+        if (configBox.get('autoEndpoint') == true)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ScaledSizedBox(height: 8),
+              Text(
+                Networks.duniterEndpoint,
+                style: scaledTextStyle(
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
+              ),
+            ],
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ScaledSizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: TextField(
+                  key: keyCustomDuniterEndpoint,
+                  focusNode: _duniterFocusNode,
+                  controller: endpointController,
+                  autocorrect: false,
+                  style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
+                    border: InputBorder.none,
+                    hintText: 'wss://',
+                    hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
                   ),
-                ],
-              );
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ScaledSizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: TextField(
-                    key: keyCustomDuniterEndpoint,
-                    focusNode: _duniterFocusNode,
-                    controller: endpointController,
-                    autocorrect: false,
-                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
-                      border: InputBorder.none,
-                      hintText: 'wss://',
-                      hintStyle: scaledTextStyle(fontSize: 14, color: Colors.grey[400]),
-                    ),
-                    onSubmitted: (value) async {
-                      if (!mounted) return;
-                      setState(() {
-                        _duniterConnectionFailed = false;
-                      });
+                  onSubmitted: (value) async {
+                    if (!mounted) return;
+                    setState(() {
+                      _duniterConnectionFailed = false;
+                    });
 
-                      try {
-                        // Clean up existing subscriptions before changing nodes
-                        await _cleanupDuniterSubscriptions();
+                    try {
+                      // Clean up existing subscriptions before changing nodes
+                      await _cleanupDuniterSubscriptions();
 
-                        // First test if the endpoint is valid
-                        final isWorking = await _container.read(durtProvider).testDuniterEndpoint(value);
+                      // First test if the endpoint is valid
+                      final isWorking = await _container.read(durtProvider).testDuniterEndpoint(value);
 
-                        if (isWorking) {
-                          // If valid, update config and connect to this specific endpoint
-                          configBox.put('customEndpoint', value);
-                          try {
-                            await _container.read(durtProvider).setFixedEndpoint(value);
-                            _syncDuniterEndpointController(); // Synchronize controller
-                            _refreshBlockHeightProvider(); // Refresh block height provider
-                            if (mounted) {
-                              setState(() {
-                                _duniterConnectionFailed = false;
-                              });
-                            }
-                            set.reload();
-                          } catch (e) {
-                            // If connection fails after test passed, show error and mark as failed
-                            if (mounted) {
-                              setState(() {
-                                _duniterConnectionFailed = true;
-                              });
-                            }
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
-                              );
-                            }
+                      if (isWorking) {
+                        // If valid, update config and connect to this specific endpoint
+                        configBox.put('customEndpoint', value);
+                        try {
+                          await _container.read(durtProvider).setFixedEndpoint(value);
+                          _syncDuniterEndpointController(); // Synchronize controller
+                          _refreshBlockHeightProvider(); // Refresh block height provider
+                          if (mounted) {
+                            setState(() {
+                              _duniterConnectionFailed = false;
+                            });
                           }
-                        } else {
-                          // If endpoint test fails, mark as failed and don't change config
+                        } catch (e) {
+                          // If connection fails after test passed, show error and mark as failed
                           if (mounted) {
                             setState(() {
                               _duniterConnectionFailed = true;
@@ -1176,20 +1140,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           }
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
+                              SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
                             );
                           }
                         }
-                      } finally {
-                        // Connection attempt finished
+                      } else {
+                        // If endpoint test fails, mark as failed and don't change config
+                        if (mounted) {
+                          setState(() {
+                            _duniterConnectionFailed = true;
+                          });
+                        }
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
+                          );
+                        }
                       }
-                    },
-                  ),
+                    } finally {
+                      // Connection attempt finished
+                    }
+                  },
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          ),
         Consumer(
           builder: (context, ref, _) {
             final blockHeight = ref.watch(blockHeightProvider);
@@ -1219,8 +1194,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     String selectedEndpoint,
     TextEditingController controller,
   ) async {
-    final set = old_provider.Provider.of<SettingsProvider>(context, listen: false);
-
     // Create a map of display names to full endpoints
     final Map<String, String> displayToFull = {};
     for (final fullEndpoint in indexers) {
@@ -1349,7 +1322,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ).showSnackBar(SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: Colors.red));
           }
         }
-        set.reload();
       }
     }
   }
@@ -1410,141 +1382,135 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ScaledSizedBox(width: 12),
                     Icon(_getIndexerStatusIcon(ref), color: _getIndexerStatusColor(ref), size: scaleSize(16)),
                     const Spacer(),
-                    old_provider.Consumer<SettingsProvider>(
-                      builder: (context, set, _) {
-                        return PopupMenuButton<String>(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  getDisplayMode(),
-                                  style: scaledTextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                                  ),
-                                ),
-                                ScaledSizedBox(width: 4),
-                                Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: scaleSize(20)),
-                              ],
-                            ),
-                          ),
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: 'Auto',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    !configBox.containsKey('customIndexer')
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
-                                    color: !configBox.containsKey('customIndexer')
-                                        ? context.colorScheme.primary
-                                        : Colors.grey[400],
-                                    size: scaleSize(20),
-                                  ),
-                                  ScaledSizedBox(width: 12),
-                                  Text(
-                                    'Auto',
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
+                    PopupMenuButton<String>(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              getDisplayMode(),
+                              style: scaledTextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                               ),
                             ),
-                            PopupMenuItem(
-                              value: 'Manuel',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    configBox.containsKey('customIndexer')
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
-                                    color: configBox.containsKey('customIndexer')
-                                        ? context.colorScheme.primary
-                                        : Colors.grey[400],
-                                    size: scaleSize(20),
-                                  ),
-                                  ScaledSizedBox(width: 12),
-                                  Text(
-                                    'Manuel',
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'Sélectionner',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.list_alt, color: Colors.grey[400], size: scaleSize(20)),
-                                  ScaledSizedBox(width: 12),
-                                  Text(
-                                    'Sélectionner',
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ScaledSizedBox(width: 4),
+                            Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: scaleSize(20)),
                           ],
-                          onSelected: (String value) async {
-                            if (value == 'Sélectionner') {
-                              // Get available and working endpoints dynamically
-                              final availableEndpoints = await _getAvailableSquidEndpoints();
-                              await _showIndexerSelectionDialog(
-                                context,
-                                availableEndpoints,
-                                selectedIndexerEndpoint ?? '',
-                                indexerEndpointController,
-                              );
-                            } else if (value == 'Auto') {
-                              configBox.delete('customIndexer');
-                              _syncIndexerEndpointController(); // Synchronize controller
-                              if (mounted) {
-                                setState(() {
-                                  _indexerConnectionFailed = false;
-                                });
-                              }
+                        ),
+                      ),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'Auto',
+                          child: Row(
+                            children: [
+                              Icon(
+                                !configBox.containsKey('customIndexer')
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_unchecked,
+                                color: !configBox.containsKey('customIndexer')
+                                    ? context.colorScheme.primary
+                                    : Colors.grey[400],
+                                size: scaleSize(20),
+                              ),
+                              ScaledSizedBox(width: 12),
+                              Text(
+                                'Auto',
+                                style: scaledTextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'Manuel',
+                          child: Row(
+                            children: [
+                              Icon(
+                                configBox.containsKey('customIndexer')
+                                    ? Icons.radio_button_checked
+                                    : Icons.radio_button_unchecked,
+                                color: configBox.containsKey('customIndexer')
+                                    ? context.colorScheme.primary
+                                    : Colors.grey[400],
+                                size: scaleSize(20),
+                              ),
+                              ScaledSizedBox(width: 12),
+                              Text(
+                                'Manuel',
+                                style: scaledTextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'Sélectionner',
+                          child: Row(
+                            children: [
+                              Icon(Icons.list_alt, color: Colors.grey[400], size: scaleSize(20)),
+                              ScaledSizedBox(width: 12),
+                              Text(
+                                'Sélectionner',
+                                style: scaledTextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (String value) async {
+                        if (value == 'Sélectionner') {
+                          // Get available and working endpoints dynamically
+                          final availableEndpoints = await _getAvailableSquidEndpoints();
+                          await _showIndexerSelectionDialog(
+                            context,
+                            availableEndpoints,
+                            selectedIndexerEndpoint ?? '',
+                            indexerEndpointController,
+                          );
+                        } else if (value == 'Auto') {
+                          configBox.delete('customIndexer');
+                          _syncIndexerEndpointController(); // Synchronize controller
+                          if (mounted) {
+                            setState(() {
+                              _indexerConnectionFailed = false;
+                            });
+                          }
 
-                              // Force reconnection to use strict validation instead of just testing
-                              try {
-                                await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
-                              } catch (e) {
-                                log.w('Error reconnecting to Squid in Auto mode: $e');
-                                if (mounted) {
-                                  setState(() {
-                                    _indexerConnectionFailed = true;
-                                  });
-                                }
-                              }
-
-                              set.reload();
-                            } else {
-                              if (!configBox.containsKey('customIndexer')) {
-                                configBox.put('customIndexer', _indexerEndpointController.text);
-                              }
-                              _syncIndexerEndpointController(); // Synchronize controller
-                              set.reload();
-                              _indexerFocusNode.requestFocus();
-                              _indexerEndpointController.selection = TextSelection.fromPosition(
-                                TextPosition(offset: _indexerEndpointController.text.length),
-                              );
+                          // Force reconnection to use strict validation instead of just testing
+                          try {
+                            await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
+                          } catch (e) {
+                            log.w('Error reconnecting to Squid in Auto mode: $e');
+                            if (mounted) {
+                              setState(() {
+                                _indexerConnectionFailed = true;
+                              });
                             }
-                          },
-                        );
+                          }
+                        } else {
+                          if (!configBox.containsKey('customIndexer')) {
+                            configBox.put('customIndexer', _indexerEndpointController.text);
+                          }
+                          _syncIndexerEndpointController(); // Synchronize controller
+
+                          _indexerFocusNode.requestFocus();
+                          _indexerEndpointController.selection = TextSelection.fromPosition(
+                            TextPosition(offset: _indexerEndpointController.text.length),
+                          );
+                        }
                       },
                     ),
                   ],
@@ -1558,66 +1524,83 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             );
           },
         ),
-        old_provider.Consumer<SettingsProvider>(
-          builder: (context, set, _) {
-            final testEndpoint = ref.read(squidEndpointTesterProvider);
 
-            if (!configBox.containsKey('customIndexer')) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ScaledSizedBox(height: 8),
-                  Text(
-                    selectedIndexerEndpoint ?? '',
-                    style: scaledTextStyle(
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
+        if (!configBox.containsKey('customIndexer'))
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ScaledSizedBox(height: 8),
+              Text(
+                selectedIndexerEndpoint,
+                style: scaledTextStyle(
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
+              ),
+            ],
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ScaledSizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: TextField(
+                  focusNode: _indexerFocusNode,
+                  controller: indexerEndpointController,
+                  autocorrect: false,
+                  style: scaledTextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
+                    border: InputBorder.none,
+                    hintText: 'https://',
+                    hintStyle: scaledTextStyle(fontSize: 13, color: Colors.grey[400]),
                   ),
-                ],
-              );
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ScaledSizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: TextField(
-                    focusNode: _indexerFocusNode,
-                    controller: indexerEndpointController,
-                    autocorrect: false,
-                    style: scaledTextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color),
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
-                      border: InputBorder.none,
-                      hintText: 'https://',
-                      hintStyle: scaledTextStyle(fontSize: 13, color: Colors.grey[400]),
-                    ),
-                    onSubmitted: (value) async {
-                      // Store old endpoint in case we need to restore it
-                      final oldEndpoint = configBox.containsKey('customIndexer')
-                          ? configBox.get('customIndexer')
-                          : null;
+                  onSubmitted: (value) async {
+                    // Store old endpoint in case we need to restore it
+                    final oldEndpoint = configBox.containsKey('customIndexer') ? configBox.get('customIndexer') : null;
 
-                      // Ensure the endpoint has the correct format with path
-                      String fullEndpoint = value;
+                    // Ensure the endpoint has the correct format with path
+                    String fullEndpoint = value;
 
-                      // If the endpoint doesn't have a path, add the default v1beta1/relay path
-                      if (!fullEndpoint.contains('/v1beta1/relay') && !fullEndpoint.contains('/v1/graphql')) {
-                        if (fullEndpoint.startsWith('wss://') || fullEndpoint.startsWith('ws://')) {
-                          fullEndpoint = '$fullEndpoint/v1beta1/relay';
-                        } else if (fullEndpoint.startsWith('https://') || fullEndpoint.startsWith('http://')) {
-                          fullEndpoint = '$fullEndpoint/v1beta1/relay';
-                        } else {
-                          // Add protocol and path
-                          fullEndpoint = 'wss://$fullEndpoint/v1beta1/relay';
-                        }
+                    // If the endpoint doesn't have a path, add the default v1beta1/relay path
+                    if (!fullEndpoint.contains('/v1beta1/relay') && !fullEndpoint.contains('/v1/graphql')) {
+                      if (fullEndpoint.startsWith('wss://') || fullEndpoint.startsWith('ws://')) {
+                        fullEndpoint = '$fullEndpoint/v1beta1/relay';
+                      } else if (fullEndpoint.startsWith('https://') || fullEndpoint.startsWith('http://')) {
+                        fullEndpoint = '$fullEndpoint/v1beta1/relay';
+                      } else {
+                        // Add protocol and path
+                        fullEndpoint = 'wss://$fullEndpoint/v1beta1/relay';
+                      }
+                    }
+
+                    if (mounted) {
+                      setState(() {
+                        _indexerConnectionFailed = false;
+                      });
+                    }
+
+                    // TEST FIRST before saving to configBox
+                    final testEndpoint = ref.read(squidEndpointTesterProvider);
+
+                    final isWorking = await testEndpoint(fullEndpoint);
+                    if (isWorking) {
+                      // Only save to configBox if the test passes
+                      configBox.put('customIndexer', fullEndpoint);
+                      _syncIndexerEndpointController(); // Synchronize controller
+
+                      // Force reconnection to ensure strict validation
+                      try {
+                        await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
+                      } catch (e) {
+                        log.w('Error reconnecting to Squid after endpoint change: $e');
                       }
 
                       if (mounted) {
@@ -1625,55 +1608,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           _indexerConnectionFailed = false;
                         });
                       }
-
-                      // TEST FIRST before saving to configBox
-                      final isWorking = await testEndpoint(fullEndpoint);
-                      if (isWorking) {
-                        // Only save to configBox if the test passes
-                        configBox.put('customIndexer', fullEndpoint);
-                        _syncIndexerEndpointController(); // Synchronize controller
-
-                        // Force reconnection to ensure strict validation
-                        try {
-                          await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
-                        } catch (e) {
-                          log.w('Error reconnecting to Squid after endpoint change: $e');
-                        }
-
-                        if (mounted) {
-                          setState(() {
-                            _indexerConnectionFailed = false;
-                          });
-                        }
+                    } else {
+                      // Test failed - keep old endpoint or go back to auto mode
+                      if (oldEndpoint != null) {
+                        // Keep old endpoint
+                        configBox.put('customIndexer', oldEndpoint);
                       } else {
-                        // Test failed - keep old endpoint or go back to auto mode
-                        if (oldEndpoint != null) {
-                          // Keep old endpoint
-                          configBox.put('customIndexer', oldEndpoint);
-                        } else {
-                          // Go back to auto mode
-                          configBox.delete('customIndexer');
-                        }
-                        _syncIndexerEndpointController();
-                        if (mounted) {
-                          setState(() {
-                            _indexerConnectionFailed = true;
-                          });
-                        }
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: Colors.red),
-                          );
-                        }
+                        // Go back to auto mode
+                        configBox.delete('customIndexer');
                       }
-                      set.reload();
-                    },
-                  ),
+                      _syncIndexerEndpointController();
+                      if (mounted) {
+                        setState(() {
+                          _indexerConnectionFailed = true;
+                        });
+                      }
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: Colors.red),
+                        );
+                      }
+                    }
+                  },
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -1867,8 +1827,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Flexible(
-              child: old_provider.Consumer<SettingsProvider>(
-                builder: (context, set, _) {
+              child: Builder(
+                builder: (context) {
                   // Create dynamic segments list
                   final List<ButtonSegment<String>> segments = [
                     ButtonSegment(value: 'gdev', label: Text('gdev'), icon: const Icon(Icons.bug_report_rounded)),
@@ -1916,7 +1876,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 await _switchToNetwork(selectedNetwork);
                               }
                             }
-                            set.reload();
                           },
                     style: SegmentedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,

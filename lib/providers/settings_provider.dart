@@ -1,19 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:durt2/durt2.dart';
+import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 
-// Helper to access Riverpod services
-final _container = ProviderContainer();
-
-/// Global provider for Universal Dividends toggle state
+/// Provider for managing Universal Dividends toggle state with persistent storage.
+///
+/// This provider handles the global toggle state for including Universal Dividends
+/// in calculations and persists the state using Durt's config storage.
 final universalDividendsToggleProvider = StateNotifierProvider<UniversalDividendsToggleNotifier, bool>((ref) {
   return UniversalDividendsToggleNotifier();
 });
 
-/// StateNotifier for managing the global Universal Dividends toggle state
+/// StateNotifier for managing the global Universal Dividends toggle state.
+///
+/// Automatically loads the state from storage on initialization and saves
+/// changes back to storage when the toggle is modified.
 class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
   static const String _storageKey = 'include_universal_dividends_global';
 
@@ -21,11 +23,12 @@ class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
     _loadFromStorage();
   }
 
-  /// Load the toggle state from storage
+  /// Load the toggle state from persistent storage
   void _loadFromStorage() {
     try {
-      final durt = _container.read(durtProvider);
-      final storedValue = durt.configBox.getValue(_storageKey, defaultValue: 'false');
+      final container = ProviderContainer();
+      final configBox = container.read(configBoxProvider);
+      final storedValue = configBox.getValue(_storageKey, defaultValue: 'false');
       state = storedValue == 'true';
     } catch (e) {
       log.e('Error loading UD toggle state: $e');
@@ -33,28 +36,41 @@ class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
     }
   }
 
-  /// Toggle the Universal Dividends state
+  /// Toggle the Universal Dividends state and persist to storage
   void toggle() {
     final newState = !state;
     state = newState;
     _saveToStorage();
   }
 
-  /// Save the toggle state to storage
+  /// Save the current toggle state to persistent storage
   void _saveToStorage() {
     try {
-      final durt = _container.read(durtProvider);
-      durt.configBox.putValue(_storageKey, state.toString());
+      final container = ProviderContainer();
+      final configBox = container.read(configBoxProvider);
+      configBox.putValue(_storageKey, state.toString());
     } catch (e) {
       log.e('Error saving UD toggle state: $e');
     }
   }
 }
 
-class SettingsProvider with ChangeNotifier {
-  void reload() {
-    notifyListeners();
-  }
+/// Provider for settings-related operations like cache management.
+///
+/// This provider offers functionality to clear various application caches
+/// including endpoints, wallets, and transaction data.
+final settingsServiceProvider = Provider<SettingsService>((ref) {
+  return SettingsService(ref);
+});
+
+/// Service class for managing application settings and cache operations.
+///
+/// Provides methods to clear different types of caches and manage
+/// application-wide settings that don't require reactive state.
+class SettingsService {
+  final Ref _ref;
+
+  SettingsService(this._ref);
 
   /// Clear all application caches including endpoints, wallets, and transaction data
   Future<void> clearAllCaches() async {
@@ -76,7 +92,6 @@ class SettingsProvider with ChangeNotifier {
       await _clearEndpointCaches();
 
       log.i('✅ All caches cleared successfully');
-      reload(); // Notify listeners that caches have been cleared
     } catch (e) {
       log.e('❌ Error clearing caches: $e');
       rethrow;
@@ -85,7 +100,7 @@ class SettingsProvider with ChangeNotifier {
 
   /// Private method to clear all endpoint caches
   Future<void> _clearEndpointCaches() async {
-    final durt = _container.read(durtProvider);
+    final durt = _ref.read(durtProvider);
     final networks = ['gdev', 'gtest', 'g1'];
 
     // 1. Clear ConnectionManager fast endpoint caches (ObjectBox)
@@ -97,7 +112,7 @@ class SettingsProvider with ChangeNotifier {
 
     // 2. Clear BootstrapNodeService cache (ObjectBox)
     try {
-      final bootstrapBox = durt.store.box<BootstrapEndpoint>();
+      final bootstrapBox = durt.store.box<d.BootstrapEndpoint>();
       bootstrapBox.removeAll();
       log.d('✅ Cleared BootstrapNodeService ObjectBox cache');
     } catch (e) {
@@ -106,22 +121,22 @@ class SettingsProvider with ChangeNotifier {
 
     // 3. Clear NetworkConfigService memory cache
     try {
-      NetworkConfigService.clearCache();
+      d.NetworkConfigService.clearCache();
       log.d('✅ Cleared NetworkConfigService memory cache');
     } catch (e) {
       log.w('⚠️ Error clearing NetworkConfigService cache: $e');
     }
 
     // 4. Clear static Networks lists
-    Networks.listDuniterEndpoints.clear();
-    Networks.listSquidEndpoints.clear();
+    d.Networks.listDuniterEndpoints.clear();
+    d.Networks.listSquidEndpoints.clear();
     log.d('✅ Cleared static Networks endpoint lists');
 
     log.i('🧹 All endpoint caches cleared successfully');
   }
 
   /// Private method to clear a specific config entry
-  Future<void> _clearConfigEntry(Durt durt, String cacheKey) async {
+  Future<void> _clearConfigEntry(d.Durt durt, String cacheKey) async {
     final query = durt.configBox.query(Config_.key.equals(cacheKey)).build();
     final config = query.findFirst();
     query.close();

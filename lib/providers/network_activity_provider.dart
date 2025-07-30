@@ -8,7 +8,7 @@ import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
-import 'package:gecko/providers_deprecated/settings_provider.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/models/transaction_filters.dart';
 
 /// State for network activity history

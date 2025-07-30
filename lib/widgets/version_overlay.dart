@@ -5,7 +5,7 @@ import 'package:gecko/providers/connection_providers.dart';
 import 'package:provider/provider.dart' as flutter_provider;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers_deprecated/home.dart';
-import 'package:gecko/providers_deprecated/settings_provider.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers_deprecated/theme_provider.dart';
 import 'package:gecko/providers/providers.dart';

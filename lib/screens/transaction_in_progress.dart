@@ -108,7 +108,7 @@ class _TransactionInProgressScreenState extends State<TransactionInProgressScree
                                   toUsernameFormat,
                                   style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                                 ),
-                                error: (_, __) => Text(
+                                error: (_, _) => Text(
                                   toUsernameFormat,
                                   style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                                 ),

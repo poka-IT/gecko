@@ -81,7 +81,11 @@ class CertifyButton extends ConsumerWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return TransactionInProgressScreen(transactionStatus: transactionStatus, transType: 'cert');
+                          return TransactionInProgressScreen(
+                            transactionStatus: transactionStatus,
+                            transType: 'cert',
+                            toAddress: address,
+                          );
                         },
                       ),
                     );

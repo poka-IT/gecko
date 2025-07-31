@@ -1,9 +1,11 @@
 import 'package:durt2/durt2.dart' hide Provider;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -85,7 +87,35 @@ class _TransactionInProgressScreenState extends State<TransactionInProgressScree
                     ),
                     Text('toMinus'.tr(), style: scaledTextStyle(fontSize: 13, color: Colors.black54)),
                     ScaledSizedBox(height: 4),
-                    Text(toUsernameFormat, style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                    // Use reactive identity name if toAddress is available, otherwise fallback to static
+                    widget.toAddress != null
+                        ? Consumer(
+                            builder: (context, ref, child) {
+                              final identityNameAsync = ref.watch(identityNameProvider(widget.toAddress!));
+
+                              return identityNameAsync.when(
+                                data: (identityName) {
+                                  // If we have an identity name, use it; otherwise fallback to static
+                                  final displayName = (identityName != null && identityName.isNotEmpty)
+                                      ? identityName
+                                      : toUsernameFormat;
+                                  return Text(
+                                    displayName,
+                                    style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                  );
+                                },
+                                loading: () => Text(
+                                  toUsernameFormat,
+                                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                ),
+                                error: (_, __) => Text(
+                                  toUsernameFormat,
+                                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                                ),
+                              );
+                            },
+                          )
+                        : Text(toUsernameFormat, style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                   ],
                 ],
               ),

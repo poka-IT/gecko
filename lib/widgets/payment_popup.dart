@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:durt2/durt2.dart' show TransactionStatus, WalletEntity, Durt;
+import 'package:durt2/durt2.dart' show TransactionStatus, WalletEntity, Durt, DuniterService, WalletService;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -146,7 +146,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     }
   }
 
-  Future<dynamic> deriveKeypairWithYield(String address, String pinCode) async {
+  Future<dynamic> deriveKeypairWithYield(String address, String pinCode, WalletService walletService) async {
     // This function yields control to the UI periodically during the derivation
     // By wrapping the heavy operation and giving the UI a chance to update
 
@@ -154,7 +154,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     await Future.microtask(() {});
 
     // Execute the derivation
-    final keypair = await ref.read(walletServiceProvider).getKeyPairFromAddress(address: address, pinCode: pinCode);
+    final keypair = await walletService.getKeyPairFromAddress(address: address, pinCode: pinCode);
 
     // Yield to UI after completion
     await Future.microtask(() {});
@@ -162,22 +162,28 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     return keypair;
   }
 
-  void executeTransactionInBackground(StreamController<TransactionStatus> statusController) async {
+  void executeTransactionInBackground(
+    StreamController<TransactionStatus> statusController,
+    String payAmount,
+    String payComment,
+    CurrencyDisplayMode displayMode,
+    AsyncValue trmDataAsync,
+    DuniterService duniterService,
+    WalletService walletService,
+  ) async {
     try {
       // Give UI a chance to update before heavy operations
       await Future.microtask(() {});
 
       // Heavy operation 1: Derive keypair (cryptographic operation)
       // Break this into smaller chunks to avoid blocking UI
-      final keypair = await deriveKeypairWithYield(defaultWallet.address, PinCodeService.pinCode);
+      final keypair = await deriveKeypairWithYield(defaultWallet.address, PinCodeService.pinCode, walletService);
 
       // Give UI another chance to update
       await Future.microtask(() {});
 
-      final displayMode = ref.read(currencyDisplayModeProvider);
       final isUdUnit = displayMode == CurrencyDisplayMode.du;
-      final payAmountText = ref.read(profileViewProvider(widget.toAddress)).payAmount;
-      final inputAmount = double.parse(payAmountText);
+      final inputAmount = double.parse(payAmount);
 
       // Convert amount based on display mode
       double amountInG1;
@@ -190,7 +196,6 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
           break;
         case CurrencyDisplayMode.moneyOverMembers:
           // Convert mM/N to G1: mM/N * moneyOverMembersRatio / 1000
-          final trmDataAsync = ref.read(trmDataProvider);
           final trmData = trmDataAsync.maybeWhen(data: (data) => data, orElse: () => null);
           if (trmData != null) {
             amountInG1 = inputAmount * trmData.moneyOverMembersRatio / 1000.0;
@@ -201,15 +206,13 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       }
 
       // Execute transaction (crypto + network)
-      final transactionStatus = ref
-          .read(duniterServiceProvider)
-          .pay(
-            keypair: keypair,
-            destAddress: widget.toAddress,
-            amount: amountInG1,
-            comment: ref.read(profileViewProvider(widget.toAddress)).payComment,
-            isUd: isUdUnit,
-          );
+      final transactionStatus = duniterService.pay(
+        keypair: keypair,
+        destAddress: widget.toAddress,
+        amount: amountInG1,
+        comment: payComment,
+        isUd: isUdUnit,
+      );
 
       // Forward the actual transaction status to our controller
       transactionStatus.listen(
@@ -226,6 +229,14 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   }
 
   Future executeTransfert() async {
+    // Capture all required data before any async operations that might dispose the widget
+    final payAmount = ref.read(profileViewProvider(widget.toAddress)).payAmount;
+    final payComment = ref.read(profileViewProvider(widget.toAddress)).payComment;
+    final displayMode = ref.read(currencyDisplayModeProvider);
+    final trmDataAsync = ref.read(trmDataProvider);
+    final duniterService = ref.read(duniterServiceProvider);
+    final walletService = ref.read(walletServiceProvider);
+
     // Close popup immediately to avoid blocking UI
     Navigator.pop(context);
 
@@ -235,12 +246,12 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     // Create a StreamController to control the transaction status
     final statusController = StreamController<TransactionStatus>();
 
-    // Create a transaction data with the controlled stream (as broadcast to allow multiple listeners)
+    // Create a transaction data with the captured data
     final transactionData = TransactionInProgressData(
       status: statusController.stream.asBroadcastStream(),
       toAddress: widget.toAddress,
-      amount: double.parse(ref.read(profileViewProvider(widget.toAddress)).payAmount),
-      comment: ref.read(profileViewProvider(widget.toAddress)).payComment,
+      amount: double.parse(payAmount),
+      comment: payComment,
     );
 
     // Navigate immediately to activity screen with loading state
@@ -254,7 +265,15 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     );
 
     // Execute heavy operations asynchronously in background
-    executeTransactionInBackground(statusController);
+    executeTransactionInBackground(
+      statusController,
+      payAmount,
+      payComment,
+      displayMode,
+      trmDataAsync,
+      duniterService,
+      walletService,
+    );
   }
 
   bool canValidatePayment() {

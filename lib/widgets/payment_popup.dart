@@ -19,6 +19,7 @@ import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/screens/activity.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -168,7 +169,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
       // Heavy operation 1: Derive keypair (cryptographic operation)
       // Break this into smaller chunks to avoid blocking UI
-      final keypair = await deriveKeypairWithYield(defaultWallet.address, myWalletProvider.pinCode);
+      final keypair = await deriveKeypairWithYield(defaultWallet.address, PinCodeService.pinCode);
 
       // Give UI another chance to update
       await Future.microtask(() {});
@@ -229,7 +230,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     Navigator.pop(context);
 
     // Get PIN code first (this is usually fast)
-    if (!await myWalletProvider.askPinCode()) return;
+    if (!await PinCodeService.askPinCode()) return;
 
     // Create a StreamController to control the transaction status
     final statusController = StreamController<TransactionStatus>();

@@ -6,12 +6,11 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/image_cache_service.dart';
-import 'package:provider/provider.dart' as old_provider;
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils/flower_power_colors.dart';
 
 class HomeButtons extends ConsumerStatefulWidget {
@@ -104,8 +103,6 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-
     return Column(
       children: <Widget>[
         const Spacer(),
@@ -147,8 +144,8 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
                   baseColor: context.colorScheme.primary,
                   offset: 0.66, // Deuxième bouton - décalage 2/3
                   onTap: () async {
-                    final hadToUnlock = myWalletProvider.pinCode.isEmpty;
-                    if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
+                    final hadToUnlock = PinCodeService.pinCode.isEmpty;
+                    if (!await PinCodeService.askPinCode(canSwitch: true)) return;
 
                     if (hadToUnlock) {
                       // Use smooth transition if we came from unlocking screen

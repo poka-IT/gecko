@@ -13,7 +13,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -144,7 +144,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
     try {
       myWalletProvider.isPinLoading = true;
-      myWalletProvider.pinCode = pin.toUpperCase();
+      PinCodeService.pinCode = pin.toUpperCase();
 
       // Add timeout to the entire unlock operation
       final unlockFuture = Future(() async {
@@ -158,7 +158,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           });
           myWalletProvider.isPinLoading = false;
           myWalletProvider.isPinValid = false;
-          myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+          PinCodeService.pinCode = myWalletProvider.mnemonic = '';
           if (!fromBiometric) {
             enterPin.text = '';
             pinFocus.requestFocus();
@@ -179,7 +179,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           await _waitForSystemReady();
 
           myWalletProvider.isPinLoading = false;
-          myWalletProvider.debounceResetPinCode();
+          PinCodeService.debounceResetPinCode();
 
           // ALWAYS return success and let the caller decide navigation
           Navigator.pop(context, pin.toUpperCase());
@@ -197,7 +197,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       // Comprehensive error handling
       myWalletProvider.isPinLoading = false;
       myWalletProvider.isPinValid = false;
-      myWalletProvider.pinCode = myWalletProvider.mnemonic = '';
+      PinCodeService.pinCode = myWalletProvider.mnemonic = '';
       if (!fromBiometric) {
         enterPin.text = '';
       }
@@ -407,13 +407,15 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
                       ScaledSizedBox(height: isTall ? 12 : 8),
                       if (canUnlock)
-                        Consumer(
-                          builder: (context, ref, _) {
-                            final pinCacheState = ref.watch(pinCacheToggleProvider);
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            final pinCacheState = PinCodeService.isEnabled;
                             return InkWell(
                               key: keyCachePassword,
                               onTap: () {
-                                ref.read(pinCacheToggleProvider.notifier).toggle();
+                                setState(() {
+                                  PinCodeService.toggle();
+                                });
                               },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,

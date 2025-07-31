@@ -9,6 +9,7 @@ import 'package:gecko/providers/security_providers.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -43,7 +44,7 @@ class ShowSeed extends ConsumerWidget {
               children: <Widget>[
                 // Use combined provider to load everything at once - no more double loading
                 ref
-                    .watch(seedDisplayProvider((address: defaultWallet.address, pin: walletProvider.pinCode)))
+                    .watch(seedDisplayProvider((address: defaultWallet.address, pin: PinCodeService.pinCode)))
                     .when(
                       loading: () => Center(
                         child: Column(

@@ -12,14 +12,6 @@ final universalDividendsToggleProvider = StateNotifierProvider<UniversalDividend
   return UniversalDividendsToggleNotifier();
 });
 
-/// Provider for managing PIN cache toggle state with persistent storage.
-///
-/// This provider handles the global toggle state for caching PIN codes
-/// and persists the state using Durt's config storage.
-final pinCacheToggleProvider = StateNotifierProvider<PinCacheToggleNotifier, bool>((ref) {
-  return PinCacheToggleNotifier();
-});
-
 /// StateNotifier for managing the global Universal Dividends toggle state.
 ///
 /// Automatically loads the state from storage on initialization and saves
@@ -59,49 +51,6 @@ class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
       configBox.putValue(_storageKey, state.toString());
     } catch (e) {
       log.e('Error saving UD toggle state: $e');
-    }
-  }
-}
-
-/// StateNotifier for managing the global PIN cache toggle state.
-///
-/// Automatically loads the state from storage on initialization and saves
-/// changes back to storage when the toggle is modified.
-class PinCacheToggleNotifier extends StateNotifier<bool> {
-  static const String _storageKey = 'isCacheChecked';
-
-  PinCacheToggleNotifier() : super(false) {
-    _loadFromStorage();
-  }
-
-  /// Load the toggle state from persistent storage
-  void _loadFromStorage() {
-    try {
-      final container = ProviderContainer();
-      final configBox = container.read(configBoxProvider);
-      final storedValue = configBox.getValue(_storageKey, defaultValue: 'false');
-      state = storedValue == 'true';
-    } catch (e) {
-      log.e('Error loading PIN cache toggle state: $e');
-      state = false;
-    }
-  }
-
-  /// Toggle the PIN cache state and persist to storage
-  void toggle() {
-    final newState = !state;
-    state = newState;
-    _saveToStorage();
-  }
-
-  /// Save the current toggle state to persistent storage
-  void _saveToStorage() {
-    try {
-      final container = ProviderContainer();
-      final configBox = container.read(configBoxProvider);
-      configBox.putValue(_storageKey, state.toString());
-    } catch (e) {
-      log.e('Error saving PIN cache toggle state: $e');
     }
   }
 }

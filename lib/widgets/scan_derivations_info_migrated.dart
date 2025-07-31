@@ -5,12 +5,13 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
 
-class ScanDerivationsInfo extends ConsumerWidget {
-  const ScanDerivationsInfo({super.key});
+class ScanDerivationsInfoMigrated extends ConsumerWidget {
+  const ScanDerivationsInfoMigrated({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scanInfo = ref.watch(scanDisplayInfoProvider);
+
     return Visibility(
       visible: scanInfo.showProgress,
       child: Padding(
@@ -74,7 +75,3 @@ class ScanDerivationsInfo extends ConsumerWidget {
     }
   }
 }
-
-enum ScanDerivationsStatus { none, rootScanning, scanning, import }
-
-enum ScanDerivationsResult { none, error, walletExists, walletNotFound, timeout }

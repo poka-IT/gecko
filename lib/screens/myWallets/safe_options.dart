@@ -15,6 +15,7 @@ import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/migrate_safe.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/rename_safe.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/biometric/biometric_settings_tile.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -63,7 +64,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyShowSeed,
           onTap: () async {
-            if (!await myWalletProvider.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true)) return;
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -122,7 +123,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyChangePin,
           onTap: () async {
-            if (!await myWalletProvider.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true)) return;
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -186,7 +187,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyRenameSafe,
           onTap: () async {
-            if (!await myWalletProvider.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true)) return;
             await Navigator.push(
               context,
               MaterialPageRoute(
@@ -215,7 +216,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyDeleteSafe,
           onTap: () async {
-            if (!await myWalletProvider.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true)) return;
 
             await safeManager.deleteSafe(context, currentSafe);
           },

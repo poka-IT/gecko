@@ -10,6 +10,7 @@ import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -172,7 +173,7 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
               onTap: lockAction
                   ? null
                   : () async {
-                      if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
+                      if (!await PinCodeService.askPinCode(canSwitch: true)) return;
 
                       Navigator.pushNamedAndRemoveUntil(
                         homeContext,

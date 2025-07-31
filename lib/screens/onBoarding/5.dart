@@ -1,5 +1,6 @@
 // ignore_for_file: file_names
 
+import 'package:durt2/durt2.dart' show BidouilleLang;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/generate_wallets.dart';
+import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/snackbar_service.dart';
@@ -33,8 +34,11 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
   List<String>? mnemonicList;
   bool isLoading = false;
   bool _hasInitialized = false;
-  final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
-  bool get isMnemonicGenerated => generateWalletProvider.generatedMnemonic != null;
+
+  bool get _isMnemonicGenerated {
+    final mnemonicState = ref.read(mnemonicStateProvider);
+    return mnemonicState.mnemonicResult != null;
+  }
 
   // Scroll detection variables
   final ScrollController _scrollController = ScrollController();
@@ -81,7 +85,8 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
     // Call _generateMnemonicList() here when context is fully available
     if (!_hasInitialized) {
       _hasInitialized = true;
-      _generateMnemonicList();
+      // Delay provider modification until after the widget tree is built
+      Future(() => _generateMnemonicList());
       // Recheck scroll after mnemonic is generated
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkScrollable();
@@ -124,16 +129,37 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
   }
 
   Future<void> _generateMnemonicList() async {
-    final list = await generateWalletProvider.generateWordList(context);
-    if (mounted) {
-      setState(() {
-        mnemonicList = list?.cast<String>();
-        isLoading = false;
-      });
-      // Check scroll after the mnemonic is displayed
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _checkScrollable();
-      });
+    try {
+      // Get user's preferred language
+      final languageCode = context.locale.languageCode;
+      final targetLanguage = BidouilleLang.fromLanguageCode(languageCode);
+
+      // Generate mnemonic using new provider
+      await ref
+          .read(mnemonicStateProvider.notifier)
+          .generateMnemonic(
+            targetLanguage: targetLanguage,
+            forceEnglish: configBox.get('generateMnemonicsInEnglish') ?? false,
+          );
+
+      final mnemonicState = ref.read(mnemonicStateProvider);
+      if (mounted && mnemonicState.mnemonicResult != null) {
+        setState(() {
+          mnemonicList = mnemonicState.mnemonicResult!.displayWords;
+          isLoading = false;
+        });
+        // Check scroll after the mnemonic is displayed
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _checkScrollable();
+        });
+      }
+    } catch (e) {
+      log.e('Error generating mnemonic: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -234,10 +260,15 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
                               backgroundColor: context.colorScheme.primary,
                               elevation: 1,
                             ),
-                            onPressed: isMnemonicGenerated
+                            onPressed: _isMnemonicGenerated
                                 ? () {
-                                    Clipboard.setData(ClipboardData(text: generateWalletProvider.generatedMnemonic!));
-                                    SnackbarService.showMnemonicCopied(context);
+                                    final mnemonicState = ref.read(mnemonicStateProvider);
+                                    if (mnemonicState.mnemonicResult != null) {
+                                      Clipboard.setData(
+                                        ClipboardData(text: mnemonicState.mnemonicResult!.displayMnemonic),
+                                      );
+                                      SnackbarService.showMnemonicCopied(context);
+                                    }
                                   }
                                 : null,
                             child: Row(
@@ -256,7 +287,9 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
                             Navigator.pushNamed(
                               context,
                               RouteNames.printWallet,
-                              arguments: PrintWalletArguments(sentence: generateWalletProvider.generatedMnemonic!),
+                              arguments: PrintWalletArguments(
+                                sentence: ref.read(mnemonicStateProvider).mnemonicResult?.displayMnemonic ?? '',
+                              ),
                             );
                           },
                           child: Image.asset(
@@ -333,22 +366,22 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
         ),
-        onPressed: isMnemonicGenerated
+        onPressed: _isMnemonicGenerated
             ? () {
-                generateWalletProvider.nbrWord = generateWalletProvider.getRandomInt();
-                generateWalletProvider.nbrWordAlpha = generateWalletProvider.intToString(
-                  generateWalletProvider.nbrWord + 1,
-                );
-                myWalletProvider.mnemonic = generateWalletProvider.generatedMnemonic!;
+                final mnemonicState = ref.read(mnemonicStateProvider);
+                if (mnemonicState.mnemonicResult != null) {
+                  // Store mnemonic in old provider for compatibility with next screen
+                  myWalletProvider.mnemonic = mnemonicState.mnemonicResult!.displayMnemonic;
 
-                AppNavigator.pushWithFader(
-                  context,
-                  RouteNames.onboardingStepSix,
-                  arguments: OnboardingStepSixArguments(
-                    generatedMnemonic: generateWalletProvider.generatedMnemonic,
-                    skipIntro: skipIntro,
-                  ),
-                );
+                  AppNavigator.pushWithFader(
+                    context,
+                    RouteNames.onboardingStepSix,
+                    arguments: OnboardingStepSixArguments(
+                      generatedMnemonic: mnemonicState.mnemonicResult!.displayMnemonic,
+                      skipIntro: skipIntro,
+                    ),
+                  );
+                }
               }
             : null,
         child: Center(

@@ -8,6 +8,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
@@ -107,7 +108,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
               });
 
               // Demander l'ancien PIN pour confirmation
-              if (!await widget.walletProvider.askPinCode()) {
+              if (!await PinCodeService.askPinCode()) {
                 setState(() => isPinLoading = false);
                 return;
               }
@@ -116,10 +117,10 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
 
               await ref
                   .read(walletServiceProvider)
-                  .changePin(address: defaultWallet.address, oldPin: widget.walletProvider.pinCode, newPin: pin);
+                  .changePin(address: defaultWallet.address, oldPin: PinCodeService.pinCode, newPin: pin);
 
               // Mettre à jour le PIN dans le provider
-              widget.walletProvider.pinCode = pin;
+              PinCodeService.pinCode = pin;
 
               // Recharger les wallets avec le nouveau PIN
               final currentSafe = widget.walletProvider.getCurrentSafe;

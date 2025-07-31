@@ -6,6 +6,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class AddNewDerivationButton extends StatelessWidget {
@@ -33,7 +34,7 @@ class AddNewDerivationButton extends StatelessWidget {
                 key: keyAddDerivation,
                 onTap: () async {
                   if (!myWalletProvider.isNewDerivationLoading) {
-                    if (!await myWalletProvider.askPinCode()) return;
+                    if (!await PinCodeService.askPinCode()) return;
 
                     await myWalletProvider.generateNewDerivation(context, newDerivationName);
                   }

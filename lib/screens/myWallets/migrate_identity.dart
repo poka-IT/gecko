@@ -10,16 +10,12 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:pointycastle/api.dart' show InvalidCipherTextException;
-
-import 'package:gecko/providers_deprecated/generate_wallets.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
-
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
@@ -106,9 +102,6 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final generatedWalletsProvider = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
-
     final fromAddress = widget.address;
 
     bool isSmall = !isTall;
@@ -142,7 +135,8 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
       }
 
       //Scan derivations
-      for (int derivationNbr in [for (var i = 0; i < generatedWalletsProvider.numberScan; i += 1) i]) {
+      for (int derivationNbr in [for (var i = 0; i < 30; i += 1) i]) {
+        // Use default scan number
         final keypair = await _container
             .read(walletServiceProvider)
             .getKeyPairFromMnemonic(
@@ -431,11 +425,11 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                           ? () async {
                               try {
                                 // Demander le code PIN d'abord
-                                if (!await myWalletProvider.askPinCode()) return;
+                                if (!await PinCodeService.askPinCode()) return;
 
                                 final transactionStream = _performMigration(
                                   fromAddress: fromAddress,
-                                  pinCode: myWalletProvider.pinCode,
+                                  pinCode: PinCodeService.pinCode,
                                   toKeypair: toKeypair!,
                                 );
 

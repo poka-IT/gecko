@@ -3,6 +3,7 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -12,31 +13,29 @@ import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OnboardingStepSix extends ConsumerStatefulWidget {
-  const OnboardingStepSix({super.key, required this.skipIntro, required this.generatedMnemonic});
+class OnboardingStepSixMigrated extends ConsumerStatefulWidget {
+  const OnboardingStepSixMigrated({super.key, required this.skipIntro, required this.generatedMnemonic});
 
   final bool skipIntro;
   final String? generatedMnemonic;
 
   @override
-  ConsumerState<OnboardingStepSix> createState() => _OnboardingStepSixState();
+  ConsumerState<OnboardingStepSixMigrated> createState() => _OnboardingStepSixMigratedState();
 }
 
-class _OnboardingStepSixState extends ConsumerState<OnboardingStepSix> {
+class _OnboardingStepSixMigratedState extends ConsumerState<OnboardingStepSixMigrated> {
   final wordController = TextEditingController();
-  final _mnemonicController = TextEditingController();
   final _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _mnemonicController.text = widget.generatedMnemonic!;
 
-    // Set the mnemonic in the provider and generate challenge
+    // Set the mnemonic in the provider on init
     if (widget.generatedMnemonic != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Process the mnemonic and set it in the provider
         MnemonicService.validateAndProcessMnemonic(widget.generatedMnemonic!).then((result) {
           if (result != null) {
             ref.read(mnemonicStateProvider.notifier).setMnemonic(widget.generatedMnemonic!);
@@ -52,7 +51,6 @@ class _OnboardingStepSixState extends ConsumerState<OnboardingStepSix> {
   @override
   void dispose() {
     wordController.dispose();
-    _mnemonicController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -151,15 +149,6 @@ class _OnboardingStepSixState extends ConsumerState<OnboardingStepSix> {
                       ),
                     ),
                   ),
-                  // Visibility(
-                  //   visible: !_generateWalletProvider.isAskedWordValid,
-                  //   child: const Expanded(
-                  //     child: Align(
-                  //       alignment: Alignment.bottomCenter,
-                  //       child: Text(''),
-                  //     ),
-                  //   ),
-                  // ),
                   ScaledSizedBox(height: 40),
                 ],
               ),

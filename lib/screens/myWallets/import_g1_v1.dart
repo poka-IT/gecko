@@ -16,6 +16,7 @@ import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certifications.dart';
@@ -504,13 +505,13 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
 
                                         if (confirmed != true) return;
 
-                                        if (!await myWalletProvider.askPinCode()) return;
+                                        if (!await PinCodeService.askPinCode()) return;
 
                                         final transactionStream = _performG1v1Migration(
                                           salt: g1v1Migration.csSalt.text,
                                           password: g1v1Migration.csPassword.text,
                                           toAddress: selectedWallet.address,
-                                          pinCode: myWalletProvider.pinCode,
+                                          pinCode: PinCodeService.pinCode,
                                         );
 
                                         Navigator.pop(context);

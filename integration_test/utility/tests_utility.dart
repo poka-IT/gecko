@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'dart:io' as io;
@@ -256,7 +257,7 @@ Future bkDeleteAllWallets() async {
     await configBox.delete('defaultWallet');
     await configBox.delete('isUdUnit');
     // await sub.deleteAllAccounts();
-    myWalletProvider.pinCode = '';
+    PinCodeService.pinCode = '';
     myWalletProvider.reload();
   }
 }

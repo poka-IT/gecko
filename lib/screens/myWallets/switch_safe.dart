@@ -9,12 +9,11 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class SwitchSafe extends ConsumerStatefulWidget {
   const SwitchSafe({super.key});
@@ -79,8 +78,6 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMySafe'.tr())),
@@ -141,9 +138,9 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                   label: 'openThisSafe'.tr(),
                   onPressed: () async {
                     ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafe);
-                    myWalletProvider.pinCode = '';
+                    PinCodeService.pinCode = '';
                     await ref.read(biometricProvider.notifier).refresh();
-                    if (!await myWalletProvider.askPinCode(canSwitch: true)) return;
+                    if (!await PinCodeService.askPinCode(canSwitch: true)) return;
 
                     await _performSmoothTransition(context);
                   },

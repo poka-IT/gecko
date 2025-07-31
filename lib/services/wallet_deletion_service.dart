@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -62,7 +63,7 @@ class WalletDeletionService {
 
       // If wallet has balance, transfer funds first
       if (walletBalance.transferableBalance > BigInt.zero) {
-        if (!await myWalletProvider.askPinCode()) {
+        if (!await PinCodeService.askPinCode()) {
           container.dispose();
           return 2; // PIN cancelled
         }
@@ -73,7 +74,7 @@ class WalletDeletionService {
           container,
           wallet,
           defaultWallet,
-          myWalletProvider.pinCode,
+          PinCodeService.pinCode,
         );
 
         if (transferResult != 0) {

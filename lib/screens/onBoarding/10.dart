@@ -13,9 +13,9 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers_deprecated/generate_wallets.dart';
+import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -46,15 +46,15 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   bool hasError = false;
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
-  late final GenerateWalletsProvider generateWalletProvider;
-
   @override
   void initState() {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNode10');
     enterPin = TextEditingController();
-    generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(homeContext);
-    generateWalletProvider.scanStatus = ScanDerivationsStatus.none;
+    // Reset any scan state when entering this screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(resetScanProvider)();
+    });
   }
 
   @override
@@ -96,30 +96,39 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 pinForm(context, pinLenght, 1, 2),
                 Consumer(
                   builder: (context, ref, _) {
-                    final pinCacheState = ref.watch(pinCacheToggleProvider);
                     return ref.read(durtProvider).isConnected
-                        ? InkWell(
-                            key: keyCachePassword,
-                            onTap: () {
-                              ref.read(pinCacheToggleProvider.notifier).toggle();
+                        ? StatefulBuilder(
+                            builder: (context, setState) {
+                              final pinCacheState = PinCodeService.isEnabled;
+                              return InkWell(
+                                key: keyCachePassword,
+                                onTap: () {
+                                  setState(() {
+                                    PinCodeService.toggle();
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    ScaledSizedBox(height: isTall ? 30 : 0),
+                                    const Spacer(),
+                                    Icon(
+                                      pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
+                                      color: context.colorScheme.primary,
+                                      size: scaleSize(22),
+                                    ),
+                                    ScaledSizedBox(width: 8),
+                                    Text(
+                                      'rememberPassword'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: 14,
+                                        color: homeContext.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                  ],
+                                ),
+                              );
                             },
-                            child: Row(
-                              children: [
-                                ScaledSizedBox(height: isTall ? 30 : 0),
-                                const Spacer(),
-                                Icon(
-                                  pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
-                                  color: context.colorScheme.primary,
-                                  size: scaleSize(22),
-                                ),
-                                ScaledSizedBox(width: 8),
-                                Text(
-                                  'rememberPassword'.tr(),
-                                  style: scaledTextStyle(fontSize: 14, color: homeContext.colorScheme.onSurfaceVariant),
-                                ),
-                                const Spacer(),
-                              ],
-                            ),
                           )
                         : const Text('');
                   },
@@ -134,7 +143,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
   Widget pinForm(BuildContext context, int pinLenght, int walletNbr, int derivation) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(context);
+    // Scan state is now managed by Riverpod providers
 
     // Will get the current safe after safe creation - don't capture it too early
 
@@ -185,7 +194,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
           },
           boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
           onCompleted: (pin) async {
-            myWalletProvider.pinCode = pin.toUpperCase();
+            PinCodeService.pinCode = pin.toUpperCase();
             myWalletProvider.pinLenght = pinLenght;
             if (pin.toUpperCase() == widget.pinCode) {
               pinColor = Colors.green[500];
@@ -194,8 +203,8 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
               // Pass the original user mnemonic to createSafe for proper language detection
               // The service will handle the conversion internally for crypto operations
-              final originalMnemonic =
-                  generateWalletProvider.generatedMnemonic ?? generateWalletProvider.getEnglishMnemonic();
+              final mnemonicState = ref.read(mnemonicStateProvider);
+              final originalMnemonic = mnemonicState.mnemonicResult?.displayMnemonic ?? '';
 
               await ref
                   .read(walletServiceProvider)
@@ -208,9 +217,9 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
               ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
-              if (widget.scanDerivation) {
+              if (widget.scanDerivation && mnemonicState.mnemonicResult != null) {
                 // ignore: use_build_context_synchronously
-                scanStatus = await generateWalletProvider.scanDerivations(context);
+                scanStatus = await ref.read(startScanProvider)(context, mnemonicState.mnemonicResult!);
               }
               switch (scanStatus) {
                 case ScanDerivationsResult.none:
@@ -238,8 +247,9 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
               await myWalletProvider.readAllWallets(ref: ref, safeBoxNumber: currentSafe);
 
-              generateWalletProvider.generatedMnemonic = '';
-              myWalletProvider.debounceResetPinCode();
+              // Clear mnemonic state after safe creation
+              ref.read(resetMnemonicStateProvider)();
+              PinCodeService.debounceResetPinCode();
 
               // Set default wallet intelligently based on identity status
               // Priority: member > confirmed identity > any identity > wallet number 0 > first wallet

@@ -10,14 +10,11 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
-
-import 'package:gecko/providers_deprecated/my_wallets.dart';
-// import 'package:gecko/providers_deprecated/wallets_profiles.dart'; // Removed - no longer needed
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/screens/profile_view.dart' show buttonSize, buttonFontSize;
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CertifyButton extends ConsumerWidget {
@@ -28,8 +25,6 @@ class CertifyButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     // Determine the appropriate text based on identity status and renewal status
     String getButtonText() {
       if (idtyStatus == IdtyStatus.none) {
@@ -68,7 +63,7 @@ class CertifyButton extends ConsumerWidget {
                   await ref.read(walletServiceProvider).setDefaultAddress(address);
 
                   // Use askPinCode() method for authentication
-                  if (!await myWalletProvider.askPinCode()) return;
+                  if (!await PinCodeService.askPinCode()) return;
                   final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
 
                   if (identityWallet == null) {
@@ -78,7 +73,7 @@ class CertifyButton extends ConsumerWidget {
                   try {
                     final keypair = await ref
                         .read(walletServiceProvider)
-                        .getKeyPairFromAddress(address: identityWallet.address, pinCode: myWalletProvider.pinCode);
+                        .getKeyPairFromAddress(address: identityWallet.address, pinCode: PinCodeService.pinCode);
                     final transactionStatus = ref
                         .read(duniterServiceProvider)
                         .certify(keypair: keypair, destAddress: address);

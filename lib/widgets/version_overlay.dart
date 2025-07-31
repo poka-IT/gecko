@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:provider/provider.dart' as flutter_provider;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/settings_provider.dart';
@@ -118,7 +119,7 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
         'is_valid': myWalletsProvider.isPinValid,
         'is_loading': myWalletsProvider.isPinLoading,
         'pin_length': myWalletsProvider.pinLenght ?? 'null',
-        'current_pin_code_empty': myWalletsProvider.pinCode.isEmpty,
+        'current_pin_code_empty': PinCodeService.pinCode.isEmpty,
       };
 
       // Safe and wallet state

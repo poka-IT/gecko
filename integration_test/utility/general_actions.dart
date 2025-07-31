@@ -1,10 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/generate_wallets.dart';
-import 'package:provider/provider.dart' as old_provider;
+import 'package:gecko/providers/mnemonic_providers.dart';
 import 'tests_utility.dart';
 
 // GENERAL ACTIONS
@@ -96,7 +95,6 @@ Future restoreSafe() async {
 }
 
 Future onboardingNewSafe() async {
-  final generateWalletProvider = old_provider.Provider.of<GenerateWalletsProvider>(homeContext, listen: false);
   // Open screen create new wallet
   await tapKey(keyOnboardingNewSafe);
 
@@ -125,7 +123,8 @@ Future onboardingNewSafe() async {
 
   // Enter asked word
   final askedWordNumber = int.parse(getWidgetText(keyAskedWord));
-  List mnemonic = generateWalletProvider.generatedMnemonic!.split(' ');
+  final container = ProviderContainer();
+  final mnemonic = container.read(mnemonicStateProvider).mnemonicResult!.displayWords;
 
   final askedWord = mnemonic[askedWordNumber - 1];
   await enterText(keyInputWord, askedWord);

@@ -8,6 +8,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/myWallets/migrate_safe_progress.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -273,12 +274,8 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
                               );
 
                               if (!confirmed) return;
-                              final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(
-                                // ignore: use_build_context_synchronously
-                                context,
-                                listen: false,
-                              );
-                              if (!await myWalletProvider.askPinCode()) return;
+
+                              if (!await PinCodeService.askPinCode()) return;
 
                               Navigator.pushReplacement(
                                 // ignore: use_build_context_synchronously
@@ -287,7 +284,7 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
                                   builder: (context) => MigrateSafeProgressScreen(
                                     newMnemonic: _newMnemonicController.text,
                                     walletsToMigrate: _walletsToMigrate,
-                                    oldSafePin: myWalletProvider.pinCode,
+                                    oldSafePin: PinCodeService.pinCode,
                                   ),
                                 ),
                               );

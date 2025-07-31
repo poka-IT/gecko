@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/extensions.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 /// Settings tile for biometric authentication management
 class BiometricSettingsTile extends ConsumerWidget {
@@ -79,11 +78,9 @@ class BiometricSettingsTile extends ConsumerWidget {
 
   /// Handle toggle switch change
   Future<void> _handleToggle(BuildContext context, bool enableBiometric, BiometricNotifier notifier) async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     if (enableBiometric) {
       // Enable biometric - need PIN first
-      if (!await myWalletProvider.askPinCode(force: true)) return;
+      if (!await PinCodeService.askPinCode(force: true)) return;
 
       if (context.mounted) {
         await showModalBottomSheet(
@@ -91,7 +88,7 @@ class BiometricSettingsTile extends ConsumerWidget {
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           builder: (context) => _BiometricSetupBottomSheet(
-            pin: myWalletProvider.pinCode,
+            pin: PinCodeService.pinCode,
             onSetupComplete: () {
               // Refresh state after setup
               notifier.refresh();

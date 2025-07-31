@@ -15,6 +15,7 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/activity.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/wallet_header.dart';
@@ -394,10 +395,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   }
 
   Future<void> _handleTransfer(WidgetRef ref) async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
-
-    // Use askPinCode() method for authentication
-    if (!await myWalletProvider.askPinCode()) return;
+    if (!await PinCodeService.askPinCode()) return;
 
     paymentPopup(toAddress: address, username: username);
   }

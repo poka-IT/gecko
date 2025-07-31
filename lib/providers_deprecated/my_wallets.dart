@@ -9,13 +9,13 @@ import 'dart:async';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class MyWalletsProvider with ChangeNotifier {
   late ProviderContainer _container;
@@ -31,7 +31,6 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   List<WalletEntity> listWallets = [];
-  String pinCode = '';
   late String mnemonic;
   int? pinLenght;
   bool isNewDerivationLoading = false;
@@ -96,22 +95,6 @@ class MyWalletsProvider with ChangeNotifier {
     return wallets;
   }
 
-  Future<bool> askPinCode({bool force = false, bool canSwitch = false}) async {
-    final defaultWallet = getDefaultWallet();
-
-    if (pinCode.isEmpty || force) {
-      pinCode = '';
-      final result = await Navigator.pushNamed(
-        homeContext,
-        RouteNames.unlockingWallet,
-        arguments: UnlockingWalletArguments(wallet: defaultWallet, canSwitch: canSwitch),
-      );
-      // Only continue if we actually got a valid PIN back
-      if (result == null) return false;
-    }
-    return pinCode.isNotEmpty;
-  }
-
   WalletEntity? getWalletDataByAddress(String address) =>
       _container.read(walletServiceProvider).walletBox.query(WalletEntity_.address.equals(address)).build().findFirst();
 
@@ -138,7 +121,6 @@ class MyWalletsProvider with ChangeNotifier {
   }
 
   Future<int> deleteAllWallet(BuildContext context) async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     try {
       log.w('DELETE ALL WALLETS ?');
 
@@ -159,7 +141,7 @@ class MyWalletsProvider with ChangeNotifier {
           await avatarFolder.create();
         }
 
-        myWalletProvider.pinCode = '';
+        PinCodeService.pinCode = '';
 
         // Clear the in-memory wallet list and notify listeners
         listWallets = [];
@@ -192,7 +174,7 @@ class MyWalletsProvider with ChangeNotifier {
     // ignore: use_build_context_synchronously
     final walletData = await _container
         .read(walletServiceProvider)
-        .derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: pinCode);
+        .derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: PinCodeService.pinCode);
 
     WalletEntity newWallet = WalletEntity.create(
       address: walletData.address,
@@ -241,7 +223,7 @@ class MyWalletsProvider with ChangeNotifier {
 
     final walletData = await _container
         .read(walletServiceProvider)
-        .generateRootKeypair(fromAddress: defaultWallet.address, pinCode: pinCode);
+        .generateRootKeypair(fromAddress: defaultWallet.address, pinCode: PinCodeService.pinCode);
 
     WalletEntity newWallet = WalletEntity.create(
       address: walletData.address,
@@ -283,15 +265,6 @@ class MyWalletsProvider with ChangeNotifier {
     final newWalletNbr = listWallets.last.number + 1;
 
     return [newWalletNbr, newDerivationNbr];
-  }
-
-  int lockPin = 0;
-  Future debounceResetPinCode([int minutes = 15]) async {
-    lockPin++;
-    final actualLock = lockPin;
-    await Future.delayed(Duration(seconds: configBox.get('isCacheChecked') ? minutes * 60 : 1));
-    log.i('reset pin code, lock $actualLock ...');
-    if (actualLock == lockPin) pinCode = '';
   }
 
   void reload() {

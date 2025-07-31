@@ -243,10 +243,6 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
       final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
       myWalletProvider.reload();
 
-      if (configBox.get('isCacheChecked') == null) {
-        configBox.put('isCacheChecked', false);
-      }
-
       bool firstConnection = true;
 
       Future<void> updateConnectionStatus(List<ConnectivityResult> result) async {

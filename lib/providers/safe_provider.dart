@@ -8,6 +8,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -37,7 +38,7 @@ class SafeManager {
       await _ref.read(walletServiceProvider).deleteSafe(safe.number);
 
       // Clear the PIN for security after successful deletion
-      myWalletProvider.pinCode = '';
+      PinCodeService.pinCode = '';
 
       // Handle navigation based on whether safes remain
       final walletService = _ref.read(walletServiceProvider);
@@ -49,7 +50,7 @@ class SafeManager {
     } catch (e) {
       log.e('Failed to delete safe: $e');
       // Clear PIN on error for security
-      myWalletProvider.pinCode = '';
+      PinCodeService.pinCode = '';
 
       // Show error message to user
       if (context.mounted) {

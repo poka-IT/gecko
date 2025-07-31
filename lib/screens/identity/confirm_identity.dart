@@ -10,11 +10,10 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class ConfirmIdentityScreen extends ConsumerStatefulWidget {
   const ConfirmIdentityScreen({super.key, required this.address});
@@ -88,7 +87,6 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
   Future<void> _confirmIdentity(BuildContext context) async {
     final name = _identityNameController.text.trim();
     final navigatorState = Navigator.of(context);
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Afficher le dialogue de confirmation
     final confirmed = await showConfirmationDialog(
@@ -99,11 +97,11 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
     if (confirmed != true) return;
 
-    if (!await myWalletProvider.askPinCode()) return;
+    if (!await PinCodeService.askPinCode()) return;
 
     final keypair = await ref
         .read(walletServiceProvider)
-        .getKeyPairFromAddress(address: widget.address, pinCode: myWalletProvider.pinCode);
+        .getKeyPairFromAddress(address: widget.address, pinCode: PinCodeService.pinCode);
     final transactionStatus = ref.read(duniterServiceProvider).confirmIdentity(keypair: keypair, name: name);
 
     if (!mounted) return;

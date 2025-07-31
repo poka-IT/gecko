@@ -13,6 +13,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/services/wallet_deletion_service.dart';
 import 'package:gecko/services/wallet_name_dialog_service.dart';
@@ -495,7 +496,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
     children: [
       InkWell(
         onTap: () async {
-          if (!await myWalletProvider.askPinCode()) return;
+          if (!await PinCodeService.askPinCode()) return;
           Navigator.push(context, MaterialPageRoute(builder: (context) => const SafeOptions()));
         },
         child: Container(
@@ -522,7 +523,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       InkWell(
         onTap: () async {
           if (!myWalletProvider.isNewDerivationLoading) {
-            if (!await myWalletProvider.askPinCode()) return;
+            if (!await PinCodeService.askPinCode()) return;
             String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
             await myWalletProvider.generateNewDerivation(context, newDerivationName);
 

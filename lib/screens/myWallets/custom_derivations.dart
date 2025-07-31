@@ -7,6 +7,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -103,7 +104,7 @@ class _CustomDerivationState extends State<CustomDerivation> {
                     shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                   ),
                   onPressed: () async {
-                    if (!await myWalletProvider.askPinCode()) return;
+                    if (!await PinCodeService.askPinCode()) return;
                     String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
                     if (dropdownValue == 'root') {
                       await myWalletProvider.generateRootWallet(context, 'rootWallet'.tr());

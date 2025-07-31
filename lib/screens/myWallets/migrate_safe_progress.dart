@@ -7,15 +7,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/generate_wallets.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 enum MigrationStatus { pending, migrating, success, failed, empty }
 
@@ -206,10 +205,9 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
       }
 
       // Get source wallet keypair
-      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
       final sourceKeypair = await ref
           .read(walletServiceProvider)
-          .getKeyPairFromAddress(address: task.wallet.address, pinCode: myWalletProvider.pinCode);
+          .getKeyPairFromAddress(address: task.wallet.address, pinCode: PinCodeService.pinCode);
 
       // Migrate identity if wallet has one
       final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(task.wallet.address);
@@ -327,10 +325,8 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
                       } else {
                         // Create new safe
-                        final genW = old_provider.Provider.of<GenerateWalletsProvider>(context, listen: false);
-
-                        // Properly set the mnemonic with language detection and English conversion
-                        await genW.setMnemonicFromExternal(widget.newMnemonic);
+                        // Set the mnemonic in the provider for the next screen
+                        await ref.read(mnemonicStateProvider.notifier).setMnemonic(widget.newMnemonic);
 
                         await AppNavigator.pushAndRemoveUntilWithFader(
                           context,

@@ -106,6 +106,9 @@ check_fastlane() {
 
 # Function to create changelog file if provided
 create_changelog_file() {
+    # Declare as global variables
+    FASTLANE_METADATA_PATH=""
+    
     if [ -n "$CHANGELOG_TEXT" ]; then
         # Create temporary metadata directory structure
         METADATA_DIR="/tmp/fastlane_metadata/en-US"
@@ -117,6 +120,7 @@ create_changelog_file() {
         
         # Set metadata path for fastlane
         FASTLANE_METADATA_PATH="/tmp/fastlane_metadata"
+        export FASTLANE_METADATA_PATH
         return 0
     else
         # If no changelog provided but we're submitting for review, use a default one
@@ -134,10 +138,12 @@ create_changelog_file() {
             
             # Set metadata path for fastlane
             FASTLANE_METADATA_PATH="/tmp/fastlane_metadata"
+            export FASTLANE_METADATA_PATH
             return 0
         else
             # No changelog needed for upload-only mode
             FASTLANE_METADATA_PATH=""
+            export FASTLANE_METADATA_PATH
             return 0
         fi
     fi
@@ -372,7 +378,12 @@ fi
 echo "IPA built successfully at: $IPA_PATH"
 
 # Create changelog file if provided
+echo "Creating changelog file..."
+echo "SKIP_REVIEW: $SKIP_REVIEW"
+echo "APP_STORE_RELEASE_STATUS: $APP_STORE_RELEASE_STATUS"
+echo "CHANGELOG_TEXT: $CHANGELOG_TEXT"
 create_changelog_file
+echo "FASTLANE_METADATA_PATH after create_changelog_file: $FASTLANE_METADATA_PATH"
 
 # Upload to App Store Connect using fastlane deliver
 echo "Uploading to App Store Connect..."
@@ -420,7 +431,6 @@ fi
 FASTLANE_CMD="$FASTLANE_CMD \
     --ipa \"$IPA_PATH\" \
     --skip_screenshots \
-    --skip_metadata \
     --precheck_include_in_app_purchases false \
     --reject_if_possible true"
 
@@ -428,6 +438,9 @@ FASTLANE_CMD="$FASTLANE_CMD \
 if [ -n "$FASTLANE_METADATA_PATH" ]; then
     echo "Including changelog in upload..."
     FASTLANE_CMD="$FASTLANE_CMD --metadata_path \"$FASTLANE_METADATA_PATH\""
+else
+    # Only skip metadata if we're not submitting for review or no metadata is needed
+    FASTLANE_CMD="$FASTLANE_CMD --skip_metadata"
 fi
 
 # Add release behavior parameters

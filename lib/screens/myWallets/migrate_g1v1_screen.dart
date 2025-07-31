@@ -29,15 +29,15 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
 
-class ImportG1v1 extends ConsumerStatefulWidget {
-  const ImportG1v1({super.key});
+class MigrateG1v1 extends ConsumerStatefulWidget {
+  const MigrateG1v1({super.key});
   static const int debouneTime = 600;
 
   @override
-  ConsumerState<ImportG1v1> createState() => _ImportG1v1State();
+  ConsumerState<MigrateG1v1> createState() => _MigrateG1v1State();
 }
 
-class _ImportG1v1State extends ConsumerState<ImportG1v1> {
+class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
   Timer? debounce;
   bool _keyboardDismissed = false;
   WalletEntity? _selectedWallet;
@@ -76,7 +76,8 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Initialize selected wallet only once or when explicitly changed
-    _selectedWallet ??= myWalletProvider.getDefaultWallet();
+
+    _selectedWallet ??= ref.read(walletServiceProvider).defaultWallet!;
     var selectedWallet = _selectedWallet!;
 
     return PopScope(
@@ -87,15 +88,17 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('importOldAccount'.tr()),
         body: SafeArea(
-          child: old_provider.Consumer<G1v1MigrationProvider>(
-            builder: (context, g1v1Migration, _) {
+          child: Consumer(
+            builder: (context, ref, _) {
+              final convertedAddress = ref.watch(csToV2AddressProvider).value?.address ?? '';
+              final uiState = ref.watch(g1v1MigrationUiProvider);
+              final saltController = ref.watch(csSaltControllerProvider);
+              final passwordController = ref.watch(csPasswordControllerProvider);
+
               return FutureBuilder(
                 future: _container
                     .read(storageServiceProvider)
-                    .getMigrateWalletChecks(
-                      fromAddress: g1v1Migration.g1V1NewAddress,
-                      toAddress: selectedWallet.address,
-                    ),
+                    .getMigrateWalletChecks(fromAddress: convertedAddress, toAddress: selectedWallet.address),
                 builder: (BuildContext context, AsyncSnapshot<MigrateWalletChecks> migrationChecks) {
                   if (migrationChecks.data == null) {
                     return Column(
@@ -180,30 +183,30 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                     if (debounce?.isActive ?? false) {
                                       debounce!.cancel();
                                     }
-                                    debounce = Timer(const Duration(milliseconds: ImportG1v1.debouneTime), () {
-                                      if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                    debounce = Timer(const Duration(milliseconds: MigrateG1v1.debouneTime), () {
+                                      if (saltController.text != '' && passwordController.text != '') {
                                         setState(() {
                                           _keyboardDismissed = false;
                                         });
-                                        g1v1Migration.csToV2Address();
+                                        ref.invalidate(csToV2AddressProvider);
                                       }
                                     });
                                   },
                                   onFieldSubmitted: (text) {
-                                    if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                    if (saltController.text != '' && passwordController.text != '') {
                                       if (debounce?.isActive ?? false) {
                                         debounce!.cancel();
                                       }
                                       setState(() {
                                         _keyboardDismissed = false;
                                       });
-                                      g1v1Migration.csToV2Address();
+                                      ref.invalidate(csToV2AddressProvider);
                                     }
                                   },
                                   keyboardType: TextInputType.text,
                                   textInputAction: TextInputAction.next,
-                                  controller: g1v1Migration.csSalt,
-                                  obscureText: !g1v1Migration.isCesiumIDVisible,
+                                  controller: saltController,
+                                  obscureText: !uiState.isCesiumIDVisible,
                                   style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                   decoration: InputDecoration(
                                     isDense: true,
@@ -216,12 +219,12 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                       icon: Icon(
-                                        g1v1Migration.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
+                                        uiState.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
                                         color: Colors.black,
                                         size: scaleSize(18),
                                       ),
                                       onPressed: () {
-                                        g1v1Migration.cesiumIDisVisible();
+                                        ref.read(g1v1MigrationUiProvider.notifier).toggleCesiumIDVisibility();
                                       },
                                     ),
                                   ),
@@ -235,32 +238,30 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                     if (debounce?.isActive ?? false) {
                                       debounce!.cancel();
                                     }
-                                    debounce = Timer(const Duration(milliseconds: ImportG1v1.debouneTime), () {
-                                      g1v1Migration.g1V1NewAddress = '';
-                                      if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                    debounce = Timer(const Duration(milliseconds: MigrateG1v1.debouneTime), () {
+                                      if (saltController.text != '' && passwordController.text != '') {
                                         setState(() {
                                           _keyboardDismissed = false;
                                         });
-                                        g1v1Migration.csToV2Address();
+                                        ref.invalidate(csToV2AddressProvider);
                                       }
                                     });
                                   },
                                   onFieldSubmitted: (text) {
-                                    if (g1v1Migration.csSalt.text != '' && g1v1Migration.csPassword.text != '') {
+                                    if (saltController.text != '' && passwordController.text != '') {
                                       if (debounce?.isActive ?? false) {
                                         debounce!.cancel();
                                       }
-                                      g1v1Migration.g1V1NewAddress = '';
                                       setState(() {
                                         _keyboardDismissed = false;
                                       });
-                                      g1v1Migration.csToV2Address();
+                                      ref.invalidate(csToV2AddressProvider);
                                     }
                                   },
                                   keyboardType: TextInputType.text,
                                   textInputAction: TextInputAction.done,
-                                  controller: g1v1Migration.csPassword,
-                                  obscureText: !g1v1Migration.isCesiumPasswordVisible,
+                                  controller: passwordController,
+                                  obscureText: !uiState.isCesiumPasswordVisible,
                                   style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
                                   decoration: InputDecoration(
                                     isDense: true,
@@ -272,12 +273,12 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                       icon: Icon(
-                                        g1v1Migration.isCesiumPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                                        uiState.isCesiumPasswordVisible ? Icons.visibility_off : Icons.visibility,
                                         color: Colors.black,
                                         size: scaleSize(18),
                                       ),
                                       onPressed: () {
-                                        g1v1Migration.cesiumPasswordisVisible();
+                                        ref.read(g1v1MigrationUiProvider.notifier).toggleCesiumPasswordVisibility();
                                       },
                                     ),
                                   ),
@@ -290,9 +291,9 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                         // Section des informations du compte
                         Visibility(
                           visible:
-                              g1v1Migration.g1V1OldPubkey != '' &&
-                              g1v1Migration.csSalt.text != '' &&
-                              g1v1Migration.csPassword.text != '',
+                              (ref.watch(csToV2AddressProvider).value?.pubkey ?? '') != '' &&
+                              saltController.text != '' &&
+                              passwordController.text != '',
                           child: Card(
                             elevation: 2,
                             color: context.colorScheme.surfaceContainer,
@@ -322,7 +323,11 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                             GestureDetector(
                                               key: keyCopyPubkey,
                                               onTap: () {
-                                                Clipboard.setData(ClipboardData(text: g1v1Migration.g1V1OldPubkey));
+                                                Clipboard.setData(
+                                                  ClipboardData(
+                                                    text: ref.read(csToV2AddressProvider).value?.pubkey ?? '',
+                                                  ),
+                                                );
                                                 SnackbarService.showAddressCopied(context);
                                               },
                                               child: Row(
@@ -335,7 +340,9 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    getShortPubkey(g1v1Migration.g1V1OldPubkey),
+                                                    getShortPubkey(
+                                                      ref.watch(csToV2AddressProvider).value?.pubkey ?? '',
+                                                    ),
                                                     style: scaledTextStyle(
                                                       fontSize: 13,
                                                       fontFamily: 'Monospace',
@@ -351,7 +358,7 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                             GestureDetector(
                                               key: keyCopyAddress,
                                               onTap: () {
-                                                Clipboard.setData(ClipboardData(text: g1v1Migration.g1V1NewAddress));
+                                                Clipboard.setData(ClipboardData(text: convertedAddress));
                                                 SnackbarService.showAddressCopied(context);
                                               },
                                               child: Row(
@@ -364,7 +371,7 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    getShortPubkey(g1v1Migration.g1V1NewAddress),
+                                                    getShortPubkey(convertedAddress),
                                                     style: scaledTextStyle(
                                                       fontSize: 13,
                                                       fontFamily: 'Monospace',
@@ -392,12 +399,9 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                           ScaledSizedBox(height: 4),
                                           Row(
                                             children: [
-                                              IdentityStatus(
-                                                address: g1v1Migration.g1V1NewAddress,
-                                                color: Colors.black,
-                                              ),
+                                              IdentityStatus(address: convertedAddress, color: Colors.black),
                                               ScaledSizedBox(width: 4),
-                                              Certifications(address: g1v1Migration.g1V1NewAddress, size: 12),
+                                              Certifications(address: convertedAddress, size: 12),
                                             ],
                                           ),
                                         ],
@@ -485,7 +489,7 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                 ),
                                 onPressed: migrationChecks.data!.canMigrate
                                     ? () async {
-                                        final addressToMigrate = g1v1Migration.g1V1NewAddress;
+                                        final addressToMigrate = convertedAddress;
                                         final hasIdentity = migrationChecks.data!.fromIdtyStatus != IdtyStatus.none;
                                         final message = hasIdentity
                                             ? 'migrationConfirmWithIdentity'.tr(
@@ -508,8 +512,8 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
                                         if (!await PinCodeService.askPinCode()) return;
 
                                         final transactionStream = _performG1v1Migration(
-                                          salt: g1v1Migration.csSalt.text,
-                                          password: g1v1Migration.csPassword.text,
+                                          salt: saltController.text,
+                                          password: passwordController.text,
                                           toAddress: selectedWallet.address,
                                           pinCode: PinCodeService.pinCode,
                                         );
@@ -562,11 +566,9 @@ class _ImportG1v1State extends ConsumerState<ImportG1v1> {
   }
 
   void resetScreen() {
-    final g1v1Migration = old_provider.Provider.of<G1v1MigrationProvider>(homeContext, listen: false);
-
-    g1v1Migration.csSalt.text = '';
-    g1v1Migration.csPassword.text = '';
-    g1v1Migration.g1V1NewAddress = '';
-    g1v1Migration.g1V1OldPubkey = '';
+    _container.read(csSaltControllerProvider).clear();
+    _container.read(csPasswordControllerProvider).clear();
+    _container.read(g1v1MigrationUiProvider.notifier).reset();
+    _container.invalidate(csToV2AddressProvider);
   }
 }

@@ -21,8 +21,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 
-import 'package:gecko/providers/g1v1_migration.provider.dart';
-
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/routes.dart';
@@ -120,11 +118,7 @@ class Gecko extends StatelessWidget {
 
     return ProviderScope(
       child: old_provider.MultiProvider(
-        providers: [
-          old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider()),
-
-          old_provider.ChangeNotifierProvider(create: (_) => G1v1MigrationProvider()),
-        ],
+        providers: [old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider())],
         child: Consumer(
           builder: (context, ref, _) {
             // Create the navigator observer with Riverpod ref

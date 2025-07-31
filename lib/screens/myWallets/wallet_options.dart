@@ -21,7 +21,7 @@ import 'package:gecko/services/wallet_name_dialog_service.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
-import 'package:gecko/screens/myWallets/import_g1_v1.dart';
+import 'package:gecko/screens/myWallets/migrate_g1v1_screen.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
@@ -580,7 +580,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       ),
       InkWell(
         onTap: () async {
-          Navigator.push(homeContext, MaterialPageRoute(builder: (context) => const ImportG1v1()));
+          Navigator.push(homeContext, MaterialPageRoute(builder: (context) => const MigrateG1v1()));
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),

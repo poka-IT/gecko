@@ -221,8 +221,9 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                       decoration: InputDecoration(
                         hintText: 'enterIdentityName'.tr(),
                         errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
+                        errorStyle: scaledTextStyle(color: Colors.red),
                         filled: true,
-                        fillColor: Colors.grey[100],
+                        fillColor: context.colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                         contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
                       ),

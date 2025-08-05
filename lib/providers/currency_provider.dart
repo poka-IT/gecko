@@ -42,7 +42,7 @@ class WotParameters {
   final int msWindow;
   final int msValidity;
   final int stepMax;
-  final int sentries;
+  final int certToBeSmith;
   final double xPercent;
 
   const WotParameters({
@@ -54,7 +54,7 @@ class WotParameters {
     required this.msWindow,
     required this.msValidity,
     required this.stepMax,
-    required this.sentries,
+    required this.certToBeSmith,
     required this.xPercent,
   });
 }
@@ -116,14 +116,14 @@ class CurrencyDataNotifier extends AsyncNotifier<CurrencyData> {
 
       // Get WoT parameters
       final sigQtyRule = blockchain.constant.wot.minCertForMembership;
-      final msWindow = blockchain.constant.distance.evaluationPeriod * msPerBlock * 3;
+      final msWindow = blockchain.constant.membership.membershipRenewalPeriod * msPerBlock;
       final msValidity = blockchain.constant.membership.membershipPeriod * msPerBlock;
-      final sigWindow = blockchain.constant.membership.membershipRenewalPeriod * msPerBlock;
+      final sigWindow = blockchain.constant.certification.validityPeriod * msPerBlock;
       final sigValidity = blockchain.constant.certification.validityPeriod * msPerBlock;
       final sigStock = blockchain.constant.certification.maxByIssuer;
       final sigPeriod = blockchain.constant.certification.certPeriod * msPerBlock;
       final stepMax = blockchain.constant.distance.maxRefereeDistance;
-      final sentries = blockchain.constant.smithMembers.minCertForMembership;
+      final certToBeSmith = blockchain.constant.smithMembers.minCertForMembership;
       final xPercent = blockchain.constant.distance.minAccessibleReferees / 1000000000.0;
 
       // Create currency parameters
@@ -151,7 +151,7 @@ class CurrencyDataNotifier extends AsyncNotifier<CurrencyData> {
         msWindow: msWindow,
         msValidity: msValidity,
         stepMax: stepMax,
-        sentries: sentries,
+        certToBeSmith: certToBeSmith,
         xPercent: xPercent,
       );
 

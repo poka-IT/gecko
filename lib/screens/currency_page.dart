@@ -292,7 +292,7 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
                   _buildWotRow(context, 'membershipWindow'.tr(), _formatDuration(params.msWindow)),
                   _buildWotRow(context, 'membershipValidity'.tr(), _formatDuration(params.msValidity)),
                   _buildWotRow(context, 'maxDistanceReferees'.tr(), params.stepMax.toString()),
-                  _buildWotRow(context, 'minSmithCertifications'.tr(), params.sentries.toString()),
+                  _buildWotRow(context, 'minSmithCertifications'.tr(), params.certToBeSmith.toString()),
                   _buildWotRow(context, 'xPercentRule'.tr(), '${(params.xPercent * 100).toStringAsFixed(2)}%'),
                 ],
               ],

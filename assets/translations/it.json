@@ -381,7 +381,7 @@
     "membershipWindow": "Termine limite per prendere in considerazione una richiesta di adesione come membro",
     "membershipValidity": "Durata di vita di un'adesione che è stata presa in considerazione",
     "maxDistanceReferees": "Distanza massima, attraverso le certificazioni, tra un nuovo entrante e i membri referenti",
-    "minSmithCertifications": "Numero di certificazioni (emesse e ricevute) per diventare membro referente",
+    "minSmithCertifications": "Numero di certificazioni per diventare membro referente",
     "xPercentRule": "Percentuale minima di membri referenti da raggiungere per rispettare la regola di distanza",
     "currencyDescription": "{currencyName} è una moneta libera, iniziata {startedAgo} fa. Conta attualmente {membersCount} membri, che producono e ricevono un Dividendo Universale (DU), ogni {udPeriod}.",
     "errorLoadingCurrencyData": "Errore nel caricamento dei dati della moneta",

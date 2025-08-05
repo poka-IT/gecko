@@ -436,7 +436,7 @@
     "membershipWindow": "Time limit for taking a membership request into account",
     "membershipValidity": "Lifetime of a membership that has been taken into account",
     "maxDistanceReferees": "Maximum distance, through certifications, between a new entrant and referring members",
-    "minSmithCertifications": "Number of certifications (issued and received) to become a referring member",
+    "minSmithCertifications": "Number of certifications to become a referring member",
     "xPercentRule": "Minimum percentage of referring members to reach to respect the distance rule",
     "currencyDescription": "{currencyName} is a free currency, started {startedAgo} ago. It currently has {membersCount} members, who produce and receive a Universal Dividend (UD), every {udPeriod}.",
     "errorLoadingCurrencyData": "Error loading currency data",

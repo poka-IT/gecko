@@ -109,37 +109,17 @@ create_changelog_file() {
     # Declare as global variables
     FASTLANE_METADATA_PATH=""
     
+    # Determine the changelog text to use
+    local changelog_text=""
     if [ -n "$CHANGELOG_TEXT" ]; then
-        # Create temporary metadata directory structure
-        METADATA_DIR="/tmp/fastlane_metadata/en-US"
-        mkdir -p "$METADATA_DIR"
-        
-        # Create release notes file
-        echo "$CHANGELOG_TEXT" > "$METADATA_DIR/release_notes.txt"
-        echo "Created changelog file: $METADATA_DIR/release_notes.txt"
-        
-        # Set metadata path for fastlane
-        FASTLANE_METADATA_PATH="/tmp/fastlane_metadata"
-        export FASTLANE_METADATA_PATH
-        return 0
+        changelog_text="$CHANGELOG_TEXT"
+        echo "Using provided changelog: \"$changelog_text\""
     else
         # If no changelog provided but we're submitting for review, use a default one
         if [ "$SKIP_REVIEW" != "true" ] && [ "$APP_STORE_RELEASE_STATUS" != "hold" ]; then
+            changelog_text="Bug fixes and improvements"
             echo "Warning: No changelog provided, but App Store Connect requires 'What's New' for review submission."
-            echo "Using default changelog: 'Bug fixes and improvements'"
-            
-            # Create temporary metadata directory structure
-            METADATA_DIR="/tmp/fastlane_metadata/en-US"
-            mkdir -p "$METADATA_DIR"
-            
-            # Create release notes file with default content
-            echo "Bug fixes and improvements" > "$METADATA_DIR/release_notes.txt"
-            echo "Created default changelog file: $METADATA_DIR/release_notes.txt"
-            
-            # Set metadata path for fastlane
-            FASTLANE_METADATA_PATH="/tmp/fastlane_metadata"
-            export FASTLANE_METADATA_PATH
-            return 0
+            echo "Using default changelog: \"$changelog_text\""
         else
             # No changelog needed for upload-only mode
             FASTLANE_METADATA_PATH=""
@@ -147,6 +127,34 @@ create_changelog_file() {
             return 0
         fi
     fi
+    
+    # Create temporary metadata directory structure
+    METADATA_DIR="/tmp/fastlane_metadata/en-US"
+    mkdir -p "$METADATA_DIR"
+    
+    # Create the release notes file (What's New field)
+    echo "$changelog_text" > "$METADATA_DIR/release_notes.txt"
+    echo "Created changelog file: $METADATA_DIR/release_notes.txt"
+    
+    # Create minimal required metadata files with placeholder content
+    # These are only created when we need to submit for review
+    if [ "$SKIP_REVIEW" != "true" ] && [ "$APP_STORE_RELEASE_STATUS" != "hold" ]; then
+        # Create minimal description (can be empty for updates)
+        echo "" > "$METADATA_DIR/description.txt"
+        
+        # Create minimal keywords (can be empty for updates)
+        echo "" > "$METADATA_DIR/keywords.txt"
+        
+        # Create minimal support URL (can be empty for updates)
+        echo "" > "$METADATA_DIR/support_url.txt"
+        
+        echo "Created minimal metadata files for App Store submission"
+    fi
+    
+    # Set metadata path for fastlane
+    FASTLANE_METADATA_PATH="/tmp/fastlane_metadata"
+    export FASTLANE_METADATA_PATH
+    return 0
 }
 
 # Function to parse command line arguments
@@ -221,6 +229,7 @@ show_help() {
     echo "IMPORTANT NOTES:"
     echo "  • App Store Connect requires a 'What's New' description for review submissions"
     echo "  • If no --changelog is provided, a default 'Bug fixes and improvements' will be used"
+    echo "  • The script automatically creates minimal required metadata files for App Store submission"
     echo "  • Use --skip-review to upload without submitting for review if you prefer to add changelog manually"
     echo ""
     echo "ENVIRONMENT VARIABLES (App Store Connect API - Recommended):"
@@ -436,7 +445,7 @@ FASTLANE_CMD="$FASTLANE_CMD \
 
 # Add changelog-related parameters
 if [ -n "$FASTLANE_METADATA_PATH" ]; then
-    echo "Including changelog in upload..."
+    echo "Including changelog and metadata in upload..."
     FASTLANE_CMD="$FASTLANE_CMD --metadata_path \"$FASTLANE_METADATA_PATH\""
 else
     # Only skip metadata if we're not submitting for review or no metadata is needed
@@ -521,9 +530,9 @@ else
         echo "❌ Failed to upload or submit IPA to App Store Connect"
         echo ""
         echo "Common solutions:"
-        echo "  • If missing 'whatsNew' error: The build was uploaded but submission failed"
-        echo "    → Go to App Store Connect and manually add 'What's New' description"
-        echo "    → Or re-run with: $0 --changelog \"Your update description\""
+        echo "  • If missing 'whatsNew' error: The script now automatically creates required metadata"
+        echo "    → This should be fixed with the updated script version"
+        echo "    → If still failing, try: $0 --changelog \"Your update description\""
         echo "  • If authentication error: Check your .env file credentials"
         echo "  • If build processing error: Wait a few minutes and try again"
         echo "  • If copyright date warning: Update your app metadata in App Store Connect"

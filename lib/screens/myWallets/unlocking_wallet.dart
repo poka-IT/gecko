@@ -12,8 +12,10 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
+import 'package:gecko/providers/pin_security_provider.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/pin_security_service.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart' as old_provider;
@@ -21,6 +23,7 @@ import 'package:gecko/globals.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:gecko/widgets/biometric/biometric_auth_button.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 class UnlockingWallet extends ConsumerStatefulWidget {
   const UnlockingWallet({required this.wallet, this.canSwitch = false}) : super(key: keyUnlockWallet);
@@ -45,6 +48,10 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   // Biometric state tracking
   bool _biometricTriggered = false;
 
+  // Security state tracking
+  Timer? _securityCountdownTimer;
+  bool _wasLockedOut = false;
+
   Color pinColor = const Color(0xffF9F9F1);
 
   @override
@@ -54,10 +61,16 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     enterPin = TextEditingController();
     _initializeSafes();
 
-    // Trigger automatic biometric authentication after widget build
+    // Initialize security state and trigger automatic biometric authentication after widget build
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSecurity();
       _tryAutomaticBiometric();
     });
+  }
+
+  /// Initialize security state for the current safe
+  void _initializeSecurity() {
+    ref.read(pinSecurityProvider.notifier).updateForSafe(currentSafeNumber);
   }
 
   // Removed didChangeDependencies to avoid conflicts with PIN focus and auto-reloads
@@ -141,6 +154,13 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   /// Handle PIN completion (extracted from PIN form for reuse with biometric auth)
   Future<void> _handlePinCompletion(String pin, {bool fromBiometric = false}) async {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final securityState = ref.read(pinSecurityProvider);
+
+    // Check if safe is currently locked out
+    if (securityState.isLockedOut) {
+      // Don't process PIN if locked out
+      return;
+    }
 
     try {
       myWalletProvider.isPinLoading = true;
@@ -152,6 +172,16 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
             .read(walletServiceProvider)
             .checkCode(pin: pin.toUpperCase(), safeBoxNumber: currentSafeNumber);
         if (!isValid) {
+          // Record failed attempt for security tracking
+          await ref.read(pinSecurityProvider.notifier).recordFailedAttempt(currentSafeNumber);
+
+          // Check if safe should be deleted immediately
+          final securityState = ref.read(pinSecurityProvider);
+          if (securityState.shouldDeleteSafe) {
+            await _handleSafeDeletion();
+            return;
+          }
+
           await Future.delayed(const Duration(milliseconds: 20));
           setState(() {
             pinColor = Colors.red[600]!;
@@ -164,6 +194,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
             pinFocus.requestFocus();
           }
         } else {
+          // Reset failed attempts on successful unlock
+          await ref.read(pinSecurityProvider.notifier).resetFailedAttempts(currentSafeNumber);
+
           myWalletProvider.isPinValid = true;
           setState(() {
             pinColor = Colors.green[400]!;
@@ -289,6 +322,24 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   @override
   Widget build(BuildContext context) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final securityState = ref.watch(pinSecurityProvider);
+
+    // Handle lockout state changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_wasLockedOut && !securityState.isLockedOut && mounted) {
+        // Lockout just ended, clear PIN field and refocus
+        setState(() {
+          enterPin.clear();
+          pinColor = const Color(0xffF9F9F1);
+        });
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (mounted) {
+            pinFocus.requestFocus();
+          }
+        });
+      }
+      _wasLockedOut = securityState.isLockedOut;
+    });
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
@@ -345,18 +396,134 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                         ),
                       ),
                       ScaledSizedBox(height: isTall ? 24 : 12),
-                      if (!myWalletProvider.isPinValid && !myWalletProvider.isPinLoading)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Text(
-                            "thisIsNotAGoodCode".tr(),
-                            style: scaledTextStyle(color: Colors.red[700], fontWeight: FontWeight.w500, fontSize: 15),
-                          ),
-                        ),
+                      // Security messages and PIN error display
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final securityState = ref.watch(pinSecurityProvider);
+
+                          // Show safe deletion warning
+                          if (securityState.shouldShowWarning) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.red[300]!),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      securityState.remainingAttempts <= 3
+                                          ? 'pinSecurityFinalWarning'.tr(
+                                              args: [securityState.remainingAttempts.toString()],
+                                            )
+                                          : 'pinSecurityWarningTitle'.tr(),
+                                      style: scaledTextStyle(
+                                        color: Colors.red[700],
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'pinSecurityWarningMessage'.tr(
+                                        args: [securityState.remainingAttempts.toString()],
+                                      ),
+                                      style: scaledTextStyle(color: Colors.red[600], fontSize: 12),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    // Show countdown if locked out
+                                    if (securityState.isLockedOut) ...[
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'pinSecurityUnlocksIn'.tr(
+                                          args: [
+                                            PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds),
+                                          ],
+                                        ),
+                                        style: scaledTextStyle(
+                                          color: Colors.orange[700],
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          // Show lockout message
+                          if (securityState.isLockedOut) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.orange[300]!),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'pinSecurityLocked'.tr(),
+                                      style: scaledTextStyle(
+                                        color: Colors.orange[700],
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'pinSecurityUnlocksIn'.tr(
+                                        args: [
+                                          PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds),
+                                        ],
+                                      ),
+                                      style: scaledTextStyle(color: Colors.orange[600], fontSize: 12),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          // Show regular PIN error
+                          if (!myWalletProvider.isPinValid && !myWalletProvider.isPinLoading) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Text(
+                                "thisIsNotAGoodCode".tr(),
+                                style: scaledTextStyle(
+                                  color: Colors.red[700],
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return const SizedBox.shrink();
+                        },
+                      ),
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          pinForm(context, pinLength),
+                          Consumer(
+                            builder: (context, ref, child) {
+                              // Force rebuild when security state changes
+                              ref.watch(pinSecurityProvider);
+                              return pinForm(context, pinLength);
+                            },
+                          ),
                           if (myWalletProvider.isPinLoading && enterPin.text.length == pinLength)
                             Container(
                               width: double.infinity,
@@ -394,15 +561,27 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
                       // Biometric authentication button
                       if (currentSafeIndex < allSafes.length)
-                        BiometricAuthButton(
-                          onAuthSuccess: (String pin) {
-                            _handlePinCompletion(pin, fromBiometric: true);
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final securityState = ref.watch(pinSecurityProvider);
+                            final biometricState = ref.watch(biometricProvider);
+
+                            // Hide button if locked out or biometric not available
+                            if (securityState.isLockedOut || !biometricState.canAuthenticate) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return BiometricAuthButton(
+                              onAuthSuccess: (String pin) {
+                                _handlePinCompletion(pin, fromBiometric: true);
+                              },
+                              onAuthFailure: (String error) {
+                                // Error is already shown by the button widget
+                              },
+                              tooltip: 'useBiometricAuthentication'.tr(),
+                              size: 50.0,
+                            );
                           },
-                          onAuthFailure: (String error) {
-                            // Error is already shown by the button widget
-                          },
-                          tooltip: 'useBiometricAuthentication'.tr(),
-                          size: 50.0,
                         ),
 
                       ScaledSizedBox(height: isTall ? 12 : 8),
@@ -484,6 +663,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                   enterPin.clear();
                   pinColor = const Color(0xffF9F9F1);
                   ref.read(biometricProvider.notifier).refresh();
+
+                  // Update security state for new safe
+                  ref.read(pinSecurityProvider.notifier).updateForSafe(currentSafeNumber);
                 }
                 // If placeholder is selected, we don't update currentSafe
               });
@@ -620,13 +802,82 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     });
   }
 
+  /// Handle safe deletion due to too many failed attempts
+  Future<void> _handleSafeDeletion() async {
+    try {
+      // Delete the safe from storage
+      await ref.read(walletServiceProvider).deleteSafe(currentSafeNumber);
+
+      // Clean up security data
+      await ref.read(pinSecurityProvider.notifier).deleteSafeSecurityData(currentSafeNumber);
+
+      if (mounted) {
+        // Show deletion confirmation dialog
+        await showConfirmationDialog(
+          context: context,
+          type: ConfirmationDialogType.error,
+          title: 'pinSecuritySafeDeleted'.tr(),
+          message: ['pinSecuritySafeDeletedMessage'.tr(), 'pinSecuritySafeDeletedSubMessage'.tr()].join('\n\n'),
+          confirmText: 'pinSecurityReturnHome'.tr(),
+          hideCancelButton: true,
+          barrierDismissible: false,
+        );
+
+        // Check if there are remaining safes and refresh home state accordingly
+        final remainingSafes = ref.read(walletServiceProvider).safeBox.getAll();
+
+        if (mounted) {
+          // Return to home
+          Navigator.of(context).pop();
+
+          // If no safes left, we need to trigger a home state refresh
+          if (remainingSafes.isEmpty) {
+            // Force refresh of the home providers to switch to welcome state
+            _refreshHomeStateForNoSafes();
+          }
+        }
+      }
+    } catch (e) {
+      log.e('Error deleting safe: $e');
+      if (mounted) {
+        Navigator.of(context).pop(); // Return to home on error
+      }
+    }
+  }
+
+  /// Force refresh of home state when no safes are left
+  void _refreshHomeStateForNoSafes() {
+    try {
+      // Force refresh of MyWalletsProvider which controls isWalletsExists
+      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+      myWalletProvider.reload();
+
+      // Also invalidate default wallet provider
+      final container = ProviderScope.containerOf(context);
+      container.invalidate(defaultWalletProvider);
+
+      log.i('Home state refreshed - should switch to welcome mode');
+    } catch (e) {
+      log.e('Error refreshing home state: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _securityCountdownTimer?.cancel();
+    super.dispose();
+  }
+
   Widget pinForm(BuildContext context, int pinLenght) {
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     final biometricState = ref.watch(biometricProvider);
+    final securityState = ref.watch(pinSecurityProvider);
 
     // Don't auto-focus PIN field if biometric authentication is available and hasn't been triggered yet
     // This prevents virtual keyboard from appearing when biometric popup will show instead
-    final shouldAutoFocus = !biometricState.canAuthenticate || _biometricTriggered;
+    // Also don't auto-focus if safe is locked out
+    final shouldAutoFocus = (!biometricState.canAuthenticate || _biometricTriggered) && !securityState.isLockedOut;
+    final isFieldEnabled = !securityState.isLockedOut;
 
     return Form(
       child: Padding(
@@ -636,6 +887,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           textCapitalization: TextCapitalization.characters,
           focusNode: pinFocus,
           autoFocus: shouldAutoFocus,
+          enabled: isFieldEnabled,
           appContext: context,
           pastedTextStyle: scaledTextStyle(color: Colors.green.shade600, fontWeight: FontWeight.bold),
           length: pinLenght,
@@ -656,11 +908,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
             borderRadius: BorderRadius.circular(12),
             fieldHeight: scaleSize(50),
             fieldWidth: scaleSize(50),
-            activeFillColor: context.colorScheme.surfaceContainer,
-            selectedFillColor: context.colorScheme.surfaceContainer,
-            inactiveFillColor: context.colorScheme.surfaceContainer,
-            activeColor: pinColor,
-            selectedColor: context.colorScheme.primary,
+            activeFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
+            selectedFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
+            inactiveFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
+            activeColor: isFieldEnabled ? pinColor : Colors.grey,
+            selectedColor: isFieldEnabled ? context.colorScheme.primary : Colors.grey,
             inactiveColor: Colors.grey[300],
             borderWidth: 1.5,
           ),

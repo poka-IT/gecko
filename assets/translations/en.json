@@ -570,5 +570,16 @@
     "textSizeNormal": "Normal",
     "textSizeLarge": "Large",
     "textSizeExtraLarge": "Very Large",
-    "textSizeDescription": "Adjust the text size for better readability"
+    "textSizeDescription": "Adjust the text size for better readability",
+    "pinSecurityLocked": "Safe locked for security",
+    "pinSecurityUnlocksIn": "Unlocks in: {}",
+    "pinSecurityTooManyAttempts": "Too many incorrect attempts. Try again in {}.",
+    "pinSecurityWarningTitle": "⚠️ Security Warning",
+    "pinSecurityWarningMessage": "You have {} attempts remaining before this safe is permanently deleted from this device.",
+    "pinSecurityFinalWarning": "🚨 FINAL WARNING: Only {} attempt(s) left!",
+    "pinSecuritySafeDeleted": "Safe Deleted",
+    "pinSecuritySafeDeletedMessage": "This safe has been permanently deleted from this device due to too many failed unlock attempts.",
+    "pinSecuritySafeDeletedSubMessage": "If you have your recovery phrase, you can restore your safe.",
+    "pinSecurityReturnHome": "Return to Home",
+    "pinSecurityBlockedField": "PIN entry blocked"
 }

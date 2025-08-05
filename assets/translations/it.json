@@ -520,5 +520,16 @@
     "editWalletName": "Modifica nome portafoglio",
     "cesiumCredentials": "Credenziali Cesium",
     "accountInformation": "Informazioni conto",
-    "migrationConfirmTitle": "Conferma migrazione"
+    "migrationConfirmTitle": "Conferma migrazione",
+    "pinSecurityLocked": "Cassaforte bloccata per sicurezza",
+    "pinSecurityUnlocksIn": "Si sblocca tra: {}",
+    "pinSecurityTooManyAttempts": "Troppi tentativi errati. Riprova tra {}.",
+    "pinSecurityWarningTitle": "⚠️ Avviso di sicurezza",
+    "pinSecurityWarningMessage": "Ti rimangono {} tentativi prima che questa cassaforte venga eliminata definitivamente da questo dispositivo.",
+    "pinSecurityFinalWarning": "🚨 AVVISO FINALE: Solo {} tentativo/i rimasto/i!",
+    "pinSecuritySafeDeleted": "Cassaforte eliminata",
+    "pinSecuritySafeDeletedMessage": "Questa cassaforte è stata eliminata definitivamente da questo dispositivo a causa di troppi tentativi di sblocco falliti.",
+    "pinSecuritySafeDeletedSubMessage": "Se hai la tua frase di recupero, puoi ripristinare la tua cassaforte.",
+    "pinSecurityReturnHome": "Torna alla Home",
+    "pinSecurityBlockedField": "Inserimento PIN bloccato"
 }

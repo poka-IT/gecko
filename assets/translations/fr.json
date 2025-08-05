@@ -582,5 +582,16 @@
     "textSizeNormal": "Normal",
     "textSizeLarge": "Grand",
     "textSizeExtraLarge": "Très grand",
-    "textSizeDescription": "Ajuster la taille du texte pour une meilleure lisibilité"
+    "textSizeDescription": "Ajuster la taille du texte pour une meilleure lisibilité",
+    "pinSecurityLocked": "Coffre verrouillé par sécurité",
+    "pinSecurityUnlocksIn": "Déverrouillage dans : {}",
+    "pinSecurityTooManyAttempts": "Trop de tentatives incorrectes. Réessayez dans {}.",
+    "pinSecurityWarningTitle": "⚠️ Avertissement de sécurité",
+    "pinSecurityWarningMessage": "Il vous reste {} tentatives avant que ce coffre soit définitivement supprimé de cet appareil.",
+    "pinSecurityFinalWarning": "🚨 DERNIER AVERTISSEMENT : Plus que {} tentative(s) !",
+    "pinSecuritySafeDeleted": "Coffre supprimé",
+    "pinSecuritySafeDeletedMessage": "Ce coffre a été définitivement supprimé de cet appareil suite à trop de tentatives de déverrouillage échouées.",
+    "pinSecuritySafeDeletedSubMessage": "Si vous avez votre phrase de récupération, vous pouvez restaurer votre coffre.",
+    "pinSecurityReturnHome": "Retour à l'accueil",
+    "pinSecurityBlockedField": "Saisie du code bloquée"
 }

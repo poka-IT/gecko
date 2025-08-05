@@ -580,5 +580,16 @@
     "textSizeNormal": "Normal",
     "textSizeLarge": "Grande",
     "textSizeExtraLarge": "Muy Grande",
-    "textSizeDescription": "Ajustar el tamaño del texto para una mejor legibilidad"
+    "textSizeDescription": "Ajustar el tamaño del texto para una mejor legibilidad",
+    "pinSecurityLocked": "Caja fuerte bloqueada por seguridad",
+    "pinSecurityUnlocksIn": "Se desbloquea en: {}",
+    "pinSecurityTooManyAttempts": "Demasiados intentos incorrectos. Inténtalo de nuevo en {}.",
+    "pinSecurityWarningTitle": "⚠️ Advertencia de seguridad",
+    "pinSecurityWarningMessage": "Te quedan {} intentos antes de que esta caja fuerte sea eliminada permanentemente de este dispositivo.",
+    "pinSecurityFinalWarning": "🚨 ADVERTENCIA FINAL: ¡Solo {} intento(s) restante(s)!",
+    "pinSecuritySafeDeleted": "Caja fuerte eliminada",
+    "pinSecuritySafeDeletedMessage": "Esta caja fuerte ha sido eliminada permanentemente de este dispositivo debido a demasiados intentos fallidos de desbloqueo.",
+    "pinSecuritySafeDeletedSubMessage": "Si tienes tu frase de recuperación, puedes restaurar tu caja fuerte.",
+    "pinSecurityReturnHome": "Volver al inicio",
+    "pinSecurityBlockedField": "Entrada de PIN bloqueada"
 }

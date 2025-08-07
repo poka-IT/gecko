@@ -1,29 +1,33 @@
 // ignore_for_file: file_names
 
+import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
-class OnboardingStepNine extends StatefulWidget {
+class OnboardingStepNine extends ConsumerStatefulWidget {
   const OnboardingStepNine({super.key, this.scanDerivation = false, this.fromRestore = false});
   final bool scanDerivation;
   final bool fromRestore;
 
   @override
-  State<OnboardingStepNine> createState() => _OnboardingStepNineState();
+  ConsumerState<OnboardingStepNine> createState() => _OnboardingStepNineState();
 }
 
-class _OnboardingStepNineState extends State<OnboardingStepNine> {
+class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
   final formKey = GlobalKey<FormState>();
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
@@ -110,6 +114,13 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
           boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
           onCompleted: (pin) async {
             if (isPinComplex(pin)) {
+              // Check if we're offline before proceeding
+              final connectionStatus = ref.read(connectionStatusProvider);
+              if (connectionStatus != d.ConnectionStatus.connected) {
+                await _showOfflineDialog(context);
+                return;
+              }
+
               AppNavigator.pushWithFader(
                 context,
                 RouteNames.onboardingStepTen,
@@ -129,6 +140,26 @@ class _OnboardingStepNineState extends State<OnboardingStepNine> {
         ),
       ),
     );
+  }
+
+  /// Shows an informative dialog when user tries to continue while offline
+  Future _showOfflineDialog(BuildContext context) async {
+    final result = await showConfirmationDialog(
+      context: context,
+      barrierDismissible: false,
+      title: 'onboardingOfflineTitle'.tr(),
+      message: 'onboardingOfflineMessage'.tr(),
+      confirmText: 'returnToHome'.tr(),
+      hideCancelButton: true,
+    );
+    if (result) {
+      AppNavigator.pushAndRemoveUntilWithFader(
+        // ignore: use_build_context_synchronously
+        context,
+        RouteNames.home,
+        (route) => false, // Remove all previous routes
+      );
+    }
   }
 }
 

@@ -148,6 +148,8 @@ class _OnboardingStepSixState extends ConsumerState<OnboardingStepSix> {
                         nextScreen: widget.skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
                         isFast: false,
                         arguments: OnboardingStepsSevenToNineArguments(scanDerivation: false, fromRestore: false),
+                        ref: ref,
+                        wordController: wordController,
                       ),
                     ),
                   ),
@@ -177,6 +179,8 @@ Widget nextButton({
   required String nextScreen,
   required bool isFast,
   required OnboardingStepsSevenToNineArguments? arguments,
+  required WidgetRef ref,
+  required TextEditingController wordController,
 }) {
   return ScaledSizedBox(
     width: 340,
@@ -192,8 +196,8 @@ Widget nextButton({
         shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
       ),
       onPressed: () {
-        // With Riverpod, we can use Consumer/ref to reset state if needed
-        // But in this case, we'll let the next screen handle state as needed
+        ref.read(wordChallengeProvider.notifier).reset();
+        wordController.clear();
         AppNavigator.pushWithFader(context, nextScreen, arguments: arguments, isFast: isFast);
       },
       child: Text(

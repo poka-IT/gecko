@@ -206,3 +206,5 @@ coverage/
 integration_test/screenshots/
 
 .fvm/flutter_sdk
+
+release/macos/

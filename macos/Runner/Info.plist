@@ -30,5 +30,10 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<!-- Privacy usage descriptions required by macOS TCC for camera access in release builds -->
+	<key>NSCameraUsageDescription</key>
+	<string>Gecko needs camera access to scan QR codes.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Gecko does not use the microphone. This permission is not required.</string>
 </dict>
 </plist>

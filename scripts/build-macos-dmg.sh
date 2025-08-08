@@ -481,4 +481,3 @@ echo -e "${GREEN}🦎 Gecko v${VERSION} macOS release is ready! 🎉${NC}"
 
 # Return to project root
 cd "$PROJECT_ROOT"
-EOF

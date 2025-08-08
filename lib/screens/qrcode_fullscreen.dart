@@ -21,10 +21,16 @@ class QrCodeFullscreen extends StatefulWidget {
 
 class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
   final tplController = TextEditingController();
+  bool _brightnessWasChanged = false;
 
-  Future<void> setBrightness(double brightness) async {
+  Future<void> setBrightnessIfNeeded() async {
     try {
-      await ScreenBrightness().setApplicationScreenBrightness(brightness);
+      final currentBrightness = await ScreenBrightness().application;
+      // Only increase brightness to 80% if current brightness is below 80%
+      if (currentBrightness < 0.8) {
+        await ScreenBrightness().setApplicationScreenBrightness(0.8);
+        _brightnessWasChanged = true;
+      }
     } catch (e) {
       log.e(e.toString());
       throw 'Failed to set brightness';
@@ -33,7 +39,10 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
 
   Future<void> resetBrightness() async {
     try {
-      await ScreenBrightness().resetApplicationScreenBrightness();
+      // Only reset brightness if we changed it
+      if (_brightnessWasChanged) {
+        await ScreenBrightness().resetApplicationScreenBrightness();
+      }
     } catch (e) {
       log.e(e.toString());
       throw 'Failed to reset brightness';
@@ -43,7 +52,7 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
   @override
   void initState() {
     super.initState();
-    setBrightness(1);
+    setBrightnessIfNeeded();
   }
 
   @override

@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Service for handling QR code scanning operations.
 ///
@@ -25,9 +28,7 @@ class QrScannerService {
       if (!permissionStatus.isGranted) {
         return QrScanResult.error('Camera permission denied');
       }
-    }
 
-    try {
       final scanOptions = ScanOptions(
         strings: {'cancel': 'cancel'.tr(), 'flash_on': 'Flash on', 'flash_off': 'Flash off'},
       );
@@ -40,8 +41,78 @@ class QrScannerService {
       }
 
       return _processScannedContent(barcodeContent);
-    } catch (e) {
-      return QrScanResult.error('Scan failed: $e');
+    } else {
+      final controller = MobileScannerController();
+      QrScanResult? qrResult;
+      controller.barcodes.listen((event) {
+        if (event.barcodes.first.rawValue != null) {
+          controller.pause();
+          qrResult = _processScannedContent(event.barcodes.first.rawValue!);
+          if (qrResult?.isSuccess == true) {
+            controller.stop();
+            // ignore: use_build_context_synchronously
+            Navigator.pop(homeContext);
+          }
+        } else {
+          controller.start();
+        }
+      });
+
+      // ignore: use_build_context_synchronously
+      await Navigator.push(
+        homeContext,
+        MaterialPageRoute(
+          builder: (context) => MobileScanner(
+            controller: controller,
+            overlayBuilder: (context, constraints) => Column(
+              children: [
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const SizedBox(width: 20),
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(25),
+                          onTap: () {
+                            Navigator.pop(homeContext);
+                          },
+                          onHover: (isHovering) {
+                            // Hover effect handled by InkWell
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+                            ),
+                            child: Icon(Icons.arrow_back, color: Colors.white.withValues(alpha: 0.7), size: 24),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      return qrResult ?? QrScanResult.cancelled();
     }
   }
 

@@ -74,6 +74,10 @@ Then, check this script and launch it:
 ./scripts/build-apk.sh 
 ```
 
+### Translations
+
+You can contribute to translation of the app via our weblate: https://translate.nikoserveur.com/projects/gecko/
+
 ### Integration tests
 
 Open an android or iOS emulator, then launch this script:

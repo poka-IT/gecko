@@ -395,7 +395,7 @@
     "errorReportCopied": "Informe de error copiado al portapapeles",
     "transactionDetails": "Detalles de la transacción:",
     "newTransactionReceived": "Nueva transacción recibida",
-  "newNetworkActivity": "Nueva actividad de red",
+    "newNetworkActivity": "Nueva actividad de red",
     "transactionFilter": "Filtro",
     "newCertificationReceived": "Nueva certificación recibida",
     "newCertificationSent": "Nueva certificación enviada",
@@ -595,5 +595,13 @@
     "pinSecuritySafeDeletedMessage": "Esta caja fuerte ha sido eliminada permanentemente de este dispositivo debido a demasiados intentos fallidos de desbloqueo.",
     "pinSecuritySafeDeletedSubMessage": "Si tienes tu frase de recuperación, puedes restaurar tu caja fuerte.",
     "pinSecurityReturnHome": "Volver al inicio",
-    "pinSecurityBlockedField": "Entrada de PIN bloqueada"
+    "pinSecurityBlockedField": "Entrada de PIN bloqueada",
+    "geckoGenerateYourWalletFromMnemonic": "",
+    "geckoWillGenerateAPassword": "",
+    "identityMigratedTo": "",
+    "currentNetwork": "",
+    "identityMigratedFrom": "",
+    "geckoGeneratedYourMnemonicKeepItSecret": "",
+    "geckoWillCheckPassword": "",
+    "network": ""
 }

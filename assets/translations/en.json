@@ -586,5 +586,22 @@
     "pinSecuritySafeDeletedSubMessage": "If you have your recovery phrase, you can restore your safe.",
     "pinSecurityReturnHome": "Return to Home",
     "pinSecurityBlockedField": "PIN entry blocked",
-    "enterCesiumId": "Enter your Cesium id"
+    "enterCesiumId": "Enter your Cesium id",
+    "smithCantMigrateIdentity": "",
+    "chooseATargetWallet": "",
+    "thisMnemonicHasBeenCopiedToClipboard": "",
+    "migrateIdentity": "",
+    "someoneCreatedYourIdentity": "",
+    "youCannotMigrateThisIdentity": "",
+    "youCannotRevokeThisIdentity": "",
+    "received": "",
+    "ud": "",
+    "areYouSureMigrateIdentity": "",
+    "migrateAccount": "",
+    "confirmMyIdentity": "",
+    "enterCesiumPassword": "",
+    "identityMigration": "",
+    "revokeMyIdentity": "",
+    "createIdentity": "",
+    "sent": ""
 }

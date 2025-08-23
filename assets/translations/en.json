@@ -365,7 +365,7 @@
     "errorReportCopied": "Error report copied to clipboard",
     "transactionDetails": "Transaction Details:",
     "newTransactionReceived": "New transaction received",
-  "newNetworkActivity": "New network activity",
+    "newNetworkActivity": "New network activity",
     "transactionFilter": "Filter",
     "newCertificationReceived": "New certification received",
     "newCertificationSent": "New certification sent",
@@ -585,5 +585,6 @@
     "pinSecuritySafeDeletedMessage": "This safe has been permanently deleted from this device due to too many failed unlock attempts.",
     "pinSecuritySafeDeletedSubMessage": "If you have your recovery phrase, you can restore your safe.",
     "pinSecurityReturnHome": "Return to Home",
-    "pinSecurityBlockedField": "PIN entry blocked"
+    "pinSecurityBlockedField": "PIN entry blocked",
+    "enterCesiumId": "Enter your Cesium id"
 }

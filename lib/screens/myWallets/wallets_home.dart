@@ -259,6 +259,10 @@ class _WalletsHomeContent extends ConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Future.delayed(const Duration(milliseconds: 300), () {
           if (context.mounted) {
+            // Hide bottom app bar when tutorial starts
+            final container = ProviderScope.containerOf(context);
+            container.read(bottomAppBarProvider.notifier).setDialogVisible(true);
+
             tutorialCoachMark.show(context: context);
             _tutorialShownInSession = true; // Mark as shown for this session
             // Mark tutorial as shown GLOBALLY (never show again)
@@ -383,6 +387,7 @@ class _WalletsHomeContent extends ConsumerWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.mounted) {
         try {
+          final container = ProviderScope.containerOf(context);
           // Reset drag state
           final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
           myWalletProvider.lastFlyBy = null;
@@ -390,11 +395,14 @@ class _WalletsHomeContent extends ConsumerWidget {
           myWalletProvider.reload();
 
           // Fix route if it's empty (the main bug!)
-          final container = ProviderScope.containerOf(context);
+
           final currentRoute = container.read(currentRouteProvider);
           if (currentRoute.isEmpty || currentRoute != RouteNames.myWallets) {
             container.read(currentRouteProvider.notifier).state = RouteNames.myWallets;
           }
+
+          // Show bottom app bar again when tutorial closes
+          container.read(bottomAppBarProvider.notifier).setDialogVisible(false);
         } catch (e) {
           // Silent fallback
         }

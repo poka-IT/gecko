@@ -334,401 +334,411 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
         }
 
         canValidate = canValidatePayment();
-        return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Container(
-            // On fixe la hauteur maximale du bottom sheet
-            height: bottomSheetHeight,
-            decoration: ShapeDecoration(
-              color: context.colorScheme.tertiary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(shapeSize),
-                  topLeft: Radius.circular(shapeSize),
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Container(
+              // On fixe la hauteur maximale du bottom sheet
+              height: bottomSheetHeight,
+              decoration: ShapeDecoration(
+                color: context.colorScheme.tertiary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(shapeSize),
+                    topLeft: Radius.circular(shapeSize),
+                  ),
                 ),
               ),
-            ),
-            // Ce container contient un SingleChildScrollView pour autoriser le scroll
-            // et un ConstrainedBox avec une contrainte minimale égale à la hauteur fixée.
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: bottomSheetHeight),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      top: scaleSize(12),
-                      bottom: scaleSize(16),
-                      left: scaleSize(16),
-                      right: scaleSize(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'executeATransfer'.tr(),
-                              style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-                            ),
-                            IconButton(
-                              key: keyPopButton,
-                              iconSize: scaleSize(28),
-                              icon: const Icon(Icons.cancel_outlined),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        ),
-                        ScaledSizedBox(height: 4),
-                        Text(
-                          'from'.tr(args: ['']),
-                          style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[600]),
-                        ),
-                        ScaledSizedBox(height: 4),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
-                            borderRadius: const BorderRadius.all(Radius.circular(8)),
-                          ),
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.all(0),
-                          child: DropdownButton<String>(
-                            dropdownColor: context.colorScheme.tertiary,
-                            elevation: 12,
-                            key: keyDropdownWallets,
-                            // The dropdown's value is the ADDRESS of the default wallet.
-                            value: defaultWallet.address,
-                            menuMaxHeight: scaleSize(270),
-                            onTap: () {
-                              FocusScope.of(context).requestFocus(amountFocus);
-                            },
-                            // This builds the widget that's visible when the dropdown is closed.
-                            selectedItemBuilder: (context) {
-                              return myWalletProvider.listWallets.map((wallet) {
-                                return Container(
-                                  // The dropdown automatically selects the correct widget to show.
-                                  width: scaleSize(isTall ? 315 : 310),
-                                  padding: EdgeInsets.all(scaleSize(7)),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
-                                      const Spacer(),
-                                      Balance(address: wallet.address, size: 16),
-                                    ],
-                                  ),
-                                );
-                              }).toList();
-                            },
-                            // This is called when the user selects a new item.
-                            onChanged: (String? newSelectedWalletAddress) async {
-                              if (newSelectedWalletAddress == null) return;
-
-                              // Find the full WalletEntity object that corresponds to the selected address.
-                              final newSelectedWallet = myWalletProvider.listWallets.firstWhere(
-                                (wallet) => wallet.address == newSelectedWalletAddress,
-                              );
-
-                              // Update your local state and trigger a rebuild.
-                              setState(() {
-                                defaultWallet = newSelectedWallet;
-                                // Reset balance loading state when wallet changes
-                                balancesLoaded = false;
-                                defaultWalletBalance = null;
-                                toAddressBalance = null;
-                              });
-
-                              // Execute your original logic.
-                              await ref.read(walletServiceProvider).setDefaultAddress(newSelectedWallet.address);
-                              amountFocus.requestFocus();
-                            },
-                            // This builds the list of choices the user sees when the dropdown is open.
-                            items: myWalletProvider.listWallets.map((WalletEntity wallet) {
-                              return DropdownMenuItem<String>(
-                                // Each item's value is its unique ADDRESS string.
-                                value: wallet.address,
-                                key: keySelectThisWallet(wallet.address),
-                                child: Container(
-                                  color: context.colorScheme.tertiary,
-                                  width: scaleSize(isTall ? 315 : 310),
-                                  padding: const EdgeInsets.all(10),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
-                                      const Spacer(),
-                                      Balance(address: wallet.address, size: 16),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                        ScaledSizedBox(height: 12),
-                        Row(
-                          children: [
-                            Text(
-                              'to'.tr(args: ['']),
-                              style: scaledTextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[600],
+              // Ce container contient un SingleChildScrollView pour autoriser le scroll
+              // et un ConstrainedBox avec une contrainte minimale égale à la hauteur fixée.
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: bottomSheetHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: scaleSize(12),
+                        bottom: scaleSize(16),
+                        left: scaleSize(16),
+                        right: scaleSize(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'executeATransfer'.tr(),
+                                style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                               ),
-                            ),
-                            ScaledSizedBox(width: 10),
-                            Text(
-                              widget.username ?? getShortPubkey(widget.toAddress),
-                              style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                        ScaledSizedBox(height: 7),
-                        Row(
-                          children: [
-                            Text(
-                              'amount'.tr(),
-                              style: scaledTextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[600],
+                              IconButton(
+                                key: keyPopButton,
+                                iconSize: scaleSize(28),
+                                icon: const Icon(Icons.cancel_outlined),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
                               ),
-                            ),
-                            const Spacer(),
-                            if (fees > 0)
-                              InkWell(
-                                onTap: () => infoFeesPopup(context),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.info_outlined, color: context.colorScheme.primary, size: scaleSize(21)),
-                                    ScaledSizedBox(width: 5),
-                                    Text(
-                                      'fees'.tr(args: [fees.toString(), Durt.i.network.symbol]),
-                                      style: scaledTextStyle(
-                                        color: context.colorScheme.primary,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ScaledSizedBox(width: 10),
-                          ],
-                        ),
-                        ScaledSizedBox(height: 10),
-                        Focus(
-                          onFocusChange: (focused) {
-                            if (!commentFocus.hasFocus) {
-                              setState(() {
-                                FocusScope.of(context).requestFocus(amountFocus);
-                              });
-                            }
-                          },
-                          child: TextField(
-                            textInputAction: TextInputAction.done,
-                            onEditingComplete: () async {
-                              final isCommentVisible = ref.read(profileViewProvider(widget.toAddress)).isCommentVisible;
-                              if (isCommentVisible) {
-                                commentFocus.requestFocus();
-                              } else if (canValidate) {
-                                await executeTransfert();
-                              }
-                            },
-                            key: keyAmountField,
-                            controller: ref.read(payAmountControllerProvider(widget.toAddress)),
-                            autofocus: true,
-                            focusNode: amountFocus,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
-                            autocorrect: false,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            onChanged: (value) async {
-                              // Update Riverpod state
-                              ref.read(profileViewProvider(widget.toAddress).notifier).setPayAmount(value);
-                              setState(() {});
-                            },
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.deny(',', replacementString: '.'),
-                              FilteringTextInputFormatter.allow(RegExp(r'(^\d+\.?\d{0,2})')),
                             ],
-                            decoration: InputDecoration(
-                              hintText: '0.00',
-                              suffix: Consumer(
-                                builder: (context, ref, _) {
-                                  final displayMode = ref.watch(currencyDisplayModeProvider);
-
-                                  String suffixText;
-                                  switch (displayMode) {
-                                    case CurrencyDisplayMode.g1:
-                                      suffixText = Durt.i.network.symbol;
-                                      break;
-                                    case CurrencyDisplayMode.du:
-                                      suffixText = 'ud'.tr(args: ['']);
-                                      break;
-                                    case CurrencyDisplayMode.moneyOverMembers:
-                                      suffixText = 'M/N';
-                                      break;
-                                  }
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      _showCurrencyModeMenu(context, ref, setState);
-                                    },
+                          ),
+                          ScaledSizedBox(height: 4),
+                          Text(
+                            'from'.tr(args: ['']),
+                            style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                          ),
+                          ScaledSizedBox(height: 4),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
+                              borderRadius: const BorderRadius.all(Radius.circular(8)),
+                            ),
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.all(0),
+                            child: DropdownButton<String>(
+                              dropdownColor: context.colorScheme.tertiary,
+                              elevation: 12,
+                              key: keyDropdownWallets,
+                              // The dropdown's value is the ADDRESS of the default wallet.
+                              value: defaultWallet.address,
+                              menuMaxHeight: scaleSize(270),
+                              onTap: () {
+                                FocusScope.of(context).requestFocus(amountFocus);
+                              },
+                              // This builds the widget that's visible when the dropdown is closed.
+                              selectedItemBuilder: (context) {
+                                return myWalletProvider.listWallets.map((wallet) {
+                                  return Container(
+                                    // The dropdown automatically selects the correct widget to show.
+                                    width: scaleSize(isTall ? 315 : 310),
+                                    padding: EdgeInsets.all(scaleSize(7)),
                                     child: Row(
-                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Text(suffixText, style: const TextStyle(fontSize: 14)),
-                                        ScaledSizedBox(width: 4),
-                                        Icon(Icons.arrow_drop_down, size: scaleSize(16), color: Colors.grey[600]),
+                                        NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
+                                        const Spacer(),
+                                        Balance(address: wallet.address, size: 16),
                                       ],
                                     ),
                                   );
-                                },
-                              ),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey[500]!, width: 1.5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              contentPadding: EdgeInsets.all(scaleSize(6)),
-                            ),
-                            style: scaledTextStyle(
-                              fontSize: 22,
-                              color: context.colorScheme.onSurface,
-                              fontWeight: FontWeight.w600,
+                                }).toList();
+                              },
+                              // This is called when the user selects a new item.
+                              onChanged: (String? newSelectedWalletAddress) async {
+                                if (newSelectedWalletAddress == null) return;
+
+                                // Find the full WalletEntity object that corresponds to the selected address.
+                                final newSelectedWallet = myWalletProvider.listWallets.firstWhere(
+                                  (wallet) => wallet.address == newSelectedWalletAddress,
+                                );
+
+                                // Update your local state and trigger a rebuild.
+                                setState(() {
+                                  defaultWallet = newSelectedWallet;
+                                  // Reset balance loading state when wallet changes
+                                  balancesLoaded = false;
+                                  defaultWalletBalance = null;
+                                  toAddressBalance = null;
+                                });
+
+                                // Execute your original logic.
+                                await ref.read(walletServiceProvider).setDefaultAddress(newSelectedWallet.address);
+                                amountFocus.requestFocus();
+                              },
+                              // This builds the list of choices the user sees when the dropdown is open.
+                              items: myWalletProvider.listWallets.map((WalletEntity wallet) {
+                                return DropdownMenuItem<String>(
+                                  // Each item's value is its unique ADDRESS string.
+                                  value: wallet.address,
+                                  key: keySelectThisWallet(wallet.address),
+                                  child: Container(
+                                    color: context.colorScheme.tertiary,
+                                    width: scaleSize(isTall ? 315 : 310),
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        NameByAddress(wallet: wallet, fontStyle: FontStyle.normal, size: 16),
+                                        const Spacer(),
+                                        Balance(address: wallet.address, size: 16),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                             ),
                           ),
-                        ),
-                        Consumer(
-                          builder: (context, ref, _) {
-                            final isCommentVisible = ref.watch(profileViewProvider(widget.toAddress)).isCommentVisible;
-                            return Column(
-                              children: [
-                                if (isCommentVisible) const SizedBox(height: 8),
-                                AnimatedCrossFade(
-                                  duration: const Duration(milliseconds: 200),
-                                  crossFadeState: isCommentVisible
-                                      ? CrossFadeState.showSecond
-                                      : CrossFadeState.showFirst,
-                                  firstChild: TextButton.icon(
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(2)),
-                                    ),
-                                    icon: Icon(
-                                      Icons.add_comment_outlined,
-                                      size: scaleSize(18),
-                                      color: Colors.grey[600],
-                                    ),
-                                    label: Text(
-                                      'addComment'.tr(),
-                                      style: scaledTextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      ref
-                                          .read(profileViewProvider(widget.toAddress).notifier)
-                                          .toggleCommentVisibility();
-                                      Future.delayed(const Duration(milliseconds: 250), () {
-                                        if (context.mounted) {
-                                          amountFocus.unfocus();
-                                          commentFocus.requestFocus();
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  secondChild: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
+                          ScaledSizedBox(height: 12),
+                          Row(
+                            children: [
+                              Text(
+                                'to'.tr(args: ['']),
+                                style: scaledTextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              ScaledSizedBox(width: 10),
+                              Text(
+                                widget.username ?? getShortPubkey(widget.toAddress),
+                                style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                          ScaledSizedBox(height: 7),
+                          Row(
+                            children: [
+                              Text(
+                                'amount'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const Spacer(),
+                              if (fees > 0)
+                                InkWell(
+                                  onTap: () => infoFeesPopup(context),
+                                  child: Row(
                                     children: [
-                                      TextField(
-                                        controller: ref.read(payCommentControllerProvider(widget.toAddress)),
-                                        focusNode: commentFocus,
-                                        onChanged: (value) => ref
-                                            .read(profileViewProvider(widget.toAddress).notifier)
-                                            .setPayComment(value),
-                                        inputFormatters: [Utf8LengthLimitingTextInputFormatter(146)],
-                                        textInputAction: TextInputAction.done,
-                                        onEditingComplete: () async {
-                                          if (canValidate) {
-                                            await executeTransfert();
-                                          }
-                                        },
-                                        maxLines: 1,
-                                        style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
-                                        decoration: InputDecoration(
-                                          hintText: 'optionalComment'.tr(),
-                                          hintStyle: TextStyle(color: Colors.grey[400]),
-                                          filled: true,
-                                          fillColor: Colors.white.withAlpha(128),
-                                          contentPadding: EdgeInsets.symmetric(
-                                            horizontal: scaleSize(8),
-                                            vertical: scaleSize(4),
-                                          ),
-                                          counterText: '',
-                                          suffixIcon: IconButton(
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                            icon: Icon(Icons.close, size: scaleSize(16), color: Colors.grey[600]),
-                                            onPressed: () {
-                                              ref
-                                                  .read(profileViewProvider(widget.toAddress).notifier)
-                                                  .setPayComment('');
-                                              ref
-                                                  .read(profileViewProvider(widget.toAddress).notifier)
-                                                  .toggleCommentVisibility();
-                                              commentFocus.unfocus();
-                                              amountFocus.requestFocus();
-                                            },
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                            borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                            borderSide: BorderSide(color: Colors.grey[400]!, width: 1.5),
-                                          ),
+                                      Icon(
+                                        Icons.info_outlined,
+                                        color: context.colorScheme.primary,
+                                        size: scaleSize(21),
+                                      ),
+                                      ScaledSizedBox(width: 5),
+                                      Text(
+                                        'fees'.tr(args: [fees.toString(), Durt.i.network.symbol]),
+                                        style: scaledTextStyle(
+                                          color: context.colorScheme.primary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
+                              ScaledSizedBox(width: 10),
+                            ],
+                          ),
+                          ScaledSizedBox(height: 10),
+                          Focus(
+                            onFocusChange: (focused) {
+                              if (!commentFocus.hasFocus) {
+                                setState(() {
+                                  FocusScope.of(context).requestFocus(amountFocus);
+                                });
+                              }
+                            },
+                            child: TextField(
+                              textInputAction: TextInputAction.done,
+                              onEditingComplete: () async {
+                                final isCommentVisible = ref
+                                    .read(profileViewProvider(widget.toAddress))
+                                    .isCommentVisible;
+                                if (isCommentVisible) {
+                                  commentFocus.requestFocus();
+                                } else if (canValidate) {
+                                  await executeTransfert();
+                                }
+                              },
+                              key: keyAmountField,
+                              controller: ref.read(payAmountControllerProvider(widget.toAddress)),
+                              autofocus: true,
+                              focusNode: amountFocus,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              autocorrect: false,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              onChanged: (value) async {
+                                // Update Riverpod state
+                                ref.read(profileViewProvider(widget.toAddress).notifier).setPayAmount(value);
+                                setState(() {});
+                              },
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.deny(',', replacementString: '.'),
+                                FilteringTextInputFormatter.allow(RegExp(r'(^\d+\.?\d{0,2})')),
                               ],
-                            );
-                          },
-                        ),
-                        const Spacer(),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            key: keyConfirmPayment,
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              elevation: 4,
-                              backgroundColor: context.colorScheme.primary,
-                            ),
-                            onPressed: canValidate
-                                ? () async {
-                                    await executeTransfert();
-                                  }
-                                : null,
-                            child: Text(
-                              'executeTheTransfer'.tr(),
-                              style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              decoration: InputDecoration(
+                                hintText: '0.00',
+                                suffix: Consumer(
+                                  builder: (context, ref, _) {
+                                    final displayMode = ref.watch(currencyDisplayModeProvider);
+
+                                    String suffixText;
+                                    switch (displayMode) {
+                                      case CurrencyDisplayMode.g1:
+                                        suffixText = Durt.i.network.symbol;
+                                        break;
+                                      case CurrencyDisplayMode.du:
+                                        suffixText = 'ud'.tr(args: ['']);
+                                        break;
+                                      case CurrencyDisplayMode.moneyOverMembers:
+                                        suffixText = 'M/N';
+                                        break;
+                                    }
+
+                                    return GestureDetector(
+                                      onTap: () {
+                                        _showCurrencyModeMenu(context, ref, setState);
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(suffixText, style: const TextStyle(fontSize: 14)),
+                                          ScaledSizedBox(width: 4),
+                                          Icon(Icons.arrow_drop_down, size: scaleSize(16), color: Colors.grey[600]),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey[500]!, width: 1.5),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: EdgeInsets.all(scaleSize(6)),
+                              ),
+                              style: scaledTextStyle(
+                                fontSize: 22,
+                                color: context.colorScheme.onSurface,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                        const Spacer(),
-                      ],
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final isCommentVisible = ref
+                                  .watch(profileViewProvider(widget.toAddress))
+                                  .isCommentVisible;
+                              return Column(
+                                children: [
+                                  if (isCommentVisible) const SizedBox(height: 8),
+                                  AnimatedCrossFade(
+                                    duration: const Duration(milliseconds: 200),
+                                    crossFadeState: isCommentVisible
+                                        ? CrossFadeState.showSecond
+                                        : CrossFadeState.showFirst,
+                                    firstChild: TextButton.icon(
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(2)),
+                                      ),
+                                      icon: Icon(
+                                        Icons.add_comment_outlined,
+                                        size: scaleSize(18),
+                                        color: Colors.grey[600],
+                                      ),
+                                      label: Text(
+                                        'addComment'.tr(),
+                                        style: scaledTextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        ref
+                                            .read(profileViewProvider(widget.toAddress).notifier)
+                                            .toggleCommentVisibility();
+                                        Future.delayed(const Duration(milliseconds: 250), () {
+                                          if (context.mounted) {
+                                            amountFocus.unfocus();
+                                            commentFocus.requestFocus();
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    secondChild: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          controller: ref.read(payCommentControllerProvider(widget.toAddress)),
+                                          focusNode: commentFocus,
+                                          onChanged: (value) => ref
+                                              .read(profileViewProvider(widget.toAddress).notifier)
+                                              .setPayComment(value),
+                                          inputFormatters: [Utf8LengthLimitingTextInputFormatter(146)],
+                                          textInputAction: TextInputAction.done,
+                                          onEditingComplete: () async {
+                                            if (canValidate) {
+                                              await executeTransfert();
+                                            }
+                                          },
+                                          maxLines: 1,
+                                          style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
+                                          decoration: InputDecoration(
+                                            hintText: 'optionalComment'.tr(),
+                                            hintStyle: TextStyle(color: Colors.grey[400]),
+                                            filled: true,
+                                            fillColor: Colors.white.withAlpha(128),
+                                            contentPadding: EdgeInsets.symmetric(
+                                              horizontal: scaleSize(8),
+                                              vertical: scaleSize(4),
+                                            ),
+                                            counterText: '',
+                                            suffixIcon: IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                              icon: Icon(Icons.close, size: scaleSize(16), color: Colors.grey[600]),
+                                              onPressed: () {
+                                                ref
+                                                    .read(profileViewProvider(widget.toAddress).notifier)
+                                                    .setPayComment('');
+                                                ref
+                                                    .read(profileViewProvider(widget.toAddress).notifier)
+                                                    .toggleCommentVisibility();
+                                                commentFocus.unfocus();
+                                                amountFocus.requestFocus();
+                                              },
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: BorderSide(color: Colors.grey[400]!, width: 1.5),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              key: keyConfirmPayment,
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                elevation: 4,
+                                backgroundColor: context.colorScheme.primary,
+                              ),
+                              onPressed: canValidate
+                                  ? () async {
+                                      await executeTransfert();
+                                    }
+                                  : null,
+                              child: Text(
+                                'executeTheTransfer'.tr(),
+                                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                        ],
+                      ),
                     ),
                   ),
                 ),

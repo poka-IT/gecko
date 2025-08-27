@@ -603,5 +603,7 @@
     "identityMigration": "",
     "revokeMyIdentity": "",
     "createIdentity": "",
-    "sent": ""
+    "sent": "",
+    "transactionInProgress": "Transaction in progress",
+    "validated": "Validated"
 }

@@ -604,5 +604,7 @@
     "advancedFilters": "",
     "enterAddressOrName": "",
     "selectDateRange": "",
-    "clearAll": ""
+    "clearAll": "",
+    "transactionInProgress": "Transazione in corso",
+    "validated": "Validato"
 }

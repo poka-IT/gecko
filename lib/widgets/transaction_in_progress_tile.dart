@@ -730,19 +730,34 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                 width: scaleSize(80),
                                 padding: EdgeInsets.symmetric(horizontal: scaleSize(6), vertical: scaleSize(2)),
                                 decoration: BoxDecoration(
-                                  color: context.colorScheme.primary.withValues(alpha: 0.1),
+                                  color:
+                                      (_status.state == TransactionState.inBlock ||
+                                          _status.state == TransactionState.finalized)
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : context.colorScheme.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(scaleSize(4)),
                                   border: Border.all(
-                                    color: context.colorScheme.primary.withValues(alpha: 0.3),
+                                    color:
+                                        (_status.state == TransactionState.inBlock ||
+                                            _status.state == TransactionState.finalized)
+                                        ? Colors.green.withValues(alpha: 0.3)
+                                        : context.colorScheme.primary.withValues(alpha: 0.3),
                                     width: 1,
                                   ),
                                 ),
                                 child: Text(
-                                  'Transaction en cours',
+                                  (_status.state == TransactionState.inBlock ||
+                                          _status.state == TransactionState.finalized)
+                                      ? 'validated'.tr()
+                                      : 'transactionInProgress'.tr(),
                                   textAlign: TextAlign.center,
                                   style: scaledTextStyle(
                                     fontSize: 10,
-                                    color: context.colorScheme.primary,
+                                    color:
+                                        (_status.state == TransactionState.inBlock ||
+                                            _status.state == TransactionState.finalized)
+                                        ? Colors.green
+                                        : context.colorScheme.primary,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

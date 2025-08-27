@@ -603,5 +603,7 @@
     "identityMigratedFrom": "Identidad migrada",
     "geckoGeneratedYourMnemonicKeepItSecret": "¡Gecko ha generado tu frase de restauración! Intenta mantenerla en secreto, porque permite que cualquiera que la conozca pueda acceder a todos tus monederos.",
     "geckoWillCheckPassword": "Gecko va a comprobar contigo si has memorizado bien tu código secreto.\n\nEscribe tu código secreto en el campo de abajo para verificar que lo hayas anotado bien.",
-    "network": "Red"
+    "network": "Red",
+    "transactionInProgress": "Transacción en curso",
+    "validated": "Validado"
 }

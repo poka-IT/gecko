@@ -53,5 +53,7 @@
 	<string>NO</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera permission is required for barcode scanning.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>This app uses Face ID or Touch ID to securely unlock your wallet and authenticate transactions.</string>
 </dict>
 </plist>

@@ -19,7 +19,7 @@ class BiometricSettingsTile extends ConsumerWidget {
     final biometricNotifier = ref.read(biometricProvider.notifier);
 
     // Don't show if device doesn't support biometric
-    if (!biometricState.isDeviceSupported || !biometricState.isAvailable) {
+    if (!biometricState.canEnroll) {
       return const SizedBox.shrink();
     }
 

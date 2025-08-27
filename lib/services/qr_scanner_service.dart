@@ -22,11 +22,12 @@ class QrScannerService {
   /// Returns a [QrScanResult] containing the processed address and scan status.
   /// Handles camera permissions and validates the scanned content.
   Future<QrScanResult> scanQrCode() async {
-    // Request camera permission on mobile platforms
+    // For mobile platforms, use the barcode_scan2 plugin
     if (Platform.isAndroid || Platform.isIOS) {
+      // Request camera permission on Android platforms
       final permissionStatus = await Permission.camera.request();
-      if (!permissionStatus.isGranted) {
-        return QrScanResult.error('Camera permission denied');
+      if (Platform.isAndroid && !permissionStatus.isGranted) {
+        return QrScanResult.error('Camera permission denied: ${permissionStatus.toString()}');
       }
 
       final scanOptions = ScanOptions(
@@ -42,6 +43,7 @@ class QrScannerService {
 
       return _processScannedContent(barcodeContent);
     } else {
+      // For desktop platforms, use the mobile_scanner plugin
       final controller = MobileScannerController();
       QrScanResult? qrResult;
       controller.barcodes.listen((event) {

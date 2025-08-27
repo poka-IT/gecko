@@ -28,7 +28,7 @@ import 'package:provider/provider.dart' as old_provider;
 import 'package:url_launcher/url_launcher.dart';
 
 // Simple function to show the payment popup - no longer depends on external ref
-void paymentPopup({required String toAddress, required String? username}) {
+void paymentPopup({required String toAddress, required String? username, WalletEntity? fromWallet}) {
   showModalBottomSheet<void>(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.only(topRight: Radius.circular(16), topLeft: Radius.circular(16)),
@@ -36,7 +36,7 @@ void paymentPopup({required String toAddress, required String? username}) {
     isScrollControlled: true,
     context: homeContext,
     builder: (BuildContext context) {
-      return PaymentPopupWidget(toAddress: toAddress, username: username);
+      return PaymentPopupWidget(toAddress: toAddress, username: username, fromWallet: fromWallet);
     },
   );
 }
@@ -45,8 +45,9 @@ void paymentPopup({required String toAddress, required String? username}) {
 class PaymentPopupWidget extends ConsumerStatefulWidget {
   final String toAddress;
   final String? username;
+  final WalletEntity? fromWallet;
 
-  const PaymentPopupWidget({super.key, required this.toAddress, required this.username});
+  const PaymentPopupWidget({super.key, required this.toAddress, required this.username, this.fromWallet});
 
   @override
   ConsumerState<PaymentPopupWidget> createState() => _PaymentPopupWidgetState();
@@ -55,7 +56,7 @@ class PaymentPopupWidget extends ConsumerStatefulWidget {
 class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   double fees = 0;
   static const double shapeSize = 16;
-  late WalletEntity defaultWallet;
+  late WalletEntity fromWallet;
   bool canValidate = false;
   final amountFocus = FocusNode();
   final commentFocus = FocusNode();
@@ -75,7 +76,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
 
     // Initialize default wallet
-    defaultWallet = myWalletProvider.getDefaultWallet();
+    fromWallet = widget.fromWallet ?? myWalletProvider.getDefaultWallet();
 
     // Schedule reset state and wallet loading after build is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -120,7 +121,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
     try {
       final storageService = ref.read(storageServiceProvider);
-      final defaultBalance = await storageService.getBalance(defaultWallet.address);
+      final defaultBalance = await storageService.getBalance(fromWallet.address);
 
       if (!mounted) return;
 
@@ -177,7 +178,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
       // Heavy operation 1: Derive keypair (cryptographic operation)
       // Break this into smaller chunks to avoid blocking UI
-      final keypair = await deriveKeypairWithYield(defaultWallet.address, PinCodeService.pinCode, walletService);
+      final keypair = await deriveKeypairWithYield(fromWallet.address, PinCodeService.pinCode, walletService);
 
       // Give UI another chance to update
       await Future.microtask(() {});
@@ -259,7 +260,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       homeContext,
       MaterialPageRoute(
         builder: (context) {
-          return ActivityScreen(address: defaultWallet.address, transactionData: transactionData);
+          return ActivityScreen(address: fromWallet.address, transactionData: transactionData);
         },
       ),
     );
@@ -299,7 +300,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
       // Vérifications de validité avec les vraies balances
       final bool isAmountValid = payAmountValue > BigInt.zero;
-      final bool isNotSendingToSelf = widget.toAddress != defaultWallet.address;
+      final bool isNotSendingToSelf = widget.toAddress != fromWallet.address;
       final BigInt transferableBalance = defaultWalletBalance! - existentialDeposit;
       final bool hasEnoughBalance = (payAmountValue <= transferableBalance) || defaultWalletBalance == payAmountValue;
       final bool respectsExistentialDeposit = toAddressBalance! > BigInt.zero || payAmountValue >= existentialDeposit;
@@ -401,7 +402,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                               elevation: 12,
                               key: keyDropdownWallets,
                               // The dropdown's value is the ADDRESS of the default wallet.
-                              value: defaultWallet.address,
+                              value: fromWallet.address,
                               menuMaxHeight: scaleSize(270),
                               onTap: () {
                                 FocusScope.of(context).requestFocus(amountFocus);
@@ -435,7 +436,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
                                 // Update your local state and trigger a rebuild.
                                 setState(() {
-                                  defaultWallet = newSelectedWallet;
+                                  fromWallet = newSelectedWallet;
                                   // Reset balance loading state when wallet changes
                                   balancesLoaded = false;
                                   defaultWalletBalance = null;

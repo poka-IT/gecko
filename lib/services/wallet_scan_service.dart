@@ -225,7 +225,7 @@ class WalletScanService {
 
     final importedWallets = <WalletEntity>[];
 
-    // Prepare wallet data
+    // Create and save wallets one by one to ensure correct numbering
     for (int i = 0; i < sortedWallets.length; i++) {
       final walletAddress = sortedWallets[i].key;
       final walletIndex = currentWalletCount + i;
@@ -237,21 +237,15 @@ class WalletScanService {
         derivation: addressToDerivation[walletAddress],
         imagePath: 'assets/avatars/${walletIndex % 4}.png',
         keyPairType: Durt.defaultKeyPairType,
+        number: _container.read(walletServiceProvider).getNextWalletNumber,
       );
 
       wallet.safe.target = safe;
+
+      // Save immediately to update the count for the next wallet
+      await _container.read(walletServiceProvider).walletBox.putAsync(wallet);
       importedWallets.add(wallet);
-    }
-
-    // Import wallets in batches
-    const batchSize = 5;
-    for (int batchStart = 0; batchStart < importedWallets.length; batchStart += batchSize) {
-      final batchEnd = (batchStart + batchSize).clamp(0, importedWallets.length);
-      final batch = importedWallets.sublist(batchStart, batchEnd);
-
-      await Future.wait(batch.map((wallet) => _container.read(walletServiceProvider).walletBox.putAsync(wallet)));
-
-      onWalletCountChanged(currentWalletCount + batchEnd);
+      onWalletCountChanged(currentWalletCount + i + 1);
     }
 
     return importedWallets;

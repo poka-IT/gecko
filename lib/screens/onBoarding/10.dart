@@ -1,6 +1,6 @@
 // ignore_for_file: file_names
 
-import 'package:durt2/durt2.dart' show Durt, WalletEntity;
+import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -224,19 +224,8 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               switch (scanStatus) {
                 case ScanDerivationsResult.none:
                 case ScanDerivationsResult.walletNotFound:
-                  final walletData = await ref.read(walletServiceProvider).importRootWallet(pinCode: widget.pinCode);
-
-                  WalletEntity myWallet = WalletEntity.create(
-                    address: walletData.address,
-                    number: 0,
-                    name: 'currentWallet'.tr(),
-                    keyPairType: Durt.defaultKeyPairType,
-                  );
-
-                  final safe = ref.read(walletServiceProvider).getSafeBox(currentSafe);
-                  myWallet.safe.target = safe;
-
-                  await ref.read(walletServiceProvider).walletBox.putAsync(myWallet);
+                  // Let Durt2 handle wallet creation and number assignment
+                  await ref.read(walletServiceProvider).importRootWallet(pinCode: widget.pinCode);
                   break;
                 case ScanDerivationsResult.timeout:
                 case ScanDerivationsResult.error:

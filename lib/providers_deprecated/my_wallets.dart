@@ -165,29 +165,14 @@ class MyWalletsProvider with ChangeNotifier {
 
     int? safeNumber = getCurrentSafe;
 
-    final List idList = await getNextWalletNumberAndDerivation(safeNumber: safeNumber);
-    int newWalletNbr = idList[0];
-    int newDerivationNbr = number ?? idList[1];
-
-    WalletEntity defaultWallet = getDefaultWallet(safeNumber);
-
-    // ignore: use_build_context_synchronously
-    final walletData = await _container
+    // Let Durt2 handle wallet number generation and derivation creation
+    final newWallet = await _container
         .read(walletServiceProvider)
-        .derive(fromAddress: defaultWallet.address, derivation: newDerivationNbr, pinCode: PinCodeService.pinCode);
+        .generateNextDerivation(pinCode: PinCodeService.pinCode, safeBoxNumber: safeNumber, walletName: name);
 
-    WalletEntity newWallet = WalletEntity.create(
-      address: walletData.address,
-      number: newWalletNbr,
-      name: name,
-      derivation: newDerivationNbr,
-      imagePath: 'assets/avatars/${newWalletNbr % 4}.png',
-      keyPairType: Durt.defaultKeyPairType,
-    );
-
-    final safe = _container.read(walletServiceProvider).getSafeBox(safeNumber);
-    newWallet.safe.target = safe;
-
+    // Update avatar path based on the wallet number assigned by Durt2
+    newWallet.imagePath = 'assets/avatars/${newWallet.number % 4}.png';
+    // Save the updated wallet with avatar path
     await _container.read(walletServiceProvider).walletBox.putAsync(newWallet);
 
     await readAllWallets(safeBoxNumber: safeNumber);
@@ -247,24 +232,6 @@ class MyWalletsProvider with ChangeNotifier {
       // Invalidate providers after wallet creation to fix state synchronization
       invalidateProviders();
     });
-  }
-
-  Future<List<int>> getNextWalletNumberAndDerivation({required int safeNumber}) async {
-    await readAllWallets(safeBoxNumber: safeNumber);
-
-    listWallets.sort((p1, p2) => p1.number.compareTo(p2.number));
-
-    if (listWallets.isEmpty) {
-      return [0, 0];
-    }
-
-    final maxDerivation = listWallets.map((w) => w.derivation ?? -1).reduce((max, value) => value > max ? value : max);
-
-    final newDerivationNbr = maxDerivation == -1 ? 0 : maxDerivation + 1;
-
-    final newWalletNbr = listWallets.last.number + 1;
-
-    return [newWalletNbr, newDerivationNbr];
   }
 
   void reload() {

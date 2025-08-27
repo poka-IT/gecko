@@ -33,7 +33,6 @@ class DragTuleAction extends ConsumerWidget {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           myWalletProvider.lastFlyBy = null;
           myWalletProvider.dragAddress = null;
-          myWalletProvider.reload();
         });
       },
       feedback: ElevatedButton(
@@ -51,10 +50,11 @@ class DragTuleAction extends ConsumerWidget {
       child: DragTarget<String>(
         onAcceptWithDetails: (senderAddress) async {
           final walletData = myWalletProvider.getWalletDataByAddress(senderAddress.data);
-          if (walletData != null) {
-            await ref.read(walletServiceProvider).setDefaultAddress(walletData.address);
-          }
-          paymentPopup(toAddress: wallet.address, username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!);
+          paymentPopup(
+            toAddress: wallet.address,
+            username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!,
+            fromWallet: walletData,
+          );
         },
         onMove: (details) {
           if (wallet.address != myWalletProvider.lastFlyBy?.address) {

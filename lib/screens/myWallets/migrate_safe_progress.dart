@@ -117,7 +117,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
         // Create the new wallet entity
         final newWallet = WalletEntity.create(
           address: keypair.address,
-          number: i, // Use sequential numbering
+          number: walletService.getNextWalletNumber, // Use Durt2's numbering system
           name: originalWallet.name,
           derivation: i == 0 ? null : i - 1, // Root has no derivation, others have derivation //0, //1, etc.
           imagePath: originalWallet.imagePath,

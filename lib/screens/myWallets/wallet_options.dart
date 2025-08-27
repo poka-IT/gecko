@@ -147,7 +147,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                             ),
                           ),
                         if (defaultWallet?.address != widget.wallet.address &&
-                            !IdentityUtils.hasIdentity(ref, widget.wallet.address))
+                            !IdentityUtils.hasIdentity(ref, widget.wallet.address) &&
+                            !isAlone)
                           deleteWallet(context, ref, currentSafe),
                         if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
                           ManageMembershipButton(address: widget.wallet.address),

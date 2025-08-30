@@ -55,8 +55,7 @@ dependencies:
   http: ^1.4.0
   gif_view: ^1.0.3
   get_it: ^8.0.3
-  durt2:
-    path: ../durt2
+  durt2: ^0.3.5
   flutter_riverpod: ^2.6.1
   intl: ^0.19.0
   visibility_detector: ^0.4.0+2
@@ -70,6 +69,9 @@ dependency_overrides:
   intl: ^0.19.0
   # To keep compatibility with polkadart_cli and Hive
   source_gen: ^2.0.0
+  # Local development override - use local durt2 when available
+  durt2:
+    path: ../durt2
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4

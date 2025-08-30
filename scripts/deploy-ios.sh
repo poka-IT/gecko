@@ -27,8 +27,15 @@
 #   ./scripts/deploy-ios.sh --validate-only         # Validate only (no upload)
 #   ./scripts/deploy-ios.sh -v                      # Validate only (short form)
 #   ./scripts/deploy-ios.sh --skip-review           # Upload only (don't submit for review)
-#   ./scripts/deploy-ios.sh --changelog "Bug fixes" # With changelog
+#   ./scripts/deploy-ios.sh --changelog "Bug fixes" # With English changelog
 #   ./scripts/deploy-ios.sh --auto-release          # Auto-release after approval
+#
+# MULTILINGUAL CHANGELOG SUPPORT:
+#   CHANGELOG_TEXT="Bug fixes" CHANGELOG_TEXT_FR="Corrections de bugs" ./scripts/deploy-ios.sh
+#   # Or set environment variables:
+#   export CHANGELOG_TEXT="Bug fixes and improvements"
+#   export CHANGELOG_TEXT_FR="Corrections de bugs et améliorations"
+#   ./scripts/deploy-ios.sh
 #
 # The script will:
 # - Extract version from pubspec.yaml
@@ -109,17 +116,19 @@ create_changelog_file() {
     # Declare as global variables
     FASTLANE_METADATA_PATH=""
     
-    # Determine the changelog text to use
-    local changelog_text=""
+    # Determine the changelog text to use (English)
+    local changelog_text_en=""
+    local changelog_text_fr=""
+    
     if [ -n "$CHANGELOG_TEXT" ]; then
-        changelog_text="$CHANGELOG_TEXT"
-        echo "Using provided changelog: \"$changelog_text\""
+        changelog_text_en="$CHANGELOG_TEXT"
+        echo "Using provided English changelog: \"$changelog_text_en\""
     else
         # If no changelog provided but we're submitting for review, use a default one
         if [ "$SKIP_REVIEW" != "true" ] && [ "$APP_STORE_RELEASE_STATUS" != "hold" ]; then
-            changelog_text="Bug fixes and improvements"
+            changelog_text_en="Bug fixes and improvements"
             echo "Warning: No changelog provided, but App Store Connect requires 'What's New' for review submission."
-            echo "Using default changelog: \"$changelog_text\""
+            echo "Using default English changelog: \"$changelog_text_en\""
         else
             # No changelog needed for upload-only mode
             FASTLANE_METADATA_PATH=""
@@ -128,27 +137,48 @@ create_changelog_file() {
         fi
     fi
     
-    # Create temporary metadata directory structure
-    METADATA_DIR="/tmp/fastlane_metadata/en-US"
-    mkdir -p "$METADATA_DIR"
+    # Determine French changelog text
+    if [ -n "$CHANGELOG_TEXT_FR" ]; then
+        changelog_text_fr="$CHANGELOG_TEXT_FR"
+        echo "Using provided French changelog: \"$changelog_text_fr\""
+    else
+        # Use default French translation if no specific French changelog provided
+        if [ "$SKIP_REVIEW" != "true" ] && [ "$APP_STORE_RELEASE_STATUS" != "hold" ]; then
+            changelog_text_fr="Corrections de bugs et améliorations"
+            echo "Using default French changelog: \"$changelog_text_fr\""
+        fi
+    fi
     
-    # Create the release notes file (What's New field)
-    echo "$changelog_text" > "$METADATA_DIR/release_notes.txt"
-    echo "Created changelog file: $METADATA_DIR/release_notes.txt"
+    # Create temporary metadata directory structure for both languages
+    METADATA_DIR_EN="/tmp/fastlane_metadata/en-US"
+    METADATA_DIR_FR="/tmp/fastlane_metadata/fr-FR"
+    mkdir -p "$METADATA_DIR_EN"
+    mkdir -p "$METADATA_DIR_FR"
+    
+    # Create the release notes files (What's New field) for both languages
+    echo "$changelog_text_en" > "$METADATA_DIR_EN/release_notes.txt"
+    echo "$changelog_text_fr" > "$METADATA_DIR_FR/release_notes.txt"
+    echo "Created English changelog file: $METADATA_DIR_EN/release_notes.txt"
+    echo "Created French changelog file: $METADATA_DIR_FR/release_notes.txt"
     
     # Create minimal required metadata files with placeholder content
     # These are only created when we need to submit for review
     if [ "$SKIP_REVIEW" != "true" ] && [ "$APP_STORE_RELEASE_STATUS" != "hold" ]; then
-        # Create minimal description (can be empty for updates)
-        echo "" > "$METADATA_DIR/description.txt"
+        # English metadata files
+        echo "" > "$METADATA_DIR_EN/description.txt"
+        echo "" > "$METADATA_DIR_EN/keywords.txt"
+        echo "" > "$METADATA_DIR_EN/support_url.txt"
         
-        # Create minimal keywords (can be empty for updates)
-        echo "" > "$METADATA_DIR/keywords.txt"
+        # French metadata files
+        echo "" > "$METADATA_DIR_FR/description.txt"
+        echo "" > "$METADATA_DIR_FR/keywords.txt"
+        echo "" > "$METADATA_DIR_FR/support_url.txt"
         
-        # Create minimal support URL (can be empty for updates)
-        echo "" > "$METADATA_DIR/support_url.txt"
+        # Copyright file goes at the root metadata level (not language-specific)
+        echo "2025 Axiom Team" > "/tmp/fastlane_metadata/copyright.txt"
         
-        echo "Created minimal metadata files for App Store submission"
+        echo "Created minimal metadata files for App Store submission (en-US and fr-FR)"
+        echo "Added copyright metadata: 2025 Axiom Team"
     fi
     
     # Set metadata path for fastlane

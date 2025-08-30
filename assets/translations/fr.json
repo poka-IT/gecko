@@ -262,7 +262,7 @@
     "blockchainStart": "Mise à jour Duniter v2",
     "networkSettings": "Connectivité réseau",
     "displaySettings": "Affichage",
-    "indexer": "Indexer",
+    "indexer": "Indexeur",
     "anAutoNodeChoosed": "Un noeud sûr et valide sera choisi automatiquement parmis une liste aléatoire.",
     "rootWallet": "Portefeuille racine",
     "blockN": "Bloc N°{}",

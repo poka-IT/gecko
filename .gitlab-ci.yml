@@ -63,8 +63,6 @@ build:android:apk:
     - echo "Building Gecko Android APKs v${VERSION}+${BUILD}"
     
     # Clean and build
-    - flutter clean
-    - flutter pub get
     - flutter build apk --release --split-per-abi --build-name $VERSION --build-number $BUILD
     
     # Rename APKs with version
@@ -133,8 +131,6 @@ build:android:bundle:
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
     - echo "Building Gecko Android Bundle v${VERSION}+${BUILD}"
     
-    - flutter clean
-    - flutter pub get
     - flutter build appbundle --release --build-name $VERSION --build-number $BUILD
     
     - mkdir -p artifacts/android
@@ -162,7 +158,7 @@ build:ios:
         export PATH="$PATH:~/flutter/bin"
       fi
     - flutter --version
-    - flutter pub get
+    - ./scripts/setup-ci-dependencies.sh
   script:
     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
@@ -172,8 +168,6 @@ build:ios:
     - sed -i '' "s|\$(FLUTTER_BUILD_NAME)|${VERSION}|g" ios/Runner/Info.plist
     - sed -i '' "s|\$(fFLUTTER_BUILD_NUMBER)|${BUILD}|g" ios/Runner/Info.plist
     
-    - flutter clean
-    - flutter pub get
     - flutter build ipa --release --build-name=$VERSION --build-number=$BUILD --export-options-plist=ios/ExportOptions.plist
     
     # Restore Info.plist
@@ -196,14 +190,12 @@ build:linux:
   before_script:
     - echo "Using optimized Linux build environment..."
     - flutter --version
-    - flutter pub get
+    - ./scripts/setup-ci-dependencies.sh
   script:
     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
     - echo "Building Gecko Linux Desktop v${VERSION}+${BUILD}"
     
-    - flutter clean
-    - flutter pub get
     - flutter build linux --release --build-name=$VERSION --build-number=$BUILD
     
     # Create AppImage or tar.gz
@@ -252,7 +244,6 @@ deploy:android:playstore:
   before_script:
     - echo "Using optimized deployment environment..."
     - fastlane --version
-    - flutter pub get
   script:
     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')

@@ -1723,7 +1723,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             Switch(
               value: _expertMode,
-              activeColor: context.colorScheme.primary,
+              activeThumbColor: context.colorScheme.primary,
               inactiveThumbColor: Colors.grey[400],
               inactiveTrackColor: Colors.grey[300],
               onChanged: (bool value) {
@@ -1775,7 +1775,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             Switch(
               value: generateInEnglish,
-              activeColor: context.colorScheme.primary,
+              activeThumbColor: context.colorScheme.primary,
               inactiveThumbColor: Colors.grey[400],
               inactiveTrackColor: Colors.grey[300],
               onChanged: (bool value) {

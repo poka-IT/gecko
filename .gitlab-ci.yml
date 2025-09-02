@@ -13,7 +13,7 @@ stages:
   - release
 
 variables:
-  FLUTTER_VERSION: "3.32.8"
+  FLUTTER_VERSION: "3.35.2"
 
 # Base job for Flutter environment (optimized with pre-installed dependencies)
 .flutter_env:

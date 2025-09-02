@@ -77,7 +77,7 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
 
     // Initialize selected wallet only once or when explicitly changed
 
-    _selectedWallet ??= ref.read(walletServiceProvider).defaultWallet!;
+    _selectedWallet ??= ref.read(walletServiceProvider).defaultWallet;
     var selectedWallet = _selectedWallet!;
 
     return PopScope(

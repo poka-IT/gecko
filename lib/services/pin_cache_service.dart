@@ -35,7 +35,7 @@ class PinCodeService {
 
   static Future<bool> askPinCode({bool force = false, bool canSwitch = false}) async {
     final container = ProviderContainer();
-    final defaultWallet = container.read(walletServiceProvider).defaultWallet!;
+    final defaultWallet = container.read(walletServiceProvider).defaultWallet;
 
     if (pinCode.isEmpty || force) {
       pinCode = '';

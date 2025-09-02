@@ -99,7 +99,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                         if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
                           buildRenewMembershipSection(context, ref),
                         buildOptionsSection(context),
-                        if (!isAlone && defaultWallet != null)
+                        if (!isAlone)
                           buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
                         if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
                           InkWell(
@@ -146,7 +146,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                               ),
                             ),
                           ),
-                        if (defaultWallet?.address != widget.wallet.address &&
+                        if (defaultWallet.address != widget.wallet.address &&
                             !IdentityUtils.hasIdentity(ref, widget.wallet.address) &&
                             !isAlone)
                           deleteWallet(context, ref, currentSafe),
@@ -283,7 +283,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
     // Use the reactive provider for consistency
     final defaultWallet = ref.watch(defaultWalletProvider);
-    final bool isDefaultWallet = defaultWallet?.address == widget.wallet.address;
+    final bool isDefaultWallet = defaultWallet.address == widget.wallet.address;
 
     // Watch providers for account consumers and balance
     final accountConsumersAsync = ref.watch(smartAccountConsumersProvider(widget.wallet.address));

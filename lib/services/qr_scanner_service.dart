@@ -25,23 +25,30 @@ class QrScannerService {
     // For mobile platforms, use the barcode_scan2 plugin
     if (Platform.isAndroid || Platform.isIOS) {
       // Request camera permission on Android platforms
-      final permissionStatus = await Permission.camera.request();
-      if (Platform.isAndroid && !permissionStatus.isGranted) {
-        return QrScanResult.error('Camera permission denied: ${permissionStatus.toString()}');
+      if (Platform.isAndroid) {
+        final permissionStatus = await Permission.camera.request();
+        if (!permissionStatus.isGranted) {
+          return QrScanResult.error('Camera permission denied: ${permissionStatus.toString()}');
+        }
       }
 
-      final scanOptions = ScanOptions(
-        strings: {'cancel': 'cancel'.tr(), 'flash_on': 'Flash on', 'flash_off': 'Flash off'},
-      );
+      try {
+        final scanOptions = ScanOptions(
+          strings: {'cancel': 'cancel'.tr(), 'flash_on': 'Flash on', 'flash_off': 'Flash off'},
+        );
 
-      final barcode = await BarcodeScanner.scan(options: scanOptions);
-      final barcodeContent = barcode.rawContent;
+        final barcode = await BarcodeScanner.scan(options: scanOptions);
+        final barcodeContent = barcode.rawContent;
 
-      if (barcodeContent.isEmpty) {
-        return QrScanResult.cancelled();
+        if (barcodeContent.isEmpty) {
+          return QrScanResult.cancelled();
+        }
+
+        return _processScannedContent(barcodeContent);
+      } catch (e) {
+        // Handle native scanner initialization errors (e.g., camera access issues)
+        return QrScanResult.error('Scanner failed to initialize: ${e.toString()}');
       }
-
-      return _processScannedContent(barcodeContent);
     } else {
       // For desktop platforms, use the mobile_scanner plugin
       final controller = MobileScannerController();

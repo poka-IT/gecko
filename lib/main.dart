@@ -34,9 +34,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/services/storage_init_service.dart';
 import 'package:gecko/services/app_info_service.dart';
+import 'package:gecko/services/sentry_service.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
+import 'package:gecko/widgets/sentry_context_provider.dart';
 
 const bool enableSentry = true;
 const bool showVersionOverlay = true; // Set to false to hide version overlay in production
@@ -66,16 +68,8 @@ Future<void> main() async {
   appVersion = appInfoService.appVersion;
 
   if (kReleaseMode && enableSentry) {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110';
-        options.replay.sessionSampleRate = 1.0;
-        options.replay.onErrorSampleRate = 1.0;
-        // Privacy settings for PII masking
-        //TODO: Set this to false in production for Ğ1
-        options.privacy.maskAllText = false;
-        options.privacy.maskAllImages = false;
-      },
+    await SentryService.init(
+      dsn: 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110',
       appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
         runApp(
           SentryWidget(
@@ -121,62 +115,68 @@ class Gecko extends StatelessWidget {
         providers: [old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider())],
         child: Consumer(
           builder: (context, ref, _) {
-            // Create the navigator observer with Riverpod ref
-            final navigatorObserver = BottomAppBarNavigatorObserver(ref);
-            final textScale = ref.watch(textScalingProvider);
-            final themeMode = ref.watch(currentThemeModeProvider);
+            return SentryContextProvider(
+              child: Builder(
+                builder: (context) {
+                  // Create the navigator observer with Riverpod ref
+                  final navigatorObserver = BottomAppBarNavigatorObserver(ref);
+                  final textScale = ref.watch(textScalingProvider);
+                  final themeMode = ref.watch(currentThemeModeProvider);
 
-            return MaterialApp(
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              theme: lightTheme,
-              darkTheme: darkTheme,
-              themeMode: themeMode,
-              navigatorKey: _navigatorKey,
-              navigatorObservers: [
-                navigatorObserver,
-                // Add RouteObserver for immediate bottom bar state updates
-                globalRouteObserver,
-              ],
-              builder: (context, child) {
-                // Apply text scaling using Builder to preserve original MediaQuery context
-                final scaledChild = Builder(
-                  builder: (builderContext) {
-                    final originalData = MediaQuery.of(builderContext);
-                    return MediaQuery(
-                      data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
-                      child: child!,
-                    );
-                  },
-                );
+                  return MaterialApp(
+                    localizationsDelegates: context.localizationDelegates,
+                    supportedLocales: context.supportedLocales,
+                    locale: context.locale,
+                    theme: lightTheme,
+                    darkTheme: darkTheme,
+                    themeMode: themeMode,
+                    navigatorKey: _navigatorKey,
+                    navigatorObservers: [
+                      navigatorObserver,
+                      // Add RouteObserver for immediate bottom bar state updates
+                      globalRouteObserver,
+                    ],
+                    builder: (context, child) {
+                      // Apply text scaling using Builder to preserve original MediaQuery context
+                      final scaledChild = Builder(
+                        builder: (builderContext) {
+                          final originalData = MediaQuery.of(builderContext);
+                          return MediaQuery(
+                            data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
+                            child: child!,
+                          );
+                        },
+                      );
 
-                final responsiveChild = ResponsiveBreakpoints.builder(
-                  child: scaledChild,
-                  breakpoints: [
-                    const Breakpoint(start: 0, end: 450, name: MOBILE),
-                    const Breakpoint(start: 451, end: 800, name: TABLET),
-                    const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-                  ],
-                );
+                      final responsiveChild = ResponsiveBreakpoints.builder(
+                        child: scaledChild,
+                        breakpoints: [
+                          const Breakpoint(start: 0, end: 450, name: MOBILE),
+                          const Breakpoint(start: 451, end: 800, name: TABLET),
+                          const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                        ],
+                      );
 
-                // Wrap with padding wrapper to avoid content being hidden behind bottom bar
-                final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
+                      // Wrap with padding wrapper to avoid content being hidden behind bottom bar
+                      final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
 
-                // Wrap with offline overlay and version overlay
-                final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
+                      // Wrap with offline overlay and version overlay
+                      final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
 
-                // Add the global bottom app bar as an overlay
-                return Stack(
-                  children: [
-                    GlobalOfflineOverlay(child: finalChild),
-                    Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
-                  ],
-                );
-              },
-              title: 'Ğecko',
-              initialRoute: AppRoutes.initialRoute,
-              routes: AppRoutes.getRoutes(),
+                      // Add the global bottom app bar as an overlay
+                      return Stack(
+                        children: [
+                          GlobalOfflineOverlay(child: finalChild),
+                          Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                        ],
+                      );
+                    },
+                    title: 'Ğecko',
+                    initialRoute: AppRoutes.initialRoute,
+                    routes: AppRoutes.getRoutes(),
+                  );
+                },
+              ),
             );
           },
         ),

@@ -605,5 +605,6 @@
     "createIdentity": "",
     "sent": "",
     "transactionInProgress": "Transaction in progress",
-    "validated": "Validated"
+    "validated": "Validated",
+    "errorLoadingWalletData": "Error loading wallet data"
 }

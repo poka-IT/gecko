@@ -599,5 +599,6 @@
     "pinSecurityReturnHome": "Retour à l'accueil",
     "pinSecurityBlockedField": "Saisie du code bloquée",
     "transactionInProgress": "Transaction en cours",
-    "validated": "Validée"
+    "validated": "Validée",
+    "errorLoadingWalletData": "Erreur lors du chargement des données du portefeuille"
 }

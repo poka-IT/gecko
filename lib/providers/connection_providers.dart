@@ -5,6 +5,7 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 
 /// Connection status notifier that listens to both Duniter and Squid streams
 class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
@@ -25,7 +26,14 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
 
       // Listen to Duniter connection status
       _duniterSubscription = durt.duniterConnectionStatusStream.listen((status) {
+        final previousStatus = _duniterStatus;
         _duniterStatus = status;
+
+        // Invalidate balance providers when going from offline to online
+        if (previousStatus != d.ConnectionStatus.connected && status == d.ConnectionStatus.connected) {
+          _ref.invalidate(persistentBalanceStreamProvider);
+          _ref.invalidate(persistentIdtyStatusStreamProvider);
+        }
 
         // Update home message based on Duniter status
         final homeMessageNotifier = _ref.read(homeMessageProvider.notifier);

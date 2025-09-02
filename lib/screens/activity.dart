@@ -3,6 +3,7 @@
 import 'package:durt2/durt2.dart' show IdtyStatusExtension;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -99,7 +100,18 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
             body: Column(
               children: [
                 _buildFixedHeader(),
-                Expanded(child: Center(child: Text('errorLoadingWalletData'.tr()))),
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 42),
+                      child: Text(
+                        'errorLoadingWalletData'.tr(),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           );

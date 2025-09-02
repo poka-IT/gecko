@@ -606,5 +606,6 @@
     "selectDateRange": "Selezionare intervallo date",
     "clearAll": "Cancellare tutto",
     "transactionInProgress": "Transazione in corso",
-    "validated": "Validato"
+    "validated": "Validato",
+    "errorLoadingWalletData": "Errore nel caricamento dei dati del portafoglio"
 }

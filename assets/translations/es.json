@@ -605,5 +605,6 @@
     "geckoWillCheckPassword": "Ğecko va a comprobar contigo si has memorizado bien tu código secreto.\n\nEscribe tu código secreto en el campo de abajo para verificar que lo hayas anotado bien.",
     "network": "Red",
     "transactionInProgress": "Transacción en curso",
-    "validated": "Validado"
+    "validated": "Validado",
+    "errorLoadingWalletData": "Error al cargar los datos del monedero"
 }

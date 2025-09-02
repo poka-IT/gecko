@@ -254,7 +254,7 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
       return {
         'storage_available': true,
         'storage_mode': durt.isStorageOfflineMode ? 'offline' : 'online',
-        'duniter_endpoint': durt.isConnected ? durt.endpoint : null,
+        'duniter_endpoint': durt.endpoint,
         'squid_endpoint': durt.squidEndpoint,
       };
     } catch (e) {

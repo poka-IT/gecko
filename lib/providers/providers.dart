@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Provides the global, initialized instance of [d.Durt].
 ///
-/// Throws an exception if [d.Durt.i] is accessed before initialization.
+/// DuniterStorageService is now always available, even without network connection.
 /// This is the root provider from which all other Durt service providers are derived.
 final durtProvider = Provider<d.Durt>((ref) {
   return d.Durt.i;

@@ -223,6 +223,7 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
         },
         'providers_state': _getProviderStates(),
         'riverpod_state': _getRiverpodStates(),
+        'durt_storage_status': _getDurtStorageStatus(),
         'authentication_debug': _getAuthenticationDebugInfo(),
         'indexer_debug': _getIndexerDebugInfo(),
         'system_health': _getSystemHealthInfo(),
@@ -245,6 +246,20 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Diagnostic report copied to clipboard'), duration: Duration(seconds: 2)),
     );
+  }
+
+  Map<String, dynamic> _getDurtStorageStatus() {
+    try {
+      final durt = ref.read(durtProvider);
+      return {
+        'storage_available': true,
+        'storage_mode': durt.isStorageOfflineMode ? 'offline' : 'online',
+        'duniter_endpoint': durt.isConnected ? durt.endpoint : null,
+        'squid_endpoint': durt.squidEndpoint,
+      };
+    } catch (e) {
+      return {'storage_available': false, 'storage_mode': 'error', 'duniter_endpoint': null, 'squid_endpoint': null};
+    }
   }
 
   @override

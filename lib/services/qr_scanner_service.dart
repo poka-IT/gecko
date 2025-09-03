@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/sentry_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -47,6 +48,12 @@ class QrScannerService {
         return _processScannedContent(barcodeContent);
       } catch (e) {
         // Handle native scanner initialization errors (e.g., camera access issues)
+        // Report to Sentry for debugging native crashes
+        SentryService.captureException(
+          e,
+          tag: 'qr_scanner_error',
+          extra: {'platform': Platform.isAndroid ? 'android' : 'ios', 'error_type': 'scanner_initialization'},
+        );
         return QrScanResult.error('Scanner failed to initialize: ${e.toString()}');
       }
     } else {

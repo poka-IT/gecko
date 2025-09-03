@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -7,6 +8,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
+import 'package:gecko/services/sentry_service.dart';
 import 'dart:async';
 
 class MnemonicScanner extends StatefulWidget {
@@ -36,8 +38,25 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
   @override
   void dispose() {
     _captureTimer?.cancel();
-    _cameraController?.dispose();
-    _textRecognizer.close();
+    _captureTimer = null;
+
+    // Ensure camera is properly disposed
+    _cameraController?.dispose().catchError((e) {
+      // Log camera disposal errors but don't crash
+      if (kDebugMode) {
+        debugPrint('🚨 MnemonicScanner: Camera disposal error: $e');
+      }
+    });
+    _cameraController = null;
+
+    // Ensure ML Kit recognizer is properly closed
+    _textRecognizer.close().catchError((e) {
+      // Log ML Kit disposal errors but don't crash
+      if (kDebugMode) {
+        debugPrint('🚨 MnemonicScanner: ML Kit disposal error: $e');
+      }
+    });
+
     super.dispose();
   }
 
@@ -67,14 +86,14 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
 
   void _startImageCapture() {
     _captureTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (mounted && !_isProcessing) {
+      if (mounted && !_isProcessing && _cameraController?.value.isInitialized == true) {
         _captureAndProcessImage();
       }
     });
   }
 
   Future<void> _captureAndProcessImage() async {
-    if (!mounted) return;
+    if (!mounted || _cameraController == null || !_cameraController!.value.isInitialized) return;
 
     setState(() {
       _isProcessing = true;
@@ -90,7 +109,20 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
         await _handleDetectedText(textWithPositions);
       }
     } catch (e) {
-      // Silently handle errors
+      // Log the error to Sentry for debugging
+      if (kDebugMode) {
+        debugPrint('🚨 MnemonicScanner: Camera/ML Kit error: $e');
+      }
+      // Report to Sentry in production
+      SentryService.captureException(
+        e,
+        tag: 'mnemonic_scanner_error',
+        extra: {
+          'camera_initialized': _cameraController?.value.isInitialized ?? false,
+          'is_processing': _isProcessing,
+          'mounted': mounted,
+        },
+      );
     } finally {
       if (mounted) {
         setState(() {

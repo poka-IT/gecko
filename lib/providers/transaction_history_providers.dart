@@ -10,6 +10,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/server_filtered_history_provider.dart';
+import 'package:gecko/providers/squid_cache_buster.dart';
 
 /// State class for transaction history
 class TransactionHistoryState {
@@ -52,6 +53,12 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
   String? _lastSeenTransactionId;
 
   TransfersOnlyHistoryNotifier(this.ref, this.address) : super(const TransactionHistoryState()) {
+    // Watch the cache buster to force refresh when Squid endpoint changes
+    ref.listen(squidCacheBusterProvider, (previous, next) {
+      log.i('🔥 Cache buster changed ($previous → $next) - reloading transfers history for $address');
+      loadTransactions();
+    });
+
     loadTransactions();
     _subscribeToAccountActivity();
   }
@@ -253,6 +260,12 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
   String? _lastSeenTransactionId;
 
   CombinedHistoryNotifier(this.ref, this.address) : super(const TransactionHistoryState()) {
+    // Watch the cache buster to force refresh when Squid endpoint changes
+    ref.listen(squidCacheBusterProvider, (previous, next) {
+      log.i('🔥 Cache buster changed ($previous → $next) - reloading combined history for $address');
+      loadTransactions();
+    });
+
     loadTransactions();
     _subscribeToAccountActivity();
   }

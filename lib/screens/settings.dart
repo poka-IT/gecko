@@ -1280,11 +1280,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           configBox.put('customIndexer', fullEndpoint); // Store the full endpoint
           _syncIndexerEndpointController(); // Synchronize controller
 
-          // Force reconnection to ensure strict validation
+          // Force Squid reconnection with the specific endpoint
           try {
-            await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
+            await _container.read(durtProvider).setFixedSquidEndpoint(fullEndpoint);
           } catch (e) {
-            log.w('Error reconnecting to Squid after endpoint change: $e');
+            log.w('Error setting fixed Squid endpoint: $e');
           }
 
           if (mounted) {
@@ -1488,11 +1488,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             });
                           }
 
-                          // Force reconnection to use strict validation instead of just testing
+                          // Clear fixed Squid endpoint and return to auto discovery mode
                           try {
-                            await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
+                            await _container.read(durtProvider).clearFixedSquidEndpoint();
                           } catch (e) {
-                            log.w('Error reconnecting to Squid in Auto mode: $e');
+                            log.w('Error clearing fixed Squid endpoint: $e');
                             if (mounted) {
                               setState(() {
                                 _indexerConnectionFailed = true;
@@ -1595,11 +1595,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       configBox.put('customIndexer', fullEndpoint);
                       _syncIndexerEndpointController(); // Synchronize controller
 
-                      // Force reconnection to ensure strict validation
+                      // Force Squid reconnection with the specific endpoint
                       try {
-                        await _container.read(durtProvider).connect(initDuniter: false, verbose: true);
+                        await _container.read(durtProvider).setFixedSquidEndpoint(fullEndpoint);
                       } catch (e) {
-                        log.w('Error reconnecting to Squid after endpoint change: $e');
+                        log.w('Error setting fixed Squid endpoint: $e');
                       }
 
                       if (mounted) {

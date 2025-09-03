@@ -10,6 +10,7 @@ import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/models/transaction_filters.dart';
+import 'package:gecko/providers/squid_cache_buster.dart';
 
 /// State for network activity history
 class NetworkActivityState {
@@ -59,6 +60,12 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
   String? _lastSeenTransactionId;
 
   NetworkActivityNotifier(this.ref) : super(const NetworkActivityState()) {
+    // Watch the cache buster to force refresh when Squid endpoint changes
+    ref.listen(squidCacheBusterProvider, (previous, next) {
+      log.i('🔥 Cache buster changed ($previous → $next) - reloading network activity');
+      loadTransactions();
+    });
+    
     loadTransactions();
     _subscribeToNetworkActivity();
   }

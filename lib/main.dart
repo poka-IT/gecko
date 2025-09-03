@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Cons
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
+import 'package:gecko/providers/squid_invalidation_provider.dart';
 
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:flutter/material.dart';
@@ -115,6 +116,9 @@ class Gecko extends StatelessWidget {
         providers: [old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider())],
         child: Consumer(
           builder: (context, ref, _) {
+            // Activate the Squid endpoint change notifier to enable provider invalidation
+            ref.watch(squidEndpointChangeNotifierProvider);
+
             return SentryContextProvider(
               child: Builder(
                 builder: (context) {
@@ -161,7 +165,9 @@ class Gecko extends StatelessWidget {
                       final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
 
                       // Wrap with offline overlay and version overlay
-                      final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
+                      final finalChild = showVersionOverlay
+                          ? VersionOverlay(child: childWithPadding)
+                          : childWithPadding;
 
                       // Add the global bottom app bar as an overlay
                       return Stack(

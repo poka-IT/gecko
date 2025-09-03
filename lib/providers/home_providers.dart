@@ -159,6 +159,8 @@ class AppInitState {
 
 /// App initialization notifier
 class AppInitNotifier extends StateNotifier<AppInitState> {
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+
   AppInitNotifier()
     : super(const AppInitState(isStorageInitialized: false, isAppVersionLoaded: false, isConnected: false));
 
@@ -281,8 +283,6 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
               }
             }
 
-            ref.watch(connectionStatusProvider);
-
             // Load wallets list
             final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
             await myWalletProvider.readAllWallets(ref: ref);
@@ -290,10 +290,16 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
         }
       }
 
-      Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
+      _connectivitySubscription = Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
     } else {
       state = state.copyWith(isConnected: true);
     }
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
   }
 }
 

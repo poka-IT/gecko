@@ -126,26 +126,31 @@ class WalletHeaderContent extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center, // Center vertically within fixed height
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    WalletHeaderAddress(address: address),
+                    Flexible(child: WalletHeaderAddress(address: address)),
                     ScaledSizedBox(height: 6),
                     // Use a placeholder if balance is not yet available
                     if (walletBalance != null)
-                      Balance(address: address, size: 18)
+                      Flexible(child: Balance(address: address, size: 18))
                     else
-                      Container(
-                        height: scaleSize(22),
-                        width: scaleSize(120),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
+                      Flexible(
+                        child: Container(
+                          height: scaleSize(22),
+                          width: scaleSize(120),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
                     ScaledSizedBox(height: 6),
-                    WalletHeaderIdentitySection(
-                      address: address,
-                      idtyStatus: idtyStatus,
-                      identityName: identityName ?? ' ',
+                    Flexible(
+                      child: WalletHeaderIdentitySection(
+                        address: address,
+                        idtyStatus: idtyStatus,
+                        identityName: identityName ?? ' ',
+                      ),
                     ),
                   ],
                 ),
@@ -277,19 +282,24 @@ class _IdentityStatusDisplay extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         // FittedBox only for the name to scale down when too long
-        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameWidget),
-        AnimatedFadeOutIn<String>(
-          data: statusText[currentStatus]!,
-          duration: const Duration(milliseconds: 150),
-          builder: (value) => Text(
-            value,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: scaleSize(15),
-              color: getStatusColor(currentStatus),
-              fontWeight: currentStatus == IdtyStatus.validated ? FontWeight.w500 : FontWeight.w400,
+        Flexible(
+          child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameWidget),
+        ),
+        Flexible(
+          child: AnimatedFadeOutIn<String>(
+            data: statusText[currentStatus]!,
+            duration: const Duration(milliseconds: 150),
+            builder: (value) => Text(
+              value,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: scaleSize(15),
+                color: getStatusColor(currentStatus),
+                fontWeight: currentStatus == IdtyStatus.validated ? FontWeight.w500 : FontWeight.w400,
+              ),
             ),
           ),
         ),

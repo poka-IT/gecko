@@ -65,7 +65,7 @@ class WalletHeader extends ConsumerWidget {
             isOwner: isOwner,
             // Provide data if available, otherwise it will be handled gracefully
             idtyStatus: idtyStatusAsync.hasValue ? idtyStatusAsync.value! : IdtyStatus.none,
-            walletBalance: balanceAsync.value,
+            walletBalance: balanceAsync.hasValue ? balanceAsync.value : null,
             identityName: identityNameAsync.hasValue ? identityNameAsync.value : null,
             customImagePath: customImagePath,
             defaultImagePath: defaultImagePath,

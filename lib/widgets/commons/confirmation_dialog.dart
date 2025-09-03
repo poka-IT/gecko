@@ -64,10 +64,16 @@ Future<bool> showConfirmationDialog({
   final String confirmTextToShow = confirmText ?? type.confirmText;
 
   // Get bottom app bar provider to hide it while dialog is shown
-  final container = ProviderScope.containerOf(context);
-
-  // Hide bottom app bar when dialog is shown
-  container.read(bottomAppBarProvider.notifier).setDialogVisible(true);
+  // Use try-catch to handle cases where ProviderScope is not available
+  ProviderContainer? container;
+  try {
+    container = ProviderScope.containerOf(context);
+    // Hide bottom app bar when dialog is shown
+    container.read(bottomAppBarProvider.notifier).setDialogVisible(true);
+  } catch (e) {
+    // ProviderScope not found - dialog will work without bottom app bar management
+    log.w('ProviderScope not found in showConfirmationDialog context: $e');
+  }
 
   final result = await showDialog<bool>(
     context: context,
@@ -164,7 +170,12 @@ Future<bool> showConfirmationDialog({
   );
 
   // Show bottom app bar again when dialog is closed
-  container.read(bottomAppBarProvider.notifier).setDialogVisible(false);
+  try {
+    container?.read(bottomAppBarProvider.notifier).setDialogVisible(false);
+  } catch (e) {
+    // Ignore errors when restoring bottom app bar state
+    log.w('Error restoring bottom app bar state: $e');
+  }
 
   return result ?? false;
 }

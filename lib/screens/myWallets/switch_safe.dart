@@ -159,6 +159,9 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
 
   /// Performs a smooth transition to myWallets screen with overlay to hide intermediate navigation
   Future<void> _performSmoothTransition(BuildContext context) async {
+    // Check if context is still valid before proceeding
+    if (!context.mounted) return;
+
     // Create an animated overlay with fade transition
     late OverlayEntry overlayEntry;
 
@@ -173,8 +176,11 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       ),
     );
 
-    // Insert overlay
-    Overlay.of(context).insert(overlayEntry);
+    // Insert overlay - check context validity first
+    final overlay = Overlay.of(context);
+    if (!context.mounted) return;
+
+    overlay.insert(overlayEntry);
 
     // Fade in the overlay
     showOverlay = true;
@@ -195,6 +201,13 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
     } catch (e) {
       // Handle any errors during cleanup
       log.w('Error during state cleanup: $e');
+    }
+
+    // Check context validity before navigation
+    if (!context.mounted) {
+      // Clean up overlay if context is no longer valid
+      overlayEntry.remove();
+      return;
     }
 
     // Simply pop back to the previous MyWallets screen instead of creating a new one

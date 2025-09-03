@@ -607,5 +607,14 @@
     "clearAll": "Cancellare tutto",
     "transactionInProgress": "Transazione in corso",
     "validated": "Validato",
-    "errorLoadingWalletData": "Errore nel caricamento dei dati del portafoglio"
+    "errorLoadingWalletData": "Errore nel caricamento dei dati del portafoglio",
+    "reportIssue": "Segnala Problema",
+    "reportIssueDescription": "Invia rapporto diagnostico agli sviluppatori",
+    "reportIssueDialogTitle": "Segnala un Problema",
+    "reportIssueHint": "Descrivi cosa è successo, cosa ti aspettavi, e i passaggi per riprodurre il problema...",
+    "reportIssueSending": "Invio rapporto...",
+    "reportIssueSent": "Rapporto inviato con successo! Grazie per aver aiutato a migliorare Gecko.",
+    "reportIssueError": "Errore nell'invio del rapporto. Riprova più tardi.",
+    "reportIssueCancel": "Annulla",
+    "reportIssueSend": "Invia Rapporto"
 }

@@ -606,5 +606,15 @@
     "sent": "",
     "transactionInProgress": "Transaction in progress",
     "validated": "Validated",
-    "errorLoadingWalletData": "Error loading wallet data"
+    "errorLoadingWalletData": "Error loading wallet data",
+    "reportIssue": "Report Issue",
+    "reportIssueDescription": "Send diagnostic report to developers",
+    "reportIssueDialogTitle": "Report an Issue",
+    "reportIssueHint": "Describe what happened, what you expected, and any steps to reproduce the issue...",
+    "reportIssueSending": "Sending report...",
+    "reportIssueSent": "Report sent successfully! Thank you for helping improve Gecko.",
+    "reportIssueError": "Failed to send report. Please try again later.",
+    "reportIssueRateLimit": "Please wait at least 1 minute between reports.",
+    "reportIssueCancel": "Cancel",
+    "reportIssueSend": "Send Report"
 }

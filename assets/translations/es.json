@@ -606,5 +606,14 @@
     "network": "Red",
     "transactionInProgress": "Transacción en curso",
     "validated": "Validado",
-    "errorLoadingWalletData": "Error al cargar los datos del monedero"
+    "errorLoadingWalletData": "Error al cargar los datos del monedero",
+    "reportIssue": "Reportar Problema",
+    "reportIssueDescription": "Enviar informe de diagnóstico a los desarrolladores",
+    "reportIssueDialogTitle": "Reportar un Problema",
+    "reportIssueHint": "Describe qué pasó, qué esperabas, y los pasos para reproducir el problema...",
+    "reportIssueSending": "Enviando informe...",
+    "reportIssueSent": "¡Informe enviado exitosamente! Gracias por ayudar a mejorar Gecko.",
+    "reportIssueError": "Error al enviar el informe. Por favor, inténtalo de nuevo más tarde.",
+    "reportIssueCancel": "Cancelar",
+    "reportIssueSend": "Enviar Informe"
 }

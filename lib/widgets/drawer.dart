@@ -11,6 +11,9 @@ import 'package:gecko/screens/debug_screen.dart';
 import 'package:gecko/screens/settings.dart';
 import 'package:gecko/screens/currency_page.dart';
 import 'package:gecko/services/snackbar_service.dart';
+import 'package:gecko/widgets/manual_issue_report_dialog.dart';
+import 'package:gecko/providers/providers.dart';
+import 'package:durt2/durt2.dart' show Networks;
 
 class MainDrawer extends ConsumerWidget {
   const MainDrawer({super.key, required this.isWalletsExists});
@@ -106,27 +109,74 @@ class MainDrawer extends ConsumerWidget {
                   ],
                 ),
               ),
-              Align(
-                alignment: FractionalOffset.bottomCenter,
-                child: InkWell(
-                  key: keyCopyAddress,
-                  splashColor: context.colorScheme.primary,
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: Opacity(
-                      opacity: 0.8,
-                      child: Text('Ğecko v$appVersionShort', style: scaledTextStyle(fontSize: 12)),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Manual issue report button - only show when not on G1 network
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final network = ref.watch(networkProvider);
+                      final isG1Network = network == Networks.g1;
+
+                      if (isG1Network) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              showGeneralDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                barrierLabel: '',
+                                pageBuilder: (context, animation, secondaryAnimation) =>
+                                    const ManualIssueReportDialog(),
+                              );
+                            },
+                            icon: Icon(Icons.bug_report, size: scaleSize(18), color: context.colorScheme.onPrimary),
+                            label: Text(
+                              'reportIssue'.tr(),
+                              style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onPrimary),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.colorScheme.primary,
+                              foregroundColor: context.colorScheme.onPrimary,
+                              padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(8)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Version number
+                  Align(
+                    alignment: FractionalOffset.bottomCenter,
+                    child: InkWell(
+                      key: keyCopyAddress,
+                      splashColor: context.colorScheme.primary,
+                      child: Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: Opacity(
+                          opacity: 0.8,
+                          child: Text('Ğecko v$appVersionShort', style: scaledTextStyle(fontSize: 12)),
+                        ),
+                      ),
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: 'Ğecko v$appVersion'));
+                        SnackbarService.showMessage(
+                          context,
+                          message: 'Le numéro de version de Ğecko a été copié dans votre presse papier',
+                          duration: 4,
+                        );
+                      },
                     ),
                   ),
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: 'Ğecko v$appVersion'));
-                    SnackbarService.showMessage(
-                      context,
-                      message: 'Le numéro de version de Ğecko a été copié dans votre presse papier',
-                      duration: 4,
-                    );
-                  },
-                ),
+                ],
               ),
               ScaledSizedBox(height: 15),
             ],

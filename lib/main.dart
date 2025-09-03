@@ -15,6 +15,7 @@
 
 import 'dart:async';
 import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Consumer;
 import 'package:gecko/globals.dart';
@@ -27,15 +28,14 @@ import 'package:flutter/material.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/version_overlay.dart';
 import 'package:provider/provider.dart' as old_provider;
-import 'package:flutter/foundation.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/services/storage_init_service.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/sentry_service.dart';
+import 'package:gecko/services/log_collection_service.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -50,8 +50,15 @@ Future<void> main() async {
 
   // Initialize storage service
   final storageService = StorageInitService();
-  await initHiveForFlutter();
-  await storageService.initHive();
+  if (!storageService.isInitialized) {
+    await initHiveForFlutter();
+    await storageService.initHive();
+  } else {
+    log.i('Storage service already initialized, skipping Hive setup');
+  }
+
+  // Initialize log collection service
+  LogCollectionService.instance.initialize();
 
   // Get saved network from config or default to gtest
   final savedNetworkName = configBox.get('selectedNetwork') ?? 'gtest';
@@ -73,19 +80,17 @@ Future<void> main() async {
       dsn: 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110',
       appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
         runApp(
-          SentryWidget(
-            child: EasyLocalization(
-              supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
-              path: 'assets/translations',
-              fallbackLocale: const Locale('en'),
-              child: const Gecko(),
-            ),
+          EasyLocalization(
+            supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+            path: 'assets/translations',
+            fallbackLocale: const Locale('en'),
+            child: const Gecko(),
           ),
         );
       }),
     );
   } else {
-    log.i('Debug mode enabled: No sentry alert');
+    log.w('Sentry disabled');
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
       runApp(

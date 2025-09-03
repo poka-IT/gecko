@@ -83,6 +83,7 @@ class GeckoHomeWidget extends ConsumerWidget {
                   ),
                 ),
                 ScaledSizedBox(height: 15),
+                // Empty expanded to maintain layout structure
                 Expanded(
                   flex: 1,
                   child: Container(
@@ -93,11 +94,12 @@ class GeckoHomeWidget extends ConsumerWidget {
                         colors: [Colors.transparent, Colors.black.withValues(alpha: 0.9)],
                       ),
                     ),
-                    child: SafeArea(child: HomeButtons(isEasterEggActive: isEasterEggActive)),
                   ),
                 ),
               ],
             ),
+            // HomeButtons in absolute position, independent of content above
+            SafeArea(child: HomeButtons(isEasterEggActive: isEasterEggActive)),
           ],
         ),
       ),

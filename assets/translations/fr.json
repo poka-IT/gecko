@@ -600,5 +600,15 @@
     "pinSecurityBlockedField": "Saisie du code bloquée",
     "transactionInProgress": "Transaction en cours",
     "validated": "Validée",
-    "errorLoadingWalletData": "Erreur lors du chargement des données du portefeuille"
+    "errorLoadingWalletData": "Erreur lors du chargement des données du portefeuille",
+    "reportIssue": "Signaler un problème",
+    "reportIssueDescription": "Envoyer un rapport de diagnostic aux développeurs",
+    "reportIssueDialogTitle": "Signaler un problème",
+    "reportIssueHint": "Décrivez ce qui s'est passé, ce que vous attendiez, et les étapes pour reproduire le problème...",
+    "reportIssueSending": "Envoi du rapport...",
+    "reportIssueSent": "Rapport envoyé avec succès ! Merci d'aider à améliorer Gecko.",
+    "reportIssueError": "Échec de l'envoi du rapport. Veuillez réessayer plus tard.",
+    "reportIssueRateLimit": "Veuillez attendre au moins 1 minute entre les rapports.",
+    "reportIssueCancel": "Annuler",
+    "reportIssueSend": "Envoyer le rapport"
 }

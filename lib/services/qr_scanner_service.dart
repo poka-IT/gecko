@@ -203,7 +203,7 @@ class QrScannerService {
       final controller = MobileScannerController();
       QrScanResult? qrResult;
       controller.barcodes.listen((event) {
-        if (event.barcodes.first.rawValue != null) {
+        if (event.barcodes.isNotEmpty && event.barcodes.first.rawValue != null) {
           controller.pause();
           qrResult = _processScannedContent(event.barcodes.first.rawValue!);
           if (qrResult?.isSuccess == true) {
@@ -322,7 +322,7 @@ class QrScannerService {
     QrScanResult? qrResult;
 
     controller.barcodes.listen((event) {
-      if (event.barcodes.first.rawValue != null) {
+      if (event.barcodes.isNotEmpty && event.barcodes.first.rawValue != null) {
         controller.pause();
         qrResult = _processScannedContent(event.barcodes.first.rawValue!);
         if (qrResult?.isSuccess == true) {

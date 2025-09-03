@@ -159,6 +159,28 @@ class QrScannerService {
         }
 
         return _processScannedContent(barcodeContent);
+      } on TypeError catch (e) {
+        // Handle specific StackParentData casting error from barcode_scan2 plugin
+        if (e.toString().contains('StackParentData')) {
+          SentryService.captureException(
+            e,
+            tag: 'qr_scanner_stackparentdata_error',
+            extra: {
+              'platform': Platform.isAndroid ? 'android' : 'ios',
+              'error_type': 'stack_parent_data_cast_error',
+              'plugin': 'barcode_scan2',
+              'related_issue': 'AXIOM-TEAM-CS',
+              'workaround': 'fallback_to_mobile_scanner',
+              ...systemResources,
+            },
+          );
+
+          // Fallback to mobile_scanner for this scan
+          return await _fallbackToMobileScanner();
+        }
+
+        // Re-throw other TypeErrors
+        rethrow;
       } catch (e) {
         // Handle native scanner initialization errors (e.g., camera access issues)
         // Report to Sentry for debugging native crashes with enhanced context
@@ -292,6 +314,72 @@ class QrScannerService {
     final cleanPubkey = pubkey.split(':')[0];
     final regExp = RegExp(r'^[a-zA-Z0-9]+$', caseSensitive: false, multiLine: false);
     return regExp.hasMatch(cleanPubkey) && cleanPubkey.length > 42 && cleanPubkey.length < 45;
+  }
+
+  /// Fallback method using mobile_scanner when barcode_scan2 fails
+  Future<QrScanResult> _fallbackToMobileScanner() async {
+    final controller = MobileScannerController();
+    QrScanResult? qrResult;
+
+    controller.barcodes.listen((event) {
+      if (event.barcodes.first.rawValue != null) {
+        controller.pause();
+        qrResult = _processScannedContent(event.barcodes.first.rawValue!);
+        if (qrResult?.isSuccess == true) {
+          controller.stop();
+          // ignore: use_build_context_synchronously
+          Navigator.pop(homeContext);
+        }
+      } else {
+        controller.start();
+      }
+    });
+
+    await Navigator.push(
+      homeContext,
+      MaterialPageRoute(
+        builder: (context) => MobileScanner(
+          controller: controller,
+          overlayBuilder: (context, constraints) => Stack(
+            children: [
+              Positioned(
+                top: 20,
+                left: 20,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 1)),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(25),
+                      onTap: () {
+                        Navigator.pop(homeContext);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+                        ),
+                        child: Icon(Icons.arrow_back, color: Colors.white.withValues(alpha: 0.7), size: 24),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return qrResult ?? QrScanResult.cancelled();
   }
 }
 

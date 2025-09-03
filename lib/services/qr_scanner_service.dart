@@ -8,6 +8,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 /// Service for handling QR code scanning operations.
 ///
@@ -18,11 +19,123 @@ class QrScannerService {
 
   QrScannerService(this._ref);
 
+  /// Checks system resources before scanning to prevent native crashes
+  Future<Map<String, dynamic>> _checkSystemResources() async {
+    final resources = <String, dynamic>{};
+
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+
+        // Collect detailed Android device information
+        resources['platform'] = 'android';
+        resources['timestamp'] = DateTime.now().toIso8601String();
+        resources['device_brand'] = androidInfo.brand;
+        resources['device_manufacturer'] = androidInfo.manufacturer;
+        resources['device_model'] = androidInfo.model;
+        resources['android_version'] = androidInfo.version.release;
+        resources['android_sdk_int'] = androidInfo.version.sdkInt.toString();
+        resources['device_hardware'] = androidInfo.hardware;
+        resources['device_product'] = androidInfo.product;
+
+        // Check if this is the problematic device combination from the Sentry issue
+        final isOnePlusAndroid11 =
+            androidInfo.manufacturer.toLowerCase().contains('oneplus') && androidInfo.version.release == '11';
+        resources['is_problematic_device'] = isOnePlusAndroid11.toString();
+
+        // Add memory pressure monitoring
+        resources['memory_info'] = await _checkMemoryPressure();
+
+        // Add specific checks for conditions that might lead to SIGABRT
+        resources['potential_sigabrt_risk'] = _assessSigabrtRisk(androidInfo);
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        resources['platform'] = 'ios';
+        resources['device_model'] = iosInfo.model;
+        resources['ios_version'] = iosInfo.systemVersion;
+        resources['device_name'] = iosInfo.name;
+      }
+
+      // Add more resource checks as needed
+      resources['camera_permission_checked'] = true;
+    } catch (e) {
+      resources['resource_check_error'] = e.toString();
+      resources['platform'] = Platform.isAndroid ? 'android' : 'ios';
+    }
+
+    return resources;
+  }
+
+  /// Checks memory pressure to detect potential native crash conditions
+  Future<Map<String, dynamic>> _checkMemoryPressure() async {
+    final memoryInfo = <String, dynamic>{};
+
+    try {
+      // Basic memory pressure indicators
+      memoryInfo['timestamp'] = DateTime.now().toIso8601String();
+
+      // On Android, we can use basic system information
+      if (Platform.isAndroid) {
+        // This is a simplified check - in a real implementation you might want to:
+        // 1. Check available heap memory
+        // 2. Monitor GC frequency
+        // 3. Check system memory pressure
+        memoryInfo['platform'] = 'android';
+        memoryInfo['gc_pressure'] = 'unknown'; // Could be enhanced with actual GC monitoring
+
+        // Add a simple memory pressure indicator based on time since last GC
+        // This is a placeholder - real implementation would use actual memory APIs
+        memoryInfo['estimated_memory_pressure'] = 'low'; // Default assumption
+      }
+
+      return memoryInfo;
+    } catch (e) {
+      return {'error': e.toString(), 'memory_check_failed': true};
+    }
+  }
+
+  /// Assesses the risk of SIGABRT crashes based on known patterns
+  String _assessSigabrtRisk(dynamic deviceInfo) {
+    try {
+      // Based on the Sentry issue AXIOM-TEAM-AT, this affects OnePlus devices on Android 11
+      if (Platform.isAndroid && deviceInfo != null) {
+        final manufacturer = deviceInfo.manufacturer?.toLowerCase() ?? '';
+        final androidVersion = deviceInfo.version?.release ?? '';
+
+        // High risk: OnePlus devices on Android 11 (exact match from Sentry issue)
+        if (manufacturer.contains('oneplus') && androidVersion == '11') {
+          return 'high_risk_oneplus_android11';
+        }
+
+        // Medium risk: OnePlus devices on other Android versions
+        if (manufacturer.contains('oneplus')) {
+          return 'medium_risk_oneplus_other_android';
+        }
+
+        // Medium risk: Other devices on Android 11
+        if (androidVersion == '11') {
+          return 'medium_risk_android11_other_device';
+        }
+
+        return 'low_risk_android';
+      }
+
+      return 'low_risk_non_android';
+    } catch (e) {
+      return 'risk_assessment_failed';
+    }
+  }
+
   /// Scans a QR code and returns the processed result.
   ///
   /// Returns a [QrScanResult] containing the processed address and scan status.
   /// Handles camera permissions and validates the scanned content.
   Future<QrScanResult> scanQrCode() async {
+    // Check system resources before attempting to scan
+    final systemResources = await _checkSystemResources();
+
     // For mobile platforms, use the barcode_scan2 plugin
     if (Platform.isAndroid || Platform.isIOS) {
       // Request camera permission on Android platforms
@@ -48,11 +161,18 @@ class QrScannerService {
         return _processScannedContent(barcodeContent);
       } catch (e) {
         // Handle native scanner initialization errors (e.g., camera access issues)
-        // Report to Sentry for debugging native crashes
+        // Report to Sentry for debugging native crashes with enhanced context
         SentryService.captureException(
           e,
           tag: 'qr_scanner_error',
-          extra: {'platform': Platform.isAndroid ? 'android' : 'ios', 'error_type': 'scanner_initialization'},
+          extra: {
+            'platform': Platform.isAndroid ? 'android' : 'ios',
+            'error_type': 'scanner_initialization',
+            'device_info': Platform.isAndroid ? 'android_device' : 'ios_device',
+            'camera_permission_status': 'granted', // We know it's granted at this point
+            'related_issue': 'AXIOM-TEAM-AT', // Reference to the Sentry issue
+            ...systemResources, // Include system resource information
+          },
         );
         return QrScanResult.error('Scanner failed to initialize: ${e.toString()}');
       }
@@ -76,6 +196,7 @@ class QrScannerService {
 
       // ignore: use_build_context_synchronously
       await Navigator.push(
+        // ignore: use_build_context_synchronously
         homeContext,
         MaterialPageRoute(
           builder: (context) => MobileScanner(

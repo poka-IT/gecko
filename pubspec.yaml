@@ -32,6 +32,7 @@ dependencies:
   unorm_dart: ^0.3.1+1
   dio: ^5.8.0+1
   package_info_plus: ^8.3.0
+  device_info_plus: ^11.2.0
   dots_indicator: ^4.0.1
   connectivity_plus: ^6.1.4
   image_cropper: ^9.1.0

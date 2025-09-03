@@ -1340,7 +1340,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } else {
       selectedIndexerEndpoint = Networks.listSquidEndpoints.isNotEmpty
           ? (() {
-              String endpoint = Networks.listSquidEndpoints[0];
+              // Safe access to avoid race conditions
+              final endpoints = Networks.listSquidEndpoints;
+              if (endpoints.isEmpty) return 'wss://';
+
+              String endpoint = endpoints[0];
               // Clean endpoint for display (remove paths)
               if (endpoint.contains('/v1beta1/relay')) {
                 endpoint = endpoint.split('/v1beta1/relay')[0];

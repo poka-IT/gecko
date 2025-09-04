@@ -44,5 +44,14 @@
     "copyAddress": "Kopieren\nder Adresse",
     "displayMnemonic": "Meine Wiederherstellungsphrase anzeigen",
     "displayActivity": "Aktivität anzeigen",
-    "displayNActivity": "Anzeigen\nder Aktivität"
+    "displayNActivity": "Anzeigen\nder Aktivität",
+    "choosePassword": "Neuen Sicherheitscode auswählen:",
+    "no": "Nein",
+    "newWallet": "Neue Brieftasche",
+    "validate": "Bestätigen",
+    "confirmPayment": "Die Bezahlung bestätigen",
+    "confirm": "Bestätigen",
+    "chooseThisWallet": "Diese Brieftasche auswählen",
+    "defineWalletAsDefault": "Diese Brieftasche als Standard auswählen",
+    "thisWalletIsDefault": "Diese Brieftasche ist die Standardauswahl"
 }

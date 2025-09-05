@@ -65,7 +65,7 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
       log.i('🔥 Cache buster changed ($previous → $next) - reloading network activity');
       loadTransactions();
     });
-    
+
     loadTransactions();
     _subscribeToNetworkActivity();
   }

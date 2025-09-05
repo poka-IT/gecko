@@ -9,11 +9,11 @@ final squidCacheBusterProvider = StateProvider<int>((ref) => 0);
 void forceSquidProviderRefresh(WidgetRef ref) {
   try {
     log.i('🔥 FORCING complete Squid provider refresh with cache buster');
-    
+
     // Increment the cache buster - this will force ALL providers that watch it to rebuild
     final currentValue = ref.read(squidCacheBusterProvider);
     ref.read(squidCacheBusterProvider.notifier).state = currentValue + 1;
-    
+
     log.i('🔥 Cache buster incremented to ${currentValue + 1} - all dependent providers will rebuild');
   } catch (e) {
     log.e('❌ Error forcing Squid provider refresh: $e');

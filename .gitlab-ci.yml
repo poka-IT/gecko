@@ -392,29 +392,42 @@ build:ios:
     - if: $CI_COMMIT_TAG
     - when: manual
   before_script:
-    # 1) Prépare Flutter (FVM si présent, sinon install locale)
+    # 1) Install FVM if not present
     - |
-      if [ -d ".fvm/flutter_sdk" ]; then
-        export PATH="$PWD/.fvm/flutter_sdk/bin:$PATH"
-      elif ! command -v flutter >/dev/null 2>&1; then
-        echo "Installing Flutter (stable) in \$HOME/flutter..."
-        git clone --depth=1 -b stable https://github.com/flutter/flutter.git "$HOME/flutter"
-        export PATH="$HOME/flutter/bin:$PATH"
+      if ! command -v fvm >/dev/null 2>&1; then
+        echo "Installing FVM locally..."
+        # Download and install FVM locally without sudo - keep full structure
+        mkdir -p "$HOME/.fvm_install"
+        cd "$HOME/.fvm_install"
+        curl -fsSL "https://github.com/leoafarias/fvm/releases/download/3.2.1/fvm-3.2.1-macos-arm64.tar.gz" -o fvm.tar.gz
+        tar -xzf fvm.tar.gz
+        rm fvm.tar.gz
+        # Create symlink to the fvm binary in a bin directory
+        mkdir -p "$HOME/.fvm_bin"
+        ln -sf "$HOME/.fvm_install/fvm/fvm" "$HOME/.fvm_bin/fvm"
+        ls -la "$HOME/.fvm_bin/"
+        ls -la "$HOME/.fvm_install/fvm/"
+        export PATH="$HOME/.fvm_bin:$PATH"
       fi
-      flutter --version
-      dart --version || true
-      # 2) Dépendances
-      flutter pub get
-      # 3) iOS toolchain
-      flutter doctor -v
-      # Optionnel: fixe explicitement Xcode si nécessaire
-      # export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+    # 2) Ensure FVM is in PATH for all subsequent commands
+    - export PATH="$HOME/.fvm_bin:$PATH"
+    # 3) Install and use Flutter version from .fvmrc
+    - cd "$CI_PROJECT_DIR"
+    - fvm install
+    - fvm use --force
+    # 4) Setup CI dependencies (removes local durt2 override, uses pub.dev version)
+    - ./scripts/setup-ci-dependencies.sh
+    # 5) iOS setup
+    - fvm flutter doctor -v
+    # Optional: explicitly set Xcode if needed
+    # export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
   script:
+    - export PATH="$HOME/.fvm_bin:$PATH"
     - export VERSION=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $1}')
     - export BUILD=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $2}')
     - echo "Building Gecko iOS IPA v${VERSION}+${BUILD}"
-    # Build IPA (codesign attendu déjà en place sur la machine, sinon ajoute le setup keychain avant)
-    - flutter build ipa --release --build-name="$VERSION" --build-number="$BUILD" --export-options-plist=ios/ExportOptions.plist
+    # Build IPA (codesign expected to be already set up on the machine)
+    - fvm flutter build ipa --release --build-name="$VERSION" --build-number="$BUILD" --export-options-plist=ios/ExportOptions.plist
     # Artifacts
     - mkdir -p artifacts/ios artifacts
     - IPA_OUT=$(ls -1 build/ios/ipa/*.ipa | head -n1)
@@ -433,32 +446,65 @@ build:macos:
     - if: $CI_COMMIT_TAG
     - when: manual
   before_script:
-    # 1) Prépare Flutter (FVM si présent, sinon install locale)
+    # 1) Install FVM if not present
     - |
-      if [ -d ".fvm/flutter_sdk" ]; then
-        export PATH="$PWD/.fvm/flutter_sdk/bin:$PATH"
-      elif ! command -v flutter >/dev/null 2>&1; then
-        echo "Installing Flutter (stable) in \$HOME/flutter..."
-        git clone --depth=1 -b stable https://github.com/flutter/flutter.git "$HOME/flutter"
-        export PATH="$HOME/flutter/bin:$PATH"
+      if ! command -v fvm >/dev/null 2>&1; then
+        echo "Installing FVM locally..."
+        # Download and install FVM locally without sudo - keep full structure
+        mkdir -p "$HOME/.fvm_install"
+        cd "$HOME/.fvm_install"
+        curl -fsSL "https://github.com/leoafarias/fvm/releases/download/3.2.1/fvm-3.2.1-macos-arm64.tar.gz" -o fvm.tar.gz
+        tar -xzf fvm.tar.gz
+        rm fvm.tar.gz
+        # Create symlink to the fvm binary in a bin directory
+        mkdir -p "$HOME/.fvm_bin"
+        ln -sf "$HOME/.fvm_install/fvm/fvm" "$HOME/.fvm_bin/fvm"
+        ls -la "$HOME/.fvm_bin/"
+        ls -la "$HOME/.fvm_install/fvm/"
+        export PATH="$HOME/.fvm_bin:$PATH"
       fi
-      flutter --version
-      flutter config --enable-macos-desktop
-      flutter pub get
+    # 2) Ensure FVM is in PATH for all subsequent commands
+    - export PATH="$HOME/.fvm_bin:$PATH"
+    # 3) Install and use Flutter version from .fvmrc
+    - cd "$CI_PROJECT_DIR"
+    - fvm install
+    - fvm use --force
+    # 4) Setup CI dependencies (removes local durt2 override, uses pub.dev version)
+    - ./scripts/setup-ci-dependencies.sh
+    # 5) macOS setup
+    - fvm flutter config --enable-macos-desktop
   script:
+    - export PATH="$HOME/.fvm_bin:$PATH"
     - export VERSION=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $1}')
     - export BUILD=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $2}')
-    - export ARCH=$(uname -m) # arm64 ou x86_64
+    - export ARCH=$(uname -m) # arm64 or x86_64
     - echo "Building Gecko macOS v${VERSION}+${BUILD} (${ARCH})"
-    - flutter build macos --release --build-name="$VERSION" --build-number="$BUILD"
-    # Packager l'app (.zip)
+    # Disable code signing for macOS build by modifying Xcode project
+    - |
+      sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' macos/Runner.xcodeproj/project.pbxproj
+      sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' macos/Runner.xcodeproj/project.pbxproj
+      sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "";/g' macos/Runner.xcodeproj/project.pbxproj
+      sed -i '' '/CODE_SIGNING_REQUIRED/d' macos/Runner.xcodeproj/project.pbxproj
+      sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' macos/Runner.xcodeproj/project.pbxproj
+      # Add explicit code signing disabled settings
+      sed -i '' 's/buildSettings = {/buildSettings = {\
+        CODE_SIGNING_REQUIRED = NO;\
+        CODE_SIGNING_ALLOWED = NO;/g' macos/Runner.xcodeproj/project.pbxproj
+    # Set Xcode build settings to disable code signing
+    - export FLUTTER_XCODE_CODE_SIGN_IDENTITY=""
+    - export FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
+    - export FLUTTER_XCODE_CODE_SIGNING_ALLOWED=NO
+    - fvm flutter build macos --release --build-name="$VERSION" --build-number="$BUILD" --dart-define=FLUTTER_XCODE_CODE_SIGN_IDENTITY="" --dart-define=FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
+    # Package the app (.zip)
     - mkdir -p artifacts/macos artifacts
     - APP_PATH=$(ls -d build/macos/Build/Products/Release/*.app | head -n1)
     - test -d "$APP_PATH"
     - pushd "$(dirname "$APP_PATH")"
-    - zip -r "../../../artifacts/macos/gecko-${VERSION}+${BUILD}-macos-${ARCH}.zip" "$(basename "$APP_PATH")"
+    - zip -r "$CI_PROJECT_DIR/artifacts/macos/gecko-${VERSION}+${BUILD}-macos-${ARCH}.zip" "$(basename "$APP_PATH")"
     - popd
     - echo "${VERSION}+${BUILD}" > artifacts/version.txt
+    # Restore original Xcode project
+    - git checkout macos/Runner.xcodeproj/project.pbxproj || true
   artifacts:
     paths:
       - artifacts/

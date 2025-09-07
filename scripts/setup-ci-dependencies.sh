@@ -19,10 +19,15 @@ if [ "$CI" = "true" ]; then
     
     echo "✅ Local overrides removed - using pub.dev dependencies"
     echo "📋 Remaining dependency_overrides:"
-    sed -n '/dependency_overrides:/,/^[a-zA-Z]/p' pubspec.yaml | head -n -1
+    sed -n '/dependency_overrides:/,/^[a-zA-Z]/p' pubspec.yaml | sed '$d'
 else
     echo "🏠 Local environment detected - keeping local overrides"
 fi
 
 echo "🚀 Running flutter pub get..."
-flutter pub get
+# Use fvm flutter if available, otherwise fallback to flutter
+if command -v fvm >/dev/null 2>&1 && [ -f ".fvmrc" ]; then
+    fvm flutter pub get
+else
+    flutter pub get
+fi

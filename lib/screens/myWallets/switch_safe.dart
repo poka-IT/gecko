@@ -191,9 +191,6 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
 
     // Clear GlobalKey state to avoid conflicts when rebuilding with new safe
     try {
-      // Force cleanup of previous WalletsHome static state
-      cleanupWalletsHomeKeys();
-
       if (context.mounted) {
         // Clean dismount of current route before navigation
         await Future.delayed(const Duration(milliseconds: 50));
@@ -210,9 +207,14 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       return;
     }
 
-    // Simply pop back to the previous MyWallets screen instead of creating a new one
-    // This maintains the proper navigation stack: Home -> MyWallets (refreshed with new safe)
-    Navigator.pop(context);
+    // Replace with a new WalletsHome that has a unique key based on the safe's fingerprint
+    // This ensures each safe gets its own widget instance, preventing GlobalKey conflicts
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Consumer(builder: (context, ref, child) => WalletsHome.fromCurrentSafe(ref)),
+      ),
+    );
 
     // Wait a bit then fade out the overlay
     Future.delayed(const Duration(milliseconds: 50), () {

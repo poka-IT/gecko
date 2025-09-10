@@ -1,4 +1,6 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:gecko/screens/home/home_screen.dart';
 import 'package:gecko/screens/myWallets/restore_safe.dart';
@@ -17,6 +19,10 @@ import 'package:gecko/screens/onBoarding/6.dart';
 import 'package:gecko/screens/onBoarding/7.dart';
 import 'package:gecko/screens/onBoarding/8.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
+import 'package:gecko/screens/onBoarding/import_choice_screen.dart';
+import 'package:gecko/screens/onBoarding/legacy_login_screen.dart';
+import 'package:gecko/screens/onBoarding/wallet_selection_screen.dart';
+import 'package:gecko/screens/onBoarding/safe_selection_screen.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
 
@@ -32,6 +38,57 @@ class UnlockingWalletArguments extends RouteArguments {
   final bool canSwitch;
 
   UnlockingWalletArguments({required this.wallet, this.canSwitch = false});
+}
+
+/// Data for legacy wallet migration
+class LegacyMigrationData {
+  final String fromAddress;
+  final Uint8List rawSeed;
+  final bool hasIdentity;
+  final bool isToExistingSafe;
+  final String? targetWalletAddress;
+  final int? targetSafeNumber;
+
+  LegacyMigrationData({
+    required this.fromAddress,
+    required this.rawSeed,
+    required this.hasIdentity,
+    this.isToExistingSafe = false,
+    this.targetWalletAddress,
+    this.targetSafeNumber,
+  });
+
+  LegacyMigrationData copyWith({
+    String? fromAddress,
+    Uint8List? rawSeed,
+    bool? hasIdentity,
+    bool? isToExistingSafe,
+    String? targetWalletAddress,
+    int? targetSafeNumber,
+  }) {
+    return LegacyMigrationData(
+      fromAddress: fromAddress ?? this.fromAddress,
+      rawSeed: rawSeed ?? this.rawSeed,
+      hasIdentity: hasIdentity ?? this.hasIdentity,
+      isToExistingSafe: isToExistingSafe ?? this.isToExistingSafe,
+      targetWalletAddress: targetWalletAddress ?? this.targetWalletAddress,
+      targetSafeNumber: targetSafeNumber ?? this.targetSafeNumber,
+    );
+  }
+}
+
+/// Arguments for onboarding step 1
+class OnboardingStepOneArguments extends RouteArguments {
+  final LegacyMigrationData? legacyMigrationData;
+
+  OnboardingStepOneArguments({this.legacyMigrationData});
+}
+
+/// Arguments for onboarding step 2
+class OnboardingStepTwoArguments extends RouteArguments {
+  final LegacyMigrationData legacyMigrationData;
+
+  OnboardingStepTwoArguments({required this.legacyMigrationData});
 }
 
 /// Arguments for onboarding step 5
@@ -60,8 +117,13 @@ class WalletOptionsArguments extends RouteArguments {
 class OnboardingStepsSevenToNineArguments extends RouteArguments {
   final bool scanDerivation;
   final bool fromRestore;
+  final LegacyMigrationData? legacyMigrationData;
 
-  OnboardingStepsSevenToNineArguments({this.scanDerivation = false, this.fromRestore = false});
+  OnboardingStepsSevenToNineArguments({
+    this.scanDerivation = false,
+    this.fromRestore = false,
+    this.legacyMigrationData,
+  });
 }
 
 /// Arguments for onboarding step 10
@@ -69,16 +131,42 @@ class OnboardingStepTenArguments extends RouteArguments {
   final bool scanDerivation;
   final bool fromRestore;
   final String pinCode;
+  final String? legacySalt;
+  final String? legacyPassword;
+  final LegacyMigrationData? legacyMigrationData;
 
-  OnboardingStepTenArguments({this.scanDerivation = false, this.fromRestore = false, required this.pinCode});
+  OnboardingStepTenArguments({
+    this.scanDerivation = false,
+    this.fromRestore = false,
+    required this.pinCode,
+    this.legacySalt,
+    this.legacyPassword,
+    this.legacyMigrationData,
+  });
 }
 
 /// Arguments for onboarding step 11
 class OnboardingStepElevenArguments extends RouteArguments {
   final bool fromRestore;
   final String? pinCode; // Add PIN code parameter
+  final bool isLegacyMode; // Add legacy mode flag
 
-  OnboardingStepElevenArguments({this.fromRestore = false, this.pinCode});
+  OnboardingStepElevenArguments({this.fromRestore = false, this.pinCode, this.isLegacyMode = false});
+}
+
+/// Arguments for wallet selection screen
+class WalletSelectionArguments extends RouteArguments {
+  final LegacyMigrationData migrationData;
+  final String pinCode;
+
+  WalletSelectionArguments({required this.migrationData, required this.pinCode});
+}
+
+class SafeSelectionArguments extends RouteArguments {
+  final LegacyMigrationData migrationData;
+  final String pinCode;
+
+  SafeSelectionArguments({required this.migrationData, required this.pinCode});
 }
 
 /// Arguments for restore safe
@@ -116,6 +204,10 @@ class RouteNames {
   static const String onboardingStepEleven = '/onboardingStepEleven';
   static const String restoreSafe = '/restoreSafe';
   static const String printWallet = '/printWallet';
+  static const String importChoice = '/importChoice';
+  static const String legacyLogin = '/legacyLogin';
+  static const String walletSelection = '/walletSelection';
+  static const String safeSelection = '/safeSelection';
 
   /// Generate wallet options route with address parameter
   static String walletOptionsWithAddress(String address) => '/walletoptions/$address';
@@ -307,7 +399,9 @@ class AppRoutes {
   static Map<String, WidgetBuilder> getRoutes() {
     return {
       RouteNames.home: (context) => const HomeScreen(),
-      RouteNames.myWallets: (context) => const WalletsHome(),
+      RouteNames.myWallets: (context) {
+        return Consumer(builder: (context, ref, child) => WalletsHome.fromCurrentSafe(ref));
+      },
       RouteNames.search: (context) => const SearchScreen(),
       RouteNames.searchResult: (context) => const SearchResultScreen(),
       RouteNames.unlockingWallet: (context) {
@@ -341,7 +435,11 @@ class AppRoutes {
       },
       RouteNames.onboardingStepNine: (context) {
         final args = RouteUtils.getArguments<OnboardingStepsSevenToNineArguments>(context);
-        return OnboardingStepNine(scanDerivation: args.scanDerivation, fromRestore: args.fromRestore);
+        return OnboardingStepNine(
+          scanDerivation: args.scanDerivation,
+          fromRestore: args.fromRestore,
+          legacyMigrationData: args.legacyMigrationData,
+        );
       },
       RouteNames.onboardingStepTen: (context) {
         final args = RouteUtils.getArguments<OnboardingStepTenArguments>(context);
@@ -349,11 +447,14 @@ class AppRoutes {
           scanDerivation: args.scanDerivation,
           fromRestore: args.fromRestore,
           pinCode: args.pinCode,
+          legacySalt: args.legacySalt,
+          legacyPassword: args.legacyPassword,
+          legacyMigrationData: args.legacyMigrationData,
         );
       },
       RouteNames.onboardingStepEleven: (context) {
         final args = RouteUtils.getOptionalArguments<OnboardingStepElevenArguments>(context);
-        return OnboardingStepEleven(fromRestore: args?.fromRestore ?? false);
+        return OnboardingStepEleven(fromRestore: args?.fromRestore ?? false, isLegacyMode: args?.isLegacyMode ?? false);
       },
       RouteNames.restoreSafe: (context) {
         final args = RouteUtils.getOptionalArguments<RestoreSafeArguments>(context);
@@ -373,6 +474,16 @@ class AppRoutes {
       RouteNames.printWallet: (context) {
         final args = RouteUtils.getArguments<PrintWalletArguments>(context);
         return PrintWallet(args.sentence);
+      },
+      RouteNames.importChoice: (context) => const ImportChoiceScreen(),
+      RouteNames.legacyLogin: (context) => const LegacyLoginScreen(),
+      RouteNames.walletSelection: (context) {
+        final args = RouteUtils.getArguments<WalletSelectionArguments>(context);
+        return WalletSelectionScreen(migrationData: args.migrationData, pinCode: args.pinCode);
+      },
+      RouteNames.safeSelection: (context) {
+        final args = RouteUtils.getArguments<SafeSelectionArguments>(context);
+        return SafeSelectionScreen(migrationData: args.migrationData, pinCode: args.pinCode);
       },
     };
   }

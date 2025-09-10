@@ -3,6 +3,7 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart' show Box;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/routes.dart';
 
 /// Provides the global, initialized instance of [d.Durt].
 ///
@@ -67,3 +68,7 @@ final defaultWalletProvider = Provider<d.WalletEntity>((ref) {
   // defaultWallet now always returns a valid wallet or throws a meaningful exception
   return walletService.defaultWallet;
 });
+
+/// Provider for pending legacy migration data
+/// This is used to store migration data between wallet options screen and onboarding completion
+final pendingLegacyMigrationProvider = StateProvider<LegacyMigrationData?>((ref) => null);

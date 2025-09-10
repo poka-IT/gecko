@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, MembershipStatus, Durt;
+import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, Durt, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,11 +25,13 @@ import 'package:gecko/screens/myWallets/migrate_g1v1_screen.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
-import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
 import 'package:gecko/utils/identity_utils.dart';
+import 'package:gecko/screens/myWallets/change_pin.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/routes.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated}) : super(key: keyMyWallets);
@@ -42,6 +44,8 @@ class WalletOptions extends ConsumerStatefulWidget {
 
 class _WalletOptionsState extends ConsumerState<WalletOptions> {
   late String currentWalletName;
+
+  bool get isLegacyWallet => widget.wallet.safe.target?.safeType == SafeType.legacy;
 
   @override
   void initState() {
@@ -91,13 +95,34 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ScaledSizedBox(height: 16), // Add some top spacing
+                    if (isLegacyWallet)
+                      // Warning about legacy wallet
+                      Container(
+                        margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                        padding: EdgeInsets.all(scaleSize(12)),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.warning_amber, color: Colors.orange, size: scaleSize(20)),
+                            ScaledSizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'legacyWalletWarning'.tr(),
+                                style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       spacing: 8,
                       children: [
                         buildConfirmIdentitySection(context, ref),
-                        if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                          buildRenewMembershipSection(context, ref),
                         buildOptionsSection(context),
                         if (!isAlone)
                           buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
@@ -152,7 +177,10 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                           deleteWallet(context, ref, currentSafe),
                         if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
                           ManageMembershipButton(address: widget.wallet.address),
-                        if (isAlone) aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+                        if (isAlone)
+                          isLegacyWallet
+                              ? _buildLegacyWalletOptions()
+                              : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
                         ScaledSizedBox(height: 32), // Add bottom padding for better scrolling
                       ],
                     ),
@@ -352,50 +380,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     );
   }
 
-  Widget buildRenewMembershipSection(BuildContext context, WidgetRef ref) {
-    return FutureBuilder<MembershipStatus>(
-      future: ref.read(storageServiceProvider).getMembershipStatus(widget.wallet.address),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.hasError) {
-          return const SizedBox.shrink();
-        }
-
-        final info = MembershipRenewal.calculateRenewalInfo(snapshot.data!);
-
-        final twentyDaysBeforeExpiration = info.expireDate?.subtract(const Duration(days: 20));
-        final shouldHideButton =
-            !info.canRenew ||
-            (info.expireDate != null && !(twentyDaysBeforeExpiration?.isBefore(DateTime.now()) ?? false));
-
-        if (shouldHideButton) return const SizedBox.shrink();
-
-        return Container(
-          margin: EdgeInsets.only(bottom: scaleSize(24)),
-          child: Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                height: scaleSize(50),
-                child: ElevatedButton(
-                  key: keyRenewMembership,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.colorScheme.primary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  onPressed: () => MembershipRenewal.executeRenewal(context, ref, widget.wallet.address),
-                  child: Text('renewMembership'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.white)),
-                ),
-              ),
-              ScaledSizedBox(height: 8),
-              MembershipRenewal.buildExpirationText(info, width: 250),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget buildOptionsSection(BuildContext context) {
     return activityWidget(context);
   }
@@ -448,8 +432,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   }
 
   Widget buildConfirmIdentitySection(BuildContext context, WidgetRef ref) {
-    // Use hybrid provider to handle identity creation (same as wallet header)
-    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(widget.wallet.address));
+    // Check if user has identity but not confirmed yet
+    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(widget.wallet.address));
 
     return idtyStatusAsync.when(
       data: (idtyStatus) => Visibility(
@@ -487,6 +471,249 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       ),
       loading: () => const SizedBox.shrink(), // Hide while loading
       error: (_, _) => const SizedBox.shrink(), // Hide on error
+    );
+  }
+
+  Future<void> _migrateToNewSafeSimplified(BuildContext context, WidgetRef ref) async {
+    try {
+      // Check identity status of the legacy wallet
+      final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(widget.wallet.address);
+      final hasIdentity = idtyStatus != IdtyStatus.none && idtyStatus != IdtyStatus.unknown;
+
+      // Show migration confirmation dialog for new safe
+      final confirmMessage = hasIdentity
+          ? 'migrationConfirmWithIdentity'.tr(args: [Durt.i.network.symbol, 'newWallet'.tr()])
+          : 'migrationConfirmBalanceOnly'.tr(args: [Durt.i.network.symbol, 'newWallet'.tr()]);
+
+      final confirmed = await showConfirmationDialog(
+        context: context,
+        title: 'migrationConfirmTitle'.tr(),
+        message: confirmMessage,
+        type: ConfirmationDialogType.info,
+      );
+
+      if (confirmed != true) return;
+
+      // Ask for PIN code
+      if (!await PinCodeService.askPinCode()) return;
+
+      // Get legacy wallet information for migration
+      final rawSeed = await ref
+          .read(walletServiceProvider)
+          .getLegacyRawSeed(address: widget.wallet.address, pinCode: PinCodeService.pinCode);
+
+      // Store migration data in provider for onboarding to pick up
+      ref.read(pendingLegacyMigrationProvider.notifier).state = LegacyMigrationData(
+        fromAddress: widget.wallet.address,
+        rawSeed: rawSeed,
+        hasIdentity: hasIdentity,
+      );
+
+      // Navigate to safe creation - the onboarding will handle migration automatically
+      Navigator.pushNamed(context, RouteNames.onboardingStepOne);
+    } catch (e) {
+      log.e('Migration to new safe error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('migrationError'.tr(args: [e.toString()])),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _migrateToExistingSafeSimplified(BuildContext context, WidgetRef ref) async {
+    try {
+      // Check identity status of the legacy wallet
+      final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(widget.wallet.address);
+      final hasIdentity = idtyStatus != IdtyStatus.none && idtyStatus != IdtyStatus.unknown;
+
+      // Show migration confirmation dialog for existing safe
+      final confirmMessage = hasIdentity
+          ? 'migrationConfirmWithIdentity'.tr(args: [Durt.i.network.symbol, 'existingSafe'.tr()])
+          : 'migrationConfirmBalanceOnly'.tr(args: [Durt.i.network.symbol, 'existingSafe'.tr()]);
+
+      final confirmed = await showConfirmationDialog(
+        context: context,
+        title: 'migrationConfirmTitle'.tr(),
+        message: confirmMessage,
+        type: ConfirmationDialogType.info,
+      );
+
+      if (confirmed != true) return;
+
+      // Ask for PIN code
+      if (!await PinCodeService.askPinCode()) return;
+
+      // Get legacy wallet information for migration
+      final rawSeed = await ref
+          .read(walletServiceProvider)
+          .getLegacyRawSeed(address: widget.wallet.address, pinCode: PinCodeService.pinCode);
+
+      // Create migration data
+      final migrationData = LegacyMigrationData(
+        fromAddress: widget.wallet.address,
+        rawSeed: rawSeed,
+        hasIdentity: hasIdentity,
+        isToExistingSafe: true,
+      );
+
+      // Check if there are existing non-legacy safes
+      final walletService = ref.read(walletServiceProvider);
+      final allSafes = walletService.safeBox.getAll();
+      final existingSafes = allSafes.where((safe) {
+        return safe.safeType == SafeType.mnemonic && safe.number >= 0;
+      }).toList();
+
+      if (context.mounted) {
+        if (existingSafes.isNotEmpty) {
+          // Navigate to safe selection screen
+          Navigator.pushNamed(
+            context,
+            RouteNames.safeSelection,
+            arguments: SafeSelectionArguments(migrationData: migrationData, pinCode: PinCodeService.pinCode),
+          );
+        } else {
+          // No existing safes, go directly to import flow
+          ref.read(pendingLegacyMigrationProvider.notifier).state = migrationData;
+          Navigator.pushNamed(context, RouteNames.restoreSafe, arguments: RestoreSafeArguments(skipIntro: true));
+        }
+      }
+    } catch (e) {
+      log.e('Migration to existing safe error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('migrationError'.tr(args: [e.toString()])),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _changePinCode(BuildContext context, WidgetRef ref) async {
+    // For legacy wallets, we need to handle PIN change differently
+    // because we need to re-encrypt the salt and password with the new PIN
+
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+
+    // Ask for current PIN first
+    if (!await PinCodeService.askPinCode(force: true)) return;
+
+    // Navigate to change PIN screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            ChangePinScreen(walletName: widget.wallet.name ?? 'legacyWallet'.tr(), walletProvider: myWalletProvider),
+      ),
+    );
+  }
+
+  Widget _buildLegacyWalletOptions() {
+    return Column(
+      children: [
+        // Migrate to new safe option
+        InkWell(
+          onTap: () async {
+            await _migrateToNewSafeSimplified(context, ref);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.shield_outlined, size: scaleSize(24), color: greenColor.withValues(alpha: 0.8)),
+                ScaledSizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'migrateToNewSafe'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 16,
+                          color: context.colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'migrateToNewSafeDescription'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 13,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Migrate to existing safe option
+        InkWell(
+          onTap: () async {
+            await _migrateToExistingSafeSimplified(context, ref);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: scaleSize(24),
+                  color: context.colorScheme.primary.withValues(alpha: 0.8),
+                ),
+                ScaledSizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'migrateToExistingSafe'.tr(),
+                        style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                      ),
+                      Text(
+                        'migrateToExistingSafeDescription'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 13,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Change PIN code option
+        InkWell(
+          onTap: () async {
+            await _changePinCode(context, ref);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset('assets/walletOptions/key.png', height: scaleSize(24)),
+                ScaledSizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'changePassword'.tr(),
+                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                    softWrap: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

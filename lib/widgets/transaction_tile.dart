@@ -250,11 +250,6 @@ class TransactionTile extends StatelessWidget {
                         color: context.colorScheme.onSurface,
                       ),
                     ),
-                    ScaledSizedBox(height: 2),
-                    Text(
-                      'automaticIncome'.tr(),
-                      style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
-                    ),
                   ],
                 ),
               ),

@@ -149,8 +149,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // 3. Clear G1WalletsList cache (search results)
       await g1WalletsBox.clear();
 
-      //TODO: Ensure duniter storage provider is cleared, check with balance, certs and status wallet
-
       // ignore: avoid_print
       print('🔔 Cleaned up Duniter subscriptions and caches');
     } catch (e) {

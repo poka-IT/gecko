@@ -19,9 +19,19 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OnboardingStepNine extends ConsumerStatefulWidget {
-  const OnboardingStepNine({super.key, this.scanDerivation = false, this.fromRestore = false});
+  const OnboardingStepNine({
+    super.key,
+    this.scanDerivation = false,
+    this.fromRestore = false,
+    this.legacySalt,
+    this.legacyPassword,
+    this.legacyMigrationData,
+  });
   final bool scanDerivation;
   final bool fromRestore;
+  final String? legacySalt;
+  final String? legacyPassword;
+  final LegacyMigrationData? legacyMigrationData;
 
   @override
   ConsumerState<OnboardingStepNine> createState() => _OnboardingStepNineState();
@@ -128,6 +138,9 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
                   scanDerivation: widget.scanDerivation,
                   pinCode: enterPin.text,
                   fromRestore: widget.fromRestore,
+                  legacySalt: widget.legacySalt,
+                  legacyPassword: widget.legacyPassword,
+                  legacyMigrationData: widget.legacyMigrationData,
                 ),
               );
             } else {

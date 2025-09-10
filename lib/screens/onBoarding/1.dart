@@ -11,6 +11,8 @@ class OnboardingStepOne extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as OnboardingStepOneArguments?;
+
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('newWallet'.tr()),
@@ -20,6 +22,9 @@ class OnboardingStepOne extends StatelessWidget {
           assetName: 'fabrication-de-portefeuille.png',
           buttonText: '>',
           nextScreen: RouteNames.onboardingStepTwo,
+          routeArguments: args?.legacyMigrationData != null
+              ? OnboardingStepTwoArguments(legacyMigrationData: args!.legacyMigrationData!)
+              : null,
           pagePosition: 0,
           isMd: true,
         ),

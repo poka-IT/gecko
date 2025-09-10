@@ -1,9 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity;
+import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -23,16 +24,34 @@ import 'package:gecko/widgets/wallet_tile_membre.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
-/// Clean up all static GlobalKey state in WalletsHome - useful for safe switching
-void cleanupWalletsHomeKeys() {
-  _WalletsHomeContent.cleanupStaticState();
-}
+// Note: cleanupWalletsHomeKeys() is no longer needed since we use instance-specific state
 
 class WalletsHome extends ConsumerStatefulWidget {
-  const WalletsHome({super.key});
+  /// The safe fingerprint used for unique widget identity
+  final String safeFingerprint;
+
+  /// Create WalletsHome with mandatory safe fingerprint for unique widget identity
+  /// This prevents GlobalKey conflicts by ensuring each safe gets its own widget instance
+  WalletsHome({required this.safeFingerprint}) : super(key: ValueKey('wallets_safe_$safeFingerprint'));
 
   @override
   ConsumerState<WalletsHome> createState() => _WalletsHomeState();
+
+  /// Factory constructor that automatically resolves the current safe's fingerprint
+  /// This is the recommended way to create WalletsHome instances
+  factory WalletsHome.fromCurrentSafe(WidgetRef ref) {
+    final walletService = ref.read(walletServiceProvider);
+    final currentSafeNumber = walletService.defaultSafeBoxNumber;
+
+    // Find the safe by number (not by ObjectBox ID) to avoid "Illegal ID value: 0" error
+    final allSafes = walletService.safeBox.getAll();
+    final currentSafe = allSafes.where((safe) => safe.number == currentSafeNumber).firstOrNull;
+
+    // Use the safe's fingerprint as a unique key to ensure each safe gets its own widget tree
+    final uniqueKey = currentSafe?.fingerprint ?? 'unknown_safe_$currentSafeNumber';
+
+    return WalletsHome(safeFingerprint: uniqueKey);
+  }
 }
 
 class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProviderStateMixin {
@@ -71,34 +90,33 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
         }
 
         // Show the wallets list
-        return Scaffold(body: _WalletsHomeContent());
+        return Scaffold(body: _WalletsHomeContent(safeFingerprint: widget.safeFingerprint));
       },
     );
   }
 }
 
-class _WalletsHomeContent extends ConsumerWidget {
-  // Static flag to prevent tutorial from showing multiple times in same session
-  static bool _tutorialShownInSession = false;
-  static int? _lastSafeNumber; // Track last safe to reset tutorial when safe changes
-  // Static GlobalKey counter to ensure unique keys for each safe
-  static int _keyCounter = 0;
-  // Flag to prevent multiple tutorial calls during the same build cycle
-  static bool _tutorialScheduled = false;
-  // Current tutorial key for the active safe
-  static GlobalKey? _currentTutorialKey;
+class _WalletsHomeContent extends ConsumerStatefulWidget {
+  /// The safe fingerprint for unique instance identification
+  final String safeFingerprint;
 
-  /// Clean up all static state - useful for safe switching
-  static void cleanupStaticState() {
-    _keyCounter++; // Increment counter to ensure new unique keys
-    _tutorialShownInSession = false;
-    _tutorialScheduled = false;
-    _lastSafeNumber = null;
-    _currentTutorialKey = null; // Clear current tutorial key
-  }
+  const _WalletsHomeContent({required this.safeFingerprint});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_WalletsHomeContent> createState() => _WalletsHomeContentState();
+}
+
+class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
+  // Instance-specific state (no more static variables!)
+  bool _tutorialShownInSession = false;
+  int? _lastSafeNumber;
+  int _keyCounter = 0;
+  bool _tutorialScheduled = false;
+  GlobalKey? _currentTutorialKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
 
     final SafeEntity? currentSafe = () {
@@ -119,17 +137,9 @@ class _WalletsHomeContent extends ConsumerWidget {
       _tutorialScheduled = false;
       _lastSafeNumber = currentSafe.number;
 
-      // Increment key counter and create new tutorial key for new safe
+      // Increment key counter and reset tutorial key for new safe
       _keyCounter++;
-      _currentTutorialKey = null; // Reset current tutorial key
-
-      // Reset tutorial session flags for new safe
-      _tutorialScheduled = false; // Allow tutorial scheduling for new safe
-
-      // Force a small delay to ensure previous widgets are fully disposed
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Additional cleanup after frame is built
-      });
+      _currentTutorialKey = null; // Reset tutorial key for new safe
     }
 
     if (myWalletProvider.listWallets.isEmpty) {
@@ -201,10 +211,10 @@ class _WalletsHomeContent extends ConsumerWidget {
     final int targetWalletIndex = frozenWalletsWithoutIdty.length > 1 ? 1 : 0;
     final bool shouldShowTutorial = frozenWalletsWithoutIdty.length >= 2;
 
-    // Create a stable tutorial key using static map to avoid recreating keys
+    // Create a stable tutorial key using the safe fingerprint for true uniqueness
     final String tutorialKeyId = shouldShowTutorial && walletsWithoutIdty.isNotEmpty
-        ? 'tutorial_${walletsWithoutIdty[targetWalletIndex].address}_safe${currentSafe.number}'
-        : 'tutorial_empty_safe${currentSafe.number}';
+        ? 'tutorial_${walletsWithoutIdty[targetWalletIndex].address}_${widget.safeFingerprint}'
+        : 'tutorial_empty_${widget.safeFingerprint}';
 
     // Create or reuse tutorial key for current safe to ensure stability during tutorial
     _currentTutorialKey ??= GlobalKey(debugLabel: '${tutorialKeyId}_$_keyCounter');
@@ -280,7 +290,10 @@ class _WalletsHomeContent extends ConsumerWidget {
           backgroundColor: context.colorScheme.tertiary,
           title: Row(
             children: [
-              Image.asset('assets/safes/${currentSafe.number % 4}.png', height: 32),
+              // Show Cesium logo for legacy safes, normal safe icon for others
+              currentSafe.safeType == SafeType.legacy
+                  ? SvgPicture.asset('assets/cesium_bw2.svg', height: 32, semanticsLabel: 'Cesium')
+                  : Image.asset('assets/safes/${currentSafe.number % 4}.png', height: 32),
               ScaledSizedBox(width: 17),
               Text(
                 currentSafe.name,
@@ -335,12 +348,14 @@ class _WalletsHomeContent extends ConsumerWidget {
                       final allItems = <Widget>[
                         for (var i = 0; i < frozenWalletsWithoutIdty.length; i++)
                           DragTuleAction(
-                            key: ValueKey('wallet_container_${frozenWalletsWithoutIdty[i].address}_$i'),
+                            key: ValueKey(
+                              'wallet_container_${frozenWalletsWithoutIdty[i].address}_${widget.safeFingerprint}_$i',
+                            ),
                             wallet: frozenWalletsWithoutIdty[i],
                             child: WalletTile(
                               repository: frozenWalletsWithoutIdty[i],
                               tutorialKey: i == targetWalletIndex ? tutorialKey : null,
-                              uniqueId: 'grid_$i',
+                              uniqueId: 'grid_${widget.safeFingerprint}_$i',
                               currentSafe: currentSafe.number,
                             ),
                           ),

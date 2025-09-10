@@ -1,8 +1,11 @@
+import 'package:durt2/durt2.dart' show SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
 
 /// Reusable widget for creating or importing a new safe
@@ -140,11 +143,23 @@ class CreateSafePlaceholder extends StatelessWidget {
 
   /// Navigate to create new safe screen
   void _navigateToCreateSafe(BuildContext context) async {
-    await Navigator.pushNamed(
-      context,
-      RouteNames.onboardingStepFive,
-      arguments: OnboardingStepFiveArguments(skipIntro: true),
-    );
+    // Check if we only have legacy safes - if so, start from the beginning
+    final container = ProviderScope.containerOf(context);
+    final walletService = container.read(walletServiceProvider);
+    final allSafes = walletService.safeBox.getAll();
+    final nonLegacySafes = allSafes.where((safe) => safe.safeType != SafeType.legacy).toList();
+
+    if (nonLegacySafes.isEmpty) {
+      // Only legacy safes exist - start from the beginning (step 1)
+      await Navigator.pushNamed(context, RouteNames.onboardingStepOne);
+    } else {
+      // Normal case - skip intro and go to step 5
+      await Navigator.pushNamed(
+        context,
+        RouteNames.onboardingStepFive,
+        arguments: OnboardingStepFiveArguments(skipIntro: true),
+      );
+    }
 
     // Callback after creation
     onSafeCreated();

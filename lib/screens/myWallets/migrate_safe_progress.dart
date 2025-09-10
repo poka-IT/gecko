@@ -14,7 +14,6 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 
 enum MigrationStatus { pending, migrating, success, failed, empty }
 
@@ -317,9 +316,6 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
 
                         // Switch to the existing safe
                         ref.read(walletServiceProvider).setDefaultSafeBoxNumber(_existingSafeNumber!);
-
-                        // Clean up GlobalKeys before navigating to prevent conflicts
-                        cleanupWalletsHomeKeys();
 
                         // Navigate to switch safe screen
                         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));

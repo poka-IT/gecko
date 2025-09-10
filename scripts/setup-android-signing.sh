@@ -12,45 +12,39 @@ if [ "$CI" = "true" ]; then
     echo "📦 CI detected - creating keystore from base64"
     
     # Check if signing variables are available
-    if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEY_PROPERTIES_BASE64" ]; then
-        echo "⚠️  Android signing variables not found - building debug APK instead"
-        echo "   Set ANDROID_KEYSTORE_BASE64 and ANDROID_KEY_PROPERTIES_BASE64 for release builds"
-        
-        # Create a dummy key.properties that will make gradle use debug signing
-        cat > android/key.properties << EOF
-# Debug signing (CI fallback)
-storePassword=debug
-keyPassword=debug  
-keyAlias=debug
-storeFile=debug
-EOF
-        echo "✅ Debug signing configured"
-        return 0
+    if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$keyAlias" ] || [ -z "$keyPassword" ] || [ -z "$storeFile" ]; then
+        echo "⚠️  Android signing variables not found - will use debug signing"
+        echo "   Set ANDROID_KEYSTORE_BASE64, keyAlias, keyPassword, and storeFile variables for release builds"
+        echo "✅ Debug signing will be used automatically"
+        exit 0
     fi
     
     # Create keystore file from base64
     echo "📦 Creating keystore from base64..."
-    echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/axiom-key2.jks || {
+    echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/$storeFile || {
         echo "❌ Failed to decode keystore from base64"
         exit 1
     }
     
-    # Create key.properties from base64 encoded CI variable
-    echo "📝 Creating key.properties..."
-    echo "$ANDROID_KEY_PROPERTIES_BASE64" | base64 -d > android/key.properties || {
-        echo "❌ Failed to create key.properties"
-        exit 1
-    }
+    # Create key.properties from CI variables
+    echo "📝 Creating key.properties from CI variables..."
+    cat > android/key.properties << EOF
+# Release signing from CI variables
+storePassword=$keyPassword
+keyPassword=$keyPassword
+keyAlias=$keyAlias
+storeFile=$storeFile
+EOF
     
     # Debug: Show the actual content of key.properties
     echo "🔍 Debug - key.properties content:"
     cat android/key.properties
     
     # Verify keystore was created
-    if [ -f "android/app/axiom-key2.jks" ]; then
-        echo "✅ Android keystore created successfully"
+    if [ -f "android/app/$storeFile" ]; then
+        echo "✅ Android keystore created successfully: $storeFile"
     else
-        echo "❌ Keystore file not found after creation"
+        echo "❌ Keystore file not found after creation: android/app/$storeFile"
         exit 1
     fi
     

@@ -2,7 +2,7 @@ name: gecko
 description: Pay with G1.
 publish_to: "none"
 
-version: 0.3.0+144
+version: 0.3.0+146
 
 environment:
   sdk: ^3.8.1
@@ -27,7 +27,7 @@ dependencies:
   mobile_scanner: ^7.0.1
   qr_flutter: ^4.1.0
   responsive_framework: ^1.5.1
-  sentry_flutter: ^9.4.1
+  sentry_flutter: ^8.9.0  # Downgrade for Ubuntu 20.04 compatibility
   truncate: ^3.0.1
   unorm_dart: ^0.3.1+1
   dio: ^5.8.0+1
@@ -92,7 +92,7 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   adaptive_icon_background: "transparent"
   adaptive_icon_foreground: "assets/icon/gecko_flat.png"
-  min_sdk_android: 21
+  min_sdk_android: 23
   web:
     generate: false
   windows:

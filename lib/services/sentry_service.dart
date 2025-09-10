@@ -75,13 +75,13 @@ class SentryService {
 
     await SentryFlutter.init((options) {
       options.dsn = dsn;
-      options.replay.sessionSampleRate = 1.0;
-      options.replay.onErrorSampleRate = 1.0;
+      // options.replay.sessionSampleRate = 1.0;
+      // options.replay.onErrorSampleRate = 1.0;
 
-      // Privacy settings for PII masking
-      //TODO: Set this to false in production for Ğ1
-      options.privacy.maskAllText = false;
-      options.privacy.maskAllImages = false;
+      // // Privacy settings for PII masking
+      // //TODO: Set this to false in production for Ğ1
+      // options.privacy.maskAllText = false;
+      // options.privacy.maskAllImages = false;
 
       // Configure automatic error reporting with diagnostic data
       options.beforeSend = _beforeSendCallback;

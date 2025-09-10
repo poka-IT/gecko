@@ -1725,9 +1725,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             Switch(
               value: _expertMode,
-              activeThumbColor: context.colorScheme.primary,
-              inactiveThumbColor: Colors.grey[400],
-              inactiveTrackColor: Colors.grey[300],
+              thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return context.colorScheme.primary;
+                }
+                return Colors.grey[400];
+              }),
+              trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (!states.contains(WidgetState.selected)) {
+                  return Colors.grey[300];
+                }
+                return null;
+              }),
               onChanged: (bool value) {
                 configBox.put('expertMode', value);
                 if (mounted) {
@@ -1777,9 +1786,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             Switch(
               value: generateInEnglish,
-              activeThumbColor: context.colorScheme.primary,
-              inactiveThumbColor: Colors.grey[400],
-              inactiveTrackColor: Colors.grey[300],
+              thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return context.colorScheme.primary;
+                }
+                return Colors.grey[400];
+              }),
+              trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (!states.contains(WidgetState.selected)) {
+                  return Colors.grey[300];
+                }
+                return null;
+              }),
               onChanged: (bool value) {
                 configBox.put('generateMnemonicsInEnglish', value);
                 if (mounted) {

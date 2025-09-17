@@ -16,6 +16,8 @@ version = os.getenv('VERSION', 'unknown')
 build_number = version.split('+')[1] if '+' in version else 'unknown'
 version_only = version.split('+')[0] if '+' in version else version
 apk_job_id = os.getenv('APK_JOB_ID', '')
+linux_job_id = os.getenv('LINUX_JOB_ID', '')
+macos_job_id = os.getenv('MACOS_JOB_ID', '')
 ci_project_url = os.getenv('CI_PROJECT_URL', '')
 forum_mode = os.getenv('FORUM_MODE', 'complete')
 
@@ -25,6 +27,8 @@ with open('/tmp/message.txt', 'r') as f:
 
 # Build message based on mode
 apk_base_url = f"{ci_project_url}/-/jobs/{apk_job_id}/artifacts/raw/artifacts/android"
+linux_base_url = f"{ci_project_url}/-/jobs/{linux_job_id}/artifacts/raw/artifacts/linux" if linux_job_id else ""
+macos_base_url = f"{ci_project_url}/-/jobs/{macos_job_id}/artifacts/raw/artifacts/macos" if macos_job_id else ""
 
 # Get changelog from git
 import subprocess
@@ -103,11 +107,9 @@ This is a **BETA** release for ĞTest network.
 
 🖥️ **Desktop:**
 
-• **[Linux Desktop (tar.gz)]({ci_project_url}/-/jobs/artifacts/v{version_only}/raw/artifacts/linux/gecko-{version}-linux.tar.gz?job=build:linux)**
+• **[Linux Desktop (tar.gz)]({linux_base_url}/gecko-{version}-linux.tar.gz)** (x64)
 
-• **[macOS Desktop (zip)]({ci_project_url}/-/jobs/artifacts/v{version_only}/raw/artifacts/macos/gecko-{version}-macos-arm64.zip?job=build:macos)** (Apple Silicon)
-
-• **[macOS Desktop (zip)]({ci_project_url}/-/jobs/artifacts/v{version_only}/raw/artifacts/macos/gecko-{version}-macos-x86_64.zip?job=build:macos)** (Intel)
+• **[macOS Desktop (zip)]({macos_base_url}/gecko-{version}-macos-arm64.zip)** (Apple Silicon)
 
 **Changelog:**
 {changelog}"""

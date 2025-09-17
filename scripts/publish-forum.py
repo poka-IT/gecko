@@ -91,7 +91,10 @@ This is a **BETA** release for ĞTest network.
 
 **Downloads:**
 
-📱 **Android:**
+<div style="display: flex; align-items: center; gap: 8px;">
+  <img src="upload://uL0FIqcHynJyP29eQsDBOX67fpg.png" width="22">
+  <strong>Android:</strong>
+</div>
 
 • **[Download armeabi-v7a APK]({apk_base_url}/gecko-{version}-v7a.apk)** (anciens téléphones)
 

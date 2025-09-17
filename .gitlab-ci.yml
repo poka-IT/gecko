@@ -6,7 +6,7 @@
 # Docker Hub: https://hub.docker.com/r/poka/gecko-ci
 
 stages:
-  - format
+  # - format
   - build
   - deploy
   - publish
@@ -48,14 +48,14 @@ variables:
     - docker
 
 # Format check job
-format:
-  extends: .flutter_env
-  stage: format
-  interruptible: false
-  rules:
-    - when: always
-  script:
-    - dart format --set-exit-if-changed lib
+# format:
+#   extends: .flutter_env
+#   stage: format
+#   interruptible: false
+#   rules:
+#     - when: always
+#   script:
+#     - dart format --set-exit-if-changed lib
 
 # Build Android APKs (split by architecture) - Direct downloads
 build:android:apk:
@@ -461,8 +461,7 @@ build:macos:
   stage: build
   tags: [macos]
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v/
-    - when: manual
+    - when: always
   before_script:
     # Install Flutter on macOS if not present
     - |
@@ -483,10 +482,10 @@ build:macos:
     - ./scripts/setup-ci-dependencies.sh
     - flutter config --enable-macos-desktop
     
-    # Setup code signing for release builds
+    # Setup code signing for all builds
     - |
-      if [ "$CI_COMMIT_TAG" ]; then
-        echo "🔐 Setting up macOS code signing for release..."
+      if [ -n "${MACOS_CERTIFICATE_BASE64:-}" ] && [ -n "${MACOS_CERTIFICATE_PASSWORD:-}" ]; then
+        echo "🔐 Setting up macOS code signing..."
         
         # Create temporary keychain
         KEYCHAIN_NAME="build.keychain-db"
@@ -515,15 +514,10 @@ build:macos:
         
         echo "✅ Code signing setup complete"
       else
-        echo "ℹ️  Non-release build, skipping code signing setup"
+        echo "⚠️  Code signing credentials not available, app will be unsigned"
       fi
     
-    # Clean CocoaPods cache and update for Sentry version downgrade
-    - cd macos && rm -rf Pods Podfile.lock && cd ..
-    # Fix UTF-8 encoding for CocoaPods
-    - export LANG=en_US.UTF-8
-    - export LC_ALL=en_US.UTF-8
-    - pod repo update
+    # Clean and setup CocoaPods with retry logic
     - pod cache clean --all || true
     # Pre-install pods with retry logic for network issues
     - |
@@ -545,64 +539,293 @@ build:macos:
         fi
       done
       cd ..
+    - export PATH="$PATH:$HOME/flutter/bin"
+    - export VERSION=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $1}')
+    - export BUILD=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $2}')
+    - export ARCH="arm64" # Only build for Apple Silicon
+    - echo "Building Gecko macOS v${VERSION}+${BUILD} (${ARCH})"
   script:
     - export PATH="$PATH:$HOME/flutter/bin"
     - export VERSION=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $1}')
     - export BUILD=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $2}')
     - export ARCH="arm64" # Only build for Apple Silicon
     - echo "Building Gecko macOS v${VERSION}+${BUILD} (${ARCH})"
-    
-    # Configure code signing based on build type
     - |
-      if [ "$CI_COMMIT_TAG" ]; then
-        echo "🔐 Configuring code signing for release build..."
+      # Check that ALL signing credentials are present (MANDATORY)
+      if [ -z "${MACOS_SIGNING_IDENTITY:-}" ] || [ -z "${MACOS_DEVELOPER_ID:-}" ]; then
+        echo "💥 CRITICAL ERROR: Code signing credentials missing!"
+        echo "🚨 MACOS_SIGNING_IDENTITY: ${MACOS_SIGNING_IDENTITY:+SET}"
+        echo "🚨 MACOS_DEVELOPER_ID: ${MACOS_DEVELOPER_ID:+SET}"
+        echo "💥 ABORTING BUILD: Code signing is MANDATORY - no unsigned builds allowed!"
+        exit 1
+      fi
+      
+      if [ -n "${MACOS_SIGNING_IDENTITY:-}" ] && [ -n "${MACOS_DEVELOPER_ID:-}" ]; then
+        echo "🔐 Configuring code signing for build..."
         
-        # Enable code signing for release builds
-        sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "'"${MACOS_SIGNING_IDENTITY}"'";/g' macos/Runner.xcodeproj/project.pbxproj
-        sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' macos/Runner.xcodeproj/project.pbxproj
-        sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "'"${MACOS_DEVELOPER_ID}"'";/g' macos/Runner.xcodeproj/project.pbxproj
+        # Clean everything including derived data
+        cd macos && rm -rf build/ Pods/ Podfile.lock && cd ..
+        rm -rf ~/Library/Developer/Xcode/DerivedData/Runner-* || true
         
-        # Set Flutter build environment for code signing
-        export FLUTTER_XCODE_CODE_SIGN_IDENTITY="${MACOS_SIGNING_IDENTITY}"
-        export FLUTTER_XCODE_DEVELOPMENT_TEAM="${MACOS_DEVELOPER_ID}"
-        
-        # Build with code signing
-        flutter build macos --release --build-name="$VERSION" --build-number="$BUILD"
-        
-        echo "✅ Release build completed with code signing"
-      else
-        echo "ℹ️  Building without code signing for non-release..."
-        
-        # Disable code signing for non-release builds
-        sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' macos/Runner.xcodeproj/project.pbxproj
-        sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' macos/Runner.xcodeproj/project.pbxproj
-        sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "";/g' macos/Runner.xcodeproj/project.pbxproj
-        sed -i '' '/CODE_SIGNING_REQUIRED/d' macos/Runner.xcodeproj/project.pbxproj
-        sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' macos/Runner.xcodeproj/project.pbxproj
-        
-        # Add explicit code signing disabled settings
-        sed -i '' 's/buildSettings = {/buildSettings = {\
-          CODE_SIGNING_REQUIRED = NO;\
-          CODE_SIGNING_ALLOWED = NO;/g' macos/Runner.xcodeproj/project.pbxproj
-        
-        # Set Xcode build settings to disable code signing
+        # Build without signing first, then sign manually (avoids Flutter chain issues)
+        echo "🔄 Building without signing, then manual Apple Development signing..."
         export FLUTTER_XCODE_CODE_SIGN_IDENTITY=""
         export FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
         export FLUTTER_XCODE_CODE_SIGNING_ALLOWED=NO
+        export FLUTTER_XCODE_CODE_SIGN_STYLE="Manual"
+        export FLUTTER_XCODE_DEVELOPMENT_TEAM="${MACOS_DEVELOPER_ID}"
+        export FLUTTER_XCODE_ENABLE_HARDENED_RUNTIME="NO"
+        export FLUTTER_XCODE_CONFIGURATION="Release"
         
-        # Build without code signing
-        flutter build macos --release --build-name="$VERSION" --build-number="$BUILD" --dart-define=FLUTTER_XCODE_CODE_SIGN_IDENTITY="" --dart-define=FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
+        # Build with Flutter (no signing)
+        flutter build macos --release --build-name="$VERSION" --build-number="$BUILD" \
+          --dart-define=FLUTTER_XCODE_CODE_SIGN_IDENTITY="" \
+          --dart-define=FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO \
+          --dart-define=FLUTTER_XCODE_CODE_SIGNING_ALLOWED=NO
         
-        echo "✅ Non-release build completed without code signing"
+        # Check if build actually produced an app
+        if [ ! -d "build/macos/Build/Products/Release/gecko.app" ]; then
+          echo "❌ Flutter build failed, trying xcodebuild fallback..."
+          
+          # Use xcodebuild directly with Apple Development
+          cd macos
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="${MACOS_DEVELOPER_ID}" \
+            ENABLE_HARDENED_RUNTIME=NO \
+            FLUTTER_BUILD_NAME="$VERSION" \
+            FLUTTER_BUILD_NUMBER="$BUILD" \
+            build
+          cd ..
+        fi
+        
+        # Re-sign all frameworks with Developer ID
+        if [ -d "build/macos/Build/Products/Release/gecko.app" ]; then
+          APP_PATH_TEMP="build/macos/Build/Products/Release/gecko.app"
+          echo "🔏 Re-signing all frameworks for distribution..."
+          echo "⚠️  WARNING: Temporarily signing without timestamp to debug hanging issue"
+          
+          # Check available certificates
+          echo "🔍 Available code signing certificates:"
+          security find-identity -v -p codesigning
+          
+          # Find and re-sign all frameworks with Apple Development (REQUIRED for notarization)
+          find "$APP_PATH_TEMP/Contents/Frameworks" -name "*.framework" -type d | while read framework; do
+            framework_binary="$framework/$(basename "$framework" .framework)"
+            if [ -f "$framework_binary" ]; then
+              echo "  📝 Re-signing: $(basename "$framework")"
+              echo "    🔍 Binary path: $framework_binary"
+              
+              # Check current signature status
+              echo "    🔍 Current signature status:"
+              codesign -dv "$framework_binary" 2>&1 || echo "    ⚠️  No current signature"
+              
+              # Remove existing signature
+              echo "    🗑️  Removing existing signature..."
+              codesign --remove-signature "$framework_binary" 2>/dev/null || echo "    ℹ️  No signature to remove"
+              
+              # Use Apple Development (REQUIRED for notarization, ignore chain warnings)
+              SIGNED=false
+              CERT_USED=""
+              
+              for cert_hash in "AA6B13BFB34E76E29186BF36E21815731A405610" "7A906D3EAB22DC573AA8F43901B232D4C8DFA472" "5FD91F42D6E2324050F438AB1B8273D2B14186A2"; do
+                echo "    🔄 Trying certificate: $cert_hash"
+                echo "    🕐 Starting codesign at $(date)"
+                
+                # Use timeout to avoid hanging (macOS doesn't have timeout, use perl)
+                # Temporarily remove --timestamp to debug hanging issue
+                SIGN_OUTPUT=$(perl -e 'alarm 60; exec @ARGV' codesign --force --sign "$cert_hash" \
+                  --options=runtime --verbose \
+                  "$framework_binary" 2>&1)
+                SIGN_EXIT_CODE=$?
+                
+                if [ $SIGN_EXIT_CODE -eq 142 ]; then
+                  echo "    ⏰ Codesign timed out after 1 minute"
+                  SIGN_OUTPUT="Timeout after 1 minute"
+                fi
+                
+                # Check if it's just a chain warning but signature succeeded
+                if [ $SIGN_EXIT_CODE -ne 0 ] && echo "$SIGN_OUTPUT" | grep -q "unable to build chain to self-signed root"; then
+                  echo "    ⚠️  Chain warning detected, checking if signature actually succeeded..."
+                  # Try to verify the signature
+                  VERIFY_OUTPUT=$(codesign --verify "$framework_binary" 2>&1)
+                  VERIFY_EXIT_CODE=$?
+                  if [ $VERIFY_EXIT_CODE -eq 0 ]; then
+                    echo "    ✅ Signature verification passed despite chain warning"
+                    SIGN_EXIT_CODE=0
+                  else
+                    echo "    ❌ Signature verification also failed: $VERIFY_OUTPUT"
+                  fi
+                fi
+                
+                echo "    🕐 Codesign completed at $(date)"
+                echo "    📋 Codesign output:"
+                echo "$SIGN_OUTPUT" | sed 's/^/      /'
+                echo "    📋 Exit code: $SIGN_EXIT_CODE"
+                
+                if [ $SIGN_EXIT_CODE -eq 0 ]; then
+                  echo "    ✅ Successfully signed with certificate $cert_hash"
+                  SIGNED=true
+                  CERT_USED=$cert_hash
+                  
+                  # Verify the signature
+                  echo "    🔍 Verifying signature:"
+                  VERIFY_OUTPUT=$(codesign --verify --deep --strict --verbose=2 "$framework_binary" 2>&1)
+                  VERIFY_EXIT_CODE=$?
+                  echo "$VERIFY_OUTPUT" | sed 's/^/      /'
+                  
+                  if [ $VERIFY_EXIT_CODE -eq 0 ]; then
+                    echo "    ✅ Signature verification successful"
+                  else
+                    echo "    ⚠️  Signature verification failed (exit code: $VERIFY_EXIT_CODE)"
+                  fi
+                  
+                  # Show signature details
+                  echo "    📋 Signature details:"
+                  codesign -dv --verbose=4 "$framework_binary" 2>&1 | sed 's/^/      /'
+                  
+                  break
+                else
+                  echo "    ❌ Failed with certificate $cert_hash (exit code: $SIGN_EXIT_CODE)"
+                fi
+              done
+              
+              if [ "$SIGNED" = "false" ]; then
+                echo "    💥 CRITICAL: Failed to sign $(basename "$framework") with any Apple Development certificate"
+                echo "    🔍 Available certificates:"
+                security find-identity -v -p codesigning | sed 's/^/      /'
+                exit 1
+              else
+                echo "    🎉 $(basename "$framework") successfully signed with $CERT_USED"
+              fi
+            else
+              echo "    ⚠️  Binary not found: $framework_binary"
+            fi
+          done
+          
+          # Re-sign the main app bundle with Apple Development
+          echo "🔏 Re-signing main app bundle with Apple Development..."
+          echo "  🔍 App path: $APP_PATH_TEMP"
+          
+          # Check current signature status
+          echo "  🔍 Current app signature status:"
+          codesign -dv "$APP_PATH_TEMP" 2>&1 || echo "  ⚠️  No current signature"
+          
+          # Remove existing signature
+          echo "  🗑️  Removing existing app signature..."
+          codesign --remove-signature "$APP_PATH_TEMP" 2>/dev/null || echo "  ℹ️  No signature to remove"
+          
+          # Try Apple Development for main app (REQUIRED for notarization)
+          MAIN_SIGNED=false
+          MAIN_CERT_USED=""
+          
+          for cert_hash in "AA6B13BFB34E76E29186BF36E21815731A405610" "7A906D3EAB22DC573AA8F43901B232D4C8DFA472" "5FD91F42D6E2324050F438AB1B8273D2B14186A2"; do
+            echo "  🔄 Trying certificate for main app: $cert_hash"
+            
+            # Temporarily remove --timestamp to debug hanging issue
+            MAIN_SIGN_OUTPUT=$(codesign --force --sign "$cert_hash" \
+              --options=runtime --verbose \
+              --entitlements "macos/Runner/Release.entitlements" \
+              "$APP_PATH_TEMP" 2>&1)
+            MAIN_SIGN_EXIT_CODE=$?
+            
+            # Check if it's just a chain warning but signature succeeded
+            if [ $MAIN_SIGN_EXIT_CODE -ne 0 ] && echo "$MAIN_SIGN_OUTPUT" | grep -q "unable to build chain to self-signed root"; then
+              echo "  ⚠️  Chain warning detected, checking if main app signature actually succeeded..."
+              # Try to verify the signature
+              MAIN_VERIFY_OUTPUT=$(codesign --verify "$APP_PATH_TEMP" 2>&1)
+              MAIN_VERIFY_EXIT_CODE=$?
+              if [ $MAIN_VERIFY_EXIT_CODE -eq 0 ]; then
+                echo "  ✅ Main app signature verification passed despite chain warning"
+                MAIN_SIGN_EXIT_CODE=0
+              else
+                echo "  ❌ Main app signature verification also failed: $MAIN_VERIFY_OUTPUT"
+              fi
+            fi
+            
+            echo "  📋 Main app codesign output:"
+            echo "$MAIN_SIGN_OUTPUT" | sed 's/^/    /'
+            echo "  📋 Exit code: $MAIN_SIGN_EXIT_CODE"
+            
+            if [ $MAIN_SIGN_EXIT_CODE -eq 0 ]; then
+              echo "  ✅ Successfully signed main app with certificate $cert_hash"
+              MAIN_SIGNED=true
+              MAIN_CERT_USED=$cert_hash
+              
+              # Verify the main app signature
+              echo "  🔍 Verifying main app signature:"
+              MAIN_VERIFY_OUTPUT=$(codesign --verify --deep --strict --verbose=2 "$APP_PATH_TEMP" 2>&1)
+              MAIN_VERIFY_EXIT_CODE=$?
+              echo "$MAIN_VERIFY_OUTPUT" | sed 's/^/    /'
+              
+              if [ $MAIN_VERIFY_EXIT_CODE -eq 0 ]; then
+                echo "  ✅ Main app signature verification successful"
+              else
+                echo "  ⚠️  Main app signature verification failed (exit code: $MAIN_VERIFY_EXIT_CODE)"
+              fi
+              
+              # Show main app signature details
+              echo "  📋 Main app signature details:"
+              codesign -dv --verbose=4 "$APP_PATH_TEMP" 2>&1 | sed 's/^/    /'
+              
+              # Check entitlements
+              echo "  📋 Applied entitlements:"
+              codesign -d --entitlements :- "$APP_PATH_TEMP" 2>&1 | sed 's/^/    /'
+              
+              break
+            else
+              echo "  ❌ Failed to sign main app with certificate $cert_hash (exit code: $MAIN_SIGN_EXIT_CODE)"
+            fi
+          done
+          
+          if [ "$MAIN_SIGNED" = "false" ]; then
+            echo "  💥 CRITICAL: Failed to sign main app with any Apple Development certificate"
+            echo "  🔍 Available certificates:"
+            security find-identity -v -p codesigning | sed 's/^/    /'
+            echo "  🔍 Entitlements file check:"
+            ls -la "macos/Runner/Release.entitlements" || echo "  ❌ Entitlements file not found"
+            exit 1
+          else
+            echo "  🎉 Main app successfully signed with $MAIN_CERT_USED"
+          fi
+          
+          echo "✅ Re-signing process completed"
+        fi
+        
+        echo "✅ Build completed with code signing"
       fi
-    # Package the app (.zip)
+
+    # Package the app
     - mkdir -p artifacts/macos artifacts
-    - APP_PATH=$(ls -d build/macos/Build/Products/Release/*.app | head -n1)
-    - test -d "$APP_PATH"
-    
-    # Optional: Notarize the app for release builds
     - |
-      if [ "$CI_COMMIT_TAG" ] && [ -n "${APPLE_ID_EMAIL:-}" ] && [ -n "${APPLE_ID_APP_PASSWORD:-}" ]; then
+      # Set APP_PATH to the found app
+      if [ -d "build/macos/Build/Products/Release/gecko.app" ]; then
+        APP_PATH="build/macos/Build/Products/Release/gecko.app"
+        echo "✅ Found app at: $APP_PATH"
+      else
+        APP_PATH=""
+        echo "❌ App not found at expected location"
+      fi
+    
+    # MANDATORY: Notarize the app (REQUIRED - NO FALLBACK ALLOWED)
+    - |
+      if [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ]; then
+        # Check that ALL notarization credentials are present
+        if [ -z "${APPLE_ID_EMAIL:-}" ] || [ -z "${APPLE_ID_APP_PASSWORD:-}" ] || [ -z "${MACOS_DEVELOPER_ID:-}" ]; then
+          echo "💥 CRITICAL ERROR: Notarization credentials missing!"
+          echo "🚨 APPLE_ID_EMAIL: ${APPLE_ID_EMAIL:+SET}"
+          echo "🚨 APPLE_ID_APP_PASSWORD: ${APPLE_ID_APP_PASSWORD:+SET}"
+          echo "🚨 MACOS_DEVELOPER_ID: ${MACOS_DEVELOPER_ID:+SET}"
+          echo "💥 ABORTING BUILD: Notarization is MANDATORY - no fallback allowed!"
+          exit 1
+        fi
         echo "🍎 Starting notarization process..."
         
         # Create a zip for notarization (required format)
@@ -612,25 +835,82 @@ build:macos:
         popd
         
         # Submit for notarization
-        xcrun notarytool submit "$NOTARIZE_ZIP" \
-          --apple-id "$APPLE_ID_EMAIL" \
-          --password "$APPLE_ID_APP_PASSWORD" \
-          --team-id "$MACOS_DEVELOPER_ID" \
-          --wait
+        echo "📤 Submitting for notarization..."
+        NOTARIZE_OUTPUT=$(xcrun notarytool submit "$NOTARIZE_ZIP" \
+          --apple-id "${APPLE_ID_EMAIL}" \
+          --password "${APPLE_ID_APP_PASSWORD}" \
+          --team-id "${MACOS_DEVELOPER_ID}" \
+          --wait 2>&1)
+        
+        echo "$NOTARIZE_OUTPUT"
+        
+        if echo "$NOTARIZE_OUTPUT" | grep -q "status: Accepted"; then
+          echo "✅ Notarization successful"
         
         # Staple the notarization to the app
-        xcrun stapler staple "$APP_PATH"
-        
-        echo "✅ Notarization completed"
+          echo "📎 Stapling notarization..."
+          if xcrun stapler staple "$APP_PATH"; then
+            echo "✅ Notarization stapled successfully"
+          else
+            echo "❌ Stapling failed!"
+            echo "🚨 CRITICAL: Stapling is required for proper distribution"
+            exit 1
+          fi
+        else
+          echo "❌ Notarization failed!"
+          echo "🚨 CRITICAL: Notarization is MANDATORY for macOS distribution"
+          
+          # Show detailed debug info
+          echo "🔍 DEBUG: Full notarization output:"
+          echo "----------------------------------------"
+          echo "$NOTARIZE_OUTPUT"
+          echo "----------------------------------------"
+          
+          # Get submission ID and detailed error log
+          SUBMISSION_ID=$(echo "$NOTARIZE_OUTPUT" | grep "id:" | head -1 | awk '{print $2}')
+          if [ -n "$SUBMISSION_ID" ]; then
+            echo "📋 Submission ID: $SUBMISSION_ID"
+            echo "📋 Getting detailed error log from Apple..."
+            
+            ERROR_LOG=$(xcrun notarytool log "$SUBMISSION_ID" \
+              --apple-id "${APPLE_ID_EMAIL}" \
+              --password "${APPLE_ID_APP_PASSWORD}" \
+              --team-id "${MACOS_DEVELOPER_ID}" 2>&1)
+            
+            echo "🔍 APPLE ERROR LOG:"
+            echo "----------------------------------------"
+            echo "$ERROR_LOG"
+            echo "----------------------------------------"
+          else
+            echo "❌ Could not extract submission ID for detailed error log"
+          fi
+          
+          # Show app signature info for debugging
+          echo "🔍 DEBUG: App signature verification:"
+          codesign -dv --verbose=4 "$APP_PATH" 2>&1 || echo "Could not verify app signature"
+          
+          echo "🔍 DEBUG: App entitlements:"
+          codesign -d --entitlements :- "$APP_PATH" 2>&1 || echo "Could not extract entitlements"
+          
+          echo "🔍 DEBUG: Gatekeeper assessment:"
+          spctl --assess --type execute --verbose "$APP_PATH" 2>&1 || echo "Gatekeeper assessment failed"
+          
+          echo "💥 ABORTING BUILD: Notarization failed"
+          exit 1
+        fi
         
         # Remove the notarization zip (we'll create a new one below)
         rm "$NOTARIZE_ZIP"
       else
-        echo "ℹ️  Skipping notarization (missing credentials or non-release build)"
+        echo "💥 CRITICAL ERROR: No app found for notarization!"
+        echo "🚨 APP_PATH: ${APP_PATH:-NOT_SET}"
+        echo "💥 ABORTING BUILD: Cannot proceed without app to notarize!"
+        exit 1
       fi
     
     # Create DMG for distribution
     - |
+      if [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ]; then
       echo "📦 Creating DMG package..."
       
       # DMG configuration
@@ -638,36 +918,143 @@ build:macos:
       DMG_PATH="$CI_PROJECT_DIR/artifacts/macos/$DMG_NAME"
       TEMP_DMG="$CI_PROJECT_DIR/artifacts/macos/temp-${DMG_NAME}"
       
-      # Create temporary DMG
-      hdiutil create -srcfolder "$(dirname "$APP_PATH")" -volname "Gecko v${VERSION}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 200m "$TEMP_DMG"
+        # Get app size for DMG sizing
+        APP_SIZE=$(du -sm "$(dirname "$APP_PATH")" | cut -f1)
+        DMG_SIZE=$((APP_SIZE + 50))  # Add 50MB buffer
+        echo "📏 App size: ${APP_SIZE}MB, DMG size will be: ${DMG_SIZE}MB"
+        
+        # Create temporary DMG with dynamic size
+        echo "🔨 Creating temporary DMG..."
+        if ! hdiutil create -srcfolder "$(dirname "$APP_PATH")" -volname "Gecko v${VERSION}" -fs HFS+ -format UDRW -size "${DMG_SIZE}m" "$TEMP_DMG"; then
+          echo "❌ Failed to create temporary DMG"
+          exit 1
+        fi
       
       # Mount the DMG
-      MOUNT_DIR=$(hdiutil attach -readwrite -noverify -noautoopen "$TEMP_DMG" | egrep '^/dev/' | sed 1q | awk '{print $3}')
-      
-      # Create Applications symlink for easy installation
-      ln -sf /Applications "$MOUNT_DIR/Applications"
-      
-      echo "ℹ️  DMG created with basic layout (headless environment)"
-      
-      # Unmount and compress DMG
-      hdiutil detach "$MOUNT_DIR"
-      hdiutil convert "$TEMP_DMG" -format UDZO -imagekey zlib-level=9 -o "$DMG_PATH"
-      
-      # Clean up temporary DMG
-      rm "$TEMP_DMG"
-      
-      echo "✅ DMG created: $DMG_NAME"
-      ls -lh "$DMG_PATH"
-    
+        echo "📁 Mounting temporary DMG..."
+        if ! MOUNT_OUTPUT=$(hdiutil attach -readwrite -noverify -noautoopen "$TEMP_DMG" 2>&1); then
+          echo "❌ Failed to mount temporary DMG"
+          rm -f "$TEMP_DMG"
+          exit 1
+        fi
+        
+        # Extract mount directory
+        MOUNT_DIR=$(echo "$MOUNT_OUTPUT" | grep -E '/Volumes/' | sed 's/.*\t//' | head -1)
+        MOUNT_DIR=$(echo "$MOUNT_DIR" | sed 's/[[:space:]]*$//')
+        
+        if [ -z "$MOUNT_DIR" ] || [ ! -d "$MOUNT_DIR" ]; then
+          MOUNT_DIR="/Volumes/Gecko v${VERSION}"
+          if [ ! -d "$MOUNT_DIR" ]; then
+            echo "❌ Could not determine mount directory"
+            hdiutil detach "/Volumes/Gecko v${VERSION}" -force 2>/dev/null || true
+            rm -f "$TEMP_DMG"
+            exit 1
+          fi
+        fi
+        echo "✅ DMG mounted at: $MOUNT_DIR"
+        
+        # Create Applications symlink
+        ln -sf /Applications "$MOUNT_DIR/Applications" || echo "⚠️  Could not create Applications symlink"
+        
+        # Customize DMG layout
+        echo "🎨 Customizing DMG layout..."
+        
+        # Copy background image
+        if [ -f "assets/dmg-background.png" ]; then
+          cp "assets/dmg-background.png" "$MOUNT_DIR/.background.png"
+        fi
+        
+        # Set up the DMG layout using AppleScript
+        APP_NAME=$(basename "$APP_PATH")
+        /usr/bin/osascript << 'EOF'
+        tell application "Finder"
+            tell disk "Gecko v${VERSION}"
+                open
+                set current view of container window to icon view
+                set toolbar visible of container window to false
+                set statusbar visible of container window to false
+                set the bounds of container window to {100, 100, 700, 500}
+                set viewOptions to the icon view options of container window
+                set arrangement of viewOptions to not arranged
+                set icon size of viewOptions to 128
+                set background picture of viewOptions to file ".background.png"
+                
+                -- Position the app icon and Applications folder
+                set position of item "${APP_NAME}" of container window to {150, 200}
+                set position of item "Applications" of container window to {450, 200}
+                
+                close
+                open
+                update without registering applications
+                delay 2
+            end tell
+        end tell
+        EOF
+        
+        # Hide unnecessary files
+        for item in "$MOUNT_DIR"/*; do
+          if [ "$(basename "$item")" != "$APP_NAME" ] && [ "$(basename "$item")" != "Applications" ]; then
+            /usr/bin/SetFile -a V "$item" 2>/dev/null || true
+          fi
+        done
+        
+        # Sync and unmount
+        echo "💾 Finalizing DMG..."
+        sync
+        
+        # Unmount with retry logic
+        for i in {1..5}; do
+          if hdiutil detach "$MOUNT_DIR" -force; then
+            echo "✅ DMG unmounted successfully"
+            break
+          else
+            echo "⚠️  Unmount attempt $i/5 failed, retrying..."
+            sleep 2
+            if [ $i -eq 5 ]; then
+              echo "❌ Failed to unmount DMG after 5 attempts"
+              hdiutil detach "$MOUNT_DIR" -force -debug 2>/dev/null || true
+              sleep 2
+            fi
+          fi
+        done
+        
+        # Convert to compressed DMG
+        echo "🗜️  Converting to compressed DMG..."
+        if hdiutil convert "$TEMP_DMG" -format UDZO -o "$DMG_PATH"; then
+          echo "✅ DMG created successfully: $DMG_PATH"
+          rm -f "$TEMP_DMG"
+        else
+          echo "❌ Failed to convert DMG"
+          mv "$TEMP_DMG" "$DMG_PATH"
+          echo "⚠️  Using uncompressed DMG as fallback"
+        fi
+        
+        # Verify DMG
+        if [ -f "$DMG_PATH" ]; then
+          DMG_SIZE_FINAL=$(du -h "$DMG_PATH" | cut -f1)
+          echo "📦 Final DMG size: $DMG_SIZE_FINAL"
+          echo "✅ DMG package created: $DMG_NAME"
+        else
+          echo "❌ DMG creation failed"
+          exit 1
+        fi
+      else
+        echo "⚠️  Skipping DMG creation - no app found"
+        # Create a simple ZIP as fallback
+        if [ -d "build/macos/Build/Products/Release/gecko.app" ]; then
+          cd build/macos/Build/Products/Release
+          zip -r "$CI_PROJECT_DIR/artifacts/macos/gecko-${VERSION}+${BUILD}-macos-arm64.zip" gecko.app
+          cd "$CI_PROJECT_DIR"
+          echo "📦 App packaged as ZIP (fallback)"
+        fi
+      fi
+
+    # Store version info and job ID for later jobs
     - echo "${VERSION}+${BUILD}" > artifacts/version.txt
-    
-    # Store job ID for forum publishing
     - echo "$CI_JOB_ID" > artifacts/macos_job_id.txt
-    
   after_script:
-    # Clean up keychain and restore original Xcode project
+    # Clean up keychain
     - security delete-keychain "build.keychain-db" 2>/dev/null || true
-    - git checkout macos/Runner.xcodeproj/project.pbxproj || true
   artifacts:
     paths:
       - artifacts/

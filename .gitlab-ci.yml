@@ -482,6 +482,42 @@ build:macos:
     - chmod +x scripts/setup-ci-dependencies.sh
     - ./scripts/setup-ci-dependencies.sh
     - flutter config --enable-macos-desktop
+    
+    # Setup code signing for release builds
+    - |
+      if [ "$CI_COMMIT_TAG" ]; then
+        echo "🔐 Setting up macOS code signing for release..."
+        
+        # Create temporary keychain
+        KEYCHAIN_NAME="build.keychain-db"
+        KEYCHAIN_PASSWORD="${MACOS_KEYCHAIN_PASSWORD:-temp-password}"
+        
+        # Delete existing keychain if it exists
+        security delete-keychain "$KEYCHAIN_NAME" 2>/dev/null || true
+        
+        # Create new keychain
+        security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN_NAME"
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+        
+        # Add keychain to search list
+        security list-keychains -d user -s "$KEYCHAIN_NAME" $(security list-keychains -d user | sed s/\"//g)
+        
+        # Import certificate
+        echo "$MACOS_CERTIFICATE_BASE64" | base64 -d > certificate.p12
+        security import certificate.p12 -k "$KEYCHAIN_NAME" -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        
+        # Set partition list for codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+        
+        # Clean up certificate file
+        rm certificate.p12
+        
+        echo "✅ Code signing setup complete"
+      else
+        echo "ℹ️  Non-release build, skipping code signing setup"
+      fi
+    
     # Clean CocoaPods cache and update for Sentry version downgrade
     - cd macos && rm -rf Pods Podfile.lock && cd ..
     # Fix UTF-8 encoding for CocoaPods
@@ -515,26 +551,85 @@ build:macos:
     - export BUILD=$(awk '/^version:/{print $2}' pubspec.yaml | awk -F'+' '{print $2}')
     - export ARCH="arm64" # Only build for Apple Silicon
     - echo "Building Gecko macOS v${VERSION}+${BUILD} (${ARCH})"
-    # Disable code signing for macOS build by modifying Xcode project
+    
+    # Configure code signing based on build type
     - |
-      sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' macos/Runner.xcodeproj/project.pbxproj
-      sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' macos/Runner.xcodeproj/project.pbxproj
-      sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "";/g' macos/Runner.xcodeproj/project.pbxproj
-      sed -i '' '/CODE_SIGNING_REQUIRED/d' macos/Runner.xcodeproj/project.pbxproj
-      sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' macos/Runner.xcodeproj/project.pbxproj
-      # Add explicit code signing disabled settings
-      sed -i '' 's/buildSettings = {/buildSettings = {\
-        CODE_SIGNING_REQUIRED = NO;\
-        CODE_SIGNING_ALLOWED = NO;/g' macos/Runner.xcodeproj/project.pbxproj
-    # Set Xcode build settings to disable code signing
-    - export FLUTTER_XCODE_CODE_SIGN_IDENTITY=""
-    - export FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
-    - export FLUTTER_XCODE_CODE_SIGNING_ALLOWED=NO
-    - flutter build macos --release --build-name="$VERSION" --build-number="$BUILD" --dart-define=FLUTTER_XCODE_CODE_SIGN_IDENTITY="" --dart-define=FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
+      if [ "$CI_COMMIT_TAG" ]; then
+        echo "🔐 Configuring code signing for release build..."
+        
+        # Enable code signing for release builds
+        sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "'"${MACOS_SIGNING_IDENTITY}"'";/g' macos/Runner.xcodeproj/project.pbxproj
+        sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' macos/Runner.xcodeproj/project.pbxproj
+        sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "'"${MACOS_DEVELOPER_ID}"'";/g' macos/Runner.xcodeproj/project.pbxproj
+        
+        # Set Flutter build environment for code signing
+        export FLUTTER_XCODE_CODE_SIGN_IDENTITY="${MACOS_SIGNING_IDENTITY}"
+        export FLUTTER_XCODE_DEVELOPMENT_TEAM="${MACOS_DEVELOPER_ID}"
+        
+        # Build with code signing
+        flutter build macos --release --build-name="$VERSION" --build-number="$BUILD"
+        
+        echo "✅ Release build completed with code signing"
+      else
+        echo "ℹ️  Building without code signing for non-release..."
+        
+        # Disable code signing for non-release builds
+        sed -i '' 's/CODE_SIGN_IDENTITY = .*/CODE_SIGN_IDENTITY = "";/g' macos/Runner.xcodeproj/project.pbxproj
+        sed -i '' 's/CODE_SIGN_STYLE = .*/CODE_SIGN_STYLE = Manual;/g' macos/Runner.xcodeproj/project.pbxproj
+        sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = "";/g' macos/Runner.xcodeproj/project.pbxproj
+        sed -i '' '/CODE_SIGNING_REQUIRED/d' macos/Runner.xcodeproj/project.pbxproj
+        sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' macos/Runner.xcodeproj/project.pbxproj
+        
+        # Add explicit code signing disabled settings
+        sed -i '' 's/buildSettings = {/buildSettings = {\
+          CODE_SIGNING_REQUIRED = NO;\
+          CODE_SIGNING_ALLOWED = NO;/g' macos/Runner.xcodeproj/project.pbxproj
+        
+        # Set Xcode build settings to disable code signing
+        export FLUTTER_XCODE_CODE_SIGN_IDENTITY=""
+        export FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
+        export FLUTTER_XCODE_CODE_SIGNING_ALLOWED=NO
+        
+        # Build without code signing
+        flutter build macos --release --build-name="$VERSION" --build-number="$BUILD" --dart-define=FLUTTER_XCODE_CODE_SIGN_IDENTITY="" --dart-define=FLUTTER_XCODE_CODE_SIGNING_REQUIRED=NO
+        
+        echo "✅ Non-release build completed without code signing"
+      fi
     # Package the app (.zip)
     - mkdir -p artifacts/macos artifacts
     - APP_PATH=$(ls -d build/macos/Build/Products/Release/*.app | head -n1)
     - test -d "$APP_PATH"
+    
+    # Optional: Notarize the app for release builds
+    - |
+      if [ "$CI_COMMIT_TAG" ] && [ -n "${APPLE_ID_EMAIL:-}" ] && [ -n "${APPLE_ID_APP_PASSWORD:-}" ]; then
+        echo "🍎 Starting notarization process..."
+        
+        # Create a zip for notarization (required format)
+        NOTARIZE_ZIP="$CI_PROJECT_DIR/artifacts/macos/gecko-${VERSION}+${BUILD}-macos-${ARCH}-notarize.zip"
+        pushd "$(dirname "$APP_PATH")"
+        zip -r "$NOTARIZE_ZIP" "$(basename "$APP_PATH")"
+        popd
+        
+        # Submit for notarization
+        xcrun notarytool submit "$NOTARIZE_ZIP" \
+          --apple-id "$APPLE_ID_EMAIL" \
+          --password "$APPLE_ID_APP_PASSWORD" \
+          --team-id "$MACOS_DEVELOPER_ID" \
+          --wait
+        
+        # Staple the notarization to the app
+        xcrun stapler staple "$APP_PATH"
+        
+        echo "✅ Notarization completed"
+        
+        # Remove the notarization zip (we'll create a new one below)
+        rm "$NOTARIZE_ZIP"
+      else
+        echo "ℹ️  Skipping notarization (missing credentials or non-release build)"
+      fi
+    
+    # Create final distribution zip
     - pushd "$(dirname "$APP_PATH")"
     - zip -r "$CI_PROJECT_DIR/artifacts/macos/gecko-${VERSION}+${BUILD}-macos-${ARCH}.zip" "$(basename "$APP_PATH")"
     - popd
@@ -542,7 +637,10 @@ build:macos:
     
     # Store job ID for forum publishing
     - echo "$CI_JOB_ID" > artifacts/macos_job_id.txt
-    # Restore original Xcode project
+    
+  after_script:
+    # Clean up keychain and restore original Xcode project
+    - security delete-keychain "build.keychain-db" 2>/dev/null || true
     - git checkout macos/Runner.xcodeproj/project.pbxproj || true
   artifacts:
     paths:

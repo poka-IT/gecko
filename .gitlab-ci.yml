@@ -6,7 +6,7 @@
 # Docker Hub: https://hub.docker.com/r/poka/gecko-ci
 
 stages:
-  # - format
+  - format
   - build
   - deploy
   - publish
@@ -48,14 +48,14 @@ variables:
     - docker
 
 # Format check job
-# format:
-#   extends: .flutter_env
-#   stage: format
-#   interruptible: false
-#   rules:
-#     - when: always
-#   script:
-#     - dart format --set-exit-if-changed lib
+format:
+  extends: .flutter_env
+  stage: format
+  interruptible: false
+  rules:
+    - when: always
+  script:
+    - dart format --set-exit-if-changed lib
 
 # Build Android APKs (split by architecture) - Direct downloads
 build:android:apk:
@@ -132,97 +132,163 @@ publish:forum:complete:
     - echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
     - python3 scripts/publish-forum.py
 
-# build:ios:
-#   stage: build
-#   tags: [macos]
-#   rules:
-#     - if: $CI_COMMIT_TAG =~ /^v/
-#     - when: manual
-#   cache:
-#     key: "bundle-$CI_COMMIT_REF_SLUG"
-#     paths: [ ios/vendor/bundle ]
-#   variables:
-#     LANG: en_US.UTF-8
-#     LC_ALL: en_US.UTF-8
-#   before_script:
-#     - set -eo pipefail
-#     # Flutter setup (don't re-clone if already present)
-#     - |
-#       if command -v flutter >/dev/null 2>&1; then :; \
-#       elif [ -x "$HOME/flutter/bin/flutter" ]; then export PATH="$HOME/flutter/bin:$PATH"; \
-#       else git clone https://github.com/flutter/flutter.git -b stable "$HOME/flutter"; export PATH="$HOME/flutter/bin:$PATH"; fi
-#       flutter --version
-# 
-#     - chmod +x scripts/setup-ci-dependencies.sh
-#     - ./scripts/setup-ci-dependencies.sh
-# 
-#     # Ruby/bundler/Pods/Fastlane setup
-#     - cd ios
-#     # Handle Ruby version compatibility - install compatible bundler version
-#     - |
-#       RUBY_VERSION=$(ruby -e 'print RUBY_VERSION')
-#       RUBY_MAJOR_MINOR=$(ruby -e 'print RUBY_VERSION[/^\d+\.\d+/]')
-#       echo "Ruby version: $RUBY_VERSION"
-#       
-#       # Add user gem bin to PATH first
-#       export PATH="$HOME/.gem/ruby/$RUBY_MAJOR_MINOR/bin:$PATH"
-#       
-#       if [[ "$RUBY_VERSION" < "3.2.0" ]]; then
-#         echo "Installing compatible bundler for Ruby $RUBY_VERSION"
-#         gem install --user-install bundler -v 2.4.22 --no-document
-#       else
-#         gem install --user-install bundler --no-document
-#       fi
-#       
-#       # Verify bundler is available
-#       which bundle || echo "Bundle not found in PATH"
-#       bundle --version || echo "Bundle version check failed"
-#     - export PATH="$HOME/.gem/ruby/$(ruby -e 'print RUBY_VERSION[/^\d+\.\d+/]')/bin:$PATH"
-#     - bundle config set --local path 'vendor/bundle'
-#     - bundle config set --local system 'false'
-#     - bundle install --jobs 4 --retry 3
-#     - rm -rf Pods Podfile.lock
-#     - pod repo update || true
-#     - pod install --repo-update
-#   script:
-#     - export VERSION=$(awk '/^version:/{print $2}' ../pubspec.yaml | awk -F'+' '{print $1}')
-#     - export BUILD=$(awk '/^version:/{print $2}' ../pubspec.yaml | awk -F'+' '{print $2}')
-#     
-#     # Replace placeholders in Fastfile and ExportOptions.plist with actual CI variables
-#     - echo "🔧 Replacing placeholders in Fastfile with CI variables..."
-#     - sed -i '' "s|{{APP_STORE_CONNECT_API_KEY_ID}}|${APP_STORE_CONNECT_API_KEY_ID}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{APP_STORE_CONNECT_API_ISSUER_ID}}|${APP_STORE_CONNECT_API_ISSUER_ID}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{APP_STORE_CONNECT_API_KEY_BASE64}}|${APP_STORE_CONNECT_API_KEY_BASE64}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{APPLE_TEAM_ID}}|${APPLE_TEAM_ID}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{IOS_APP_IDENTIFIER}}|${IOS_APP_IDENTIFIER}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{IOS_PROFILE_NAME}}|${IOS_PROFILE_NAME}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{IOS_DIST_P12_BASE64}}|${IOS_DIST_P12_BASE64}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{IOS_DIST_P12_PASSWORD}}|${IOS_DIST_P12_PASSWORD}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{IOS_PROFILE_APPSTORE_BASE64}}|${IOS_PROFILE_APPSTORE_BASE64}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{MATCH_KEYCHAIN_NAME}}|${MATCH_KEYCHAIN_NAME:-ci-signing.keychain-db}|g" fastlane/Fastfile
-#     - sed -i '' "s|{{RUNNER_KEYCHAIN_PASSWORD}}|${RUNNER_KEYCHAIN_PASSWORD:-change-me}|g" fastlane/Fastfile
-#     
-#     # Replace placeholders in ExportOptions.plist
-#     - echo "🔧 Replacing placeholders in ExportOptions.plist..."
-#     - sed -i '' "s|{{APPLE_TEAM_ID}}|${APPLE_TEAM_ID}|g" ExportOptions.plist
-#     - sed -i '' "s|{{IOS_APP_IDENTIFIER}}|${IOS_APP_IDENTIFIER}|g" ExportOptions.plist
-#     - sed -i '' "s|{{IOS_PROFILE_NAME}}|${IOS_PROFILE_NAME}|g" ExportOptions.plist
-#     
-#     # Verify all placeholders were replaced
-#     - echo "✅ Placeholders replaced"
-#     - grep -c "{{" fastlane/Fastfile || echo "✅ All placeholders replaced"
-#     
-#     # Build with fastlane
-#     - bundle exec fastlane ios build
-#     - echo "${VERSION}+${BUILD}" > ../artifacts/version.txt
-#   after_script:
-#     # Restore placeholders in files (remove sensitive data)
-#     - cd ios
-#     - git checkout fastlane/Fastfile || echo "Could not restore Fastfile"
-#     - git checkout ExportOptions.plist || echo "Could not restore ExportOptions.plist"
-#   artifacts:
-#     paths: [artifacts/]
-#     expire_in: 1 month
+build:ios:
+  stage: build
+  tags: [macos]
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+    - when: manual
+  cache:
+    key: "bundle-$CI_COMMIT_REF_SLUG"
+    paths: [ ios/vendor/bundle ]
+  variables:
+    LANG: en_US.UTF-8
+    LC_ALL: en_US.UTF-8
+  before_script:
+    - set -eo pipefail
+    - export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/bin:$PATH"
+    - echo "Using Ruby - $(which ruby) - $(ruby --version)"
+    - |
+      if command -v flutter >/dev/null 2>&1; then :; \
+      elif [ -x "$HOME/flutter/bin/flutter" ]; then export PATH="$HOME/flutter/bin:$PATH"; \
+      else git clone https://github.com/flutter/flutter.git -b stable "$HOME/flutter"; export PATH="$HOME/flutter/bin:$PATH"; fi
+      flutter --version
+    - chmod +x scripts/setup-ci-dependencies.sh
+    - ./scripts/setup-ci-dependencies.sh
+    - |
+      echo "🔧 Configuring Xcode development environment..."
+      echo "📋 Current Xcode developer directory: $(xcode-select -p 2>/dev/null || echo 'Not set')"
+      
+      if ! xcode-select -p >/dev/null 2>&1; then
+        echo "⚠️  Xcode command line tools not found"
+        echo "💡 Please ensure Xcode command line tools are pre-installed on the runner"
+        echo "💡 Run: xcode-select --install (requires admin privileges)"
+      else
+        echo "✅ Xcode command line tools are available"
+      fi
+      
+      if ! which gcc >/dev/null 2>&1 && ! which clang >/dev/null 2>&1; then
+        echo "❌ No C compiler found (neither gcc nor clang)"
+        echo "💡 Please ensure development tools are installed on the runner"
+      else
+        echo "✅ C compiler available: $(which gcc 2>/dev/null || which clang)"
+      fi
+    - cd ios
+    - |
+      RUBY_VERSION=$(ruby -e 'print RUBY_VERSION')
+      RUBY_MAJOR_MINOR=$(ruby -e 'print RUBY_VERSION[/^\d+\.\d+/]')
+      echo "Ruby version: $RUBY_VERSION"
+      if [[ "$RUBY_VERSION" < "2.7.0" ]]; then
+        echo "💥 CRITICAL: Still using incompatible Ruby version $RUBY_VERSION"
+        echo "🚨 PATH configuration failed"
+        echo "🔍 Debug info:"
+        echo "  PATH: $PATH"
+        echo "  which ruby: $(which ruby)"
+        echo "  /opt/homebrew/opt/ruby/bin/ruby version: $(/opt/homebrew/opt/ruby/bin/ruby --version 2>/dev/null || echo 'Not found')"
+        exit 1
+      fi
+      echo "✅ Using compatible Ruby version: $RUBY_VERSION"
+      export PATH="$HOME/.gem/ruby/$RUBY_MAJOR_MINOR/bin:$PATH"
+      if [[ "$RUBY_VERSION" < "3.0.0" ]]; then
+        echo "Installing compatible bundler for Ruby $RUBY_VERSION"
+        gem install --user-install bundler -v 2.4.22 --no-document
+      else
+        gem install --user-install bundler --no-document
+      fi
+      which bundle || echo "Bundle not found in PATH"
+      bundle --version || echo "Bundle version check failed"
+    - export PATH="$HOME/.gem/ruby/$(ruby -e 'print RUBY_VERSION[/^\d+\.\d+/]')/bin:$PATH"
+    - bundle config set --local path 'vendor/bundle'
+    - bundle config set --local system 'false'
+    - bundle config set --local build.ffi --with-cflags="-Wno-error=implicit-function-declaration"
+    - bundle config set --local build.json --with-cflags="-Wno-error=implicit-function-declaration"
+    - bundle config set --local build.nkf --with-cflags="-Wno-error=implicit-function-declaration"
+    - |
+      for i in {1..3}; do
+        echo "📦 Bundle install attempt $i/3..."
+        if bundle install --jobs 4 --retry 3; then
+          echo "✅ Bundle install successful"
+          break
+        else
+          echo "❌ Bundle install failed, attempt $i/3"
+          if [ $i -eq 3 ]; then
+            echo "💥 All bundle install attempts failed"
+            echo "🔍 Final diagnosis attempt..."
+            echo "🔍 Ruby environment details:"
+            echo "  Ruby version: $(ruby --version)"
+            echo "  Ruby location: $(which ruby)"
+            echo "  Gem environment:"
+            gem env | head -20
+            echo "  SDK path: $(xcrun --show-sdk-path 2>/dev/null || echo 'Not available')"
+            echo "  Xcode version: $(xcodebuild -version 2>/dev/null || echo 'Not available')"
+            echo ""
+            echo "💡 RECOMMENDED SOLUTION:"
+            echo "   Install a modern Ruby version on the runner:"
+            echo "   brew install ruby"
+            echo "   export PATH=\"/opt/homebrew/bin:\$PATH\""
+            echo ""
+            echo "🛑 ABORTING iOS BUILD due to Ruby environment incompatibility"
+            exit 1
+          fi
+          sleep 10
+        fi
+      done
+    - rm -rf Pods Podfile.lock
+    - bundle exec pod repo update || true
+    - |
+      for i in {1..3}; do
+        echo "🍎 Pod install attempt $i/3..."
+        if bundle exec pod install --repo-update; then
+          echo "✅ Pod install successful"
+          break
+        else
+          echo "❌ Pod install failed, attempt $i/3"
+          if [ $i -eq 3 ]; then
+            echo "💥 All pod install attempts failed"
+            exit 1
+          fi
+          sleep 10
+        fi
+      done
+  script:
+    - export VERSION=$(awk '/^version:/{print $2}' ../pubspec.yaml | awk -F'+' '{print $1}')
+    - export BUILD=$(awk '/^version:/{print $2}' ../pubspec.yaml | awk -F'+' '{print $2}')
+    
+    # Replace placeholders in Fastfile and ExportOptions.plist with actual CI variables
+    - echo "🔧 Replacing placeholders in Fastfile with CI variables..."
+    - sed -i '' "s|{{APP_STORE_CONNECT_API_KEY_ID}}|${APP_STORE_CONNECT_API_KEY_ID}|g" fastlane/Fastfile
+    - sed -i '' "s|{{APP_STORE_CONNECT_API_ISSUER_ID}}|${APP_STORE_CONNECT_API_ISSUER_ID}|g" fastlane/Fastfile
+    - sed -i '' "s|{{APP_STORE_CONNECT_API_KEY_BASE64}}|${APP_STORE_CONNECT_API_KEY_BASE64}|g" fastlane/Fastfile
+    - sed -i '' "s|{{APPLE_TEAM_ID}}|${APPLE_TEAM_ID}|g" fastlane/Fastfile
+    - sed -i '' "s|{{IOS_APP_IDENTIFIER}}|${IOS_APP_IDENTIFIER}|g" fastlane/Fastfile
+    - sed -i '' "s|{{IOS_PROFILE_NAME}}|${IOS_PROFILE_NAME}|g" fastlane/Fastfile
+    - sed -i '' "s|{{IOS_DIST_P12_BASE64}}|${IOS_DIST_P12_BASE64}|g" fastlane/Fastfile
+    - sed -i '' "s|{{IOS_DIST_P12_PASSWORD}}|${IOS_DIST_P12_PASSWORD}|g" fastlane/Fastfile
+    - sed -i '' "s|{{IOS_PROFILE_APPSTORE_BASE64}}|${IOS_PROFILE_APPSTORE_BASE64}|g" fastlane/Fastfile
+    - sed -i '' "s|{{MATCH_KEYCHAIN_NAME}}|${MATCH_KEYCHAIN_NAME:-ci-signing.keychain-db}|g" fastlane/Fastfile
+    - sed -i '' "s|{{RUNNER_KEYCHAIN_PASSWORD}}|${RUNNER_KEYCHAIN_PASSWORD:-change-me}|g" fastlane/Fastfile
+    
+    # Replace placeholders in ExportOptions.plist
+    - echo "🔧 Replacing placeholders in ExportOptions.plist..."
+    - sed -i '' "s|{{APPLE_TEAM_ID}}|${APPLE_TEAM_ID}|g" ExportOptions.plist
+    - sed -i '' "s|{{IOS_APP_IDENTIFIER}}|${IOS_APP_IDENTIFIER}|g" ExportOptions.plist
+    - sed -i '' "s|{{IOS_PROFILE_NAME}}|${IOS_PROFILE_NAME}|g" ExportOptions.plist
+    
+    # Verify all placeholders were replaced
+    - echo "✅ Placeholders replaced"
+    - grep -c "{{" fastlane/Fastfile || echo "✅ All placeholders replaced"
+    
+    # Build with fastlane
+    - bundle exec fastlane ios build
+    - echo "${VERSION}+${BUILD}" > ../artifacts/version.txt
+  after_script:
+    # Restore placeholders in files (remove sensitive data)
+    - cd ios
+    # - git checkout fastlane/Fastfile || echo "Could not restore Fastfile"
+    # - git checkout ExportOptions.plist || echo "Could not restore ExportOptions.plist"
+  artifacts:
+    paths: [artifacts/]
+    expire_in: 1 month
 
 # Build Android App Bundle (AAB) - Google Play Store
 build:android:bundle:
@@ -332,52 +398,52 @@ deploy:android:playstore:
     - rm -f google-play-key.json
 
 # Deploy to App Store Connect
-# deploy:ios:appstore:
-#   stage: deploy
-#   tags:
-#     - macos
-#   dependencies:
-#     - build:ios
-#   needs:
-#     - job: build:ios
-#   rules:
-#     - if: $CI_COMMIT_TAG =~ /^v/
-#       when: on_success  # Automatique si le build iOS réussit
-#     - when: never
-#   before_script:
-#     # Install fastlane on macOS
-#     - gem install fastlane -NV
-#   script:
-#     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
-#     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
-#     
-#     # Create App Store Connect API key file from base64 encoded CI variable
-#     - echo "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 -d > app-store-key.p8
-#     
-#     # Create API key JSON for fastlane
-#     - |
-#       cat > api_key.json << EOF
-#       {
-#         "key_id": "$APP_STORE_CONNECT_API_KEY_ID",
-#         "issuer_id": "$APP_STORE_CONNECT_API_ISSUER_ID",
-#         "key": "$(cat app-store-key.p8)"
-#       }
-#       EOF
-#     
-#     # Deploy using fastlane
-#     - |
-#       fastlane deliver \
-#         --api_key_path "api_key.json" \
-#         --app_identifier "$IOS_APP_IDENTIFIER" \
-#         --ipa "artifacts/ios/gecko-${VERSION}+${BUILD}.ipa" \
-#         --skip_screenshots \
-#         --skip_metadata \
-#         --precheck_include_in_app_purchases false \
-#         --force \
-#         --submit_for_review \
-#         --automatic_release false
-#   after_script:
-#     - rm -f app-store-key.p8 api_key.json
+deploy:ios:appstore:
+  stage: deploy
+  tags:
+    - macos
+  dependencies:
+    - build:ios
+  needs:
+    - job: build:ios
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+      when: on_success  # Automatique si le build iOS réussit
+    - when: never
+  before_script:
+    # Install fastlane on macOS
+    - gem install fastlane -NV
+  script:
+    - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
+    - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
+    
+    # Create App Store Connect API key file from base64 encoded CI variable
+    - echo "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 -d > app-store-key.p8
+    
+    # Create API key JSON for fastlane
+    - |
+      cat > api_key.json << EOF
+      {
+        "key_id": "$APP_STORE_CONNECT_API_KEY_ID",
+        "issuer_id": "$APP_STORE_CONNECT_API_ISSUER_ID",
+        "key": "$(cat app-store-key.p8)"
+      }
+      EOF
+    
+    # Deploy using fastlane
+    - |
+      fastlane deliver \
+        --api_key_path "api_key.json" \
+        --app_identifier "$IOS_APP_IDENTIFIER" \
+        --ipa "artifacts/ios/gecko-${VERSION}+${BUILD}.ipa" \
+        --skip_screenshots \
+        --skip_metadata \
+        --precheck_include_in_app_purchases false \
+        --force \
+        --submit_for_review \
+        --automatic_release false
+  after_script:
+    - rm -f app-store-key.p8 api_key.json
 
 # Create GitLab Release with all assets
 release:gitlab:
@@ -461,7 +527,8 @@ build:macos:
   stage: build
   tags: [macos]
   rules:
-    - when: always
+    - if: $CI_COMMIT_TAG =~ /^v/
+    - when: manual
   before_script:
     # Install Flutter on macOS if not present
     - |
@@ -481,6 +548,28 @@ build:macos:
     - chmod +x scripts/setup-ci-dependencies.sh
     - ./scripts/setup-ci-dependencies.sh
     - flutter config --enable-macos-desktop
+    
+    # Ensure Xcode command line tools are properly configured
+    - |
+      echo "🔧 Configuring Xcode development environment..."
+      echo "📋 Current Xcode developer directory: $(xcode-select -p 2>/dev/null || echo 'Not set')"
+      
+      # Check if Xcode command line tools are installed
+      if ! xcode-select -p >/dev/null 2>&1; then
+        echo "⚠️  Xcode command line tools not found"
+        echo "💡 Please ensure Xcode command line tools are pre-installed on the runner"
+        echo "💡 Run: xcode-select --install (requires admin privileges)"
+      else
+        echo "✅ Xcode command line tools are available"
+      fi
+      
+      # Verify development tools
+      if ! which gcc >/dev/null 2>&1 && ! which clang >/dev/null 2>&1; then
+        echo "❌ No C compiler found (neither gcc nor clang)"
+        echo "💡 Please ensure development tools are installed on the runner"
+      else
+        echo "✅ C compiler available: $(which gcc 2>/dev/null || which clang)"
+      fi
     
     # Setup code signing for all builds
     - |
@@ -517,13 +606,26 @@ build:macos:
         echo "⚠️  Code signing credentials not available, app will be unsigned"
       fi
     
-    # Clean and setup CocoaPods with retry logic
+    # Clean and setup CocoaPods with retry logic and Ruby compatibility
     - pod cache clean --all || true
-    # Pre-install pods with retry logic for network issues
     - |
       cd macos
       export LANG=en_US.UTF-8
       export LC_ALL=en_US.UTF-8
+      
+      # Check Ruby version and set up compatibility
+      RUBY_VERSION=$(ruby -e 'print RUBY_VERSION')
+      echo "Ruby version: $RUBY_VERSION"
+      
+      if [[ "$RUBY_VERSION" < "2.7.0" ]]; then
+        echo "⚠️  Ruby version $RUBY_VERSION is too old"
+        # Set compiler flags for old Ruby
+        export CPPFLAGS="-I$(xcrun --show-sdk-path)/usr/include"
+        export LDFLAGS="-L$(xcrun --show-sdk-path)/usr/lib"
+        export PKG_CONFIG_PATH="$(xcrun --show-sdk-path)/usr/lib/pkgconfig"
+      fi
+      
+      # Pre-install pods with retry logic for network issues
       for i in {1..3}; do
         echo "Pod install attempt $i/3..."
         if pod install --repo-update; then
@@ -533,7 +635,16 @@ build:macos:
           echo "❌ Pod install failed, attempt $i/3"
           if [ $i -eq 3 ]; then
             echo "💥 All pod install attempts failed"
-            exit 1
+            echo "🔍 Trying to diagnose the issue..."
+            
+            # Show Ruby and gem environment
+            ruby --version
+            gem env
+            which pod
+            pod --version
+            
+            # Try with verbose output
+            pod install --repo-update --verbose || exit 1
           fi
           sleep 10
         fi
@@ -1071,4 +1182,5 @@ cleanup:artifacts:
   script:
     - echo "Cleanup job for scheduled pipelines"
     # Add cleanup logic here if needed
+
 

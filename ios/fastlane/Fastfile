@@ -112,6 +112,7 @@ platform :ios do
     UI.message("🔍 Verifying Runner project signing settings...")
     update_code_signing_settings(
       use_automatic_signing: false,
+      path: "Runner.xcodeproj",
       team_id: apple_team_id,
       targets: ["Runner"],
       code_sign_identity: "Apple Distribution",
@@ -140,6 +141,31 @@ platform :ios do
     UI.message("🧹 Cleaning derived data...")
     sh("rm -rf ~/Library/Developer/Xcode/DerivedData/Runner-* || true")
     
+    # Configure Pods project for automatic signing (no provisioning profiles)
+    UI.message("🔧 Configuring Pods for automatic signing...")
+    begin
+      pods_project_path = File.expand_path("../Pods/Pods.xcodeproj", Dir.pwd)
+      if File.exist?(pods_project_path)
+        pods_project = Xcodeproj::Project.open(pods_project_path)
+        pods_project.targets.each do |target|
+          # Use automatic signing for all Pod targets (no provisioning profiles)
+          target.build_configurations.each do |config|
+            config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
+            config.build_settings.delete('PROVISIONING_PROFILE_SPECIFIER')
+            config.build_settings.delete('PROVISIONING_PROFILE')
+            config.build_settings.delete('CODE_SIGN_IDENTITY')
+          end
+        end
+        pods_project.save
+        UI.success("✅ Pods configured for automatic signing")
+      else
+        UI.warning("⚠️ Pods project not found at #{pods_project_path}")
+      end
+    rescue => e
+      UI.error("⚠️ Could not configure Pods signing: #{e.message}")
+      UI.message("Continuing anyway...")
+    end
+    
     # Verify scheme configuration
     UI.message("🔍 Verifying scheme configuration...")
     sh("xcodebuild -workspace Runner.xcworkspace -scheme Runner -showBuildSettings -configuration Release | grep -E 'CODE_SIGN|PROVISIONING|DEVELOPMENT_TEAM' | head -10 || true")
@@ -150,11 +176,11 @@ platform :ios do
       scheme: "Runner",
       configuration: "Release",
       export_method: "app-store",
-      # Force manual signing at build time
-      codesigning_identity: "Apple Distribution",
+      # Don't specify codesigning_identity here as it would apply to all targets including Pods
+      # The signing is already configured by update_code_signing_settings for the Runner target only
       skip_profile_detection: true,  # Skip automatic profile detection
-      # Force manual signing and explicit certificate/profile with more explicit settings
-      xcargs: "ONLY_ACTIVE_ARCH=NO CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER='#{ios_profile_name}' DEVELOPMENT_TEAM='#{apple_team_id}' CODE_SIGN_STYLE=Manual -target Runner",
+      # Force Development Team to prevent Xcode from looking for Development profiles
+      xcargs: "ONLY_ACTIVE_ARCH=NO DEVELOPMENT_TEAM=#{apple_team_id}",
       export_options: {
         method: "app-store",
         signingStyle: "manual",

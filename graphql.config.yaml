@@ -7,4 +7,4 @@ documents:
 extensions:
   endpoints:
     default:
-      url: 'https://gt-squid.axiom-team.fr/v1beta1/relay' 
+      url: 'https://gt-squid.axiom-team.fr/v1/graphql'

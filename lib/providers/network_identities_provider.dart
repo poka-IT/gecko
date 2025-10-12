@@ -149,7 +149,7 @@ class NetworkIdentitiesNotifier extends StateNotifier<NetworkIdentitiesState> {
 
   /// Generate a consistent identity ID from identity data
   String _generateIdentityId(IdentityDisplayItem identity) {
-    return '${identity.name}_${identity.timestamp.millisecondsSinceEpoch}_${identity.status.name}';
+    return '${identity.name}_${identity.timestamp.millisecondsSinceEpoch}_${identity.status}';
   }
 
   /// Load the first page of network identities

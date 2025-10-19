@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:durt2/durt2.dart' show CsToV2AddressResult;
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/g1v1_migration_service.dart';
 

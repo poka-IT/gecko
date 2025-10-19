@@ -43,7 +43,7 @@ class WalletManagementService {
           toolbarTitle: 'cropImage'.tr(),
           toolbarColor: Colors.deepOrange,
           toolbarWidgetColor: Colors.white,
-          statusBarColor: Colors.deepOrange,
+          statusBarLight: false,
           initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: true,
           cropStyle: CropStyle.circle,

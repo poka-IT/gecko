@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
@@ -222,14 +223,16 @@ final selectedCertificationWalletProvider = StateProvider<String?>((ref) => null
 
 /// Provider for certification state between effective wallet and target address
 /// Automatically updates when balance or certifications change, with caching to avoid UI jumps
-final certStateProvider = AsyncNotifierProvider.family<CertStateNotifier, d.CertState?, String>(
-  () => CertStateNotifier(),
-);
+final certStateProvider = AsyncNotifierProvider.family<CertStateNotifier, d.CertState?, String>(CertStateNotifier.new);
 
 /// Notifier that caches cert state and updates smoothly without UI jumps
-class CertStateNotifier extends FamilyAsyncNotifier<d.CertState?, String> {
+class CertStateNotifier extends AsyncNotifier<d.CertState?> {
+  CertStateNotifier(this.arg);
+  final String arg;
+
   @override
-  Future<d.CertState?> build(String toAddress) async {
+  Future<d.CertState?> build() async {
+    final toAddress = arg;
     // Watch streams for auto-updates but keep previous state during loading
     ref.listen(smartBalanceStreamProvider(toAddress), (previous, next) {
       if (!next.isLoading && next.hasValue) {

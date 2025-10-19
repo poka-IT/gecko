@@ -3,6 +3,7 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart' show Box;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/routes.dart';
 
 /// Provides the global, initialized instance of [d.Durt].

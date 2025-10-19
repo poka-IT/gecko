@@ -6,4 +6,3 @@ rm -rf Pods/
 pod install --repo-update
 fvm flutter clean && fvm flutter pub get
 cd ..
-

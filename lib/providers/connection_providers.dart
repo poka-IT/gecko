@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 

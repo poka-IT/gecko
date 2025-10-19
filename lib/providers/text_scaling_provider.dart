@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/text_size_mode.dart';
 

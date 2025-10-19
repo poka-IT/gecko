@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 

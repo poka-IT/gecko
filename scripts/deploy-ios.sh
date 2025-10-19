@@ -55,11 +55,28 @@ command_exists() {
 
 # Function to setup PATH for Ruby gems on macOS
 setup_ruby_path() {
+    # Prioritize Homebrew Ruby over system Ruby
+    if [ -d "/opt/homebrew/opt/ruby/bin" ]; then
+        export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+    fi
+    if [ -d "/usr/local/opt/ruby/bin" ]; then
+        export PATH="/usr/local/opt/ruby/bin:$PATH"
+    fi
+    
     # Add common Ruby gem paths for Homebrew on macOS
     export PATH="/opt/homebrew/lib/ruby/gems/3.4.0/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/opt/homebrew/lib/ruby/gems/3.2.0/bin:$PATH"
     export PATH="/usr/local/lib/ruby/gems/3.4.0/bin:/usr/local/lib/ruby/gems/3.3.0/bin:/usr/local/lib/ruby/gems/3.2.0/bin:$PATH"
-    # System Ruby
-    export PATH="/usr/local/bin:$PATH"
+    
+    # Add user gem installation directory
+    if command -v ruby >/dev/null 2>&1; then
+        USER_GEM_HOME="$(ruby -e 'puts Gem.user_dir')/bin"
+        if [ -d "$USER_GEM_HOME" ]; then
+            export PATH="$USER_GEM_HOME:$PATH"
+        fi
+        # Configure gem to install to user directory
+        export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+        export PATH="$GEM_HOME/bin:$PATH"
+    fi
 }
 
 # Function to install fastlane
@@ -67,7 +84,10 @@ install_fastlane() {
     echo "Installing fastlane..."
     if command_exists gem; then
         echo "Installing fastlane using gem..."
-        gem install fastlane -NV
+        # Install required dependencies first (to user directory)
+        gem install sysrandom --user-install -NV
+        gem install fastlane-sirp --user-install -NV
+        gem install fastlane --user-install -NV
         echo "Fastlane installation completed."
     elif command_exists bundle; then
         echo "Installing fastlane using bundle..."
@@ -97,14 +117,28 @@ check_fastlane() {
         if ! command_exists fastlane; then
             echo "Error: Fastlane installation failed or not found in PATH."
             echo "Please install it manually with:"
-            echo "  gem install fastlane -NV"
+            echo "  gem install sysrandom --user-install -NV"
+            echo "  gem install fastlane-sirp --user-install -NV"
+            echo "  gem install fastlane --user-install -NV"
             echo ""
             echo "Or ensure it's in your PATH. Common locations on macOS:"
             echo "  /opt/homebrew/lib/ruby/gems/*/bin/fastlane"
             echo "  /usr/local/lib/ruby/gems/*/bin/fastlane"
+            echo "  ~/.gem/ruby/*/bin/fastlane (user installation)"
             echo ""
             echo "You can also try: which fastlane"
             exit 1
+        fi
+    else
+        # Fastlane exists, but verify dependencies are installed
+        echo "Verifying fastlane dependencies..."
+        if ! gem list sysrandom -i >/dev/null 2>&1; then
+            echo "Installing missing dependency: sysrandom..."
+            gem install sysrandom --user-install -NV
+        fi
+        if ! gem list fastlane-sirp -i >/dev/null 2>&1; then
+            echo "Installing missing dependency: fastlane-sirp..."
+            gem install fastlane-sirp --user-install -NV
         fi
     fi
     

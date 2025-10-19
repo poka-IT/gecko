@@ -290,26 +290,26 @@ publish:forum:complete:
 #     paths: [artifacts/]
 #     expire_in: 1 month
 
-# # Build Android App Bundle (AAB) - Google Play Store
-# build:android:bundle:
-#   extends: .android_env
-#   stage: build
-#   rules:
-#     - if: $CI_COMMIT_TAG =~ /^v/
-#     - when: manual
-#   script:
-#     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
-#     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
-#     - echo "Building Gecko Android Bundle v${VERSION}+${BUILD}"
+# Build Android App Bundle (AAB) - Google Play Store
+build:android:bundle:
+  extends: .android_env
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
+    - when: manual
+  script:
+    - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
+    - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
+    - echo "Building Gecko Android Bundle v${VERSION}+${BUILD}"
     
-#     - flutter build appbundle --release --build-name $VERSION --build-number $BUILD
+    - flutter build appbundle --release --build-name $VERSION --build-number $BUILD
     
-#     - mkdir -p artifacts/android
-#     - mv build/app/outputs/bundle/release/app-release.aab artifacts/android/gecko-${VERSION}+${BUILD}.aab
-#   artifacts:
-#     paths:
-#       - artifacts/
-#     expire_in: 1 month
+    - mkdir -p artifacts/android
+    - mv build/app/outputs/bundle/release/app-release.aab artifacts/android/gecko-${VERSION}+${BUILD}.aab
+  artifacts:
+    paths:
+      - artifacts/
+    expire_in: 1 month
 
 # Build Linux Desktop - Direct download
 build:linux:

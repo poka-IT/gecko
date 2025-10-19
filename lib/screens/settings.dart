@@ -238,25 +238,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   /// Get available Duniter endpoints from durt2's discovery service
+  /// Returns only working endpoints for UI display
   Future<List<String>> _getAvailableDuniterEndpoints() async {
     try {
       final durt = _container.read(durtProvider);
 
-      log.d('🔍 Checking Networks.listDuniterEndpoints: ${Networks.listDuniterEndpoints.length} endpoints available');
-      if (Networks.listDuniterEndpoints.isNotEmpty) {
-        log.d('✅ Using existing ${Networks.listDuniterEndpoints.length} Duniter endpoints');
-        return Networks.listDuniterEndpoints;
+      // Get only working endpoints for UI display
+      final workingEndpoints = await durt.getWorkingDuniterEndpoints();
+
+      log.d('🔍 Found ${workingEndpoints.length} working Duniter endpoints');
+
+      if (workingEndpoints.isNotEmpty) {
+        return workingEndpoints;
       }
 
-      // If no endpoints available, trigger refresh
-      log.w('⚠️ Networks.listDuniterEndpoints is empty, triggering refresh...');
+      // If no working endpoints, trigger refresh
+      log.w('⚠️ No working Duniter endpoints found, triggering refresh...');
       await durt.refreshEndpoints();
 
-      if (Networks.listDuniterEndpoints.isNotEmpty) {
-        return Networks.listDuniterEndpoints;
+      final refreshedEndpoints = await durt.getWorkingDuniterEndpoints();
+      if (refreshedEndpoints.isNotEmpty) {
+        return refreshedEndpoints;
       }
 
-      throw Exception('No Duniter endpoints found');
+      throw Exception('No working Duniter endpoints found');
     } catch (e) {
       log.e('Error getting Duniter endpoints: $e');
       throw Exception('Error getting Duniter endpoints: $e');
@@ -268,19 +273,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final durt = _container.read(durtProvider);
 
-      // Use Networks.listSquidEndpoints directly (populated by discovery service)
-      if (Networks.listSquidEndpoints.isNotEmpty) {
-        return Networks.listSquidEndpoints;
+      // Get only working endpoints for UI display
+      final workingEndpoints = await durt.getWorkingSquidEndpoints();
+
+      if (workingEndpoints.isNotEmpty) {
+        return workingEndpoints;
       }
 
-      // If no endpoints available, trigger refresh
+      // If no working endpoints, trigger refresh
       await durt.refreshEndpoints();
 
-      if (Networks.listSquidEndpoints.isNotEmpty) {
-        return Networks.listSquidEndpoints;
+      final refreshedEndpoints = await durt.getWorkingSquidEndpoints();
+      if (refreshedEndpoints.isNotEmpty) {
+        return refreshedEndpoints;
       }
 
-      throw Exception('No Squid endpoints found');
+      throw Exception('No working Squid endpoints found');
     } catch (e) {
       log.e('Error getting Squid endpoints: $e');
       rethrow;

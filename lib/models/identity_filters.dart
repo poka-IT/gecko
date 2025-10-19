@@ -1,10 +1,9 @@
-import 'package:durt2/durt2.dart' show Enum$IdentityStatusEnum;
 import 'package:gecko/models/transaction_filters.dart';
 
 /// Identity filter criteria for the Gecko UI
 class IdentityFilterCriteria {
   final String? nameSearch;
-  final List<Enum$IdentityStatusEnum>? selectedStatuses;
+  final List<String>? selectedStatuses;
   final DateRangeFilter dateRange;
   final bool exactMatchName;
 
@@ -17,7 +16,7 @@ class IdentityFilterCriteria {
 
   IdentityFilterCriteria copyWith({
     String? nameSearch,
-    List<Enum$IdentityStatusEnum>? selectedStatuses,
+    List<String>? selectedStatuses,
     DateRangeFilter? dateRange,
     bool? exactMatchName,
   }) {
@@ -62,13 +61,13 @@ class IdentityFilterCriteria {
   }
 
   /// Check if a specific status is selected
-  bool isStatusSelected(Enum$IdentityStatusEnum status) {
+  bool isStatusSelected(String status) {
     return selectedStatuses?.contains(status) ?? false;
   }
 
   /// Toggle a status selection
-  IdentityFilterCriteria toggleStatus(Enum$IdentityStatusEnum status) {
-    final currentStatuses = selectedStatuses?.toList() ?? <Enum$IdentityStatusEnum>[];
+  IdentityFilterCriteria toggleStatus(String status) {
+    final currentStatuses = selectedStatuses?.toList() ?? <String>[];
 
     if (currentStatuses.contains(status)) {
       currentStatuses.remove(status);
@@ -82,9 +81,14 @@ class IdentityFilterCriteria {
   /// Select all available statuses
   IdentityFilterCriteria selectAllStatuses() {
     return copyWith(
-      selectedStatuses: Enum$IdentityStatusEnum.values
-          .where((status) => status != Enum$IdentityStatusEnum.$unknown)
-          .toList(),
+      selectedStatuses: [
+        'Member',
+        'NotMember',
+        'Removed',
+        'Revoked',
+        'Unconfirmed',
+        'Unvalidated',
+      ].where((status) => status != 'Unknown').toList(),
     );
   }
 

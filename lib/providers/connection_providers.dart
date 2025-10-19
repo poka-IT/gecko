@@ -217,15 +217,15 @@ final squidEndpointTesterProvider = Provider<Future<bool> Function(String)>((ref
       // Ensure the endpoint has the correct format with path
       String testEndpoint = endpoint;
 
-      // If the endpoint doesn't have a path, add the default v1beta1/relay path
-      if (!testEndpoint.contains('/v1beta1/relay') && !testEndpoint.contains('/v1/graphql')) {
+      // If the endpoint doesn't have a path, add the default /v1/graphql path
+      if (!testEndpoint.contains('/v1/graphql')) {
         if (testEndpoint.startsWith('wss://') || testEndpoint.startsWith('ws://')) {
-          testEndpoint = '$testEndpoint/v1beta1/relay';
+          testEndpoint = '$testEndpoint/v1/graphql';
         } else if (testEndpoint.startsWith('https://') || testEndpoint.startsWith('http://')) {
-          testEndpoint = '$testEndpoint/v1beta1/relay';
+          testEndpoint = '$testEndpoint/v1/graphql';
         } else {
           // Add protocol and path
-          testEndpoint = 'wss://$testEndpoint/v1beta1/relay';
+          testEndpoint = 'wss://$testEndpoint/v1/graphql';
         }
       }
 

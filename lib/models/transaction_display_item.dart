@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:durt2/durt2.dart'
     show
-        Query$GetAccountHistory$transferConnection$edges$node,
-        Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory;
+        Query$GetAccountHistory$transfers$edges$node,
+        Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -44,7 +44,7 @@ class TransactionDisplayItem {
   });
 
   factory TransactionDisplayItem.fromGraphQLNode(
-    Query$GetAccountHistory$transferConnection$edges$node node,
+    Query$GetAccountHistory$transfers$edges$node node,
     String walletAddress,
     DateTime genesisTime,
   ) {
@@ -180,7 +180,7 @@ class TransactionDisplayItem {
   }
 
   factory TransactionDisplayItem.fromUdHistoryNode(
-    Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory node,
+    Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node node,
     String walletAddress,
     DateTime genesisTime,
   ) {

@@ -1,8 +1,5 @@
 import 'package:durt2/durt2.dart'
-    show
-        Query$GetNetworkCertifications$certConnection$edges$node,
-        Query$GetNetworkCertificationsFiltered$certConnection$edges$node,
-        Durt;
+    show Durt, Query$GetNetworkCertifications$certs$edges$node, Query$GetNetworkCertificationsFiltered$certs$edges$node;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,7 +38,7 @@ class CertificationDisplayItem {
   });
 
   static Future<CertificationDisplayItem> fromNetworkCertificationNode(
-    Query$GetNetworkCertifications$certConnection$edges$node node,
+    Query$GetNetworkCertifications$certs$edges$node node,
     Ref ref,
   ) async {
     // Get genesis blockchain time for block number conversion
@@ -97,7 +94,7 @@ class CertificationDisplayItem {
   }
 
   static Future<CertificationDisplayItem> fromFilteredNetworkCertificationNode(
-    Query$GetNetworkCertificationsFiltered$certConnection$edges$node node,
+    Query$GetNetworkCertificationsFiltered$certs$edges$node node,
     Ref ref,
   ) async {
     // Get genesis blockchain time for block number conversion

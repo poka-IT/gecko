@@ -1,10 +1,6 @@
-schema:
-  - ../durt2/lib/src/models/graphql/squid/squid-schema.graphql
-  - ../durt2/lib/src/models/graphql/datapod/datapod-schema.graphql
-documents:
-  - ../durt2/lib/src/models/graphql/**/*.graphql
-  - ../durt2/lib/src/models/graphql/**/*.gql
+schema: ../durt2/lib/src/models/graphql/squid/squid-schema.graphql
+documents: ../durt2/lib/src/models/graphql/squid/**/*.graphql
 extensions:
-  endpoints:
-    default:
-      url: 'https://gt-squid.axiom-team.fr/v1beta1/relay' 
+  languageService:
+    enableValidation: true
+    cacheSchemaFileForLookup: false

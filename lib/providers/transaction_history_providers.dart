@@ -336,9 +336,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
       if (result != null) {
         final newTransactions = result.items
             .map((item) {
-              if (item is d.Query$GetAccountHistory$transferConnection$edges$node) {
+              if (item is d.Query$GetAccountHistory$transfers$edges$node) {
                 return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
-              } else if (item is d.Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory) {
+              } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
                 return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
               } else {
                 log.e('Unknown item type in combined history: ${item.runtimeType}');
@@ -412,9 +412,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
       final transactions = result.items
           .map((item) {
-            if (item is d.Query$GetAccountHistory$transferConnection$edges$node) {
+            if (item is d.Query$GetAccountHistory$transfers$edges$node) {
               return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
-            } else if (item is d.Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory) {
+            } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
               return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
             } else {
               log.e('Unknown item type in combined history: ${item.runtimeType}');
@@ -483,9 +483,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
       final newTransactions = result.items
           .map((item) {
-            if (item is d.Query$GetAccountHistory$transferConnection$edges$node) {
+            if (item is d.Query$GetAccountHistory$transfers$edges$node) {
               return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
-            } else if (item is d.Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory) {
+            } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
               return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
             } else {
               log.e('Unknown item type in combined history: ${item.runtimeType}');

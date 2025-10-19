@@ -45,12 +45,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _indexerConnectionFailed = false;
   bool _expertMode = false;
   bool _isSwitchingNetwork = false;
+  bool _isEditingDuniter = false;
+  bool _isEditingIndexer = false;
 
   @override
   void initState() {
     super.initState();
     _initControllers();
     _expertMode = configBox.get('expertMode') ?? false;
+
+    // Listen to focus changes to track editing state
+    _duniterFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          _isEditingDuniter = _duniterFocusNode.hasFocus;
+        });
+      }
+    });
+
+    _indexerFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          _isEditingIndexer = _indexerFocusNode.hasFocus;
+        });
+      }
+    });
   }
 
   void _initControllers() {
@@ -62,18 +81,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (configBox.containsKey('customIndexer')) {
       indexerEndpoint = configBox.get('customIndexer');
       // Clean endpoint for display (remove paths)
-      if (indexerEndpoint.contains('/v1beta1/relay')) {
-        indexerEndpoint = indexerEndpoint.split('/v1beta1/relay')[0];
-      }
       if (indexerEndpoint.contains('/v1/graphql')) {
         indexerEndpoint = indexerEndpoint.split('/v1/graphql')[0];
       }
     } else {
       indexerEndpoint = Networks.listSquidEndpoints.isNotEmpty ? Networks.listSquidEndpoints[0] : 'https://';
       // Clean endpoint for display (remove paths)
-      if (indexerEndpoint.contains('/v1beta1/relay')) {
-        indexerEndpoint = indexerEndpoint.split('/v1beta1/relay')[0];
-      }
       if (indexerEndpoint.contains('/v1/graphql')) {
         indexerEndpoint = indexerEndpoint.split('/v1/graphql')[0];
       }
@@ -82,17 +95,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _indexerEndpointController = TextEditingController(text: indexerEndpoint);
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Synchronize Duniter endpoint controller with current state
-    _syncDuniterEndpointController();
-
-    // Synchronize Indexer endpoint controller with current state
-    _syncIndexerEndpointController();
-  }
+  // Removed didChangeDependencies - controllers are now only synced when explicitly needed
+  // (after applying new endpoints), not on every rebuild
 
   void _syncDuniterEndpointController() {
+    // Don't sync if user is currently editing
+    if (_isEditingDuniter) {
+      return;
+    }
+
     String correctEndpoint;
     if (configBox.get('autoEndpoint') == true) {
       correctEndpoint = Networks.duniterEndpoint;
@@ -108,22 +119,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _syncIndexerEndpointController() {
+    // Don't sync if user is currently editing
+    if (_isEditingIndexer) {
+      return;
+    }
+
     String correctEndpoint;
     if (configBox.containsKey('customIndexer')) {
       correctEndpoint = configBox.get('customIndexer');
       // Clean endpoint for display (remove paths)
-      if (correctEndpoint.contains('/v1beta1/relay')) {
-        correctEndpoint = correctEndpoint.split('/v1beta1/relay')[0];
-      }
       if (correctEndpoint.contains('/v1/graphql')) {
         correctEndpoint = correctEndpoint.split('/v1/graphql')[0];
       }
     } else {
       correctEndpoint = Networks.listSquidEndpoints.isNotEmpty ? Networks.listSquidEndpoints[0] : 'https://';
       // Clean endpoint for display (remove paths)
-      if (correctEndpoint.contains('/v1beta1/relay')) {
-        correctEndpoint = correctEndpoint.split('/v1beta1/relay')[0];
-      }
       if (correctEndpoint.contains('/v1/graphql')) {
         correctEndpoint = correctEndpoint.split('/v1/graphql')[0];
       }
@@ -274,6 +284,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       log.e('Error getting Squid endpoints: $e');
       rethrow;
+    }
+  }
+
+  /// Apply a custom Squid endpoint
+  /// Returns true if successful, false otherwise
+  Future<bool> _applyCustomSquidEndpoint(String fullEndpoint) async {
+    try {
+      log.i('🔄 Applying custom Squid endpoint: $fullEndpoint');
+
+      // Save to config first
+      configBox.put('customIndexer', fullEndpoint);
+
+      // Force reconnection with the new endpoint
+      await _container.read(durtProvider).setFixedSquidEndpoint(fullEndpoint);
+
+      log.i('✅ Successfully applied custom Squid endpoint');
+      return true;
+    } catch (e) {
+      log.e('❌ Error applying custom Squid endpoint: $e');
+      return false;
+    }
+  }
+
+  /// Apply a custom Duniter endpoint
+  /// Returns true if successful, false otherwise
+  Future<bool> _applyCustomDuniterEndpoint(String endpoint) async {
+    try {
+      log.i('🔄 Applying custom Duniter endpoint: $endpoint');
+
+      // Clean up subscriptions first
+      await _cleanupDuniterSubscriptions();
+
+      // Save to config
+      configBox.put('customEndpoint', endpoint);
+      configBox.put('autoEndpoint', false);
+
+      // Force reconnection with the new endpoint
+      await _container.read(durtProvider).setFixedEndpoint(endpoint);
+
+      // Refresh UI providers
+      _syncDuniterEndpointController();
+      _refreshBlockHeightProvider();
+
+      log.i('✅ Successfully applied custom Duniter endpoint');
+      return true;
+    } catch (e) {
+      log.e('❌ Error applying custom Duniter endpoint: $e');
+      return false;
     }
   }
 
@@ -803,43 +861,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _duniterConnectionFailed = false;
       });
 
-      try {
-        // Clean up existing subscriptions before changing nodes
-        await _cleanupDuniterSubscriptions();
+      log.i('🔍 Testing selected Duniter endpoint: $result');
 
-        // First test if the endpoint is valid
-        final isWorking = await _container.read(durtProvider).testDuniterEndpoint(result);
+      // First test if the endpoint is valid
+      final isWorking = await _container.read(durtProvider).testDuniterEndpoint(result);
 
-        if (isWorking) {
-          // If valid, update config and connect to this specific endpoint
+      if (isWorking) {
+        log.i('✅ Duniter endpoint test passed');
+
+        // Apply the new endpoint
+        final applied = await _applyCustomDuniterEndpoint(result);
+
+        if (applied) {
           controller.text = result;
-          configBox.put('autoEndpoint', false);
-          configBox.put('customEndpoint', result);
-
-          try {
-            await _container.read(durtProvider).setFixedEndpoint(result);
-            _syncDuniterEndpointController(); // Ensure controller is synchronized
-            _refreshBlockHeightProvider(); // Refresh block height provider
-            if (mounted) {
-              setState(() {
-                _duniterConnectionFailed = false;
-              });
-            }
-          } catch (e) {
-            // If connection fails after test passed, show error and mark as failed
-            if (mounted) {
-              setState(() {
-                _duniterConnectionFailed = true;
-              });
-            }
-            if (mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
-            }
+          if (mounted) {
+            setState(() {
+              _duniterConnectionFailed = false;
+            });
+          }
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Duniter endpoint updated successfully'), backgroundColor: Colors.green),
+            );
           }
         } else {
-          // If endpoint test fails, mark as failed and don't change config
+          log.e('❌ Failed to apply Duniter endpoint');
           if (mounted) {
             setState(() {
               _duniterConnectionFailed = true;
@@ -848,11 +894,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           if (mounted) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red));
+            ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
           }
         }
-      } finally {
-        // Connection attempt finished
+      } else {
+        log.w('❌ Duniter endpoint test failed');
+        // If endpoint test fails, mark as failed and don't change config
+        if (mounted) {
+          setState(() {
+            _duniterConnectionFailed = true;
+          });
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red));
+        }
       }
     }
   }
@@ -1036,16 +1093,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         // Connection attempt finished
                       }
                     } else {
+                      // Manuel mode - prepare for user editing
                       configBox.put('autoEndpoint', false);
                       if (!configBox.containsKey('customEndpoint')) {
                         configBox.put('customEndpoint', _endpointController.text);
                       }
-                      _syncDuniterEndpointController(); // Synchronize controller
+                      // Don't sync here - we want to keep whatever is currently in the field
 
-                      _duniterFocusNode.requestFocus();
-                      _endpointController.selection = TextSelection.fromPosition(
-                        TextPosition(offset: _endpointController.text.length),
-                      );
+                      if (!mounted) return;
+                      setState(() {
+                        // Force UI refresh to show TextField
+                      });
+
+                      // Request focus after UI rebuild
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _duniterFocusNode.requestFocus();
+                        _endpointController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _endpointController.text.length),
+                        );
+                      });
                     }
                   },
                 ),
@@ -1105,57 +1171,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   onSubmitted: (value) async {
                     if (!mounted) return;
+
+                    // Unfocus to exit editing mode
+                    _duniterFocusNode.unfocus();
+
                     setState(() {
+                      _isEditingDuniter = false;
                       _duniterConnectionFailed = false;
                     });
 
-                    try {
-                      // Clean up existing subscriptions before changing nodes
-                      await _cleanupDuniterSubscriptions();
+                    log.i('🔍 Testing Duniter endpoint: $value');
 
-                      // First test if the endpoint is valid
-                      final isWorking = await _container.read(durtProvider).testDuniterEndpoint(value);
+                    // Test if the endpoint is valid
+                    final isWorking = await _container.read(durtProvider).testDuniterEndpoint(value);
 
-                      if (isWorking) {
-                        // If valid, update config and connect to this specific endpoint
-                        configBox.put('customEndpoint', value);
-                        try {
-                          await _container.read(durtProvider).setFixedEndpoint(value);
-                          _syncDuniterEndpointController(); // Synchronize controller
-                          _refreshBlockHeightProvider(); // Refresh block height provider
-                          if (mounted) {
-                            setState(() {
-                              _duniterConnectionFailed = false;
-                            });
-                          }
-                        } catch (e) {
-                          // If connection fails after test passed, show error and mark as failed
-                          if (mounted) {
-                            setState(() {
-                              _duniterConnectionFailed = true;
-                            });
-                          }
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red),
-                            );
-                          }
+                    if (isWorking) {
+                      log.i('✅ Duniter endpoint test passed');
+
+                      // Apply the new endpoint
+                      final applied = await _applyCustomDuniterEndpoint(value);
+
+                      if (applied) {
+                        if (mounted) {
+                          setState(() {
+                            _duniterConnectionFailed = false;
+                          });
+                        }
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Duniter endpoint updated successfully'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
                         }
                       } else {
-                        // If endpoint test fails, mark as failed and don't change config
+                        log.e('❌ Failed to apply Duniter endpoint');
                         if (mounted) {
                           setState(() {
                             _duniterConnectionFailed = true;
                           });
                         }
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
-                          );
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('connectionError'.tr()), backgroundColor: Colors.red));
                         }
                       }
-                    } finally {
-                      // Connection attempt finished
+                    } else {
+                      log.w('❌ Duniter endpoint test failed');
+                      // If endpoint test fails, mark as failed and don't change config
+                      if (mounted) {
+                        setState(() {
+                          _duniterConnectionFailed = true;
+                        });
+                      }
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: Colors.red),
+                        );
+                      }
                     }
                   },
                 ),
@@ -1196,9 +1271,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     for (final fullEndpoint in indexers) {
       String displayEndpoint = fullEndpoint;
       // Clean endpoint for display (remove paths)
-      if (displayEndpoint.contains('/v1beta1/relay')) {
-        displayEndpoint = displayEndpoint.split('/v1beta1/relay')[0];
-      }
       if (displayEndpoint.contains('/v1/graphql')) {
         displayEndpoint = displayEndpoint.split('/v1/graphql')[0];
       }
@@ -1259,52 +1331,78 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (result != null) {
+      if (!mounted) return;
+
       // Store old endpoint in case we need to restore it
       final oldEndpoint = configBox.containsKey('customIndexer') ? configBox.get('customIndexer') : null;
 
       // Get the full endpoint from the display name
       final fullEndpoint = displayToFull[result];
       if (fullEndpoint != null) {
-        if (!mounted) return;
         setState(() {
           _indexerConnectionFailed = false;
         });
 
-        // TEST FIRST before saving to configBox
+        log.i('🔍 Testing selected Squid endpoint: $fullEndpoint');
+
+        // TEST FIRST before applying
         final isWorking = await ref.read(squidEndpointTesterProvider)(fullEndpoint);
+
         if (isWorking) {
-          // Only save to configBox if the test passes
-          controller.text = result; // Display the clean endpoint in the UI
-          configBox.put('customIndexer', fullEndpoint); // Store the full endpoint
-          _syncIndexerEndpointController(); // Synchronize controller
+          log.i('✅ Squid endpoint test passed');
 
-          // Force Squid reconnection with the specific endpoint
-          try {
-            await _container.read(durtProvider).setFixedSquidEndpoint(fullEndpoint);
-          } catch (e) {
-            log.w('Error setting fixed Squid endpoint: $e');
-          }
+          // Apply the new endpoint
+          final applied = await _applyCustomSquidEndpoint(fullEndpoint);
 
-          if (mounted) {
-            setState(() {
-              _indexerConnectionFailed = false;
-            });
+          if (applied) {
+            controller.text = result; // Display the clean endpoint in the UI
+            _syncIndexerEndpointController();
+            if (mounted) {
+              setState(() {
+                _indexerConnectionFailed = false;
+              });
+            }
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Indexer endpoint updated successfully'), backgroundColor: Colors.green),
+              );
+            }
+          } else {
+            log.e('❌ Failed to apply Squid endpoint');
+            // Restore old endpoint
+            if (oldEndpoint != null) {
+              String displayOldEndpoint = oldEndpoint;
+              if (displayOldEndpoint.contains('/v1/graphql')) {
+                displayOldEndpoint = displayOldEndpoint.split('/v1/graphql')[0];
+              }
+              controller.text = displayOldEndpoint;
+              configBox.put('customIndexer', oldEndpoint);
+            } else {
+              configBox.delete('customIndexer');
+            }
+            _syncIndexerEndpointController();
+            if (mounted) {
+              setState(() {
+                _indexerConnectionFailed = true;
+              });
+            }
+            if (mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Failed to apply indexer endpoint'), backgroundColor: Colors.red));
+            }
           }
         } else {
-          // Test failed - keep old endpoint or go back to auto mode
+          log.w('❌ Squid endpoint test failed');
+          // Test failed - restore old endpoint
           if (oldEndpoint != null) {
-            // Keep old endpoint - extract display name for UI
             String displayOldEndpoint = oldEndpoint;
-            if (displayOldEndpoint.contains('/v1beta1/relay')) {
-              displayOldEndpoint = displayOldEndpoint.split('/v1beta1/relay')[0];
-            }
             if (displayOldEndpoint.contains('/v1/graphql')) {
               displayOldEndpoint = displayOldEndpoint.split('/v1/graphql')[0];
             }
             controller.text = displayOldEndpoint;
             configBox.put('customIndexer', oldEndpoint);
           } else {
-            // Go back to auto mode
             configBox.delete('customIndexer');
           }
           _syncIndexerEndpointController();
@@ -1328,9 +1426,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (configBox.containsKey('customIndexer')) {
       String endpoint = configBox.get('customIndexer');
       // Clean endpoint for display (remove paths)
-      if (endpoint.contains('/v1beta1/relay')) {
-        endpoint = endpoint.split('/v1beta1/relay')[0];
-      }
       if (endpoint.contains('/v1/graphql')) {
         endpoint = endpoint.split('/v1/graphql')[0];
       }
@@ -1344,9 +1439,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               String endpoint = endpoints[0];
               // Clean endpoint for display (remove paths)
-              if (endpoint.contains('/v1beta1/relay')) {
-                endpoint = endpoint.split('/v1beta1/relay')[0];
-              }
               if (endpoint.contains('/v1/graphql')) {
                 endpoint = endpoint.split('/v1/graphql')[0];
               }
@@ -1502,15 +1594,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             }
                           }
                         } else {
+                          // Manuel mode - prepare for user editing
                           if (!configBox.containsKey('customIndexer')) {
-                            configBox.put('customIndexer', _indexerEndpointController.text);
-                          }
-                          _syncIndexerEndpointController(); // Synchronize controller
+                            // Initialize with current endpoint if no custom one exists
+                            String currentEndpoint = Networks.listSquidEndpoints.isNotEmpty
+                                ? Networks.listSquidEndpoints[0]
+                                : 'https://';
+                            configBox.put('customIndexer', currentEndpoint);
 
-                          _indexerFocusNode.requestFocus();
-                          _indexerEndpointController.selection = TextSelection.fromPosition(
-                            TextPosition(offset: _indexerEndpointController.text.length),
-                          );
+                            // Only sync if we just initialized - otherwise keep existing value
+                            String displayEndpoint = currentEndpoint;
+                            if (displayEndpoint.contains('/v1/graphql')) {
+                              displayEndpoint = displayEndpoint.split('/v1/graphql')[0];
+                            }
+                            _indexerEndpointController.text = displayEndpoint;
+                          }
+                          // Don't sync here - we want to keep whatever is currently in the field
+
+                          if (!mounted) return;
+                          setState(() {
+                            _indexerConnectionFailed = false;
+                          });
+
+                          // Request focus after UI rebuild
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _indexerFocusNode.requestFocus();
+                            _indexerEndpointController.selection = TextSelection.fromPosition(
+                              TextPosition(offset: _indexerEndpointController.text.length),
+                            );
+                          });
                         }
                       },
                     ),
@@ -1548,7 +1660,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ScaledSizedBox(height: 12),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: context.colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey[300]!),
                 ),
@@ -1564,58 +1676,87 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     hintStyle: scaledTextStyle(fontSize: 13, color: Colors.grey[400]),
                   ),
                   onSubmitted: (value) async {
+                    if (!mounted) return;
+
+                    // Unfocus to exit editing mode
+                    _indexerFocusNode.unfocus();
+
+                    setState(() {
+                      _isEditingIndexer = false;
+                      _indexerConnectionFailed = false;
+                    });
+
                     // Store old endpoint in case we need to restore it
                     final oldEndpoint = configBox.containsKey('customIndexer') ? configBox.get('customIndexer') : null;
 
                     // Ensure the endpoint has the correct format with path
                     String fullEndpoint = value;
 
-                    // If the endpoint doesn't have a path, add the default v1beta1/relay path
-                    if (!fullEndpoint.contains('/v1beta1/relay') && !fullEndpoint.contains('/v1/graphql')) {
+                    // If the endpoint doesn't have a path, add the default /v1/graphql path
+                    if (!fullEndpoint.contains('/v1/graphql')) {
                       if (fullEndpoint.startsWith('wss://') || fullEndpoint.startsWith('ws://')) {
-                        fullEndpoint = '$fullEndpoint/v1beta1/relay';
+                        fullEndpoint = '$fullEndpoint/v1/graphql';
                       } else if (fullEndpoint.startsWith('https://') || fullEndpoint.startsWith('http://')) {
-                        fullEndpoint = '$fullEndpoint/v1beta1/relay';
+                        fullEndpoint = '$fullEndpoint/v1/graphql';
                       } else {
                         // Add protocol and path
-                        fullEndpoint = 'wss://$fullEndpoint/v1beta1/relay';
+                        fullEndpoint = 'wss://$fullEndpoint/v1/graphql';
                       }
                     }
 
-                    if (mounted) {
-                      setState(() {
-                        _indexerConnectionFailed = false;
-                      });
-                    }
+                    log.i('🔍 Testing Squid endpoint: $fullEndpoint');
 
-                    // TEST FIRST before saving to configBox
+                    // TEST FIRST before applying
                     final testEndpoint = ref.read(squidEndpointTesterProvider);
-
                     final isWorking = await testEndpoint(fullEndpoint);
+
                     if (isWorking) {
-                      // Only save to configBox if the test passes
-                      configBox.put('customIndexer', fullEndpoint);
-                      _syncIndexerEndpointController(); // Synchronize controller
+                      log.i('✅ Squid endpoint test passed');
 
-                      // Force Squid reconnection with the specific endpoint
-                      try {
-                        await _container.read(durtProvider).setFixedSquidEndpoint(fullEndpoint);
-                      } catch (e) {
-                        log.w('Error setting fixed Squid endpoint: $e');
-                      }
+                      // Apply the new endpoint
+                      final applied = await _applyCustomSquidEndpoint(fullEndpoint);
 
-                      if (mounted) {
-                        setState(() {
-                          _indexerConnectionFailed = false;
-                        });
+                      if (applied) {
+                        _syncIndexerEndpointController();
+                        if (mounted) {
+                          setState(() {
+                            _indexerConnectionFailed = false;
+                          });
+                        }
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Indexer endpoint updated successfully'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } else {
+                        log.e('❌ Failed to apply Squid endpoint');
+                        // Restore old endpoint
+                        if (oldEndpoint != null) {
+                          configBox.put('customIndexer', oldEndpoint);
+                        } else {
+                          configBox.delete('customIndexer');
+                        }
+                        _syncIndexerEndpointController();
+                        if (mounted) {
+                          setState(() {
+                            _indexerConnectionFailed = true;
+                          });
+                        }
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to apply indexer endpoint'), backgroundColor: Colors.red),
+                          );
+                        }
                       }
                     } else {
-                      // Test failed - keep old endpoint or go back to auto mode
+                      log.w('❌ Squid endpoint test failed');
+                      // Test failed - restore old endpoint
                       if (oldEndpoint != null) {
-                        // Keep old endpoint
                         configBox.put('customIndexer', oldEndpoint);
                       } else {
-                        // Go back to auto mode
                         configBox.delete('customIndexer');
                       }
                       _syncIndexerEndpointController();

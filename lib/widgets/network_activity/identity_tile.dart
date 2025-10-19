@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:durt2/durt2.dart' show Enum$IdentityStatusEnum;
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/identity_display_item.dart';
@@ -102,7 +101,7 @@ class IdentityTile extends StatelessWidget {
                           ScaledSizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              _getActivityDescription(context),
+                              _getActivityDescription(),
                               style: scaledTextStyle(
                                 fontSize: 13,
                                 color: context.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -161,21 +160,22 @@ class IdentityTile extends StatelessWidget {
     );
   }
 
-  String _getActivityDescription(BuildContext context) {
+  String _getActivityDescription() {
     switch (identity.status) {
-      case Enum$IdentityStatusEnum.MEMBER:
+      case 'Member':
         return 'identityIsMember'.tr();
-      case Enum$IdentityStatusEnum.NOTMEMBER:
+      case 'NotMember':
         return 'identityIsNotMember'.tr();
-      case Enum$IdentityStatusEnum.REMOVED:
+      case 'Removed':
         return 'identityWasRemoved'.tr();
-      case Enum$IdentityStatusEnum.REVOKED:
+      case 'Revoked':
         return 'identityWasRevoked'.tr();
-      case Enum$IdentityStatusEnum.UNCONFIRMED:
+      case 'Unconfirmed':
         return 'identityIsUnconfirmed'.tr();
-      case Enum$IdentityStatusEnum.UNVALIDATED:
+      case 'Unvalidated':
         return 'identityIsUnvalidated'.tr();
-      case Enum$IdentityStatusEnum.$unknown:
+      case 'Unknown':
+      default:
         return 'identityStatusUnknown'.tr();
     }
   }

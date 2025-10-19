@@ -112,13 +112,13 @@ publish:forum:complete:
     - build:android:bundle
     # - build:ios
     - build:linux
-    - build:macos
+    # - build:macos
   needs:
     - job: build:android:apk
     - job: build:android:bundle
     # - job: build:ios
     - job: build:linux
-    - job: build:macos
+    # - job: build:macos
     - job: deploy:android:playstore
     # - job: deploy:ios:appstore
   rules:
@@ -128,7 +128,7 @@ publish:forum:complete:
     - export VERSION=$(cat artifacts/version.txt)
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
     - export LINUX_JOB_ID=$(cat artifacts/linux_job_id.txt)
-    - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
+    # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
     - echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
     - python3 scripts/publish-forum.py
 
@@ -470,7 +470,7 @@ release:gitlab:
     - export VERSION=$(cat artifacts/version.txt)
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
     - export LINUX_JOB_ID=$(cat artifacts/linux_job_id.txt)
-    - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
+    # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
     
     # Generate changelog
     - git fetch --tags
@@ -518,9 +518,9 @@ release:gitlab:
           url: "$CI_PROJECT_URL/-/jobs/${LINUX_JOB_ID}/artifacts/raw/artifacts/linux/gecko-${VERSION}-linux.tar.gz"
           link_type: "package"
         # macOS Desktop
-        - name: "Gecko v$CI_COMMIT_TAG macOS Desktop (Apple Silicon)"
-          url: "$CI_PROJECT_URL/-/jobs/${MACOS_JOB_ID}/artifacts/raw/artifacts/macos/gecko-${VERSION}-macos-arm64.dmg"
-          link_type: "package"
+        # - name: "Gecko v$CI_COMMIT_TAG macOS Desktop (Apple Silicon)"
+        #   url: "$CI_PROJECT_URL/-/jobs/${MACOS_JOB_ID}/artifacts/raw/artifacts/macos/gecko-${VERSION}-macos-arm64.dmg"
+        #   link_type: "package"
 
 # --- macOS (app + dmg) ---
 # build:macos:

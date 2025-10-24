@@ -577,7 +577,10 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: scaleSize(32)),
                               child: Text(
-                                mapValidationErrors(migrationChecks.data!.errors),
+                                mapValidationErrors(
+                                  migrationChecks.data!.errors,
+                                  ownerKeyBondInfo: migrationChecks.data!.ownerKeyBondInfo,
+                                ),
                                 textAlign: TextAlign.center,
                                 style: scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
                               ),

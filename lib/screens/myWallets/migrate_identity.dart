@@ -1,7 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:durt2/durt2.dart'
-    show MigrateWalletChecks, MigrateWalletValidationError, Durt, TransactionStatus, TransactionState, DurtKeyPair;
+    show
+        MigrateWalletChecks,
+        MigrateWalletValidationError,
+        OwnerKeyBondInfo,
+        Durt,
+        TransactionStatus,
+        TransactionState,
+        DurtKeyPair;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
@@ -21,16 +28,47 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 // Helper pour accéder aux services Riverpod depuis ce fichier
 final _container = ProviderContainer();
 
-String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
+String mapValidationErrors(Set<MigrateWalletValidationError> errors, {OwnerKeyBondInfo? ownerKeyBondInfo}) {
   if (errors.isEmpty) {
     return '';
   }
   // Taking the first error to display. Can be modified to show all.
   return switch (errors.first) {
-    MigrateWalletValidationError.hasConsumers => 'youMustWaitBeforeCashoutThisAccount'.tr(),
+    MigrateWalletValidationError.hasConsumers => _formatOwnerKeyBondMessage(ownerKeyBondInfo),
     MigrateWalletValidationError.sourceAccountIsEmpty => 'thisAccountIsEmpty'.tr(),
     MigrateWalletValidationError.cannotMigrateIdentityToIdentity => 'youCannotMigrateIdentityToExistingIdentity'.tr(),
   };
+}
+
+String _formatOwnerKeyBondMessage(OwnerKeyBondInfo? bondInfo) {
+  if (bondInfo == null || bondInfo.hasEnded) {
+    // Generic message if no bond info or bond has ended
+    return 'youMustWaitBeforeCashoutThisAccount'.tr();
+  }
+
+  final remaining = bondInfo.remainingTime;
+  final days = remaining.inDays;
+  final hours = remaining.inHours % 24;
+  final minutes = remaining.inMinutes % 60;
+
+  String timeString;
+  if (days > 0) {
+    if (hours > 0) {
+      timeString = 'ownerKeyBondDaysHours'.tr(args: [days.toString(), hours.toString()]);
+    } else {
+      timeString = 'ownerKeyBondDays'.tr(args: [days.toString()]);
+    }
+  } else if (hours > 0) {
+    if (minutes > 0) {
+      timeString = 'ownerKeyBondHoursMinutes'.tr(args: [hours.toString(), minutes.toString()]);
+    } else {
+      timeString = 'ownerKeyBondHours'.tr(args: [hours.toString()]);
+    }
+  } else {
+    timeString = 'ownerKeyBondMinutes'.tr(args: [minutes.toString()]);
+  }
+
+  return 'ownerKeyBondWait'.tr(args: [timeString]);
 }
 
 class MigrateIdentityScreen extends ConsumerStatefulWidget {
@@ -392,14 +430,23 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                 children: [
                   Column(
                     children: [
-                      if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
+                      if (mapValidationErrors(
+                        migrationChecks.errors,
+                        ownerKeyBondInfo: migrationChecks.ownerKeyBondInfo,
+                      ).isNotEmpty)
                         Text(
-                          mapValidationErrors(migrationChecks.errors),
+                          mapValidationErrors(
+                            migrationChecks.errors,
+                            ownerKeyBondInfo: migrationChecks.ownerKeyBondInfo,
+                          ),
                           textAlign: TextAlign.center,
                           style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
                         ),
                       if (matchInfo.isNotEmpty) ...[
-                        if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
+                        if (mapValidationErrors(
+                          migrationChecks.errors,
+                          ownerKeyBondInfo: migrationChecks.ownerKeyBondInfo,
+                        ).isNotEmpty)
                           ScaledSizedBox(height: isSmall ? 4 : 8),
                         Text(
                           matchInfo,

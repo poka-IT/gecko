@@ -99,5 +99,6 @@
     "importNewSafeTitle": "Neuen Tresor importieren",
     "importNewSafeDescription": "Tresor über Wiederherstellungsphrase importieren",
     "safeNumber": "Tresor #{}",
-    "wallets": "Brieftaschen"
+    "wallets": "Brieftaschen",
+    "ownerKeyInBound": "Dieser Schlüssel befindet sich noch in der Sperrfrist und kann noch nicht geändert werden"
 }

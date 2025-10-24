@@ -27,7 +27,6 @@ String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
   }
   // Taking the first error to display. Can be modified to show all.
   return switch (errors.first) {
-    MigrateWalletValidationError.isSmith => 'smithCantMigrateIdentity'.tr(),
     MigrateWalletValidationError.hasConsumers => 'youMustWaitBeforeCashoutThisAccount'.tr(),
     MigrateWalletValidationError.sourceAccountIsEmpty => 'thisAccountIsEmpty'.tr(),
     MigrateWalletValidationError.cannotMigrateIdentityToIdentity => 'youCannotMigrateIdentityToExistingIdentity'.tr(),

@@ -41,9 +41,9 @@ final squidServiceProvider = Provider<d.SquidService>((ref) {
   return ref.watch(durtProvider).squid;
 });
 
-/// Provides the [d.DatapodService] for querying the Datapod GraphQL API.
-final datapodServiceProvider = Provider<d.DatapodService>((ref) {
-  return ref.watch(durtProvider).datapod;
+/// Provides the [d.CesiumPlusService] for querying the Cesium+ pod REST API.
+final cesiumPlusServiceProvider = Provider<d.CesiumPlusService>((ref) {
+  return ref.watch(durtProvider).cesiumPlus;
 });
 
 /// Provides the [d.Utils] service for utility functions.

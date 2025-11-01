@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
@@ -30,12 +29,9 @@ class AvatarCacheNotifier extends StateNotifier<Map<String, Uint8List?>> {
         return state[address];
       }
 
-      // Convert address to SS58 prefix 42 for Datapod
-      final ss5842Address = d.Address.decode(address).encode(prefix: 42);
-
-      // Get avatar from Datapod service
-      final datapodService = ref.read(datapodServiceProvider);
-      final avatarBytes = await datapodService.getAvatar(ss5842Address);
+      // Get avatar from CesiumPlus service (it handles SS58 to base58 conversion internally)
+      final cesiumPlusService = ref.read(cesiumPlusServiceProvider);
+      final avatarBytes = await cesiumPlusService.getAvatar(address);
 
       // Cache the result (even if null)
       state = {...state, address: avatarBytes};

@@ -69,7 +69,7 @@ class WalletTileMembre extends StatelessWidget {
                                 )
                               : Container(
                                   margin: EdgeInsets.all(scaleSize(16)),
-                                  child: SmartAvatar(imagePath: wallet.imagePath!),
+                                  child: SmartAvatar(imagePath: wallet.imagePath!, address: wallet.address),
                                 ),
                         ),
                         Positioned(

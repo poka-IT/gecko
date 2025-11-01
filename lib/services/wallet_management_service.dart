@@ -19,7 +19,8 @@ class WalletManagementService {
   /// Change wallet avatar by picking and cropping an image
   ///
   /// Returns the new image path if successful, empty string if cancelled or failed.
-  static Future<String> changeAvatar(String walletAddress) async {
+  /// If pinCode is provided, will also upload the avatar to Cesium+.
+  static Future<String> changeAvatar(String walletAddress, {String? pinCode}) async {
     final picker = ImagePicker();
 
     XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -89,6 +90,18 @@ class WalletManagementService {
       await walletService.walletBox.putAsync(walletData);
 
       container.dispose();
+
+      // Upload to Cesium+ if pinCode is provided
+      if (pinCode != null && pinCode.isNotEmpty) {
+        log.i('📤 Uploading avatar to Cesium+ pod...');
+        final uploadSuccess = await uploadAvatarToCesiumPlus(walletAddress, pinCode);
+        if (uploadSuccess) {
+          log.i('✅ Avatar successfully uploaded to Cesium+ pod');
+        } else {
+          log.w('⚠️ Failed to upload avatar to Cesium+ pod (local avatar saved)');
+        }
+      }
+
       return newPath;
     } catch (e) {
       log.e('Error updating wallet avatar: $e');
@@ -111,6 +124,71 @@ class WalletManagementService {
     } catch (e) {
       log.e('Error renaming wallet: $e');
       rethrow;
+    }
+  }
+
+  /// Upload wallet avatar to Cesium+ pod
+  ///
+  /// Uploads the local avatar to the Cesium+ pod to make it publicly visible.
+  /// Requires PIN code for authentication.
+  /// Returns true if successful, false otherwise.
+  static Future<bool> uploadAvatarToCesiumPlus(String walletAddress, String pinCode) async {
+    try {
+      final container = riverpod.ProviderContainer();
+      final walletService = container.read(walletServiceProvider);
+      final cesiumPlusService = container.read(cesiumPlusServiceProvider);
+
+      final walletData = walletService.getWalletData(walletAddress);
+
+      // Check if wallet has an avatar
+      if (walletData.imagePath == null || walletData.imagePath!.isEmpty) {
+        log.w('No local avatar found for wallet $walletAddress');
+        container.dispose();
+        return false;
+      }
+
+      // Read avatar file
+      final avatarFile = File(walletData.imagePath!);
+      if (!await avatarFile.exists()) {
+        log.e('Avatar file does not exist: ${walletData.imagePath}');
+        container.dispose();
+        return false;
+      }
+
+      final avatarBytes = await avatarFile.readAsBytes();
+
+      // Determine content type from file extension
+      String contentType = 'image/png';
+      if (walletData.imagePath!.toLowerCase().endsWith('.jpg') ||
+          walletData.imagePath!.toLowerCase().endsWith('.jpeg')) {
+        contentType = 'image/jpeg';
+      }
+
+      // Get wallet keypair using pinCode
+      final keyPair = await walletService.getKeyPairFromAddress(address: walletAddress, pinCode: pinCode);
+
+      // Upload profile with avatar (service handles SS58 to base58 conversion)
+      // Use wallet name for now (identity name would require additional query)
+      final success = await cesiumPlusService.uploadProfile(
+        address: walletAddress,
+        signFunction: keyPair.sign,
+        title: walletData.name ?? 'Duniter Wallet',
+        avatarBytes: avatarBytes,
+        avatarContentType: contentType,
+      );
+
+      container.dispose();
+
+      if (success) {
+        log.i('✅ Avatar successfully uploaded to Cesium+ pod');
+      } else {
+        log.e('❌ Failed to upload avatar to Cesium+ pod');
+      }
+
+      return success;
+    } catch (e) {
+      log.e('Error uploading avatar to Cesium+: $e');
+      return false;
     }
   }
 

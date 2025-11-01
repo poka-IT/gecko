@@ -80,7 +80,10 @@ class _WalletTileState extends State<WalletTile> {
                           )
                         : Container(
                             margin: EdgeInsets.all(scaleSize(16)),
-                            child: SmartAvatar(imagePath: widget.repository.imagePath!),
+                            child: SmartAvatar(
+                              imagePath: widget.repository.imagePath!,
+                              address: widget.repository.address,
+                            ),
                           ),
                   ),
                 ),

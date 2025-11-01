@@ -11,7 +11,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
-
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/services/snackbar_service.dart';
@@ -359,14 +359,25 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
               onTap: widget.isOwner && !_isPickerOpen
                   ? () async {
                       setState(() => _isPickerOpen = true);
-                      final newPath = await WalletManagementService.changeAvatar(widget.address);
-                      setState(() {
-                        _newCustomImagePath = newPath;
-                        _isPickerOpen = false;
-                      });
-                      // Notify MyWalletsProvider to update UI components
-                      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-                      myWalletProvider.reload();
+
+                      // Ask for PIN code first if needed
+                      final pinCodeValid = await PinCodeService.askPinCode();
+
+                      if (pinCodeValid) {
+                        final newPath = await WalletManagementService.changeAvatar(
+                          widget.address,
+                          pinCode: PinCodeService.pinCode,
+                        );
+                        setState(() {
+                          _newCustomImagePath = newPath;
+                          _isPickerOpen = false;
+                        });
+                        // Notify MyWalletsProvider to update UI components
+                        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+                        myWalletProvider.reload();
+                      } else {
+                        setState(() => _isPickerOpen = false);
+                      }
                     }
                   : null,
               customBorder: const CircleBorder(),
@@ -375,7 +386,7 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                     ? (widget.defaultImagePath != null
                           ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
                           : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName))
-                    : SmartAvatar(imagePath: _newCustomImagePath),
+                    : SmartAvatar(imagePath: _newCustomImagePath, address: widget.address),
               ),
             ),
           ),

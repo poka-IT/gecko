@@ -220,7 +220,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ),
             ],
           ),
-          child: SmartAvatar(imagePath: widget.wallet.imagePath!),
+          child: SmartAvatar(imagePath: widget.wallet.imagePath!, address: widget.wallet.address),
         ),
         Positioned(
           right: 0,
@@ -230,14 +230,22 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: InkWell(
               onTap: () async {
-                final newPath = await WalletManagementService.changeAvatar(widget.wallet.address);
-                if (newPath.isNotEmpty) {
-                  setState(() {
-                    widget.wallet.imagePath = newPath;
-                  });
-                  // Notify MyWalletsProvider to update UI components
-                  final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-                  myWalletProvider.reload();
+                // Ask for PIN code first if needed
+                final pinCodeValid = await PinCodeService.askPinCode();
+
+                if (pinCodeValid) {
+                  final newPath = await WalletManagementService.changeAvatar(
+                    widget.wallet.address,
+                    pinCode: PinCodeService.pinCode,
+                  );
+                  if (newPath.isNotEmpty) {
+                    setState(() {
+                      widget.wallet.imagePath = newPath;
+                    });
+                    // Notify MyWalletsProvider to update UI components
+                    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+                    myWalletProvider.reload();
+                  }
                 }
               },
               child: Icon(Icons.camera_alt, size: scaleSize(20), color: Colors.black54),

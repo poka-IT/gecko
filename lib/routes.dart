@@ -7,6 +7,7 @@ import 'package:gecko/screens/myWallets/restore_safe.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/wallets_home.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
+import 'package:gecko/screens/myWallets/cesium_profile_screen.dart';
 import 'package:gecko/screens/myWallets/unlocking_wallet.dart';
 import 'package:gecko/screens/onBoarding/1.dart';
 import 'package:gecko/screens/onBoarding/10.dart';
@@ -188,6 +189,7 @@ class RouteNames {
   static const String home = '/';
   static const String myWallets = '/mywallets';
   static const String walletOptions = '/walletoptions';
+  static const String cesiumProfile = '/cesiumprofile';
   static const String search = '/search';
   static const String searchResult = '/searchResult';
   static const String unlockingWallet = '/unlockingWallet';
@@ -470,6 +472,10 @@ class AppRoutes {
           // Fallback for backward compatibility
           return const Scaffold(body: Center(child: Text('Error: Invalid arguments for wallet options')));
         }
+      },
+      RouteNames.cesiumProfile: (context) {
+        final address = ModalRoute.of(context)?.settings.arguments as String;
+        return CesiumProfileScreen(address: address);
       },
       RouteNames.printWallet: (context) {
         final args = RouteUtils.getArguments<PrintWalletArguments>(context);

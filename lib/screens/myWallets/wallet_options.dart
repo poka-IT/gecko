@@ -171,6 +171,33 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                               ),
                             ),
                           ),
+                        // Cesium+ Profile button
+                        InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.person_outline,
+                                  size: scaleSize(22),
+                                  color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                                ),
+                                ScaledSizedBox(width: 18),
+                                Expanded(
+                                  child: Text(
+                                    "cesiumProfile".tr(),
+                                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                                    softWrap: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                         if (defaultWallet.address != widget.wallet.address &&
                             !IdentityUtils.hasIdentity(ref, widget.wallet.address) &&
                             !isAlone)

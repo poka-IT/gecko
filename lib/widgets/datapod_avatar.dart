@@ -5,7 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/avatar_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/widgets/smart_avatar.dart';
+import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class DatapodAvatar extends ConsumerWidget {
@@ -17,7 +17,7 @@ class DatapodAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context); // listen: true by default
     final isLocalWallet = myWalletProvider.isOwner(address);
 
     return Container(
@@ -28,21 +28,32 @@ class DatapodAvatar extends ConsumerWidget {
       child: ScaledSizedBox(
         width: size,
         height: size,
-        child: isLocalWallet ? _buildLocalWalletAvatar() : _buildRemoteAvatar(ref),
+        child: isLocalWallet ? _buildLocalWalletAvatar(context) : _buildRemoteAvatar(ref),
       ),
     );
   }
 
-  Widget _buildLocalWalletAvatar() {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
+  Widget _buildLocalWalletAvatar(BuildContext context) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context); // listen: true
     final wallet = myWalletProvider.getWalletDataByAddress(address);
 
     if (wallet?.imagePath != null && wallet!.imagePath!.isNotEmpty) {
-      return SmartAvatar(imagePath: wallet.imagePath!, width: size, height: size);
+      // For local wallets, ALWAYS show local file (not Cesium+)
+      // Use CachedAvatarImage for optimal performance
+      return CachedAvatarImage(
+        key: ValueKey(wallet.imagePath),
+        imagePath: wallet.imagePath!,
+        fit: BoxFit.cover,
+        isCircular: true,
+      );
     } else {
       // Use default avatar based on wallet number
       final walletNumber = wallet?.number ?? 0;
-      return SmartAvatar(imagePath: 'assets/avatars/${walletNumber % 4}.png', width: size, height: size);
+      return CachedAvatarImage(
+        imagePath: 'assets/avatars/${walletNumber % 4}.png',
+        fit: BoxFit.cover,
+        isCircular: true,
+      );
     }
   }
 

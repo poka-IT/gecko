@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/avatar_providers.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:uuid/uuid.dart';
@@ -78,6 +79,10 @@ class WalletManagementService {
       if (walletData.imagePath != null) {
         final oldAvatarFile = File(walletData.imagePath!);
         if (await oldAvatarFile.exists()) {
+          // Evict old image from Flutter's cache before deleting
+          final oldImageProvider = FileImage(oldAvatarFile);
+          await oldImageProvider.evict();
+
           await oldAvatarFile.delete();
         }
       }
@@ -89,18 +94,28 @@ class WalletManagementService {
       walletData.imagePath = newPath;
       await walletService.walletBox.putAsync(walletData);
 
-      container.dispose();
+      // Clear Flutter's image cache to force reload of the new avatar
+      imageCache.clear();
+      imageCache.clearLiveImages();
 
       // Upload to Cesium+ if pinCode is provided
       if (pinCode != null && pinCode.isNotEmpty) {
         log.i('📤 Uploading avatar to Cesium+ pod...');
+
         final uploadSuccess = await uploadAvatarToCesiumPlus(walletAddress, pinCode);
+
+        // Clear avatar cache AFTER successful upload and force immediate re-download
+        final avatarCache = container.read(avatarCacheProvider.notifier);
+        await avatarCache.clearAvatar(walletAddress, forceReload: true);
+
         if (uploadSuccess) {
-          log.i('✅ Avatar successfully uploaded to Cesium+ pod');
+          log.i('✅ Avatar successfully uploaded to Cesium+ pod and cache refreshed');
         } else {
-          log.w('⚠️ Failed to upload avatar to Cesium+ pod (local avatar saved)');
+          log.w('⚠️ Failed to upload avatar to Cesium+ pod (local avatar saved, cache cleared)');
         }
       }
+
+      container.dispose();
 
       return newPath;
     } catch (e) {

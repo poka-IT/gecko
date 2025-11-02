@@ -23,10 +23,10 @@ import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/migrate_g1v1_screen.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
+import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/widgets/wallet_header.dart';
-import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
@@ -247,7 +247,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ),
             ],
           ),
-          child: SmartAvatar(imagePath: widget.wallet.imagePath!, address: widget.wallet.address),
+          child: CachedAvatarImage(imagePath: widget.wallet.imagePath!, fit: BoxFit.cover, isCircular: true),
         ),
         Positioned(
           right: 0,

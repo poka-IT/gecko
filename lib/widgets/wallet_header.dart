@@ -17,9 +17,9 @@ import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
-import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/services/wallet_management_service.dart';
@@ -369,12 +369,15 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                           pinCode: PinCodeService.pinCode,
                         );
                         setState(() {
-                          _newCustomImagePath = newPath;
+                          // Only update if newPath is not empty (not cancelled)
+                          if (newPath.isNotEmpty) {
+                            _newCustomImagePath = newPath;
+                          }
                           _isPickerOpen = false;
                         });
-                        // Notify MyWalletsProvider to update UI components
+                        // Reload wallets from database to update UI everywhere
                         final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-                        myWalletProvider.reload();
+                        await myWalletProvider.readAllWallets();
                       } else {
                         setState(() => _isPickerOpen = false);
                       }
@@ -382,11 +385,18 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                   : null,
               customBorder: const CircleBorder(),
               child: ClipOval(
-                child: _newCustomImagePath.isEmpty
+                child: _newCustomImagePath.isEmpty || _newCustomImagePath.startsWith('assets/')
                     ? (widget.defaultImagePath != null
                           ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
                           : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName))
-                    : SmartAvatar(imagePath: _newCustomImagePath, address: widget.address),
+                    : CachedAvatarImage(
+                        imagePath: _newCustomImagePath,
+                        fit: BoxFit.cover,
+                        isCircular: false, // Already in ClipOval
+                        fallback: widget.defaultImagePath != null
+                            ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
+                            : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName),
+                      ),
               ),
             ),
           ),

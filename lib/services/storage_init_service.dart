@@ -69,6 +69,9 @@ class StorageInitService {
     if (!await avatarsDirectory.exists()) {
       await avatarsDirectory.create();
     }
+    if (!await avatarsCacheDirectory.exists()) {
+      await avatarsCacheDirectory.create();
+    }
   }
 
   /// Register all required Hive adapters

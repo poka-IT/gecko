@@ -61,27 +61,33 @@ class DatapodAvatar extends ConsumerWidget {
     final avatarAsync = ref.watch(avatarProvider(address));
 
     return ClipOval(
-      child: avatarAsync.when(
-        data: (avatarBytes) {
-          if (avatarBytes != null) {
-            return Image.memory(
-              avatarBytes,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                // If image loading fails, show default avatar
-                return _buildDefaultAvatar();
-              },
-            );
-          } else {
-            // No avatar found, show default
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        child: avatarAsync.when(
+          data: (avatarBytes) {
+            if (avatarBytes != null) {
+              return Image.memory(
+                key: ValueKey('avatar_loaded_$address'),
+                avatarBytes,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // If image loading fails, show default avatar
+                  return _buildDefaultAvatar();
+                },
+              );
+            } else {
+              // No avatar found, show default
+              return _buildDefaultAvatar();
+            }
+          },
+          loading: () => _buildDefaultAvatar(), // Show default avatar while loading instead of spinner
+          error: (error, stackTrace) {
+            // Error occurred, show default avatar
             return _buildDefaultAvatar();
-          }
-        },
-        loading: () => _buildLoadingAvatar(),
-        error: (error, stackTrace) {
-          // Error occurred, show default avatar
-          return _buildDefaultAvatar();
-        },
+          },
+        ),
       ),
     );
   }
@@ -90,6 +96,7 @@ class DatapodAvatar extends ConsumerWidget {
     // If a name is provided, show name circle instead of icon_user.png
     if (name != null && name!.isNotEmpty) {
       return CircleAvatar(
+        key: ValueKey('avatar_default_name_$address'),
         radius: size / 2,
         backgroundColor: Theme.of(homeContext).colorScheme.primary.withValues(alpha: 0.1),
         child: Text(
@@ -102,24 +109,11 @@ class DatapodAvatar extends ConsumerWidget {
         ),
       );
     }
-    return Image.asset('assets/icon_user.png', height: size, fit: BoxFit.fill);
-  }
-
-  Widget _buildLoadingAvatar() {
-    return Container(
-      width: size,
+    return Image.asset(
+      'assets/icon_user.png',
+      key: ValueKey('avatar_default_icon_$address'),
       height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey[300]),
-      child: Center(
-        child: SizedBox(
-          width: size * 0.4,
-          height: size * 0.4,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[600]!),
-          ),
-        ),
-      ),
+      fit: BoxFit.fill,
     );
   }
 }

@@ -69,15 +69,12 @@ class _WalletTileMembreState extends State<WalletTileMembre> {
                             color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
                           ),
                           child: freshWallet.imagePath == null || freshWallet.imagePath == ''
-                              ? Padding(
-                                  padding: EdgeInsets.all(scaleSize(16)),
-                                  child: Image.asset(
-                                    'assets/avatars/${freshWallet.number % 4}.png',
-                                    alignment: Alignment.bottomCenter,
-                                  ),
+                              ? Image.asset(
+                                  'assets/avatars/${freshWallet.number % 4}.png',
+                                  alignment: Alignment.bottomCenter,
                                 )
                               : Padding(
-                                  padding: EdgeInsets.all(scaleSize(16)),
+                                  padding: EdgeInsets.all(scaleSize(6)),
                                   child: CachedAvatarImage(
                                     imagePath: freshWallet.imagePath!,
                                     fit: BoxFit.contain,
@@ -98,7 +95,7 @@ class _WalletTileMembreState extends State<WalletTileMembre> {
                     ),
                   ),
                   Container(
-                    height: scaleSize(64), // Fixed height to prevent layout shift
+                    height: scaleSize(72), // Fixed height to prevent layout shift
                     decoration: BoxDecoration(
                       color: isDefault
                           ? context.colorScheme.primary.withValues(alpha: 0.9)

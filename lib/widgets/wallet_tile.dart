@@ -78,14 +78,14 @@ class _WalletTileState extends State<WalletTile> {
                     ),
                     child: freshWallet.imagePath == null || freshWallet.imagePath == ''
                         ? Padding(
-                            padding: EdgeInsets.all(scaleSize(16)),
+                            padding: EdgeInsets.all(scaleSize(6)),
                             child: Image.asset(
                               'assets/avatars/${freshWallet.number % 4}.png',
                               alignment: Alignment.bottomCenter,
                             ),
                           )
                         : Padding(
-                            padding: EdgeInsets.all(scaleSize(16)),
+                            padding: EdgeInsets.all(scaleSize(6)),
                             child: CachedAvatarImage(
                               imagePath: freshWallet.imagePath!,
                               fit: BoxFit.contain,

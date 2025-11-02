@@ -610,6 +610,7 @@
     "enterAddressOrName": "Inserisci indirizzo o nome dell'identità",
     "selectDateRange": "Selezionare intervallo date",
     "clearAll": "Cancellare tutto",
+    "clearDates": "Cancellare date",
     "transactionInProgress": "Transazione in corso",
     "validated": "Validato",
     "errorLoadingWalletData": "Errore nel caricamento dei dati del portafoglio",

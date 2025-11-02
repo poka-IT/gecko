@@ -8,7 +8,9 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -104,13 +106,28 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
         .getKeyPairFromAddress(address: widget.address, pinCode: PinCodeService.pinCode);
     final transactionStatus = ref.read(duniterServiceProvider).confirmIdentity(keypair: keypair, name: name);
 
+    // Convert to broadcast stream to allow multiple listeners
+    final broadcastStream = transactionStatus.asBroadcastStream();
+
+    // Listen to transaction stream to invalidate providers on success
+    // Use mounted check to avoid using ref after widget disposal
+    broadcastStream.listen((status) {
+      if ((status.state == TransactionState.finalized || status.state == TransactionState.inBlock) && mounted) {
+        // Invalidate identity-related providers to refresh cache
+        ref.invalidate(identityNameProvider(widget.address));
+        ref.invalidate(hybridIdtyStatusProvider(widget.address));
+        // Also update the squid service cache
+        ref.read(squidServiceProvider).walletNameIndexer[widget.address] = name;
+      }
+    });
+
     if (!mounted) return;
     navigatorState.pop();
 
     navigatorState.push(
       MaterialPageRoute(
         builder: (context) => TransactionInProgressScreen(
-          transactionStatus: transactionStatus,
+          transactionStatus: broadcastStream,
           transType: 'comfirmIdty',
           fromAddress: widget.address,
           toAddress: widget.address,

@@ -468,7 +468,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
   Widget buildConfirmIdentitySection(BuildContext context, WidgetRef ref) {
     // Check if user has identity but not confirmed yet
-    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(widget.wallet.address));
+    // Use hybridIdtyStatusProvider to ensure real-time detection of identity creation
+    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(widget.wallet.address));
 
     return idtyStatusAsync.when(
       data: (idtyStatus) => Visibility(

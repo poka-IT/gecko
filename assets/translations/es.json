@@ -683,6 +683,5 @@
     "profileUpdated": "Perfil actualizado con éxito",
     "profileUpdateFailed": "Error al actualizar el perfil",
     "add": "Agregar",
-    "cancel": "Cancelar",
     "pinNeeded": "Código PIN requerido"
 }

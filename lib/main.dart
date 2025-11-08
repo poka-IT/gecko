@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
-import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType;
+import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType, SslConfigService;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Consumer;
@@ -66,6 +66,10 @@ Future<void> main() async {
     (network) => network.name == savedNetworkName,
     orElse: () => Networks.gtest,
   );
+
+  // Configure SSL certificate handling before any network connections
+  // This allows connections to work on older Android devices and with self-signed certificates
+  SslConfigService.configureSslCertificateHandling(allowBadCertificates: true);
 
   //Init durt2 with selected network and keypair type
   await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519);

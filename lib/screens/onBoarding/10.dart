@@ -65,7 +65,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       // Switch to target safe BEFORE starting migration
       final walletService = ref.read(walletServiceProvider);
       final targetSafeNumber = targetWallet.safe.target!.number;
-      walletService.setDefaultSafeBoxNumber(targetSafeNumber);
+      ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(targetSafeNumber);
       log.i('Switched to target safe $targetSafeNumber before migration');
 
       // Store wallet service reference for later use

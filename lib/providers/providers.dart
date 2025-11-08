@@ -73,3 +73,30 @@ final defaultWalletProvider = Provider<d.WalletEntity>((ref) {
 /// Provider for pending legacy migration data
 /// This is used to store migration data between wallet options screen and onboarding completion
 final pendingLegacyMigrationProvider = StateProvider<LegacyMigrationData?>((ref) => null);
+
+/// State notifier for the default safe box number.
+/// This ensures that identity providers react to safe changes.
+class DefaultSafeBoxNumberNotifier extends StateNotifier<int> {
+  DefaultSafeBoxNumberNotifier(this._walletService) : super(_walletService.defaultSafeBoxNumber);
+
+  final d.WalletService _walletService;
+
+  /// Update the default safe box number and sync with wallet service
+  void setDefaultSafeBoxNumber(int safeBoxNumber) {
+    _walletService.setDefaultSafeBoxNumber(safeBoxNumber);
+    state = safeBoxNumber;
+  }
+
+  /// Refresh the state from wallet service (useful after external changes)
+  void refresh() {
+    state = _walletService.defaultSafeBoxNumber;
+  }
+}
+
+/// Reactive provider for the default safe box number.
+/// This provider watches the wallet service and automatically updates when the default safe changes.
+/// Other providers (like identity providers) should watch this to react to safe changes.
+final defaultSafeBoxNumberProvider = StateNotifierProvider<DefaultSafeBoxNumberNotifier, int>((ref) {
+  final walletService = ref.watch(walletServiceProvider);
+  return DefaultSafeBoxNumberNotifier(walletService);
+});

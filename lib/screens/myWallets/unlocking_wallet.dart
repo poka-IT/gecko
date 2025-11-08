@@ -14,6 +14,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/pin_security_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/pin_security_service.dart';
@@ -204,10 +205,14 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           });
 
           // Update the default safe to the currently selected one
-          ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
+          ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafeNumber);
 
           // Invalidate providers after changing default safe to fix state synchronization
           myWalletProvider.invalidateProviders();
+          
+          // Invalidate identity providers to ensure they use the new safe
+          ref.invalidate(idtyWalletAsyncProvider);
+          ref.invalidate(identityWalletsAsyncProvider);
 
           // Wait for Durt to be connected and wallets to be loaded before allowing access
           await _waitForSystemReady();
@@ -658,7 +663,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                   currentSafeNumber = currentSafe.number;
 
                   // Update the default safe to the currently selected one
-                  ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
+                  ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafeNumber);
+                  
+                  // Invalidate identity providers to ensure they use the new safe
+                  ref.invalidate(idtyWalletAsyncProvider);
+                  ref.invalidate(identityWalletsAsyncProvider);
 
                   // Reset PIN state when changing safes
                   enterPin.clear();

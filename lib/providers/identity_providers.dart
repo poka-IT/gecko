@@ -106,6 +106,8 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
     // Watch wallet service but don't rebuild on connection changes
     final walletService = ref.watch(walletServiceProvider);
     final storageService = ref.watch(storageServiceProvider);
+    // Watch the default safe number provider to react to safe changes
+    final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
 
     final allSafes = walletService.safeBox.getAll();
     if (allSafes.isEmpty) {
@@ -114,7 +116,6 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
       return null;
     }
 
-    final defaultSafeNumber = walletService.defaultSafeBoxNumber;
     final defaultSafe = allSafes.firstWhere(
       (safe) => safe.number == defaultSafeNumber,
       orElse: () => allSafes.first, // Fallback to first safe if default not found
@@ -272,11 +273,12 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
 final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
   final walletService = ref.watch(walletServiceProvider);
   final storageService = ref.watch(storageServiceProvider);
+  // Watch the default safe number provider to react to safe changes
+  final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
 
   final allSafes = walletService.safeBox.getAll();
   if (allSafes.isEmpty) return [];
 
-  final defaultSafeNumber = walletService.defaultSafeBoxNumber;
   final defaultSafe = allSafes.firstWhere(
     (safe) => safe.number == defaultSafeNumber,
     orElse: () => allSafes.first, // Fallback to first safe if default not found

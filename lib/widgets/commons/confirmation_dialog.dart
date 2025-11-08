@@ -58,6 +58,12 @@ Future<bool> showConfirmationDialog({
   bool hideCancelButton = false,
   bool hideConfirmButton = false,
 }) async {
+  // Check if context is still mounted before showing dialog
+  if (!context.mounted) {
+    log.w('Context not mounted when trying to show confirmation dialog');
+    return false;
+  }
+
   final Color iconColorToShow = customIconColor ?? type.iconColor;
   final Widget iconToShow = customIcon ?? Icon(type.icon, color: iconColorToShow, size: 32);
   final String dialogTitle = title ?? type.title;
@@ -85,7 +91,7 @@ Future<bool> showConfirmationDialog({
         child: Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: context.colorScheme.surface,
+            color: homeContext.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(color: iconColorToShow.withValues(alpha: 0.1), blurRadius: 20, offset: Offset(0, 10)),
@@ -129,7 +135,7 @@ Future<bool> showConfirmationDialog({
                   if (type != ConfirmationDialogType.error && !hideCancelButton) ...[
                     Expanded(
                       child: TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(homeContext).pop(false),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -145,7 +151,7 @@ Future<bool> showConfirmationDialog({
                   if (!hideConfirmButton) ...[
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
+                        onPressed: () => Navigator.of(homeContext).pop(true),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: iconColorToShow,
                           foregroundColor: Colors.white,

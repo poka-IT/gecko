@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:gecko/extensions.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -230,7 +231,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                                 hintText: 'descriptionHint'.tr(),
                                 border: const OutlineInputBorder(),
                                 filled: true,
-                                fillColor: Colors.grey.shade50,
+                                fillColor: context.colorScheme.surfaceContainer,
                               ),
                               style: scaledTextStyle(fontSize: 14),
                             ),
@@ -254,7 +255,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                                     prefixIcon: const Icon(Icons.search),
                                     border: const OutlineInputBorder(),
                                     filled: true,
-                                    fillColor: Colors.grey.shade50,
+                                    fillColor: context.colorScheme.surfaceContainer,
                                   ),
                                   style: scaledTextStyle(fontSize: 14),
                                 );
@@ -449,7 +450,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                                           hintText: 'tagHint'.tr(),
                                           border: const OutlineInputBorder(),
                                           filled: true,
-                                          fillColor: Colors.grey.shade50,
+                                          fillColor: context.colorScheme.surfaceContainer,
                                         ),
                                         style: scaledTextStyle(fontSize: 14),
                                         onFieldSubmitted: (_) => _addTag(),

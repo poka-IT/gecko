@@ -209,7 +209,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
           // Invalidate providers after changing default safe to fix state synchronization
           myWalletProvider.invalidateProviders();
-          
+
           // Invalidate identity providers to ensure they use the new safe
           ref.invalidate(idtyWalletAsyncProvider);
           ref.invalidate(identityWalletsAsyncProvider);
@@ -664,7 +664,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
                   // Update the default safe to the currently selected one
                   ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafeNumber);
-                  
+
                   // Invalidate identity providers to ensure they use the new safe
                   ref.invalidate(idtyWalletAsyncProvider);
                   ref.invalidate(identityWalletsAsyncProvider);

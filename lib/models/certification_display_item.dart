@@ -209,7 +209,14 @@ class CertificationDisplayItem {
   }
 
   /// Check if this certification is expired
+  /// A certification cannot be expired if it is active, even if expireDate is in the past
+  /// (which could happen if genesisTime was incorrectly calculated)
   bool get isExpired {
+    // If the certification is active, it cannot be expired
+    if (isActive) {
+      return false;
+    }
+    // Only check expiration date if the certification is not active
     return DateTime.now().isAfter(expireDate);
   }
 

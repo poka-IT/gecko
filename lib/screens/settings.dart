@@ -202,6 +202,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _syncIndexerEndpointController();
       _refreshBlockHeightProvider();
       ref.invalidate(currencyDataProvider);
+      
+      // 7. Invalidate genesisTimeProvider to force recalculation with new network
+      // This is critical because genesisTime is network-specific and must be recalculated
+      // when switching networks to avoid incorrect date calculations (e.g., certification expiration dates)
+      ref.invalidate(genesisTimeProvider);
+      log.i('🔄 Invalidated genesisTimeProvider after network switch');
 
       log.i('Successfully switched to network: ${newNetwork.name}');
     } catch (e) {

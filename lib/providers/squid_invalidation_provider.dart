@@ -35,12 +35,16 @@ void _invalidateSquidDependentProviders(Ref ref) {
     ref.invalidate(squidServiceProvider);
     ref.invalidate(durtProvider);
 
-    // 2. Trigger cache buster to force refresh of all StateNotifierProviders
+    // 2. Invalidate genesisTimeProvider to force recalculation with new network
+    ref.invalidate(genesisTimeProvider);
+    log.i('🔄 Invalidated genesisTimeProvider to force recalculation');
+
+    // 3. Trigger cache buster to force refresh of all StateNotifierProviders
     final currentBuster = ref.read(squidCacheBusterProvider);
     ref.read(squidCacheBusterProvider.notifier).state = currentBuster + 1;
     log.i('🔥 Cache buster incremented to ${currentBuster + 1}');
 
-    // 3. Force a complete refresh by invalidating self
+    // 4. Force a complete refresh by invalidating self
     ref.invalidateSelf();
 
     log.i('✅ Completed NUCLEAR invalidation - all Squid data should be refreshed');

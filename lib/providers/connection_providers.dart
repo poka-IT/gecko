@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 /// Connection status notifier that listens to both Duniter and Squid streams
 class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
@@ -34,6 +35,11 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
         if (previousStatus != d.ConnectionStatus.connected && status == d.ConnectionStatus.connected) {
           _ref.invalidate(persistentBalanceStreamProvider);
           _ref.invalidate(persistentIdtyStatusStreamProvider);
+          
+          // Invalidate genesisTimeProvider to force recalculation after reconnection
+          // This ensures genesisTime is recalculated with the current network connection
+          // and prevents incorrect date calculations (e.g., certification expiration dates)
+          _ref.invalidate(genesisTimeProvider);
         }
 
         // Update home message based on Duniter status

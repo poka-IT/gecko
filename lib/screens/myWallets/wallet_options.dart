@@ -118,99 +118,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                           ],
                         ),
                       ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 8,
-                      children: [
-                        buildConfirmIdentitySection(context, ref),
-                        buildOptionsSection(context),
-                        if (!isAlone)
-                          buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
-                        if (!IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                          InkWell(
-                            key: keyRenameWallet,
-                            onTap: () async {
-                              final newName = await WalletNameDialogService.showEditWalletNameDialog(
-                                context,
-                                widget.wallet,
-                              );
-                              if (newName != null) {
-                                // Reload wallets data to update the UI
-                                await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
-                                // Reload the wallet object to get the updated name
-                                final updatedWallet = myWalletProvider.getWalletDataByAddress(widget.wallet.address);
-                                if (updatedWallet != null) {
-                                  widget.wallet.name = updatedWallet.name;
-                                  // Update the local state to rebuild the UI
-                                  setState(() {
-                                    currentWalletName = updatedWallet.name!;
-                                  });
-                                }
-                                myWalletProvider.reload();
-                              }
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/walletOptions/edit.png',
-                                    height: scaleSize(22),
-                                    color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
-                                  ),
-                                  ScaledSizedBox(width: 18),
-                                  Expanded(
-                                    child: Text(
-                                      "editWalletName".tr(),
-                                      style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
-                                      softWrap: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        // Cesium+ Profile button
-                        InkWell(
-                          onTap: () {
-                            Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.person_outline,
-                                  size: scaleSize(22),
-                                  color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
-                                ),
-                                ScaledSizedBox(width: 18),
-                                Expanded(
-                                  child: Text(
-                                    "cesiumProfile".tr(),
-                                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
-                                    softWrap: true,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (defaultWallet.address != widget.wallet.address &&
-                            !IdentityUtils.hasIdentity(ref, widget.wallet.address) &&
-                            !isAlone)
-                          deleteWallet(context, ref, currentSafe),
-                        if (IdentityUtils.hasIdentity(ref, widget.wallet.address))
-                          ManageMembershipButton(address: widget.wallet.address),
-                        if (isAlone)
-                          isLegacyWallet
-                              ? _buildLegacyWalletOptions()
-                              : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
-                        ScaledSizedBox(height: 32), // Add bottom padding for better scrolling
-                      ],
-                    ),
+                    _buildWalletOptionsContent(context, ref, isAlone, myWalletProvider, currentSafe, defaultWallet),
                   ],
                 ),
               ),
@@ -462,6 +370,194 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Build the wallet options content with reactive identity checks
+  Widget _buildWalletOptionsContent(
+    BuildContext context,
+    WidgetRef ref,
+    bool isAlone,
+    MyWalletsProvider myWalletProvider,
+    int currentSafe,
+    WalletEntity defaultWallet,
+  ) {
+    // Watch the identity status to rebuild when it changes
+    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(widget.wallet.address));
+
+    return idtyStatusAsync.when(
+      data: (idtyStatus) {
+        final hasIdentity = idtyStatus != IdtyStatus.none && idtyStatus != IdtyStatus.unknown;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 8,
+          children: [
+            buildConfirmIdentitySection(context, ref),
+            buildOptionsSection(context),
+            if (!isAlone) buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
+            if (!hasIdentity)
+              InkWell(
+                key: keyRenameWallet,
+                onTap: () async {
+                  final newName = await WalletNameDialogService.showEditWalletNameDialog(context, widget.wallet);
+                  if (newName != null) {
+                    // Reload wallets data to update the UI
+                    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
+                    // Reload the wallet object to get the updated name
+                    final updatedWallet = myWalletProvider.getWalletDataByAddress(widget.wallet.address);
+                    if (updatedWallet != null) {
+                      widget.wallet.name = updatedWallet.name;
+                      // Update the local state to rebuild the UI
+                      setState(() {
+                        currentWalletName = updatedWallet.name!;
+                      });
+                    }
+                    myWalletProvider.reload();
+                  }
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/walletOptions/edit.png',
+                        height: scaleSize(22),
+                        color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                      ),
+                      ScaledSizedBox(width: 18),
+                      Expanded(
+                        child: Text(
+                          "editWalletName".tr(),
+                          style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                          softWrap: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // Cesium+ Profile button
+            InkWell(
+              onTap: () {
+                Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: scaleSize(22),
+                      color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                    ),
+                    ScaledSizedBox(width: 18),
+                    Expanded(
+                      child: Text(
+                        "cesiumProfile".tr(),
+                        style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (defaultWallet.address != widget.wallet.address && !hasIdentity && !isAlone)
+              deleteWallet(context, ref, currentSafe),
+            if (hasIdentity) ManageMembershipButton(address: widget.wallet.address),
+            if (isAlone)
+              isLegacyWallet
+                  ? _buildLegacyWalletOptions()
+                  : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+            ScaledSizedBox(height: 32), // Add bottom padding for better scrolling
+          ],
+        );
+      },
+      loading: () => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 8,
+        children: [
+          buildConfirmIdentitySection(context, ref),
+          buildOptionsSection(context),
+          if (!isAlone) buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
+          // Show Cesium+ Profile button while loading
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.person_outline,
+                    size: scaleSize(22),
+                    color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                  ),
+                  ScaledSizedBox(width: 18),
+                  Expanded(
+                    child: Text(
+                      "cesiumProfile".tr(),
+                      style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                      softWrap: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isAlone)
+            isLegacyWallet
+                ? _buildLegacyWalletOptions()
+                : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+          ScaledSizedBox(height: 32),
+        ],
+      ),
+      error: (_, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 8,
+        children: [
+          buildConfirmIdentitySection(context, ref),
+          buildOptionsSection(context),
+          if (!isAlone) buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
+          // Show Cesium+ Profile button on error
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.person_outline,
+                    size: scaleSize(22),
+                    color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                  ),
+                  ScaledSizedBox(width: 18),
+                  Expanded(
+                    child: Text(
+                      "cesiumProfile".tr(),
+                      style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                      softWrap: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isAlone)
+            isLegacyWallet
+                ? _buildLegacyWalletOptions()
+                : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+          ScaledSizedBox(height: 32),
+        ],
       ),
     );
   }

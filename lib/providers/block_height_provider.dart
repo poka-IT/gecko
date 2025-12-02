@@ -1,5 +1,6 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/providers.dart';
 
 /// Provides the current block height from the connected Duniter node.

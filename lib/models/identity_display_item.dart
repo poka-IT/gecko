@@ -1,8 +1,5 @@
 import 'package:durt2/durt2.dart'
-    show
-        Query$GetNetworkIdentities$identityConnection$edges$node,
-        Query$GetNetworkIdentitiesFiltered$identityConnection$edges$node,
-        Enum$IdentityStatusEnum;
+    show Query$GetNetworkIdentities$identities$edges$node, Query$GetNetworkIdentitiesFiltered$identities$edges$node;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
@@ -11,7 +8,7 @@ class IdentityDisplayItem {
   final String name;
   final String? accountId;
   final String? accountRemovedId;
-  final Enum$IdentityStatusEnum status;
+  final String status;
   final DateTime timestamp;
   final String dateDelimiter;
   final int? blockHeight;
@@ -28,7 +25,7 @@ class IdentityDisplayItem {
     this.blockTimestamp,
   });
 
-  factory IdentityDisplayItem.fromNetworkIdentityNode(Query$GetNetworkIdentities$identityConnection$edges$node node) {
+  factory IdentityDisplayItem.fromNetworkIdentityNode(Query$GetNetworkIdentities$identities$edges$node node) {
     // Parse the creation timestamp from blockchain format
     final DateTime creationTime = DateTime.fromMillisecondsSinceEpoch(node.createdOn * 1000, isUtc: true).toLocal();
 
@@ -48,7 +45,7 @@ class IdentityDisplayItem {
       name: node.name,
       accountId: node.accountId,
       accountRemovedId: node.accountRemoved?.id,
-      status: _parseStatus(node.status?.name),
+      status: node.status,
       timestamp: displayTime,
       dateDelimiter: dateDelimiter,
       blockHeight: node.createdIn?.block?.height,
@@ -57,7 +54,7 @@ class IdentityDisplayItem {
   }
 
   factory IdentityDisplayItem.fromFilteredNetworkIdentityNode(
-    Query$GetNetworkIdentitiesFiltered$identityConnection$edges$node node,
+    Query$GetNetworkIdentitiesFiltered$identities$edges$node node,
   ) {
     // Parse the creation timestamp from blockchain format
     final DateTime creationTime = DateTime.fromMillisecondsSinceEpoch(node.createdOn * 1000, isUtc: true).toLocal();
@@ -78,34 +75,12 @@ class IdentityDisplayItem {
       name: node.name,
       accountId: node.accountId,
       accountRemovedId: node.accountRemoved?.id,
-      status: _parseStatus(node.status?.name),
+      status: node.status,
       timestamp: displayTime,
       dateDelimiter: dateDelimiter,
       blockHeight: node.createdIn?.block?.height,
       blockTimestamp: blockTime,
     );
-  }
-
-  /// Parse status string to IdentityStatus enum
-  static Enum$IdentityStatusEnum _parseStatus(String? statusString) {
-    if (statusString == null) return Enum$IdentityStatusEnum.UNCONFIRMED;
-
-    switch (statusString.toUpperCase()) {
-      case 'MEMBER':
-        return Enum$IdentityStatusEnum.MEMBER;
-      case 'NOTMEMBER':
-        return Enum$IdentityStatusEnum.NOTMEMBER;
-      case 'REMOVED':
-        return Enum$IdentityStatusEnum.REMOVED;
-      case 'REVOKED':
-        return Enum$IdentityStatusEnum.REVOKED;
-      case 'UNCONFIRMED':
-        return Enum$IdentityStatusEnum.UNCONFIRMED;
-      case 'UNVALIDATED':
-        return Enum$IdentityStatusEnum.UNVALIDATED;
-      default:
-        return Enum$IdentityStatusEnum.UNCONFIRMED; // Default fallback
-    }
   }
 
   static String _calculateDateDelimiter(DateTime timestamp) {
@@ -140,19 +115,21 @@ class IdentityDisplayItem {
   /// Get display text for status
   String get displayStatus {
     switch (status) {
-      case Enum$IdentityStatusEnum.MEMBER:
+      case 'Member':
         return "member".tr();
-      case Enum$IdentityStatusEnum.NOTMEMBER:
+      case 'NotMember':
         return "notMember".tr();
-      case Enum$IdentityStatusEnum.REMOVED:
+      case 'Removed':
         return "removed".tr();
-      case Enum$IdentityStatusEnum.REVOKED:
+      case 'Revoked':
         return "revoked".tr();
-      case Enum$IdentityStatusEnum.UNCONFIRMED:
+      case 'Unconfirmed':
         return "unconfirmed".tr();
-      case Enum$IdentityStatusEnum.UNVALIDATED:
+      case 'Unvalidated':
         return "unvalidated".tr();
-      case Enum$IdentityStatusEnum.$unknown:
+      case 'Unknown':
+        return "unknown".tr();
+      default:
         return "unknown".tr();
     }
   }
@@ -160,39 +137,42 @@ class IdentityDisplayItem {
   /// Get appropriate color for status
   Color getStatusColor() {
     switch (status) {
-      case Enum$IdentityStatusEnum.MEMBER:
+      case 'Member':
         return Colors.green;
-      case Enum$IdentityStatusEnum.UNCONFIRMED:
+      case 'Unconfirmed':
         return Colors.blue;
-      case Enum$IdentityStatusEnum.NOTMEMBER:
+      case 'NotMember':
         return Colors.orange;
-      case Enum$IdentityStatusEnum.REMOVED:
+      case 'Removed':
         return Colors.orange;
-      case Enum$IdentityStatusEnum.REVOKED:
+      case 'Revoked':
         return Colors.red;
-      case Enum$IdentityStatusEnum.UNVALIDATED:
+      case 'Unvalidated':
         return Colors.grey;
-      case Enum$IdentityStatusEnum.$unknown:
+      case 'Unknown':
         return Colors.grey;
+      default:
+        return Colors.red;
     }
   }
 
   /// Get appropriate icon for status
   IconData getStatusIcon() {
     switch (status) {
-      case Enum$IdentityStatusEnum.MEMBER:
+      case 'Member':
         return Icons.verified_user;
-      case Enum$IdentityStatusEnum.UNCONFIRMED:
+      case 'Unconfirmed':
         return Icons.person_add;
-      case Enum$IdentityStatusEnum.NOTMEMBER:
+      case 'NotMember':
         return Icons.person;
-      case Enum$IdentityStatusEnum.REMOVED:
+      case 'Removed':
         return Icons.person_remove;
-      case Enum$IdentityStatusEnum.REVOKED:
+      case 'Revoked':
         return Icons.cancel;
-      case Enum$IdentityStatusEnum.UNVALIDATED:
+      case 'Unvalidated':
         return Icons.person_off;
-      case Enum$IdentityStatusEnum.$unknown:
+      case 'Unknown':
+      default:
         return Icons.help_outline;
     }
   }

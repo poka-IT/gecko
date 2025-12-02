@@ -5,6 +5,7 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
+import 'package:gecko/services/log_collection_service.dart';
 
 // Version of box data
 const int dataVersion = 13;
@@ -26,8 +27,13 @@ late bool isTall;
 // Contexts
 BuildContext get homeContext => Gecko.navigatorContext!;
 
-// Logger
-final log = Logger();
+// Logger with log collection
+final log = Logger(
+  output: MultiOutput([
+    ConsoleOutput(), // Keep console output
+    LogCollectionOutput(LogCollectionService.instance), // Add log collection
+  ]),
+);
 
 // Colors
 const blueColor = Color(0xFF5C6BC0);

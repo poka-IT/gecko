@@ -9,6 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
@@ -137,7 +138,10 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                 child: PrimaryButton(
                   label: 'openThisSafe'.tr(),
                   onPressed: () async {
-                    ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafe);
+                    ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafe);
+                    // Invalidate identity providers to ensure they use the new safe
+                    ref.invalidate(idtyWalletAsyncProvider);
+                    ref.invalidate(identityWalletsAsyncProvider);
                     PinCodeService.pinCode = '';
                     await ref.read(biometricProvider.notifier).refresh();
                     if (!await PinCodeService.askPinCode(canSwitch: true)) return;
@@ -159,6 +163,9 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
 
   /// Performs a smooth transition to myWallets screen with overlay to hide intermediate navigation
   Future<void> _performSmoothTransition(BuildContext context) async {
+    // Check if context is still valid before proceeding
+    if (!context.mounted) return;
+
     // Create an animated overlay with fade transition
     late OverlayEntry overlayEntry;
 
@@ -173,8 +180,11 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       ),
     );
 
-    // Insert overlay
-    Overlay.of(context).insert(overlayEntry);
+    // Insert overlay - check context validity first
+    final overlay = Overlay.of(context);
+    if (!context.mounted) return;
+
+    overlay.insert(overlayEntry);
 
     // Fade in the overlay
     showOverlay = true;
@@ -185,9 +195,6 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
 
     // Clear GlobalKey state to avoid conflicts when rebuilding with new safe
     try {
-      // Force cleanup of previous WalletsHome static state
-      cleanupWalletsHomeKeys();
-
       if (context.mounted) {
         // Clean dismount of current route before navigation
         await Future.delayed(const Duration(milliseconds: 50));
@@ -197,9 +204,21 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       log.w('Error during state cleanup: $e');
     }
 
-    // Simply pop back to the previous MyWallets screen instead of creating a new one
-    // This maintains the proper navigation stack: Home -> MyWallets (refreshed with new safe)
-    Navigator.pop(context);
+    // Check context validity before navigation
+    if (!context.mounted) {
+      // Clean up overlay if context is no longer valid
+      overlayEntry.remove();
+      return;
+    }
+
+    // Replace with a new WalletsHome that has a unique key based on the safe's fingerprint
+    // This ensures each safe gets its own widget instance, preventing GlobalKey conflicts
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Consumer(builder: (context, ref, child) => WalletsHome.fromCurrentSafe(ref)),
+      ),
+    );
 
     // Wait a bit then fade out the overlay
     Future.delayed(const Duration(milliseconds: 50), () {

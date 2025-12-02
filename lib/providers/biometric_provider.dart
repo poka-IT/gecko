@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:durt2/durt2.dart';
@@ -242,7 +242,7 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
       return await _localAuth.authenticate(
         localizedReason: reason,
         authMessages: [
-          AndroidAuthMessages(biometricHint: '', signInTitle: 'connectionAuthTitle'.tr(), cancelButton: 'cancel'.tr()),
+          AndroidAuthMessages(signInTitle: 'connectionAuthTitle'.tr(), cancelButton: 'cancel'.tr()),
           IOSAuthMessages(
             goToSettingsButton: 'goToSettingsButton'.tr(),
             goToSettingsDescription: 'goToSettingsDescription'.tr(),
@@ -251,21 +251,13 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
             lockOut: 'lockOut'.tr(),
           ),
         ],
-        options: const AuthenticationOptions(
-          biometricOnly: true,
-          stickyAuth: true,
-          useErrorDialogs: true,
-          sensitiveTransaction: true,
-        ),
+        biometricOnly: true,
+        sensitiveTransaction: true,
       );
     } on PlatformException catch (e) {
       log.w('Platform exception during biometric auth: ${e.code} - ${e.message}');
 
       switch (e.code) {
-        case auth_error.notAvailable:
-        case auth_error.notEnrolled:
-        case auth_error.lockedOut:
-        case auth_error.permanentlyLockedOut:
         case 'no_fragment_activity':
           return false;
         default:

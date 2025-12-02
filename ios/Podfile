@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '15.5'
+platform :ios, '15.5'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -39,5 +39,72 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    
+    # Force minimum deployment target to iOS 15.5 for all pods to avoid Xcode 16 warnings
+    target.build_configurations.each do |config|
+      current_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      # Force update ALL targets to 15.5, regardless of current value
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+      puts "Forced #{target.name} deployment target from #{current_target} to 15.5"
+      
+      # Also force update other iOS version settings that might conflict
+      config.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET_1500')
+      config.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET_1400')
+      config.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET_1300')
+      config.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET_1200')
+      config.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET_1100')
+      config.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET_1000')
+      config.build_settings.delete('IPHONEOS_DEPLOYMENT_TARGET_900')
+      
+      # Force code signing to automatic for all pods (only if not already set)
+      config.build_settings['CODE_SIGN_STYLE'] ||= 'Automatic'
+      config.build_settings['DEVELOPMENT_TEAM'] ||= '2P2PNF45VD'
+    end
+  end
+  
+  # Also update the project-level deployment target
+  installer.pods_project.build_configurations.each do |config|
+    current_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+    # Force update project deployment target to 15.5
+    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+    puts "Forced project deployment target from #{current_target} to 15.5"
+    
+    # Force code signing to automatic at project level (only if not already set)
+    config.build_settings['CODE_SIGN_STYLE'] ||= 'Automatic'
+    config.build_settings['DEVELOPMENT_TEAM'] ||= '2P2PNF45VD'
+  end
+  
+  # Force update all aggregate targets
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.xcconfigs.each do |config_name, config_file|
+      config_file.attributes['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+      config_file.attributes['CODE_SIGN_STYLE'] ||= 'Automatic'
+      config_file.attributes['DEVELOPMENT_TEAM'] ||= '2P2PNF45VD'
+      puts "Forced aggregate target #{aggregate_target.name} to 15.5 with automatic signing"
+    end
+  end
+  
+  # Final brute force: Update the Pods project file directly
+  puts "Applying final brute force deployment target fixes..."
+  installer.pods_project.save
+  
+  # Final step: Force update all .xcconfig files to override any hardcoded values
+  Dir.glob("Pods/Target Support Files/**/*.xcconfig").each do |xcconfig_path|
+    content = File.read(xcconfig_path)
+    # Replace any IPHONEOS_DEPLOYMENT_TARGET with 15.5
+    content.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = [0-9]+\.[0-9]+/, 'IPHONEOS_DEPLOYMENT_TARGET = 15.5')
+    File.write(xcconfig_path, content)
+    puts "Updated #{xcconfig_path} deployment target to 15.5"
+  end
+  
+  # Ultimate fix: Force update the Pods.xcodeproj file directly
+  pods_project_path = "Pods/Pods.xcodeproj/project.pbxproj"
+  if File.exist?(pods_project_path)
+    content = File.read(pods_project_path)
+    # Replace all IPHONEOS_DEPLOYMENT_TARGET values with 15.5
+    content.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = [0-9]+\.[0-9]+;/, 'IPHONEOS_DEPLOYMENT_TARGET = 15.5;')
+    content.gsub!(/IPHONEOS_DEPLOYMENT_TARGET = "[0-9]+\.[0-9]+";/, 'IPHONEOS_DEPLOYMENT_TARGET = "15.5";')
+    File.write(pods_project_path, content)
+    puts "Updated Pods.xcodeproj deployment targets to 15.5"
   end
 end

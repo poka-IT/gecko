@@ -83,7 +83,7 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
     super.dispose();
   }
 
-  Future<void> _selectStartDate() async {
+  Future<void> _selectStartDate(StateSetter? setModalState) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _startDate ?? DateTime.now(),
@@ -91,17 +91,23 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
       lastDate: DateTime.now(),
     );
     if (picked != null && picked != _startDate) {
-      setState(() {
+      void updateState() {
         _startDate = picked;
         // Ensure end date is not before start date
         if (_endDate != null && _endDate!.isBefore(picked)) {
           _endDate = picked;
         }
-      });
+      }
+
+      // Update both local state and modal state if available
+      setState(updateState);
+      if (setModalState != null) {
+        setModalState(updateState);
+      }
     }
   }
 
-  Future<void> _selectEndDate() async {
+  Future<void> _selectEndDate(StateSetter? setModalState) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _endDate ?? DateTime.now(),
@@ -109,9 +115,15 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
       lastDate: DateTime.now(),
     );
     if (picked != null && picked != _endDate) {
-      setState(() {
+      void updateState() {
         _endDate = picked;
-      });
+      }
+
+      // Update both local state and modal state if available
+      setState(updateState);
+      if (setModalState != null) {
+        setModalState(updateState);
+      }
     }
   }
 
@@ -608,7 +620,7 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
             // Start date field
             Expanded(
               child: GestureDetector(
-                onTap: () => _selectStartDate(),
+                onTap: () => _selectStartDate(setModalState),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
                   decoration: BoxDecoration(
@@ -650,7 +662,7 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
             // End date field
             Expanded(
               child: GestureDetector(
-                onTap: () => _selectEndDate(),
+                onTap: () => _selectEndDate(setModalState),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
                   decoration: BoxDecoration(

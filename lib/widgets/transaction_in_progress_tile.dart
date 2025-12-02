@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -21,8 +22,8 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_state_icon.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
-import 'package:fade_and_translate/fade_and_translate.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
+import 'package:gecko/widgets/safe_fade_and_translate.dart';
 
 // Static cache to preserve transaction status across widget reconstructions
 class TransactionStatusCache {
@@ -213,9 +214,11 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
         if (status.state == TransactionState.finalized ||
             status.state == TransactionState.error ||
             status.state == TransactionState.timeout) {
-          setState(() {
-            _isVisible = false;
-          });
+          if (mounted) {
+            setState(() {
+              _isVisible = false;
+            });
+          }
         }
       }
     });
@@ -519,7 +522,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
 
     final statusIcon = TransactionStateIcon(_status.state, size: scaleSize(14), stroke: 2);
 
-    return FadeAndTranslate(
+    return SafeFadeAndTranslate(
       visible: _isVisible,
       translate: const Offset(0, -40),
       delay: const Duration(seconds: 2),

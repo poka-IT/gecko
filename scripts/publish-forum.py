@@ -13,7 +13,11 @@ forum_url = os.getenv('DUNITER_FORUM_URL', 'https://forum.duniter.org/')
 
 # Get CI variables
 version = os.getenv('VERSION', 'unknown')
+build_number = version.split('+')[1] if '+' in version else 'unknown'
+version_only = version.split('+')[0] if '+' in version else version
 apk_job_id = os.getenv('APK_JOB_ID', '')
+linux_job_id = os.getenv('LINUX_JOB_ID', '')
+macos_job_id = os.getenv('MACOS_JOB_ID', '')
 ci_project_url = os.getenv('CI_PROJECT_URL', '')
 forum_mode = os.getenv('FORUM_MODE', 'complete')
 
@@ -23,6 +27,8 @@ with open('/tmp/message.txt', 'r') as f:
 
 # Build message based on mode
 apk_base_url = f"{ci_project_url}/-/jobs/{apk_job_id}/artifacts/raw/artifacts/android"
+linux_base_url = f"{ci_project_url}/-/jobs/{linux_job_id}/artifacts/raw/artifacts/linux" if linux_job_id else ""
+macos_base_url = f"{ci_project_url}/-/jobs/{macos_job_id}/artifacts/raw/artifacts/macos" if macos_job_id else ""
 
 # Get changelog from git
 import subprocess
@@ -66,11 +72,13 @@ This is a **BETA** build for ĞTest network.
 
 **Download APKs:**
 
-📱 **[Download armeabi-v7a APK]({apk_base_url}/gecko-{version}-v7a.apk)**
+📱 **[Download armeabi-v7a APK]({apk_base_url}/gecko-{version}-v7a.apk)** (anciens téléphones)
 
-📱 **[Download arm64-v8a APK]({apk_base_url}/gecko-{version}-v8a.apk)**
+📱 **[Download arm64-v8a APK]({apk_base_url}/gecko-{version}-v8a.apk)** (téléphones récents)
 
-📱 **[Download x86_64 APK]({apk_base_url}/gecko-{version}-x86_64.apk)**
+📱 **[Download x86_64 APK]({apk_base_url}/gecko-{version}-x86_64.apk)** (émulateurs)
+
+📱 **[Google Play Store](https://play.google.com/store/apps/details?id=fr.axiomteam.gecko)** (disponible sous 24-48h)
 
 **Changelog:**
 {changelog}"""
@@ -83,16 +91,28 @@ This is a **BETA** release for ĞTest network.
 
 **Downloads:**
 
-📱 **Android APKs:**
-• **[Download armeabi-v7a APK]({apk_base_url}/gecko-{version}-v7a.apk)**
-• **[Download arm64-v8a APK]({apk_base_url}/gecko-{version}-v8a.apk)**
-• **[Download x86_64 APK]({apk_base_url}/gecko-{version}-x86_64.apk)**
+<div style="display: flex; align-items: center; gap: 8px;">
+  <img src="upload://uL0FIqcHynJyP29eQsDBOX67fpg.png" width="22">
+  <strong>Android:</strong>
+</div>
 
-🖥️ **[Linux Desktop - GitLab Releases]({ci_project_url}/-/releases/{version})**
+• **[Download armeabi-v7a APK]({apk_base_url}/gecko-{version}-v7a.apk)** (anciens téléphones)
 
-**Store Deployments:**
-• **Google Play Store:** Published (may take up to 48h to appear)
-• **Apple App Store:** Submitted for review (may take up to 48h to appear)
+• **[Download arm64-v8a APK]({apk_base_url}/gecko-{version}-v8a.apk)** (téléphones récents)
+
+• **[Download x86_64 APK]({apk_base_url}/gecko-{version}-x86_64.apk)** (émulateurs)
+
+• **[Google Play Store](https://play.google.com/store/apps/details?id=fr.axiomteam.gecko)** (disponible sous 24-48h)
+
+🍎 **iOS:**
+
+• **[App Store](https://apps.apple.com/fr/app/gecko-g1-wallet/id6739944308)** (disponible sous 24-48h)
+
+🖥️ **Desktop:**
+
+• **[Linux Desktop (tar.gz)]({linux_base_url}/gecko-{version}-linux.tar.gz)** (x64)
+
+• **[macOS Desktop (zip)]({macos_base_url}/gecko-{version}-macos-arm64.zip)** (Apple Silicon)
 
 **Changelog:**
 {changelog}"""

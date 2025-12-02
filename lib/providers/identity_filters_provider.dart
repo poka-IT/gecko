@@ -1,5 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:durt2/durt2.dart' show Enum$IdentityStatusEnum;
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/models/identity_filters.dart';
 import 'package:gecko/models/transaction_filters.dart';
 
@@ -13,7 +12,7 @@ class IdentityFiltersNotifier extends StateNotifier<IdentityFilterCriteria> {
   }
 
   /// Update selected statuses filter
-  void updateSelectedStatuses(List<Enum$IdentityStatusEnum>? statuses) {
+  void updateSelectedStatuses(List<String>? statuses) {
     state = state.copyWith(selectedStatuses: statuses?.isNotEmpty == true ? statuses : null);
   }
 
@@ -28,7 +27,7 @@ class IdentityFiltersNotifier extends StateNotifier<IdentityFilterCriteria> {
   }
 
   /// Toggle a specific status
-  void toggleStatus(Enum$IdentityStatusEnum status) {
+  void toggleStatus(String status) {
     state = state.toggleStatus(status);
   }
 

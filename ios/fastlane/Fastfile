@@ -1,0 +1,290 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build IPA with proper keychain management and match integration"
+  lane :build do
+    setup_ci if ENV['CI']
+
+    # Setup App Store Connect API key
+    api_key_id = "{{APP_STORE_CONNECT_API_KEY_ID}}"
+    api_issuer_id = "{{APP_STORE_CONNECT_API_ISSUER_ID}}"
+    api_key_base64 = "{{APP_STORE_CONNECT_API_KEY_BASE64}}"
+    
+    api_key = app_store_connect_api_key(
+      key_id:        api_key_id,
+      issuer_id:     api_issuer_id,
+      key_content:   Base64.decode64(api_key_base64),
+      is_key_content_base64: false
+    )
+
+    # Get version info
+    version = ENV["VERSION"] || sh("awk -F'[ +]' '/^version:/{print $2}' ../pubspec.yaml").strip
+    build_n = ENV["BUILD"]   || sh("awk -F'[ +]' '/^version:/{print $3}' ../pubspec.yaml").strip
+    UI.message("Building v#{version}+#{build_n}")
+
+    # Flutter dependencies (Pods handled in CI before Fastlane)
+    sh("flutter --version")
+    sh("flutter pub get")
+    
+    # Set Flutter build info for xcodebuild
+    ENV["FLUTTER_BUILD_NAME"] = version
+    ENV["FLUTTER_BUILD_NUMBER"] = build_n
+
+    # Create ephemeral keychain for this job
+    keychain_name     = "{{MATCH_KEYCHAIN_NAME}}"
+    keychain_password = "{{RUNNER_KEYCHAIN_PASSWORD}}"
+    
+    # Signing variables
+    apple_team_id = "{{APPLE_TEAM_ID}}"
+    ios_profile_name = "{{IOS_PROFILE_NAME}}"
+    ios_app_identifier = "{{IOS_APP_IDENTIFIER}}"
+    ios_dist_p12_password = "{{IOS_DIST_P12_PASSWORD}}"
+    ios_dist_p12_base64 = "{{IOS_DIST_P12_BASE64}}"
+    ios_profile_appstore_base64 = "{{IOS_PROFILE_APPSTORE_BASE64}}"
+
+    # Force delete existing keychain if it exists
+    begin
+      delete_keychain(name: keychain_name)
+    rescue
+      # Ignore errors if keychain doesn't exist
+    end
+
+    create_keychain(
+      name: keychain_name,
+      password: keychain_password,
+      default_keychain: true,
+      unlock: true,
+      timeout: 3600,
+      add_to_search_list: true   # includes login/system in search list for Apple chain of trust
+    )
+
+    # Install certificates & profiles from CI variables (no match repo needed)
+    UI.message("🔐 Installing certificates from CI variables")
+    
+    # Create certificate file from base64 CI variable
+    cert_path = "/tmp/ios_distribution.p12"
+    File.write(cert_path, Base64.decode64(ios_dist_p12_base64))
+    
+    # Create provisioning profile from base64 CI variable  
+    profile_content = Base64.decode64(ios_profile_appstore_base64)
+    profile_uuid = profile_content.match(/<key>UUID<\/key>\s*<string>([^<]+)<\/string>/)[1]
+    profile_dir = File.expand_path("~/Library/MobileDevice/Provisioning Profiles")
+    FileUtils.mkdir_p(profile_dir)
+    profile_path = "#{profile_dir}/#{profile_uuid}.mobileprovision"
+    File.write(profile_path, profile_content)
+    
+    # Import certificate into keychain
+    sh("security import #{cert_path} -k #{keychain_name} -P '#{ios_dist_p12_password}' -A")
+    sh("security set-key-partition-list -S apple-tool:,apple: -s -k #{keychain_password} #{keychain_name}")
+    
+    # Clean up certificate file
+    File.delete(cert_path)
+    
+    # Verify certificate and profile installation
+    UI.message("🔍 Verifying certificate installation...")
+    sh("security find-identity -v -p codesigning #{keychain_name}")
+    
+    # Also check all available certificates in all keychains
+    UI.message("🔍 All available certificates:")
+    sh("security find-identity -v -p codesigning")
+    
+    UI.message("🔍 Verifying provisioning profile installation...")
+    sh("ls -la ~/Library/MobileDevice/Provisioning\\ Profiles/")
+    
+    # Show profile details for debugging
+    UI.message("🔍 Profile details:")
+    sh("find ~/Library/MobileDevice/Provisioning\\ Profiles/ -name '*.mobileprovision' -exec security cms -D -i {} \\; | grep -A5 -B5 'fr.axiom-team.gecko' || echo 'No matching profiles found'")
+    
+    # Verify the specific certificate we need exists
+    UI.message("🔍 Looking for Apple Distribution certificate...")
+    sh("security find-identity -v -p codesigning #{keychain_name} | grep 'Apple Distribution' || echo 'Apple Distribution certificate not found in keychain'")
+    
+    # Force manual signing for Runner target only
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      team_id: apple_team_id,
+      targets: ["Runner"],
+      code_sign_identity: "Apple Distribution",
+      profile_name: ios_profile_name
+    )
+    
+    # Double-check Runner project signing settings
+    UI.message("🔍 Verifying Runner project signing settings...")
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: apple_team_id,
+      targets: ["Runner"],
+      code_sign_identity: "Apple Distribution",
+      profile_name: ios_profile_name,
+      build_configurations: ["Release"]  # Only modify Release configuration
+    )
+    
+    # Force manual signing in project file directly
+    UI.message("🔧 Forcing manual signing in project file...")
+    begin
+      project_path = "Runner.xcodeproj/project.pbxproj"
+      project_content = File.read(project_path)
+      
+      # Replace any remaining automatic signing references
+      project_content.gsub!(/ProvisioningStyle = Automatic;/, 'ProvisioningStyle = Manual;')
+      project_content.gsub!(/CODE_SIGN_STYLE = Automatic;/, 'CODE_SIGN_STYLE = Manual;')
+      
+      File.write(project_path, project_content)
+      UI.message("✅ Project file updated for manual signing")
+    rescue => e
+      UI.error("⚠️ Could not modify project file: #{e.message}")
+      UI.message("Continuing with existing project settings...")
+    end
+    
+    # Clean derived data to avoid cached signing settings
+    UI.message("🧹 Cleaning derived data...")
+    sh("rm -rf ~/Library/Developer/Xcode/DerivedData/Runner-* || true")
+    
+    # Configure Pods project for automatic signing (no provisioning profiles)
+    UI.message("🔧 Configuring Pods for automatic signing...")
+    begin
+      pods_project_path = File.expand_path("../Pods/Pods.xcodeproj", Dir.pwd)
+      if File.exist?(pods_project_path)
+        pods_project = Xcodeproj::Project.open(pods_project_path)
+        pods_project.targets.each do |target|
+          # Use automatic signing for all Pod targets (no provisioning profiles)
+          target.build_configurations.each do |config|
+            config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
+            config.build_settings.delete('PROVISIONING_PROFILE_SPECIFIER')
+            config.build_settings.delete('PROVISIONING_PROFILE')
+            config.build_settings.delete('CODE_SIGN_IDENTITY')
+          end
+        end
+        pods_project.save
+        UI.success("✅ Pods configured for automatic signing")
+      else
+        UI.warning("⚠️ Pods project not found at #{pods_project_path}")
+      end
+    rescue => e
+      UI.error("⚠️ Could not configure Pods signing: #{e.message}")
+      UI.message("Continuing anyway...")
+    end
+    
+    # Verify scheme configuration
+    UI.message("🔍 Verifying scheme configuration...")
+    sh("xcodebuild -workspace Runner.xcworkspace -scheme Runner -showBuildSettings -configuration Release | grep -E 'CODE_SIGN|PROVISIONING|DEVELOPMENT_TEAM' | head -10 || true")
+
+    # Build the IPA using gym/build_app with explicit signing parameters
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      # Don't specify codesigning_identity here as it would apply to all targets including Pods
+      # The signing is already configured by update_code_signing_settings for the Runner target only
+      skip_profile_detection: true,  # Skip automatic profile detection
+      # Force Development Team to prevent Xcode from looking for Development profiles
+      xcargs: "ONLY_ACTIVE_ARCH=NO DEVELOPMENT_TEAM=#{apple_team_id}",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        teamID: apple_team_id,
+        signingCertificate: "Apple Distribution",
+        provisioningProfiles: {
+          ios_app_identifier => ios_profile_name
+        },
+        uploadBitcode: false,
+        uploadSymbols: true,
+        generateAppStoreInformation: true,
+        manageAppVersionAndBuildNumber: true
+      },
+      output_directory: "../artifacts/ios",
+      output_name: "gecko-#{version}+#{build_n}.ipa",
+      suppress_xcode_output: false,  # Show full xcodebuild output for debugging
+      buildlog_path: "../artifacts"  # Save build log to artifacts
+    )
+
+    UI.success("✅ IPA built successfully: gecko-#{version}+#{build_n}.ipa")
+
+  rescue => e
+    UI.error("❌ Build failed! Error: #{e.message}")
+    
+    # Show build logs for debugging
+    log_paths = [
+      "../artifacts/Runner-Runner.log",
+      "~/Library/Logs/gym/Runner-Runner.log",
+      "/Users/poka/Library/Logs/gym/Runner-Runner.log"
+    ]
+    
+    log_found = false
+    log_paths.each do |log_path|
+      expanded_path = File.expand_path(log_path)
+      if File.exist?(expanded_path)
+        UI.message("Found log at: #{expanded_path}")
+        sh("tail -100 '#{expanded_path}'")
+        log_found = true
+        break
+      end
+    end
+    
+    unless log_found
+      UI.error("No build log found! Checking directory contents:")
+      sh("ls -la ../artifacts/ || true")
+      sh("ls -la ~/Library/Logs/gym/ || true")
+    end
+    
+    raise e
+  ensure
+    # Clean: remove ephemeral keychain at the end of the job
+    delete_keychain(name: keychain_name) if keychain_name
+  end
+
+  desc "Upload to App Store Connect"
+  lane :deliver do
+    # Variables
+    api_key_id = "{{APP_STORE_CONNECT_API_KEY_ID}}"
+    api_issuer_id = "{{APP_STORE_CONNECT_API_ISSUER_ID}}"
+    api_key_base64 = "{{APP_STORE_CONNECT_API_KEY_BASE64}}"
+    ios_app_identifier = "{{IOS_APP_IDENTIFIER}}"
+    
+    api_key = app_store_connect_api_key(
+      key_id:      api_key_id,
+      issuer_id:   api_issuer_id,
+      key_content: Base64.decode64(api_key_base64),
+      is_key_content_base64: false
+    )
+    
+    version = ENV['VERSION'] || sh("awk '/^version:/{print $2}' ../pubspec.yaml | awk -F'+' '{print $1}'").strip
+    build   = ENV['BUILD']   || sh("awk '/^version:/{print $2}' ../pubspec.yaml | awk -F'+' '{print $2}'").strip
+
+    deliver(
+      api_key: api_key,
+      app_identifier: ios_app_identifier,
+      ipa: "../artifacts/ios/gecko-#{version}+#{build}.ipa",
+      skip_screenshots: true,
+      skip_metadata: true,
+      submit_for_review: true,
+      automatic_release: false
+    )
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    build
+    
+    # Variables
+    api_key_id = "{{APP_STORE_CONNECT_API_KEY_ID}}"
+    api_issuer_id = "{{APP_STORE_CONNECT_API_ISSUER_ID}}"
+    api_key_base64 = "{{APP_STORE_CONNECT_API_KEY_BASE64}}"
+    
+    api_key = app_store_connect_api_key(
+      key_id:      api_key_id,
+      issuer_id:   api_issuer_id,
+      key_content: Base64.decode64(api_key_base64),
+      is_key_content_base64: false
+    )
+    
+    pilot(
+      api_key: api_key,
+      ipa: Dir["../artifacts/ios/*.ipa"].max_by { |f| File.mtime(f) },
+      skip_submission: true,
+      distribute_external: false
+    )
+  end
+end

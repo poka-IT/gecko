@@ -1,4 +1,3 @@
-import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +17,7 @@ class _IdentityFiltersState extends ConsumerState<IdentityFilters> {
   // Local state for the modal (only applied when "Done" is clicked)
   TextEditingController? _localNameController;
   bool _localExactMatchName = false;
-  Set<Enum$IdentityStatusEnum> _localSelectedStatuses = {};
+  Set<String> _localSelectedStatuses = {};
   DateTime? _localStartDate;
   DateTime? _localEndDate;
 
@@ -388,7 +387,7 @@ class _IdentityFiltersState extends ConsumerState<IdentityFilters> {
         Wrap(
           spacing: scaleSize(8),
           runSpacing: scaleSize(8),
-          children: Enum$IdentityStatusEnum.values.map((status) {
+          children: ['Member', 'NotMember', 'Removed', 'Revoked', 'Unconfirmed', 'Unvalidated'].map((status) {
             final isSelected = _localSelectedStatuses.contains(status);
             return FilterChip(
               label: Text(_getStatusDisplayText(status)),
@@ -546,21 +545,23 @@ class _IdentityFiltersState extends ConsumerState<IdentityFilters> {
     }
   }
 
-  String _getStatusDisplayText(Enum$IdentityStatusEnum status) {
+  String _getStatusDisplayText(String status) {
     switch (status) {
-      case Enum$IdentityStatusEnum.MEMBER:
+      case 'Member':
         return 'member'.tr();
-      case Enum$IdentityStatusEnum.NOTMEMBER:
+      case 'NotMember':
         return 'notMember'.tr();
-      case Enum$IdentityStatusEnum.REMOVED:
+      case 'Removed':
         return 'removed'.tr();
-      case Enum$IdentityStatusEnum.REVOKED:
+      case 'Revoked':
         return 'revoked'.tr();
-      case Enum$IdentityStatusEnum.UNCONFIRMED:
+      case 'Unconfirmed':
         return 'unconfirmed'.tr();
-      case Enum$IdentityStatusEnum.UNVALIDATED:
+      case 'Unvalidated':
         return 'unvalidated'.tr();
-      case Enum$IdentityStatusEnum.$unknown:
+      case 'Unknown':
+        return 'unknown'.tr();
+      default:
         return 'unknown'.tr();
     }
   }

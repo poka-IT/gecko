@@ -90,6 +90,11 @@ class CertifyButton extends ConsumerWidget {
                       ),
                     );
                   } catch (e) {
+                    if (!context.mounted) {
+                      log.w('Context not mounted when error occurred: $e');
+                      return;
+                    }
+
                     if (e is NotMemberException) {
                       showConfirmationDialog(
                         context: context,

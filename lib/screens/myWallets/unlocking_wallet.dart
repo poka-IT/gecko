@@ -2,17 +2,19 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity;
+import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/pin_security_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/pin_security_service.dart';
@@ -203,10 +205,14 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           });
 
           // Update the default safe to the currently selected one
-          ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
+          ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafeNumber);
 
           // Invalidate providers after changing default safe to fix state synchronization
           myWalletProvider.invalidateProviders();
+
+          // Invalidate identity providers to ensure they use the new safe
+          ref.invalidate(idtyWalletAsyncProvider);
+          ref.invalidate(identityWalletsAsyncProvider);
 
           // Wait for Durt to be connected and wallets to be loaded before allowing access
           await _waitForSystemReady();
@@ -657,7 +663,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                   currentSafeNumber = currentSafe.number;
 
                   // Update the default safe to the currently selected one
-                  ref.read(walletServiceProvider).setDefaultSafeBoxNumber(currentSafeNumber);
+                  ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafeNumber);
+
+                  // Invalidate identity providers to ensure they use the new safe
+                  ref.invalidate(idtyWalletAsyncProvider);
+                  ref.invalidate(identityWalletsAsyncProvider);
 
                   // Reset PIN state when changing safes
                   enterPin.clear();
@@ -743,11 +753,18 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 8),
               child: currentSafe.imagePath == null
-                  ? Image.asset(
-                      'assets/safes/${currentSafe.number % 4}.png',
-                      width: scaleSize(isTall ? 95 : 75),
-                      fit: BoxFit.contain,
-                    )
+                  ? (currentSafe.safeType == SafeType.legacy
+                        ? SvgPicture.asset(
+                            'assets/cesium_bw2.svg',
+                            width: scaleSize(isTall ? 95 : 75),
+                            fit: BoxFit.contain,
+                            semanticsLabel: 'Cesium',
+                          )
+                        : Image.asset(
+                            'assets/safes/${currentSafe.number % 4}.png',
+                            width: scaleSize(isTall ? 95 : 75),
+                            fit: BoxFit.contain,
+                          ))
                   : Image.file(File(currentSafe.imagePath!), width: scaleSize(isTall ? 127 : 95), fit: BoxFit.contain),
             ),
           ),

@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:durt2/durt2.dart' show SafeEntity;
+import 'package:durt2/durt2.dart' show SafeEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/create_safe_placeholder.dart';
 
@@ -60,17 +61,26 @@ class SafeCarousel extends StatelessWidget {
                     ? Container(
                         margin: const EdgeInsets.symmetric(horizontal: 8),
                         child: safe.imagePath == null
-                            ? Image.asset(
-                                'assets/safes/${safe.number % 4}.png',
-                                width: scaleSize(95),
-                                fit: BoxFit.contain,
-                              )
+                            ? (safe.safeType == SafeType.legacy
+                                  ? SvgPicture.asset(
+                                      'assets/cesium_bw2.svg',
+                                      width: scaleSize(95),
+                                      fit: BoxFit.contain,
+                                      semanticsLabel: 'Cesium',
+                                    )
+                                  : Image.asset(
+                                      'assets/safes/${safe.number % 4}.png',
+                                      width: scaleSize(95),
+                                      fit: BoxFit.contain,
+                                    ))
                             : Image.file(File(safe.imagePath!), width: scaleSize(127), fit: BoxFit.contain),
                       )
                     : Column(
                         children: <Widget>[
                           safe.imagePath == null
-                              ? Image.asset('assets/safes/${safe.number % 4}.png', height: 150)
+                              ? (safe.safeType == SafeType.legacy
+                                    ? SvgPicture.asset('assets/cesium_bw2.svg', height: 150, semanticsLabel: 'Cesium')
+                                    : Image.asset('assets/safes/${safe.number % 4}.png', height: 150))
                               : Image.file(File(safe.imagePath!), height: 150),
                           const SizedBox(height: 30),
                           Text(safe.name, style: const TextStyle(fontSize: 20)),

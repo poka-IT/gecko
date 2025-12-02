@@ -77,7 +77,7 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
 
     // Initialize selected wallet only once or when explicitly changed
 
-    _selectedWallet ??= ref.read(walletServiceProvider).defaultWallet!;
+    _selectedWallet ??= ref.read(walletServiceProvider).defaultWallet;
     var selectedWallet = _selectedWallet!;
 
     return PopScope(
@@ -126,354 +126,382 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                     _keyboardDismissed = true;
                   }
 
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.all(scaleSize(12)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Card(
-                          color: context.colorScheme.primary.withValues(alpha: 0.1),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: context.colorScheme.primary, width: 1),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(scaleSize(12)),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.info_outline, color: context.colorScheme.primary, size: scaleSize(24)),
-                                ScaledSizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    'migrate_cesium_account_info'.tr(),
-                                    style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
-                                  ),
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.all(scaleSize(12)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Card(
+                                color: context.colorScheme.primary.withValues(alpha: 0.1),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: context.colorScheme.primary, width: 1),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        ScaledSizedBox(height: 8),
-                        // Section des identifiants Cesium
-                        Card(
-                          color: context.colorScheme.surfaceContainer,
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: Padding(
-                            padding: EdgeInsets.all(scaleSize(12)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'cesiumCredentials'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: context.colorScheme.onSecondaryContainer,
-                                  ),
-                                ),
-                                ScaledSizedBox(height: 8),
-                                TextFormField(
-                                  key: keyCesiumId,
-                                  autofocus: true,
-                                  autocorrect: false,
-                                  onChanged: (text) {
-                                    if (debounce?.isActive ?? false) {
-                                      debounce!.cancel();
-                                    }
-                                    debounce = Timer(const Duration(milliseconds: MigrateG1v1.debouneTime), () {
-                                      if (saltController.text != '' && passwordController.text != '') {
-                                        setState(() {
-                                          _keyboardDismissed = false;
-                                        });
-                                        ref.invalidate(csToV2AddressProvider);
-                                      }
-                                    });
-                                  },
-                                  onFieldSubmitted: (text) {
-                                    if (saltController.text != '' && passwordController.text != '') {
-                                      if (debounce?.isActive ?? false) {
-                                        debounce!.cancel();
-                                      }
-                                      setState(() {
-                                        _keyboardDismissed = false;
-                                      });
-                                      ref.invalidate(csToV2AddressProvider);
-                                    }
-                                  },
-                                  keyboardType: TextInputType.text,
-                                  textInputAction: TextInputAction.next,
-                                  controller: saltController,
-                                  obscureText: !uiState.isCesiumIDVisible,
-                                  style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    hintText: 'enterCesiumId'.tr(),
-                                    hintStyle: scaledTextStyle(fontSize: 13),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    suffixIcon: IconButton(
-                                      key: keyCesiumIdVisible,
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(),
-                                      icon: Icon(
-                                        uiState.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
-                                        color: Colors.black,
-                                        size: scaleSize(18),
-                                      ),
-                                      onPressed: () {
-                                        ref.read(g1v1MigrationUiProvider.notifier).toggleCesiumIDVisibility();
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                ScaledSizedBox(height: 8),
-                                TextFormField(
-                                  key: keyCesiumPassword,
-                                  autofocus: true,
-                                  autocorrect: false,
-                                  onChanged: (text) {
-                                    if (debounce?.isActive ?? false) {
-                                      debounce!.cancel();
-                                    }
-                                    debounce = Timer(const Duration(milliseconds: MigrateG1v1.debouneTime), () {
-                                      if (saltController.text != '' && passwordController.text != '') {
-                                        setState(() {
-                                          _keyboardDismissed = false;
-                                        });
-                                        ref.invalidate(csToV2AddressProvider);
-                                      }
-                                    });
-                                  },
-                                  onFieldSubmitted: (text) {
-                                    if (saltController.text != '' && passwordController.text != '') {
-                                      if (debounce?.isActive ?? false) {
-                                        debounce!.cancel();
-                                      }
-                                      setState(() {
-                                        _keyboardDismissed = false;
-                                      });
-                                      ref.invalidate(csToV2AddressProvider);
-                                    }
-                                  },
-                                  keyboardType: TextInputType.text,
-                                  textInputAction: TextInputAction.done,
-                                  controller: passwordController,
-                                  obscureText: !uiState.isCesiumPasswordVisible,
-                                  style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSecondaryContainer),
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    hintText: 'enterCesiumPassword'.tr(),
-                                    hintStyle: scaledTextStyle(fontSize: 13),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    suffixIcon: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(),
-                                      icon: Icon(
-                                        uiState.isCesiumPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                                        color: Colors.black,
-                                        size: scaleSize(18),
-                                      ),
-                                      onPressed: () {
-                                        ref.read(g1v1MigrationUiProvider.notifier).toggleCesiumPasswordVisibility();
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Section des informations du compte
-                        Visibility(
-                          visible:
-                              (ref.watch(csToV2AddressProvider).value?.pubkey ?? '') != '' &&
-                              saltController.text != '' &&
-                              passwordController.text != '',
-                          child: Card(
-                            elevation: 2,
-                            color: context.colorScheme.surfaceContainer,
-                            margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Padding(
-                              padding: EdgeInsets.all(scaleSize(12)),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'accountInformation'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: context.colorScheme.onSecondaryContainer,
-                                    ),
-                                  ),
-                                  ScaledSizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                child: Padding(
+                                  padding: EdgeInsets.all(scaleSize(12)),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
+                                      Icon(Icons.info_outline, color: context.colorScheme.primary, size: scaleSize(24)),
+                                      ScaledSizedBox(width: 12),
                                       Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            GestureDetector(
-                                              key: keyCopyPubkey,
-                                              onTap: () {
-                                                Clipboard.setData(
-                                                  ClipboardData(
-                                                    text: ref.read(csToV2AddressProvider).value?.pubkey ?? '',
-                                                  ),
-                                                );
-                                                SnackbarService.showAddressCopied(context);
-                                              },
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    'v1: ',
-                                                    style: scaledTextStyle(
-                                                      fontSize: 13,
-                                                      color: context.colorScheme.onSecondaryContainer,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    getShortPubkey(
-                                                      ref.watch(csToV2AddressProvider).value?.pubkey ?? '',
-                                                    ),
-                                                    style: scaledTextStyle(
-                                                      fontSize: 13,
-                                                      fontFamily: 'Monospace',
-                                                      color: context.colorScheme.onSecondaryContainer,
-                                                    ),
-                                                  ),
-                                                  ScaledSizedBox(width: 6),
-                                                  Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
-                                                ],
-                                              ),
-                                            ),
-                                            ScaledSizedBox(height: 4),
-                                            GestureDetector(
-                                              key: keyCopyAddress,
-                                              onTap: () {
-                                                Clipboard.setData(ClipboardData(text: convertedAddress));
-                                                SnackbarService.showAddressCopied(context);
-                                              },
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    'v2: ',
-                                                    style: scaledTextStyle(
-                                                      fontSize: 13,
-                                                      color: context.colorScheme.onSecondaryContainer,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    getShortPubkey(convertedAddress),
-                                                    style: scaledTextStyle(
-                                                      fontSize: 13,
-                                                      fontFamily: 'Monospace',
-                                                      color: context.colorScheme.onSecondaryContainer,
-                                                    ),
-                                                  ),
-                                                  ScaledSizedBox(width: 6),
-                                                  Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                        child: Text(
+                                          'migrate_cesium_account_info'.tr(),
+                                          style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
                                         ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                        children: [
-                                          BalanceDisplay(
-                                            value:
-                                                migrationChecks.data?.fromBalance?.transferableBalance ?? BigInt.zero,
-                                            size: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: context.colorScheme.onSecondaryContainer,
-                                          ),
-                                          ScaledSizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              IdentityStatus(address: convertedAddress, color: Colors.black),
-                                              ScaledSizedBox(width: 4),
-                                              Certifications(address: convertedAddress, size: 12),
-                                            ],
-                                          ),
-                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
-
-                        // Section de sélection du portefeuille
-                        if (myWalletProvider.listWallets.length > 1)
-                          Card(
-                            color: context.colorScheme.surfaceContainer,
-                            elevation: 2,
-                            margin: EdgeInsets.only(bottom: scaleSize(8)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Padding(
-                              padding: EdgeInsets.all(scaleSize(12)),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'migrateToThisWallet'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: context.colorScheme.onSecondaryContainer,
-                                    ),
-                                  ),
-                                  ScaledSizedBox(height: 8),
-                                  Container(
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey[300]!),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
-                                    child: DropdownButtonHideUnderline(
-                                      key: keySelectWallet,
-                                      child: DropdownButton(
-                                        isExpanded: true,
-                                        value: selectedWallet.address,
-                                        icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                                        items: myWalletProvider.listWallets.map((wallet) {
-                                          return DropdownMenuItem(
-                                            key: keySelectThisWallet(wallet.address),
-                                            value: wallet.address,
-                                            child: Text(wallet.name!, style: scaledTextStyle(fontSize: 13)),
-                                          );
-                                        }).toList(),
-                                        onChanged: (String? newSelectedWallet) {
-                                          setState(() {
-                                            _selectedWallet = myWalletProvider.getWalletDataByAddress(
-                                              newSelectedWallet!,
-                                            )!;
+                              ScaledSizedBox(height: 8),
+                              // Section des identifiants Cesium
+                              Card(
+                                color: context.colorScheme.surfaceContainer,
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                child: Padding(
+                                  padding: EdgeInsets.all(scaleSize(12)),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'cesiumCredentials'.tr(),
+                                        style: scaledTextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: context.colorScheme.onSecondaryContainer,
+                                        ),
+                                      ),
+                                      ScaledSizedBox(height: 8),
+                                      TextFormField(
+                                        key: keyCesiumId,
+                                        autofocus: true,
+                                        autocorrect: false,
+                                        onChanged: (text) {
+                                          if (debounce?.isActive ?? false) {
+                                            debounce!.cancel();
+                                          }
+                                          debounce = Timer(const Duration(milliseconds: MigrateG1v1.debouneTime), () {
+                                            if (saltController.text != '' && passwordController.text != '') {
+                                              setState(() {
+                                                _keyboardDismissed = false;
+                                              });
+                                              ref.invalidate(csToV2AddressProvider);
+                                            }
                                           });
                                         },
+                                        onFieldSubmitted: (text) {
+                                          if (saltController.text != '' && passwordController.text != '') {
+                                            if (debounce?.isActive ?? false) {
+                                              debounce!.cancel();
+                                            }
+                                            setState(() {
+                                              _keyboardDismissed = false;
+                                            });
+                                            ref.invalidate(csToV2AddressProvider);
+                                          }
+                                        },
+                                        keyboardType: TextInputType.text,
+                                        textInputAction: TextInputAction.next,
+                                        controller: saltController,
+                                        obscureText: !uiState.isCesiumIDVisible,
+                                        style: scaledTextStyle(
+                                          fontSize: 13,
+                                          color: context.colorScheme.onSecondaryContainer,
+                                        ),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          hintText: 'enterCesiumId'.tr(),
+                                          hintStyle: scaledTextStyle(fontSize: 13),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                          suffixIcon: IconButton(
+                                            key: keyCesiumIdVisible,
+                                            padding: EdgeInsets.zero,
+                                            constraints: BoxConstraints(),
+                                            icon: Icon(
+                                              uiState.isCesiumIDVisible ? Icons.visibility_off : Icons.visibility,
+                                              color: Colors.black,
+                                              size: scaleSize(18),
+                                            ),
+                                            onPressed: () {
+                                              ref.read(g1v1MigrationUiProvider.notifier).toggleCesiumIDVisibility();
+                                            },
+                                          ),
+                                        ),
                                       ),
+                                      ScaledSizedBox(height: 8),
+                                      TextFormField(
+                                        key: keyCesiumPassword,
+                                        autofocus: true,
+                                        autocorrect: false,
+                                        onChanged: (text) {
+                                          if (debounce?.isActive ?? false) {
+                                            debounce!.cancel();
+                                          }
+                                          debounce = Timer(const Duration(milliseconds: MigrateG1v1.debouneTime), () {
+                                            if (saltController.text != '' && passwordController.text != '') {
+                                              setState(() {
+                                                _keyboardDismissed = false;
+                                              });
+                                              ref.invalidate(csToV2AddressProvider);
+                                            }
+                                          });
+                                        },
+                                        onFieldSubmitted: (text) {
+                                          if (saltController.text != '' && passwordController.text != '') {
+                                            if (debounce?.isActive ?? false) {
+                                              debounce!.cancel();
+                                            }
+                                            setState(() {
+                                              _keyboardDismissed = false;
+                                            });
+                                            ref.invalidate(csToV2AddressProvider);
+                                          }
+                                        },
+                                        keyboardType: TextInputType.text,
+                                        textInputAction: TextInputAction.done,
+                                        controller: passwordController,
+                                        obscureText: !uiState.isCesiumPasswordVisible,
+                                        style: scaledTextStyle(
+                                          fontSize: 13,
+                                          color: context.colorScheme.onSecondaryContainer,
+                                        ),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          hintText: 'enterCesiumPassword'.tr(),
+                                          hintStyle: scaledTextStyle(fontSize: 13),
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                          suffixIcon: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            constraints: BoxConstraints(),
+                                            icon: Icon(
+                                              uiState.isCesiumPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                                              color: Colors.black,
+                                              size: scaleSize(18),
+                                            ),
+                                            onPressed: () {
+                                              ref
+                                                  .read(g1v1MigrationUiProvider.notifier)
+                                                  .toggleCesiumPasswordVisibility();
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // Section des informations du compte
+                              Visibility(
+                                visible:
+                                    (ref.watch(csToV2AddressProvider).value?.pubkey ?? '') != '' &&
+                                    saltController.text != '' &&
+                                    passwordController.text != '',
+                                child: Card(
+                                  elevation: 2,
+                                  color: context.colorScheme.surfaceContainer,
+                                  margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(scaleSize(12)),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'accountInformation'.tr(),
+                                          style: scaledTextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: context.colorScheme.onSecondaryContainer,
+                                          ),
+                                        ),
+                                        ScaledSizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  GestureDetector(
+                                                    key: keyCopyPubkey,
+                                                    onTap: () {
+                                                      Clipboard.setData(
+                                                        ClipboardData(
+                                                          text: ref.read(csToV2AddressProvider).value?.pubkey ?? '',
+                                                        ),
+                                                      );
+                                                      SnackbarService.showAddressCopied(context);
+                                                    },
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          'v1: ',
+                                                          style: scaledTextStyle(
+                                                            fontSize: 13,
+                                                            color: context.colorScheme.onSecondaryContainer,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          getShortPubkey(
+                                                            ref.watch(csToV2AddressProvider).value?.pubkey ?? '',
+                                                          ),
+                                                          style: scaledTextStyle(
+                                                            fontSize: 13,
+                                                            fontFamily: 'Monospace',
+                                                            color: context.colorScheme.onSecondaryContainer,
+                                                          ),
+                                                        ),
+                                                        ScaledSizedBox(width: 6),
+                                                        Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  ScaledSizedBox(height: 4),
+                                                  GestureDetector(
+                                                    key: keyCopyAddress,
+                                                    onTap: () {
+                                                      Clipboard.setData(ClipboardData(text: convertedAddress));
+                                                      SnackbarService.showAddressCopied(context);
+                                                    },
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          'v2: ',
+                                                          style: scaledTextStyle(
+                                                            fontSize: 13,
+                                                            color: context.colorScheme.onSecondaryContainer,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          getShortPubkey(convertedAddress),
+                                                          style: scaledTextStyle(
+                                                            fontSize: 13,
+                                                            fontFamily: 'Monospace',
+                                                            color: context.colorScheme.onSecondaryContainer,
+                                                          ),
+                                                        ),
+                                                        ScaledSizedBox(width: 6),
+                                                        Icon(Icons.copy, size: scaleSize(14), color: Colors.grey),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                BalanceDisplay(
+                                                  value:
+                                                      migrationChecks.data?.fromBalance?.transferableBalance ??
+                                                      BigInt.zero,
+                                                  size: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: context.colorScheme.onSecondaryContainer,
+                                                ),
+                                                ScaledSizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    IdentityStatus(address: convertedAddress, color: Colors.black),
+                                                    ScaledSizedBox(width: 4),
+                                                    Certifications(address: convertedAddress, size: 12),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
 
-                        // Bouton de validation et message de status
-                        Column(
+                              // Section de sélection du portefeuille
+                              if (myWalletProvider.listWallets.length > 1)
+                                Card(
+                                  color: context.colorScheme.surfaceContainer,
+                                  elevation: 2,
+                                  margin: EdgeInsets.only(bottom: scaleSize(8)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(scaleSize(12)),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'migrateToThisWallet'.tr(),
+                                          style: scaledTextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: context.colorScheme.onSecondaryContainer,
+                                          ),
+                                        ),
+                                        ScaledSizedBox(height: 8),
+                                        Container(
+                                          height: 36,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: Colors.grey[300]!),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
+                                          child: DropdownButtonHideUnderline(
+                                            key: keySelectWallet,
+                                            child: DropdownButton(
+                                              isExpanded: true,
+                                              value: selectedWallet.address,
+                                              icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                                              items: myWalletProvider.listWallets.map((wallet) {
+                                                return DropdownMenuItem(
+                                                  key: keySelectThisWallet(wallet.address),
+                                                  value: wallet.address,
+                                                  child: Text(wallet.name!, style: scaledTextStyle(fontSize: 13)),
+                                                );
+                                              }).toList(),
+                                              onChanged: (String? newSelectedWallet) {
+                                                setState(() {
+                                                  _selectedWallet = myWalletProvider.getWalletDataByAddress(
+                                                    newSelectedWallet!,
+                                                  )!;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Bouton de validation et message de status
+                      Container(
+                        padding: EdgeInsets.all(scaleSize(12)),
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surface,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, -2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            ScaledSizedBox(height: 12),
                             ScaledSizedBox(
                               width: double.infinity,
                               height: 40,
@@ -499,7 +527,7 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                                                 args: [Durt.i.network.symbol, getShortPubkey(selectedWallet.address)],
                                               );
 
-                                        // Afficher le popup de confirmation
+                                        // Display confirmation popup
                                         bool? confirmed = await showConfirmationDialog(
                                           context: context,
                                           title: 'migrationConfirmTitle'.tr(),
@@ -546,15 +574,18 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                               ),
                             ),
                             ScaledSizedBox(height: 6),
-                            Text(
-                              mapValidationErrors(migrationChecks.data!.errors),
-                              textAlign: TextAlign.center,
-                              style: scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: scaleSize(32)),
+                              child: Text(
+                                mapValidationErrors(migrationChecks.data!.errors),
+                                textAlign: TextAlign.center,
+                                style: scaledTextStyle(fontSize: 11, color: Colors.grey[600]),
+                              ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   );
                 },
               );

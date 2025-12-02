@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -108,7 +109,10 @@ class SafeManager {
     }
 
     final newDefaultSafe = remainingSafes.first.number;
-    walletService.setDefaultSafeBoxNumber(newDefaultSafe);
+    _ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(newDefaultSafe);
+    // Invalidate identity providers to ensure they use the new safe
+    _ref.invalidate(idtyWalletAsyncProvider);
+    _ref.invalidate(identityWalletsAsyncProvider);
 
     // Reload wallets for the new default safe
     try {

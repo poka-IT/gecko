@@ -1,5 +1,6 @@
 import 'package:durt2/durt2.dart' hide Provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:durt2/durt2.dart' as durt2;

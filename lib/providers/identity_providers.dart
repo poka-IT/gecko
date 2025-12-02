@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
@@ -105,6 +106,8 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
     // Watch wallet service but don't rebuild on connection changes
     final walletService = ref.watch(walletServiceProvider);
     final storageService = ref.watch(storageServiceProvider);
+    // Watch the default safe number provider to react to safe changes
+    final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
 
     final allSafes = walletService.safeBox.getAll();
     if (allSafes.isEmpty) {
@@ -113,7 +116,6 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
       return null;
     }
 
-    final defaultSafeNumber = walletService.defaultSafeBoxNumber;
     final defaultSafe = allSafes.firstWhere(
       (safe) => safe.number == defaultSafeNumber,
       orElse: () => allSafes.first, // Fallback to first safe if default not found
@@ -222,14 +224,16 @@ final selectedCertificationWalletProvider = StateProvider<String?>((ref) => null
 
 /// Provider for certification state between effective wallet and target address
 /// Automatically updates when balance or certifications change, with caching to avoid UI jumps
-final certStateProvider = AsyncNotifierProvider.family<CertStateNotifier, d.CertState?, String>(
-  () => CertStateNotifier(),
-);
+final certStateProvider = AsyncNotifierProvider.family<CertStateNotifier, d.CertState?, String>(CertStateNotifier.new);
 
 /// Notifier that caches cert state and updates smoothly without UI jumps
-class CertStateNotifier extends FamilyAsyncNotifier<d.CertState?, String> {
+class CertStateNotifier extends AsyncNotifier<d.CertState?> {
+  CertStateNotifier(this.arg);
+  final String arg;
+
   @override
-  Future<d.CertState?> build(String toAddress) async {
+  Future<d.CertState?> build() async {
+    final toAddress = arg;
     // Watch streams for auto-updates but keep previous state during loading
     ref.listen(smartBalanceStreamProvider(toAddress), (previous, next) {
       if (!next.isLoading && next.hasValue) {
@@ -269,11 +273,12 @@ class CertStateNotifier extends FamilyAsyncNotifier<d.CertState?, String> {
 final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
   final walletService = ref.watch(walletServiceProvider);
   final storageService = ref.watch(storageServiceProvider);
+  // Watch the default safe number provider to react to safe changes
+  final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
 
   final allSafes = walletService.safeBox.getAll();
   if (allSafes.isEmpty) return [];
 
-  final defaultSafeNumber = walletService.defaultSafeBoxNumber;
   final defaultSafe = allSafes.firstWhere(
     (safe) => safe.number == defaultSafeNumber,
     orElse: () => allSafes.first, // Fallback to first safe if default not found

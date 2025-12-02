@@ -3,10 +3,12 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart' show Box;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:gecko/routes.dart';
 
 /// Provides the global, initialized instance of [d.Durt].
 ///
-/// Throws an exception if [d.Durt.i] is accessed before initialization.
+/// DuniterStorageService is now always available, even without network connection.
 /// This is the root provider from which all other Durt service providers are derived.
 final durtProvider = Provider<d.Durt>((ref) {
   return d.Durt.i;
@@ -39,9 +41,9 @@ final squidServiceProvider = Provider<d.SquidService>((ref) {
   return ref.watch(durtProvider).squid;
 });
 
-/// Provides the [d.DatapodService] for querying the Datapod GraphQL API.
-final datapodServiceProvider = Provider<d.DatapodService>((ref) {
-  return ref.watch(durtProvider).datapod;
+/// Provides the [d.CesiumPlusService] for querying the Cesium+ pod REST API.
+final cesiumPlusServiceProvider = Provider<d.CesiumPlusService>((ref) {
+  return ref.watch(durtProvider).cesiumPlus;
 });
 
 /// Provides the [d.Utils] service for utility functions.
@@ -62,13 +64,39 @@ final genesisTimeProvider = FutureProvider<DateTime>((ref) async {
 
 /// Provides the current default wallet for reactive UI updates.
 /// This provider watches for changes to the default wallet and rebuilds dependents automatically.
-final defaultWalletProvider = Provider<d.WalletEntity?>((ref) {
+final defaultWalletProvider = Provider<d.WalletEntity>((ref) {
   final walletService = ref.watch(walletServiceProvider);
+  // defaultWallet now always returns a valid wallet or throws a meaningful exception
+  return walletService.defaultWallet;
+});
 
-  try {
-    return walletService.defaultWallet;
-  } catch (e) {
-    // Return null if no default wallet or error
-    return null;
+/// Provider for pending legacy migration data
+/// This is used to store migration data between wallet options screen and onboarding completion
+final pendingLegacyMigrationProvider = StateProvider<LegacyMigrationData?>((ref) => null);
+
+/// State notifier for the default safe box number.
+/// This ensures that identity providers react to safe changes.
+class DefaultSafeBoxNumberNotifier extends StateNotifier<int> {
+  DefaultSafeBoxNumberNotifier(this._walletService) : super(_walletService.defaultSafeBoxNumber);
+
+  final d.WalletService _walletService;
+
+  /// Update the default safe box number and sync with wallet service
+  void setDefaultSafeBoxNumber(int safeBoxNumber) {
+    _walletService.setDefaultSafeBoxNumber(safeBoxNumber);
+    state = safeBoxNumber;
   }
+
+  /// Refresh the state from wallet service (useful after external changes)
+  void refresh() {
+    state = _walletService.defaultSafeBoxNumber;
+  }
+}
+
+/// Reactive provider for the default safe box number.
+/// This provider watches the wallet service and automatically updates when the default safe changes.
+/// Other providers (like identity providers) should watch this to react to safe changes.
+final defaultSafeBoxNumberProvider = StateNotifierProvider<DefaultSafeBoxNumberNotifier, int>((ref) {
+  final walletService = ref.watch(walletServiceProvider);
+  return DefaultSafeBoxNumberNotifier(walletService);
 });

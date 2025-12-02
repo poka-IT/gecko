@@ -4,6 +4,7 @@ import 'package:durt2/durt2.dart'
     show MigrateWalletChecks, MigrateWalletValidationError, Durt, TransactionStatus, TransactionState, DurtKeyPair;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -26,8 +27,6 @@ String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
   }
   // Taking the first error to display. Can be modified to show all.
   return switch (errors.first) {
-    MigrateWalletValidationError.isSmith => 'smithCantMigrateIdentity'.tr(),
-    MigrateWalletValidationError.hasConsumers => 'youMustWaitBeforeCashoutThisAccount'.tr(),
     MigrateWalletValidationError.sourceAccountIsEmpty => 'thisAccountIsEmpty'.tr(),
     MigrateWalletValidationError.cannotMigrateIdentityToIdentity => 'youCannotMigrateIdentityToExistingIdentity'.tr(),
   };
@@ -433,12 +432,29 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                   toKeypair: toKeypair!,
                                 );
 
+                                // Convert to broadcast stream to allow multiple listeners
+                                final broadcastStream = transactionStream.asBroadcastStream();
+
+                                // Listen to transaction stream to invalidate providers on success
+                                // Use mounted check to avoid using ref after widget disposal
+                                broadcastStream.listen((status) {
+                                  if ((status.state == TransactionState.finalized ||
+                                          status.state == TransactionState.inBlock) &&
+                                      mounted) {
+                                    // Invalidate identity-related providers to refresh cache
+                                    ref.invalidate(persistentIdtyStatusStreamProvider(widget.address));
+                                    ref.invalidate(smartIdtyStatusStreamProvider(widget.address));
+                                    // Also invalidate any other identity-related providers
+                                    ref.invalidate(idtyStatusStreamProvider(widget.address));
+                                  }
+                                });
+
                                 Navigator.pop(context);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        TransactionInProgressScreen(transactionStatus: transactionStream),
+                                        TransactionInProgressScreen(transactionStatus: broadcastStream),
                                   ),
                                 );
                               } catch (e) {

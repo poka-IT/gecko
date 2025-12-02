@@ -19,8 +19,8 @@ class MainFlutterWindow: NSWindow {
   }
   
   private func configureWindow() {
-    // Set default window size to 800x800
-    let defaultSize = NSSize(width: 900, height: 800)
+    // Set default window size to 700x800
+    let defaultSize = NSSize(width: 440, height: 800)
     
     // Center the window on screen
     if let screen = NSScreen.main {

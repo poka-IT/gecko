@@ -11,7 +11,7 @@ class MigrationData {
 
   /// Create MigrationData from a Squid "from" migration node (identity migrated FROM this address)
   static Future<MigrationData?> fromSquidMigrationFromNode(
-    d.Query$GetIdentityMigrations$changeOwnerKeyConnection$edges$node node,
+    d.Query$GetIdentityMigrations$changeOwnerKeys$edges$node node,
     DateTime genesisTime,
   ) async {
     try {
@@ -35,7 +35,7 @@ class MigrationData {
 
   /// Create MigrationData from a Squid "to" migration node (identity migrated TO this address)
   static Future<MigrationData?> fromSquidMigrationToNode(
-    d.Query$GetIdentityMigrations$changeOwnerKeyConnection$edges$node node,
+    d.Query$GetIdentityMigrations$changeOwnerKeys$edges$node node,
     DateTime genesisTime,
   ) async {
     try {

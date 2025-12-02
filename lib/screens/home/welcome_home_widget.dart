@@ -7,6 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/screens/home/test_wallet_button.dart';
+import 'package:gecko/screens/onBoarding/import_choice_screen.dart';
 import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
@@ -194,7 +195,11 @@ class WelcomeHomeWidget extends StatelessWidget {
                                               ),
                                             ),
                                         onPressed: () {
-                                          Navigator.pushNamed(context, RouteNames.restoreSafe);
+                                          if (ImportChoiceScreen.enableLegacyLogin) {
+                                            Navigator.pushNamed(context, RouteNames.importChoice);
+                                          } else {
+                                            Navigator.pushNamed(context, RouteNames.restoreSafe);
+                                          }
                                         },
                                         child: Text(
                                           "restoreWallet".tr(),

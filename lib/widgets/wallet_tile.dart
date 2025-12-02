@@ -1,12 +1,11 @@
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
-import 'package:gecko/widgets/smart_avatar.dart';
+import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:provider/provider.dart' as old_provider;
 
@@ -31,10 +30,17 @@ class WalletTile extends StatefulWidget {
 class _WalletTileState extends State<WalletTile> {
   @override
   Widget build(BuildContext context) {
+    // Listen to MyWalletsProvider to get fresh wallet data
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final freshWallet = myWalletProvider.getWalletDataByAddress(widget.repository.address) ?? widget.repository;
+
     // Cache scale size to prevent recalculation during layout
     final padding = EdgeInsets.all(scaleSize(11));
     // Create stable key once
     final gestureKey = ValueKey('wallet_${widget.repository.address}_safe${widget.currentSafe}_${widget.uniqueId}');
+
+    // Check if this wallet is the default wallet
+    final isDefault = myWalletProvider.getDefaultWallet().address == freshWallet.address;
 
     return Padding(
       padding: padding,
@@ -44,7 +50,7 @@ class _WalletTileState extends State<WalletTile> {
           Navigator.pushNamed(
             context,
             RouteNames.walletOptions,
-            arguments: WalletOptionsArguments(wallet: widget.repository),
+            arguments: WalletOptionsArguments(wallet: freshWallet),
           );
         },
         child: ScaledSizedBox(
@@ -70,21 +76,26 @@ class _WalletTileState extends State<WalletTile> {
                       ),
                       color: context.colorScheme.secondary.withValues(alpha: context.isDarkTheme ? 1 : 0.3),
                     ),
-                    child: widget.repository.imagePath == null || widget.repository.imagePath == ''
+                    child: freshWallet.imagePath == null || freshWallet.imagePath == ''
                         ? Padding(
-                            padding: EdgeInsets.all(scaleSize(16)),
+                            padding: EdgeInsets.all(scaleSize(6)),
                             child: Image.asset(
-                              'assets/avatars/${widget.repository.number % 4}.png',
+                              'assets/avatars/${freshWallet.number % 4}.png',
                               alignment: Alignment.bottomCenter,
                             ),
                           )
-                        : Container(
-                            margin: EdgeInsets.all(scaleSize(16)),
-                            child: SmartAvatar(imagePath: widget.repository.imagePath!),
+                        : Padding(
+                            padding: EdgeInsets.all(scaleSize(6)),
+                            child: CachedAvatarImage(
+                              imagePath: freshWallet.imagePath!,
+                              fit: BoxFit.contain,
+                              isCircular: true,
+                            ),
                           ),
                   ),
                 ),
                 Container(
+                  height: scaleSize(60), // Fixed height to prevent layout shift
                   decoration: BoxDecoration(
                     color: isDefault
                         ? context.colorScheme.primary.withValues(alpha: 0.9)
@@ -101,14 +112,14 @@ class _WalletTileState extends State<WalletTile> {
                       Column(
                         children: [
                           NameByAddress(
-                            wallet: widget.repository,
+                            wallet: freshWallet,
                             size: 16,
                             color: isDefault ? Colors.white : context.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                           ScaledSizedBox(height: 4),
                           Balance(
-                            address: widget.repository.address,
+                            address: freshWallet.address,
                             size: 14,
                             color: isDefault ? Colors.white : context.colorScheme.onSurface,
                           ),
@@ -124,8 +135,4 @@ class _WalletTileState extends State<WalletTile> {
       ),
     );
   }
-
-  bool get isDefault =>
-      widget.repository.address ==
-      old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false).getDefaultWallet().address;
 }

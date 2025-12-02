@@ -272,30 +272,32 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Stack(
         children: [
-          TransactionActivityTab(
-            scrollController: _scrollController,
-            filterTranslationY: _filterTranslationY,
-            onNewActivityDetected: () => _onNewNetworkActivityReceived('transactions'),
+          TabBarView(
+            controller: _tabController,
+            children: [
+              TransactionActivityTab(
+                scrollController: _scrollController,
+                filterTranslationY: _filterTranslationY,
+                onNewActivityDetected: () => _onNewNetworkActivityReceived('transactions'),
+              ),
+              IdentityActivityTab(
+                scrollController: _scrollController,
+                filterTranslationY: _filterTranslationY,
+                onNewActivityDetected: () => _onNewNetworkActivityReceived('identities'),
+              ),
+              CertificationActivityTab(
+                scrollController: _scrollController,
+                filterTranslationY: _filterTranslationY,
+                onNewActivityDetected: () => _onNewNetworkActivityReceived('certifications'),
+              ),
+            ],
           ),
-          IdentityActivityTab(
-            scrollController: _scrollController,
-            filterTranslationY: _filterTranslationY,
-            onNewActivityDetected: () => _onNewNetworkActivityReceived('identities'),
-          ),
-          CertificationActivityTab(
-            scrollController: _scrollController,
-            filterTranslationY: _filterTranslationY,
-            onNewActivityDetected: () => _onNewNetworkActivityReceived('certifications'),
-          ),
-        ],
-      ),
-      // New activity indicator (positioned absolutely)
-      floatingActionButton: _showNewActivityIndicator
-          ? Positioned(
-              top: scaleSize(57) + 72 + 16, // Position below tabs and some margin
+          // New activity indicator (positioned absolutely)
+          if (_showNewActivityIndicator)
+            Positioned(
+              top: 16, // Position at top with margin
               left: 16,
               right: 16,
               child: FadeTransition(
@@ -331,9 +333,9 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
                   ),
                 ),
               ),
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
+            ),
+        ],
+      ),
     );
   }
 }

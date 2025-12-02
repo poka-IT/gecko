@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/connection_providers.dart';
@@ -10,6 +11,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/server_filtered_history_provider.dart';
+import 'package:gecko/providers/squid_cache_buster.dart';
 
 /// State class for transaction history
 class TransactionHistoryState {
@@ -52,6 +54,12 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
   String? _lastSeenTransactionId;
 
   TransfersOnlyHistoryNotifier(this.ref, this.address) : super(const TransactionHistoryState()) {
+    // Watch the cache buster to force refresh when Squid endpoint changes
+    ref.listen(squidCacheBusterProvider, (previous, next) {
+      log.i('🔥 Cache buster changed ($previous → $next) - reloading transfers history for $address');
+      loadTransactions();
+    });
+
     loadTransactions();
     _subscribeToAccountActivity();
   }
@@ -253,6 +261,12 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
   String? _lastSeenTransactionId;
 
   CombinedHistoryNotifier(this.ref, this.address) : super(const TransactionHistoryState()) {
+    // Watch the cache buster to force refresh when Squid endpoint changes
+    ref.listen(squidCacheBusterProvider, (previous, next) {
+      log.i('🔥 Cache buster changed ($previous → $next) - reloading combined history for $address');
+      loadTransactions();
+    });
+
     loadTransactions();
     _subscribeToAccountActivity();
   }
@@ -323,9 +337,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
       if (result != null) {
         final newTransactions = result.items
             .map((item) {
-              if (item is d.Query$GetAccountHistory$transferConnection$edges$node) {
+              if (item is d.Query$GetAccountHistory$transfers$edges$node) {
                 return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
-              } else if (item is d.Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory) {
+              } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
                 return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
               } else {
                 log.e('Unknown item type in combined history: ${item.runtimeType}');
@@ -399,9 +413,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
       final transactions = result.items
           .map((item) {
-            if (item is d.Query$GetAccountHistory$transferConnection$edges$node) {
+            if (item is d.Query$GetAccountHistory$transfers$edges$node) {
               return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
-            } else if (item is d.Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory) {
+            } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
               return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
             } else {
               log.e('Unknown item type in combined history: ${item.runtimeType}');
@@ -470,9 +484,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
       final newTransactions = result.items
           .map((item) {
-            if (item is d.Query$GetAccountHistory$transferConnection$edges$node) {
+            if (item is d.Query$GetAccountHistory$transfers$edges$node) {
               return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
-            } else if (item is d.Query$GetUdHistoryViaIdentity$identityConnection$edges$node$udHistory) {
+            } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
               return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
             } else {
               log.e('Unknown item type in combined history: ${item.runtimeType}');

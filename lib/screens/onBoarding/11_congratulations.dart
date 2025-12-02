@@ -10,14 +10,16 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/biometric_provider.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gif_view/gif_view.dart';
 
 class OnboardingStepEleven extends ConsumerStatefulWidget {
-  const OnboardingStepEleven({super.key, this.fromRestore = false});
+  const OnboardingStepEleven({super.key, this.fromRestore = false, this.isLegacyMode = false});
   final bool fromRestore;
+  final bool isLegacyMode;
 
   @override
   ConsumerState<OnboardingStepEleven> createState() => _OnboardingStepElevenState();
@@ -147,7 +149,7 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
 
                       Container(
                         padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
-                        child: finishButton(context),
+                        child: finishButton(context, widget.isLegacyMode),
                       ),
                       ScaledSizedBox(height: isTall ? 40 : 5),
                     ],
@@ -463,7 +465,7 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
   }
 }
 
-Widget finishButton(BuildContext context) {
+Widget finishButton(BuildContext context, [bool isLegacyMode = false]) {
   return ScaledSizedBox(
     width: 340,
     height: 55,
@@ -478,10 +480,14 @@ Widget finishButton(BuildContext context) {
         shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
       ),
       onPressed: () {
+        // Force refresh of wallet providers before navigation to ensure correct safe is loaded
+        final container = ProviderScope.containerOf(context);
+        container.invalidate(defaultWalletProvider);
+
         Navigator.pushNamedAndRemoveUntil(context, RouteNames.myWallets, ModalRoute.withName(RouteNames.home));
       },
       child: Text(
-        "accessMySafe".tr(),
+        isLegacyMode ? "accessMyWallet".tr() : "accessMySafe".tr(),
         style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),

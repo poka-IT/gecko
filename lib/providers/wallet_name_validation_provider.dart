@@ -1,5 +1,5 @@
 import 'package:durt2/durt2.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 
 /// State for wallet name validation

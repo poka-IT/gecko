@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/models/identity_display_item.dart';
@@ -149,7 +150,7 @@ class NetworkIdentitiesNotifier extends StateNotifier<NetworkIdentitiesState> {
 
   /// Generate a consistent identity ID from identity data
   String _generateIdentityId(IdentityDisplayItem identity) {
-    return '${identity.name}_${identity.timestamp.millisecondsSinceEpoch}_${identity.status.name}';
+    return '${identity.name}_${identity.timestamp.millisecondsSinceEpoch}_${identity.status}';
   }
 
   /// Load the first page of network identities

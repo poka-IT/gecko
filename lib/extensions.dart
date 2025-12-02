@@ -26,7 +26,11 @@ extension DismissibleSnackBar on BuildContext {
     // Wrap the original content in a GestureDetector
     final dismissibleSnackBar = SnackBar(
       content: GestureDetector(
-        onTap: () => ScaffoldMessenger.of(this).hideCurrentSnackBar(),
+        onTap: () {
+          // Safely hide the snackbar with null check
+          final scaffoldMessenger = ScaffoldMessenger.maybeOf(this);
+          scaffoldMessenger?.hideCurrentSnackBar();
+        },
         behavior: HitTestBehavior.opaque,
         child: snackBar.content,
       ),
@@ -48,6 +52,8 @@ extension DismissibleSnackBar on BuildContext {
       dismissDirection: snackBar.dismissDirection,
     );
 
-    ScaffoldMessenger.of(this).showSnackBar(dismissibleSnackBar);
+    // Safely show the snackbar with null check
+    final scaffoldMessenger = ScaffoldMessenger.maybeOf(this);
+    scaffoldMessenger?.showSnackBar(dismissibleSnackBar);
   }
 }

@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/services/mnemonic_service.dart';
 
 /// Service for scanning wallet derivations and importing wallets.
@@ -267,7 +268,10 @@ class WalletScanService {
         final allSafes = safeBox.getAll();
         if (allSafes.isNotEmpty) {
           final maxSafeNumber = allSafes.map((s) => s.number).reduce((a, b) => a > b ? a : b);
-          _container.read(walletServiceProvider).setDefaultSafeBoxNumber(maxSafeNumber);
+          _container.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(maxSafeNumber);
+          // Invalidate identity providers to ensure they use the new safe
+          _container.invalidate(idtyWalletAsyncProvider);
+          _container.invalidate(identityWalletsAsyncProvider);
         }
       }
     } catch (e) {

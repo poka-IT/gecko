@@ -4,7 +4,10 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/providers/providers.dart';
 
 /// Connection status notifier that listens to both Duniter and Squid streams
 class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
@@ -25,7 +28,19 @@ class ConnectionStatusNotifier extends StateNotifier<d.ConnectionStatus> {
 
       // Listen to Duniter connection status
       _duniterSubscription = durt.duniterConnectionStatusStream.listen((status) {
+        final previousStatus = _duniterStatus;
         _duniterStatus = status;
+
+        // Invalidate balance providers when going from offline to online
+        if (previousStatus != d.ConnectionStatus.connected && status == d.ConnectionStatus.connected) {
+          _ref.invalidate(persistentBalanceStreamProvider);
+          _ref.invalidate(persistentIdtyStatusStreamProvider);
+
+          // Invalidate genesisTimeProvider to force recalculation after reconnection
+          // This ensures genesisTime is recalculated with the current network connection
+          // and prevents incorrect date calculations (e.g., certification expiration dates)
+          _ref.invalidate(genesisTimeProvider);
+        }
 
         // Update home message based on Duniter status
         final homeMessageNotifier = _ref.read(homeMessageProvider.notifier);
@@ -209,15 +224,15 @@ final squidEndpointTesterProvider = Provider<Future<bool> Function(String)>((ref
       // Ensure the endpoint has the correct format with path
       String testEndpoint = endpoint;
 
-      // If the endpoint doesn't have a path, add the default v1beta1/relay path
-      if (!testEndpoint.contains('/v1beta1/relay') && !testEndpoint.contains('/v1/graphql')) {
+      // If the endpoint doesn't have a path, add the default /v1/graphql path
+      if (!testEndpoint.contains('/v1/graphql')) {
         if (testEndpoint.startsWith('wss://') || testEndpoint.startsWith('ws://')) {
-          testEndpoint = '$testEndpoint/v1beta1/relay';
+          testEndpoint = '$testEndpoint/v1/graphql';
         } else if (testEndpoint.startsWith('https://') || testEndpoint.startsWith('http://')) {
-          testEndpoint = '$testEndpoint/v1beta1/relay';
+          testEndpoint = '$testEndpoint/v1/graphql';
         } else {
           // Add protocol and path
-          testEndpoint = 'wss://$testEndpoint/v1beta1/relay';
+          testEndpoint = 'wss://$testEndpoint/v1/graphql';
         }
       }
 

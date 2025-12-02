@@ -379,12 +379,16 @@ final smartIdtyStatusStreamProvider = Provider.family.autoDispose<AsyncValue<d.I
 
 /// Smart cached provider for account consumers that handles connection changes
 /// This provider caches results and invalidates appropriately
-class AccountConsumersNotifier extends FamilyAsyncNotifier<bool, String> {
+class AccountConsumersNotifier extends AsyncNotifier<bool> {
+  AccountConsumersNotifier(this.arg);
+  final String arg;
+
   bool? _cachedResult;
   Timer? _cacheTimer;
 
   @override
-  Future<bool> build(String address) async {
+  Future<bool> build() async {
+    final address = arg;
     // Clear cache timer when rebuilding
     _cacheTimer?.cancel();
     _cacheTimer = null;
@@ -433,18 +437,22 @@ class AccountConsumersNotifier extends FamilyAsyncNotifier<bool, String> {
 
 /// Smart account consumers provider with intelligent caching
 final smartAccountConsumersProvider = AsyncNotifierProvider.family<AccountConsumersNotifier, bool, String>(
-  () => AccountConsumersNotifier(),
+  AccountConsumersNotifier.new,
 );
 
 /// Hybrid identity status provider using StateNotifier approach
 /// This bypasses the closed stream issue by using direct storage calls and forced refreshes
 /// For existing identities: uses normal streams, for non-existing: uses polling
-class HybridIdtyStatusNotifier extends FamilyAsyncNotifier<d.IdtyStatus, String> {
+class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
+  HybridIdtyStatusNotifier(this.arg);
+  final String arg;
+
   Timer? _refreshTimer;
   StreamSubscription<d.StorageChangeSet>? _idtySubscription;
 
   @override
-  Future<d.IdtyStatus> build(String address) async {
+  Future<d.IdtyStatus> build() async {
+    final address = arg;
     // Cleanup when provider is disposed
     ref.onDispose(() {
       _refreshTimer?.cancel();
@@ -542,5 +550,5 @@ class HybridIdtyStatusNotifier extends FamilyAsyncNotifier<d.IdtyStatus, String>
 }
 
 final hybridIdtyStatusProvider = AsyncNotifierProvider.family<HybridIdtyStatusNotifier, d.IdtyStatus, String>(
-  () => HybridIdtyStatusNotifier(),
+  HybridIdtyStatusNotifier.new,
 );

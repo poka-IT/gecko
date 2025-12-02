@@ -58,16 +58,28 @@ Future<bool> showConfirmationDialog({
   bool hideCancelButton = false,
   bool hideConfirmButton = false,
 }) async {
+  // Check if context is still mounted before showing dialog
+  if (!context.mounted) {
+    log.w('Context not mounted when trying to show confirmation dialog');
+    return false;
+  }
+
   final Color iconColorToShow = customIconColor ?? type.iconColor;
   final Widget iconToShow = customIcon ?? Icon(type.icon, color: iconColorToShow, size: 32);
   final String dialogTitle = title ?? type.title;
   final String confirmTextToShow = confirmText ?? type.confirmText;
 
   // Get bottom app bar provider to hide it while dialog is shown
-  final container = ProviderScope.containerOf(context);
-
-  // Hide bottom app bar when dialog is shown
-  container.read(bottomAppBarProvider.notifier).setDialogVisible(true);
+  // Use try-catch to handle cases where ProviderScope is not available
+  ProviderContainer? container;
+  try {
+    container = ProviderScope.containerOf(context);
+    // Hide bottom app bar when dialog is shown
+    container.read(bottomAppBarProvider.notifier).setDialogVisible(true);
+  } catch (e) {
+    // ProviderScope not found - dialog will work without bottom app bar management
+    log.w('ProviderScope not found in showConfirmationDialog context: $e');
+  }
 
   final result = await showDialog<bool>(
     context: context,
@@ -79,7 +91,7 @@ Future<bool> showConfirmationDialog({
         child: Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: context.colorScheme.surface,
+            color: homeContext.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(color: iconColorToShow.withValues(alpha: 0.1), blurRadius: 20, offset: Offset(0, 10)),
@@ -123,7 +135,7 @@ Future<bool> showConfirmationDialog({
                   if (type != ConfirmationDialogType.error && !hideCancelButton) ...[
                     Expanded(
                       child: TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(homeContext).pop(false),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -139,7 +151,7 @@ Future<bool> showConfirmationDialog({
                   if (!hideConfirmButton) ...[
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
+                        onPressed: () => Navigator.of(homeContext).pop(true),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: iconColorToShow,
                           foregroundColor: Colors.white,
@@ -164,7 +176,12 @@ Future<bool> showConfirmationDialog({
   );
 
   // Show bottom app bar again when dialog is closed
-  container.read(bottomAppBarProvider.notifier).setDialogVisible(false);
+  try {
+    container?.read(bottomAppBarProvider.notifier).setDialogVisible(false);
+  } catch (e) {
+    // Ignore errors when restoring bottom app bar state
+    log.w('Error restoring bottom app bar state: $e');
+  }
 
   return result ?? false;
 }

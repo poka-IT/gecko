@@ -11,15 +11,15 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
-
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
-import 'package:gecko/widgets/smart_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/services/wallet_management_service.dart';
@@ -65,7 +65,7 @@ class WalletHeader extends ConsumerWidget {
             isOwner: isOwner,
             // Provide data if available, otherwise it will be handled gracefully
             idtyStatus: idtyStatusAsync.hasValue ? idtyStatusAsync.value! : IdtyStatus.none,
-            walletBalance: balanceAsync.value,
+            walletBalance: balanceAsync.hasValue ? balanceAsync.value : null,
             identityName: identityNameAsync.hasValue ? identityNameAsync.value : null,
             customImagePath: customImagePath,
             defaultImagePath: defaultImagePath,
@@ -126,26 +126,31 @@ class WalletHeaderContent extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center, // Center vertically within fixed height
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    WalletHeaderAddress(address: address),
+                    Flexible(child: WalletHeaderAddress(address: address)),
                     ScaledSizedBox(height: 6),
                     // Use a placeholder if balance is not yet available
                     if (walletBalance != null)
-                      Balance(address: address, size: 18)
+                      Flexible(child: Balance(address: address, size: 18))
                     else
-                      Container(
-                        height: scaleSize(22),
-                        width: scaleSize(120),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
+                      Flexible(
+                        child: Container(
+                          height: scaleSize(22),
+                          width: scaleSize(120),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
                     ScaledSizedBox(height: 6),
-                    WalletHeaderIdentitySection(
-                      address: address,
-                      idtyStatus: idtyStatus,
-                      identityName: identityName ?? ' ',
+                    Flexible(
+                      child: WalletHeaderIdentitySection(
+                        address: address,
+                        idtyStatus: idtyStatus,
+                        identityName: identityName ?? ' ',
+                      ),
                     ),
                   ],
                 ),
@@ -277,19 +282,24 @@ class _IdentityStatusDisplay extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         // FittedBox only for the name to scale down when too long
-        FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameWidget),
-        AnimatedFadeOutIn<String>(
-          data: statusText[currentStatus]!,
-          duration: const Duration(milliseconds: 150),
-          builder: (value) => Text(
-            value,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: scaleSize(15),
-              color: getStatusColor(currentStatus),
-              fontWeight: currentStatus == IdtyStatus.validated ? FontWeight.w500 : FontWeight.w400,
+        Flexible(
+          child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: nameWidget),
+        ),
+        Flexible(
+          child: AnimatedFadeOutIn<String>(
+            data: statusText[currentStatus]!,
+            duration: const Duration(milliseconds: 150),
+            builder: (value) => Text(
+              value,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: scaleSize(15),
+                color: getStatusColor(currentStatus),
+                fontWeight: currentStatus == IdtyStatus.validated ? FontWeight.w500 : FontWeight.w400,
+              ),
             ),
           ),
         ),
@@ -349,23 +359,44 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
               onTap: widget.isOwner && !_isPickerOpen
                   ? () async {
                       setState(() => _isPickerOpen = true);
-                      final newPath = await WalletManagementService.changeAvatar(widget.address);
-                      setState(() {
-                        _newCustomImagePath = newPath;
-                        _isPickerOpen = false;
-                      });
-                      // Notify MyWalletsProvider to update UI components
-                      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-                      myWalletProvider.reload();
+
+                      // Ask for PIN code first if needed
+                      final pinCodeValid = await PinCodeService.askPinCode();
+
+                      if (pinCodeValid) {
+                        final newPath = await WalletManagementService.changeAvatar(
+                          widget.address,
+                          pinCode: PinCodeService.pinCode,
+                        );
+                        setState(() {
+                          // Only update if newPath is not empty (not cancelled)
+                          if (newPath.isNotEmpty) {
+                            _newCustomImagePath = newPath;
+                          }
+                          _isPickerOpen = false;
+                        });
+                        // Reload wallets from database to update UI everywhere
+                        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+                        await myWalletProvider.readAllWallets();
+                      } else {
+                        setState(() => _isPickerOpen = false);
+                      }
                     }
                   : null,
               customBorder: const CircleBorder(),
               child: ClipOval(
-                child: _newCustomImagePath.isEmpty
+                child: _newCustomImagePath.isEmpty || _newCustomImagePath.startsWith('assets/')
                     ? (widget.defaultImagePath != null
                           ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
                           : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName))
-                    : SmartAvatar(imagePath: _newCustomImagePath),
+                    : CachedAvatarImage(
+                        imagePath: _newCustomImagePath,
+                        fit: BoxFit.cover,
+                        isCircular: false, // Already in ClipOval
+                        fallback: widget.defaultImagePath != null
+                            ? Image.asset(widget.defaultImagePath!, fit: BoxFit.cover)
+                            : DatapodAvatar(address: widget.address, size: avatarSize, name: widget.identityName),
+                      ),
               ),
             ),
           ),

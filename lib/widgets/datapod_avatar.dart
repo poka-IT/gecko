@@ -5,7 +5,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/avatar_providers.dart';
 import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:gecko/widgets/smart_avatar.dart';
+import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:provider/provider.dart' as old_provider;
 
 class DatapodAvatar extends ConsumerWidget {
@@ -17,7 +17,7 @@ class DatapodAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context); // listen: true by default
     final isLocalWallet = myWalletProvider.isOwner(address);
 
     return Container(
@@ -28,21 +28,32 @@ class DatapodAvatar extends ConsumerWidget {
       child: ScaledSizedBox(
         width: size,
         height: size,
-        child: isLocalWallet ? _buildLocalWalletAvatar() : _buildRemoteAvatar(ref),
+        child: isLocalWallet ? _buildLocalWalletAvatar(context) : _buildRemoteAvatar(ref),
       ),
     );
   }
 
-  Widget _buildLocalWalletAvatar() {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
+  Widget _buildLocalWalletAvatar(BuildContext context) {
+    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context); // listen: true
     final wallet = myWalletProvider.getWalletDataByAddress(address);
 
     if (wallet?.imagePath != null && wallet!.imagePath!.isNotEmpty) {
-      return SmartAvatar(imagePath: wallet.imagePath!, width: size, height: size);
+      // For local wallets, ALWAYS show local file (not Cesium+)
+      // Use CachedAvatarImage for optimal performance
+      return CachedAvatarImage(
+        key: ValueKey(wallet.imagePath),
+        imagePath: wallet.imagePath!,
+        fit: BoxFit.cover,
+        isCircular: true,
+      );
     } else {
       // Use default avatar based on wallet number
       final walletNumber = wallet?.number ?? 0;
-      return SmartAvatar(imagePath: 'assets/avatars/${walletNumber % 4}.png', width: size, height: size);
+      return CachedAvatarImage(
+        imagePath: 'assets/avatars/${walletNumber % 4}.png',
+        fit: BoxFit.cover,
+        isCircular: true,
+      );
     }
   }
 
@@ -50,27 +61,33 @@ class DatapodAvatar extends ConsumerWidget {
     final avatarAsync = ref.watch(avatarProvider(address));
 
     return ClipOval(
-      child: avatarAsync.when(
-        data: (avatarBytes) {
-          if (avatarBytes != null) {
-            return Image.memory(
-              avatarBytes,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                // If image loading fails, show default avatar
-                return _buildDefaultAvatar();
-              },
-            );
-          } else {
-            // No avatar found, show default
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        child: avatarAsync.when(
+          data: (avatarBytes) {
+            if (avatarBytes != null) {
+              return Image.memory(
+                key: ValueKey('avatar_loaded_$address'),
+                avatarBytes,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // If image loading fails, show default avatar
+                  return _buildDefaultAvatar();
+                },
+              );
+            } else {
+              // No avatar found, show default
+              return _buildDefaultAvatar();
+            }
+          },
+          loading: () => _buildDefaultAvatar(), // Show default avatar while loading instead of spinner
+          error: (error, stackTrace) {
+            // Error occurred, show default avatar
             return _buildDefaultAvatar();
-          }
-        },
-        loading: () => _buildLoadingAvatar(),
-        error: (error, stackTrace) {
-          // Error occurred, show default avatar
-          return _buildDefaultAvatar();
-        },
+          },
+        ),
       ),
     );
   }
@@ -79,6 +96,7 @@ class DatapodAvatar extends ConsumerWidget {
     // If a name is provided, show name circle instead of icon_user.png
     if (name != null && name!.isNotEmpty) {
       return CircleAvatar(
+        key: ValueKey('avatar_default_name_$address'),
         radius: size / 2,
         backgroundColor: Theme.of(homeContext).colorScheme.primary.withValues(alpha: 0.1),
         child: Text(
@@ -91,24 +109,11 @@ class DatapodAvatar extends ConsumerWidget {
         ),
       );
     }
-    return Image.asset('assets/icon_user.png', height: size, fit: BoxFit.fill);
-  }
-
-  Widget _buildLoadingAvatar() {
-    return Container(
-      width: size,
+    return Image.asset(
+      'assets/icon_user.png',
+      key: ValueKey('avatar_default_icon_$address'),
       height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey[300]),
-      child: Center(
-        child: SizedBox(
-          width: size * 0.4,
-          height: size * 0.4,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[600]!),
-          ),
-        ),
-      ),
+      fit: BoxFit.fill,
     );
   }
 }

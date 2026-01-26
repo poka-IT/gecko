@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -16,12 +16,10 @@ class ConfirmChangePinScreen extends ConsumerStatefulWidget {
   const ConfirmChangePinScreen({
     super.key,
     required this.walletName,
-    required this.walletProvider,
     required this.newPinCode,
   });
 
   final String walletName;
-  final MyWalletsProvider walletProvider;
   final String newPinCode;
 
   @override
@@ -113,7 +111,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
                 return;
               }
 
-              final defaultWallet = widget.walletProvider.getDefaultWallet();
+              final defaultWallet = ref.read(defaultWalletProvider);
 
               await ref
                   .read(walletServiceProvider)
@@ -123,9 +121,8 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
               PinCodeService.pinCode = pin;
 
               // Recharger les wallets avec le nouveau PIN
-              final currentSafe = widget.walletProvider.getCurrentSafe;
-              await widget.walletProvider.readAllWallets(ref: ref, safeBoxNumber: currentSafe);
-              widget.walletProvider.reload();
+              final currentSafe = ref.read(currentSafeNumberProvider);
+              await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
               Navigator.of(context)
                 ..pop() // Ferme l'écran de confirmation

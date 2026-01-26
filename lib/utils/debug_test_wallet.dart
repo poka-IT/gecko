@@ -6,8 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
-import 'package:provider/provider.dart' as old_provider;
+import 'package:gecko/providers/wallets_provider.dart';
 
 /// Test wallet configuration
 class TestWalletConfig {
@@ -74,7 +73,7 @@ class DebugTestWalletService {
       // Get the required providers
       final container = ProviderContainer();
       final walletService = container.read(walletServiceProvider);
-      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+      final currentSafe = container.read(currentSafeNumberProvider);
 
       // Show loading dialog
       _showLoadingDialog(context);
@@ -87,7 +86,7 @@ class DebugTestWalletService {
       );
 
       // 2. Get the safe reference
-      final safe = walletService.getSafeBox(myWalletProvider.getCurrentSafe);
+      final safe = walletService.getSafeBox(currentSafe);
 
       // 3. Create all wallets
       final List<WalletEntity> wallets = [];
@@ -109,9 +108,9 @@ class DebugTestWalletService {
       // 5. Set Alice as default wallet (first wallet)
       await walletService.setDefaultAddress(wallets.first.address);
 
-      // 6. Reload wallets list
-      await myWalletProvider.readAllWallets();
-      myWalletProvider.reload();
+      // 6. Reload wallets list using Riverpod provider
+      await container.read(walletsListProvider.notifier).loadWallets();
+      container.read(walletsListProvider.notifier).refresh();
 
       // Close loading dialog
       Navigator.pop(context);

@@ -6,12 +6,11 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/myWallets/migrate_safe_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class MigrateSafeScreen extends ConsumerStatefulWidget {
   const MigrateSafeScreen({super.key});
@@ -26,12 +25,13 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
   bool _isLoading = false;
   String _validationMessage = '';
   List<WalletEntity> _walletsToMigrate = [];
+  bool _isInitialized = false;
 
-  @override
-  void initState() {
-    super.initState();
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    _walletsToMigrate = myWalletProvider.listWallets;
+  void _initWallets() {
+    if (!_isInitialized) {
+      _walletsToMigrate = ref.read(walletsListProvider).wallets;
+      _isInitialized = true;
+    }
   }
 
   Future<void> _validateMnemonic(String newMnemonic) async {
@@ -141,6 +141,7 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _initWallets();
     bool isSmall = !isTall;
     return Scaffold(
       backgroundColor: context.colorScheme.surface,

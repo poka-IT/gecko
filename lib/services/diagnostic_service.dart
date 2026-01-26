@@ -6,9 +6,8 @@ import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
-import 'package:provider/provider.dart' as flutter_provider;
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/providers/providers.dart';
 
@@ -37,7 +36,7 @@ class DiagnosticService {
         diagnosticData['providers_state'] = _getProviderStates(context, ref);
         diagnosticData['riverpod_state'] = _getRiverpodStates(ref);
         diagnosticData['durt_storage_status'] = _getDurtStorageStatus(ref);
-        diagnosticData['authentication_debug'] = _getAuthenticationDebugInfo(context);
+        diagnosticData['authentication_debug'] = _getAuthenticationDebugInfo(ref);
         diagnosticData['indexer_debug'] = _getIndexerDebugInfo(ref);
       }
 
@@ -102,17 +101,18 @@ class DiagnosticService {
     final providerStates = <String, dynamic>{};
 
     try {
-      // Flutter Provider states
+      // Riverpod Provider states
       final homeMessage = ref.read(homeMessageProvider);
       providerStates['home'] = {'message': homeMessage};
 
-      final myWalletsProvider = flutter_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+      final walletsState = ref.read(walletsListProvider);
+      final pinState = ref.read(pinStateProvider);
       providerStates['wallets'] = {
-        'count': myWalletsProvider.listWallets.length,
-        'exists': myWalletsProvider.isWalletsExists,
-        'current_safe': myWalletsProvider.getCurrentSafe,
-        'pin_valid': myWalletsProvider.isPinValid,
-        'pin_loading': myWalletsProvider.isPinLoading,
+        'count': walletsState.wallets.length,
+        'exists': ref.read(isWalletsExistsProvider),
+        'current_safe': walletsState.currentSafeNumber,
+        'pin_valid': pinState.isValid,
+        'pin_loading': pinState.isLoading,
       };
 
       final connectionStatus = ref.read(connectionStatusProvider);
@@ -167,25 +167,28 @@ class DiagnosticService {
     return riverpodStates;
   }
 
-  Map<String, dynamic> _getAuthenticationDebugInfo(BuildContext context) {
+  Map<String, dynamic> _getAuthenticationDebugInfo(WidgetRef ref) {
     final authInfo = <String, dynamic>{};
 
     try {
-      // PIN and authentication state
-      final myWalletsProvider = flutter_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+      // PIN and authentication state using Riverpod providers
+      final pinState = ref.read(pinStateProvider);
+      final walletsState = ref.read(walletsListProvider);
+      final dragDropState = ref.read(dragDropProvider);
+
       authInfo['pin_state'] = {
-        'is_valid': myWalletsProvider.isPinValid,
-        'is_loading': myWalletsProvider.isPinLoading,
-        'pin_length': myWalletsProvider.pinLenght ?? 'null',
+        'is_valid': pinState.isValid,
+        'is_loading': pinState.isLoading,
+        'pin_length': pinState.pinLength ?? 'null',
         'current_pin_code_empty': PinCodeService.pinCode.isEmpty,
       };
 
       // Safe and wallet state
       authInfo['safe_state'] = {
-        'current_safe': myWalletsProvider.getCurrentSafe,
-        'wallets_exist': myWalletsProvider.isWalletsExists,
-        'wallets_count': myWalletsProvider.listWallets.length,
-        'last_fly_by': myWalletsProvider.lastFlyBy?.address ?? 'null',
+        'current_safe': walletsState.currentSafeNumber,
+        'wallets_exist': ref.read(isWalletsExistsProvider),
+        'wallets_count': walletsState.wallets.length,
+        'last_fly_by': dragDropState.lastFlyBy?.address ?? 'null',
       };
 
       // Database state

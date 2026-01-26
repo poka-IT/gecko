@@ -13,14 +13,13 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/utils/debug_test_wallet.dart';
@@ -52,8 +51,6 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     final (idtyStatusValue, balanceResult, certData) = await (
       ref.read(storageServiceProvider).getIdtyStatus(widget.address),
       ref.read(storageServiceProvider).getBalance(widget.address),
@@ -62,7 +59,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatusValue != IdtyStatus.none,
-      isOwner: myWalletProvider.isOwner(address),
+      isOwner: ref.read(isOwnerProvider(address)),
       walletName: ref.read(squidServiceProvider).walletNameIndexer[address],
       balance: balanceResult.transferableBalance,
       certsReceived: certData.receivedCount,

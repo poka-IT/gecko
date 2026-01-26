@@ -6,11 +6,10 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class WalletSelectionScreen extends ConsumerStatefulWidget {
   const WalletSelectionScreen({super.key, required this.migrationData, required this.pinCode});
@@ -44,9 +43,8 @@ class _WalletSelectionScreenState extends ConsumerState<WalletSelectionScreen> {
         final targetSafe = walletService.getSafeBox(widget.migrationData.targetSafeNumber!);
         allWallets = targetSafe.wallets.toList();
       } else {
-        // Load wallets from the current safe (existing behavior)
-        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-        allWallets = myWalletProvider.listWallets;
+        // Load wallets from the current safe using Riverpod provider
+        allWallets = ref.read(walletsListProvider).wallets;
       }
 
       final filteredWallets = <WalletEntity>[];

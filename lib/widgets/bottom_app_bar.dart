@@ -6,13 +6,12 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 /// Global widget that shows bottom app bar when appropriate
 class GlobalBottomAppBar extends ConsumerWidget {
@@ -27,8 +26,8 @@ class GlobalBottomAppBar extends ConsumerWidget {
       }
 
       // Also check if wallets exist - never show bottom bar without safes
-      final myWalletsProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-      if (!myWalletsProvider.isWalletsExists) {
+      final isWalletsExists = ref.watch(isWalletsExistsProvider);
+      if (!isWalletsExists) {
         return const SizedBox.shrink(); // Hidden - no safes
       }
 
@@ -36,19 +35,16 @@ class GlobalBottomAppBar extends ConsumerWidget {
 
       // Special case for wallets home with drag functionality
       if (currentRoute == RouteNames.myWallets) {
-        // Use Consumer only for MyWalletsProvider to listen to drag state changes
-        return old_provider.Consumer<MyWalletsProvider>(
-          builder: (context, myWalletsProviderDrag, child) {
-            return myWalletsProviderDrag.lastFlyBy == null
-                ? const _GeckoBottomAppBar(actualRoute: 'safeHome')
-                : SafeArea(
-                    child: DragWalletsInfo(
-                      lastFlyBy: myWalletsProviderDrag.lastFlyBy!,
-                      dragAddress: myWalletsProviderDrag.dragAddress!,
-                    ),
-                  );
-          },
-        );
+        // Watch drag state for changes
+        final dragState = ref.watch(dragDropProvider);
+        return dragState.lastFlyBy == null
+            ? const _GeckoBottomAppBar(actualRoute: 'safeHome')
+            : SafeArea(
+                child: DragWalletsInfo(
+                  lastFlyBy: dragState.lastFlyBy!,
+                  dragAddress: dragState.dragAddress!,
+                ),
+              );
       }
 
       // Default bottom app bar
@@ -82,8 +78,8 @@ class PageWithBottomPaddingWrapper extends ConsumerWidget {
         return child;
       }
 
-      final myWalletsProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-      if (!myWalletsProvider.isWalletsExists) {
+      final isWalletsExists = ref.watch(isWalletsExistsProvider);
+      if (!isWalletsExists) {
         return child;
       }
 
@@ -123,13 +119,13 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletsState = ref.watch(walletsListProvider);
 
     final size = MediaQuery.of(context).size;
     final currentRoute = ref.watch(currentRouteProvider);
 
     // Check if we're in mono wallet mode (only one wallet in the safe)
-    final isMonoWalletMode = myWalletProvider.listWallets.length == 1;
+    final isMonoWalletMode = walletsState.wallets.length == 1;
 
     // Lock action when on myWallets route OR when on walletOptions in mono wallet mode
     final lockAction =

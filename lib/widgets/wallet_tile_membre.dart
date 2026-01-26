@@ -1,33 +1,30 @@
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:responsive_framework/responsive_framework.dart';
 
-class WalletTileMembre extends StatefulWidget {
+class WalletTileMembre extends ConsumerWidget {
   const WalletTileMembre({super.key, required this.wallet, this.attachTutorialKey = false});
 
   final WalletEntity wallet;
   final bool attachTutorialKey;
 
   @override
-  State<WalletTileMembre> createState() => _WalletTileMembreState();
-}
-
-class _WalletTileMembreState extends State<WalletTileMembre> {
-  @override
-  Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    final freshWallet = myWalletProvider.getWalletDataByAddress(widget.wallet.address) ?? widget.wallet;
-    final currentSafe = myWalletProvider.getCurrentSafe;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final freshWallet = ref.watch(walletByAddressProvider(wallet.address)) ?? wallet;
+    final currentSafe = ref.watch(currentSafeNumberProvider);
+    final defaultWallet = ref.watch(defaultWalletProvider);
+    final isDefault = freshWallet.address == defaultWallet.address;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
@@ -43,7 +40,7 @@ class _WalletTileMembreState extends State<WalletTileMembre> {
         child: MaxWidthBox(
           maxWidth: 400,
           child: ScaledSizedBox(
-            key: widget.attachTutorialKey ? ValueKey('tutorial_membre_${freshWallet.address}_safe$currentSafe') : null,
+            key: attachTutorialKey ? ValueKey('tutorial_membre_${freshWallet.address}_safe$currentSafe') : null,
             height: 180,
             child: Container(
               decoration: BoxDecoration(
@@ -141,11 +138,5 @@ class _WalletTileMembreState extends State<WalletTileMembre> {
         ),
       ),
     );
-  }
-
-  bool get isDefault {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final freshWallet = myWalletProvider.getWalletDataByAddress(widget.wallet.address) ?? widget.wallet;
-    return freshWallet.address == myWalletProvider.getDefaultWallet().address;
   }
 }

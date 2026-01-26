@@ -5,10 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 /// Service for handling complex wallet deletion operations
 ///
@@ -29,8 +27,7 @@ class WalletDeletionService {
   static Future<int> deleteWallet(BuildContext context, WalletEntity wallet) async {
     // Get required providers
     final container = riverpod.ProviderContainer();
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final defaultWallet = myWalletProvider.getDefaultWallet();
+    final defaultWallet = container.read(defaultWalletProvider);
 
     try {
       final walletBalance = await container.read(storageServiceProvider).getBalance(wallet.address);

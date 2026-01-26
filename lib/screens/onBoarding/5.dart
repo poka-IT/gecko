@@ -10,14 +10,13 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class OnboardingStepFive extends ConsumerStatefulWidget {
   const OnboardingStepFive({super.key, this.skipIntro = false});
@@ -352,7 +351,6 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
   }
 
   Widget nextButton(BuildContext context, String text, bool isFast, bool skipIntro) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     return ScaledSizedBox(
       width: 350,
       height: 55,
@@ -370,8 +368,8 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
             ? () {
                 final mnemonicState = ref.read(mnemonicStateProvider);
                 if (mnemonicState.mnemonicResult != null) {
-                  // Store mnemonic in old provider for compatibility with next screen
-                  myWalletProvider.mnemonic = mnemonicState.mnemonicResult!.displayMnemonic;
+                  // Store mnemonic in derivation state for next screen
+                  ref.read(derivationStateProvider.notifier).setMnemonic(mnemonicState.mnemonicResult!.displayMnemonic);
 
                   AppNavigator.pushWithFader(
                     context,

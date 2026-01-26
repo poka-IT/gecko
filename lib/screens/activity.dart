@@ -12,10 +12,9 @@ import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/widgets/history_query.dart';
 
-import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/compact_wallet_header.dart';
 import 'package:gecko/models/wallet_header_data.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 
@@ -59,8 +58,6 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     final (idtyStatusValue, balanceResult, certData) = await (
       ref.read(storageServiceProvider).getIdtyStatus(widget.address),
       ref.read(storageServiceProvider).getBalance(widget.address),
@@ -69,7 +66,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
 
     final data = WalletHeaderData(
       hasIdentity: idtyStatusValue.hasIdentity,
-      isOwner: myWalletProvider.isOwner(widget.address),
+      isOwner: ref.read(isOwnerProvider(widget.address)),
       walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
       balance: balanceResult.transferableBalance,
       certsReceived: certData.receivedCount,

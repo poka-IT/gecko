@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -23,7 +23,6 @@ import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/balance_display.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 // Helper pour accéder aux services Riverpod depuis ce fichier
@@ -73,7 +72,7 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletsList = ref.watch(walletsListProvider).wallets;
 
     // Initialize selected wallet only once or when explicitly changed
 
@@ -427,7 +426,7 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                               ),
 
                               // Section de sélection du portefeuille
-                              if (myWalletProvider.listWallets.length > 1)
+                              if (walletsList.length > 1)
                                 Card(
                                   color: context.colorScheme.surfaceContainer,
                                   elevation: 2,
@@ -460,7 +459,7 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                                               isExpanded: true,
                                               value: selectedWallet.address,
                                               icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                                              items: myWalletProvider.listWallets.map((wallet) {
+                                              items: walletsList.map((wallet) {
                                                 return DropdownMenuItem(
                                                   key: keySelectThisWallet(wallet.address),
                                                   value: wallet.address,
@@ -469,9 +468,9 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                                               }).toList(),
                                               onChanged: (String? newSelectedWallet) {
                                                 setState(() {
-                                                  _selectedWallet = myWalletProvider.getWalletDataByAddress(
-                                                    newSelectedWallet!,
-                                                  )!;
+                                                  _selectedWallet = ref.read(
+                                                    walletByAddressProvider(newSelectedWallet!),
+                                                  );
                                                 });
                                               },
                                             ),

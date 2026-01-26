@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/myWallets/confirm_change_pin.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
@@ -13,10 +12,9 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ChangePinScreen extends StatefulWidget {
-  const ChangePinScreen({super.key, required this.walletName, required this.walletProvider});
+  const ChangePinScreen({super.key, required this.walletName});
 
   final String walletName;
-  final MyWalletsProvider walletProvider;
 
   @override
   State<ChangePinScreen> createState() => _ChangePinScreenState();
@@ -108,7 +106,6 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                     FaderTransition(
                       page: ConfirmChangePinScreen(
                         walletName: widget.walletName,
-                        walletProvider: widget.walletProvider,
                         newPinCode: pin,
                       ),
                       isFast: false,

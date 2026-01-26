@@ -7,11 +7,10 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 /// Safe management operations provider
 final safeManagerProvider = Provider<SafeManager>((ref) {
@@ -30,10 +29,6 @@ class SafeManager {
 
     if (!(confirmed ?? false)) return;
 
-    // Get the legacy wallet provider for now (until it's migrated)
-    // ignore: use_build_context_synchronously
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     try {
       // Delete the safe from storage
       await _ref.read(walletServiceProvider).deleteSafe(safe.number);
@@ -44,7 +39,7 @@ class SafeManager {
       // Handle navigation based on whether safes remain
       final walletService = _ref.read(walletServiceProvider);
       // ignore: use_build_context_synchronously
-      await _handlePostDeletionNavigation(context, walletService, myWalletProvider);
+      await _handlePostDeletionNavigation(context, walletService);
 
       // Add a small delay to ensure all async operations complete
       await Future.delayed(const Duration(milliseconds: 50));
@@ -66,12 +61,11 @@ class SafeManager {
   Future<void> _handlePostDeletionNavigation(
     BuildContext context,
     dynamic walletService,
-    MyWalletsProvider myWalletProvider,
   ) async {
     if (walletService.safeBox.isEmpty()) {
-      await _handleNoSafesRemaining(context, walletService, myWalletProvider);
+      await _handleNoSafesRemaining(context, walletService);
     } else {
-      await _handleSafesRemaining(context, walletService, myWalletProvider);
+      await _handleSafesRemaining(context, walletService);
     }
   }
 
@@ -79,10 +73,9 @@ class SafeManager {
   Future<void> _handleNoSafesRemaining(
     BuildContext context,
     dynamic walletService,
-    MyWalletsProvider myWalletProvider,
   ) async {
     walletService.setDefaultSafeBoxNumber(-1);
-    myWalletProvider.listWallets = [];
+    _ref.read(walletsListProvider.notifier).clear();
 
     // Force refresh of biometric provider after safe state changes
     await _ref.read(biometricProvider.notifier).refresh();
@@ -97,14 +90,13 @@ class SafeManager {
   Future<void> _handleSafesRemaining(
     BuildContext context,
     dynamic walletService,
-    MyWalletsProvider myWalletProvider,
   ) async {
     final remainingSafes = walletService.safeBox.getAll();
 
     if (remainingSafes.isEmpty) {
       // Edge case: no safes left after deletion (race condition)
       log.w('No remaining safes found after deletion');
-      await _handleNoSafesRemaining(context, walletService, myWalletProvider);
+      await _handleNoSafesRemaining(context, walletService);
       return;
     }
 
@@ -116,11 +108,11 @@ class SafeManager {
 
     // Reload wallets for the new default safe
     try {
-      await myWalletProvider.readAllWallets(safeBoxNumber: newDefaultSafe);
+      await _ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: newDefaultSafe);
     } catch (e) {
       log.e('Failed to reload wallets for safe $newDefaultSafe: $e');
       // If we can't reload wallets, at least clear the list to prevent stale data
-      myWalletProvider.listWallets = [];
+      _ref.read(walletsListProvider.notifier).clear();
     }
 
     // Force refresh of biometric provider after safe state changes

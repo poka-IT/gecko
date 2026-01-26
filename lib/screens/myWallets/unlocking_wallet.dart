@@ -15,12 +15,11 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/pin_security_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/pin_security_service.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/globals.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
@@ -155,7 +154,8 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
   /// Handle PIN completion (extracted from PIN form for reuse with biometric auth)
   Future<void> _handlePinCompletion(String pin, {bool fromBiometric = false}) async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final pinNotifier = ref.read(pinStateProvider.notifier);
+    final derivationNotifier = ref.read(derivationStateProvider.notifier);
     final securityState = ref.read(pinSecurityProvider);
 
     // Check if safe is currently locked out
@@ -165,7 +165,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     }
 
     try {
-      myWalletProvider.isPinLoading = true;
+      pinNotifier.setLoading(true);
       PinCodeService.pinCode = pin.toUpperCase();
 
       // Add timeout to the entire unlock operation
@@ -188,9 +188,10 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           setState(() {
             pinColor = Colors.red[600]!;
           });
-          myWalletProvider.isPinLoading = false;
-          myWalletProvider.isPinValid = false;
-          PinCodeService.pinCode = myWalletProvider.mnemonic = '';
+          pinNotifier.setLoading(false);
+          pinNotifier.setValid(false);
+          PinCodeService.pinCode = '';
+          derivationNotifier.clearMnemonic();
           if (!fromBiometric) {
             enterPin.text = '';
             pinFocus.requestFocus();
@@ -199,7 +200,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           // Reset failed attempts on successful unlock
           await ref.read(pinSecurityProvider.notifier).resetFailedAttempts(currentSafeNumber);
 
-          myWalletProvider.isPinValid = true;
+          pinNotifier.setValid(true);
           setState(() {
             pinColor = Colors.green[400]!;
           });
@@ -208,7 +209,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafeNumber);
 
           // Invalidate providers after changing default safe to fix state synchronization
-          myWalletProvider.invalidateProviders();
+          ref.read(walletActionsProvider.notifier).invalidateProviders();
 
           // Invalidate identity providers to ensure they use the new safe
           ref.invalidate(idtyWalletAsyncProvider);
@@ -217,7 +218,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           // Wait for Durt to be connected and wallets to be loaded before allowing access
           await _waitForSystemReady();
 
-          myWalletProvider.isPinLoading = false;
+          pinNotifier.setLoading(false);
           PinCodeService.debounceResetPinCode();
 
           // ALWAYS return success and let the caller decide navigation
@@ -234,9 +235,10 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       );
     } catch (e) {
       // Comprehensive error handling
-      myWalletProvider.isPinLoading = false;
-      myWalletProvider.isPinValid = false;
-      PinCodeService.pinCode = myWalletProvider.mnemonic = '';
+      pinNotifier.setLoading(false);
+      pinNotifier.setValid(false);
+      PinCodeService.pinCode = '';
+      derivationNotifier.clearMnemonic();
       if (!fromBiometric) {
         enterPin.text = '';
       }
@@ -283,8 +285,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   }
 
   Future<void> _waitForSystemReady() async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     // Wait for both Durt connection and storage initialization with total timeout of 2 seconds
     final systemTimeout = DateTime.now().add(const Duration(seconds: 2));
     bool isDurtConnected = false;
@@ -322,12 +322,12 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       );
     }
 
-    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafeNumber, ref: ref);
+    await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafeNumber);
   }
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final pinState = ref.watch(pinStateProvider);
     final securityState = ref.watch(pinSecurityProvider);
 
     // Handle lockout state changes
@@ -349,8 +349,8 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
-        myWalletProvider.isPinValid = false;
-        myWalletProvider.isPinLoading = true;
+        ref.read(pinStateProvider.notifier).setValid(false);
+        ref.read(pinStateProvider.notifier).setLoading(true);
       },
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
@@ -365,8 +365,8 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                     key: keyPopButton,
                     icon: Icon(Icons.arrow_back, color: Colors.black, size: scaleSize(28)),
                     onPressed: () {
-                      myWalletProvider.isPinValid = false;
-                      myWalletProvider.isPinLoading = true;
+                      ref.read(pinStateProvider.notifier).setValid(false);
+                      ref.read(pinStateProvider.notifier).setLoading(true);
                       Navigator.pop(context);
                     },
                   ),
@@ -503,7 +503,8 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                           }
 
                           // Show regular PIN error
-                          if (!myWalletProvider.isPinValid && !myWalletProvider.isPinLoading) {
+                          final pinState = ref.watch(pinStateProvider);
+                          if (!pinState.isValid && !pinState.isLoading) {
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 16),
                               child: Text(
@@ -530,7 +531,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                               return pinForm(context, pinLength);
                             },
                           ),
-                          if (myWalletProvider.isPinLoading && enterPin.text.length == pinLength)
+                          if (pinState.isLoading && enterPin.text.length == pinLength)
                             Container(
                               width: double.infinity,
                               height: scaleSize(80),
@@ -865,13 +866,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   /// Force refresh of home state when no safes are left
   void _refreshHomeStateForNoSafes() {
     try {
-      // Force refresh of MyWalletsProvider which controls isWalletsExists
-      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-      myWalletProvider.reload();
+      // Force refresh of wallet list and invalidate providers
+      ref.read(walletsListProvider.notifier).refresh();
 
       // Also invalidate default wallet provider
-      final container = ProviderScope.containerOf(context);
-      container.invalidate(defaultWalletProvider);
+      ref.invalidate(defaultWalletProvider);
 
       log.i('Home state refreshed - should switch to welcome mode');
     } catch (e) {
@@ -886,7 +885,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   }
 
   Widget pinForm(BuildContext context, int pinLenght) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     final biometricState = ref.watch(biometricProvider);
     final securityState = ref.watch(pinSecurityProvider);
 
@@ -944,12 +942,14 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onCompleted: (pin) => _handlePinCompletion(pin),
           onChanged: (value) {
-            if (enterPin.text != '') myWalletProvider.isPinLoading = true;
+            if (enterPin.text != '') {
+              ref.read(pinStateProvider.notifier).setLoading(true);
+            }
             if (pinColor != const Color(0xFFA4B600)) {
               pinColor = const Color(0xFFA4B600);
             }
-            // Simplified - only reload provider, no safe reloading
-            myWalletProvider.reload();
+            // Force widget rebuild for PIN color change
+            setState(() {});
           },
         ),
       ),

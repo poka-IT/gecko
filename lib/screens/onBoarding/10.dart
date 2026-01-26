@@ -15,7 +15,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/utils.dart';
@@ -25,7 +25,6 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class OnboardingStepTen extends ConsumerStatefulWidget {
   const OnboardingStepTen({
@@ -161,14 +160,15 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    // Watch pinState to trigger rebuilds when state changes
+    ref.watch(pinStateProvider);
     final pinLenght = widget.pinCode.isEmpty ? pinLength : widget.pinCode.length;
     GifView.preFetchImage(AssetImage('assets/onBoarding/gecko-clin.gif'));
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
-        myWalletProvider.isPinValid = false;
-        myWalletProvider.isPinLoading = true;
+        ref.read(pinStateProvider.notifier).setValid(false);
+        ref.read(pinStateProvider.notifier).setLoading(true);
       },
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
@@ -183,10 +183,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 BuildText(text: "geckoWillCheckPassword".tr()),
                 ScaledSizedBox(height: isTall ? 25 : 0),
                 const ScanDerivationsInfo(),
-                old_provider.Consumer<MyWalletsProvider>(
-                  builder: (context, mw, _) {
+                Consumer(
+                  builder: (context, ref, _) {
+                    final pinState = ref.watch(pinStateProvider);
                     return Visibility(
-                      visible: !myWalletProvider.isPinValid && !myWalletProvider.isPinLoading,
+                      visible: !pinState.isValid && !pinState.isLoading,
                       child: Text(
                         "thisIsNotAGoodCode".tr(),
                         style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
@@ -244,7 +245,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   }
 
   Widget pinForm(BuildContext context, int pinLenght, int walletNbr, int derivation) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
     // Scan state is now managed by Riverpod providers
 
     // Will get the current safe after safe creation - don't capture it too early
@@ -297,11 +297,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
           boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
           onCompleted: (pin) async {
             PinCodeService.pinCode = pin.toUpperCase();
-            myWalletProvider.pinLenght = pinLenght;
+            ref.read(pinStateProvider.notifier).setPinLength(pinLenght);
             if (pin.toUpperCase() == widget.pinCode) {
               pinColor = Colors.green[500];
-              myWalletProvider.isPinLoading = false;
-              myWalletProvider.isPinValid = true;
+              ref.read(pinStateProvider.notifier).setLoading(false);
+              ref.read(pinStateProvider.notifier).setValid(true);
 
               // Check if we're in a migration to existing safe flow (needed early)
               LegacyMigrationData? migrationData = widget.legacyMigrationData;
@@ -371,7 +371,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               }
               // For legacy wallets, the wallet is already created by importLegacyWallet
 
-              await myWalletProvider.readAllWallets(ref: ref, safeBoxNumber: currentSafe);
+              await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
               // Clear mnemonic state after safe creation
               ref.read(resetMnemonicStateProvider)();
@@ -390,11 +390,12 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               }
 
               // Fallback to numeric priority if no identity wallet found
-              defaultWallet ??= myWalletProvider.listWallets.firstWhereOrNull((w) => w.number == 0);
+              final walletsList = ref.read(walletsListProvider).wallets;
+              defaultWallet ??= walletsList.firstWhereOrNull((w) => w.number == 0);
 
               // Final fallback to first available wallet
-              if (defaultWallet == null && myWalletProvider.listWallets.isNotEmpty) {
-                defaultWallet = myWalletProvider.listWallets.first;
+              if (defaultWallet == null && walletsList.isNotEmpty) {
+                defaultWallet = walletsList.first;
               }
 
               if (defaultWallet != null) {
@@ -430,10 +431,9 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                 }
               }
 
-              // Force reload of MyWalletsProvider BEFORE navigation to ensure correct state
+              // Force reload of wallets BEFORE navigation to ensure correct state
               final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
-              await myWalletProvider.readAllWallets(ref: ref, safeBoxNumber: currentSafeNumber);
-              myWalletProvider.reload();
+              await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafeNumber);
 
               // Also invalidate Riverpod providers to ensure synchronization
               ref.invalidate(defaultWalletProvider);
@@ -455,19 +455,22 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               }
             } else {
               hasError = true;
-              myWalletProvider.isPinLoading = false;
-              myWalletProvider.isPinValid = false;
+              ref.read(pinStateProvider.notifier).setLoading(false);
+              ref.read(pinStateProvider.notifier).setValid(false);
               pinColor = Colors.red[600];
               enterPin.text = '';
               pinFocus.requestFocus();
             }
           },
           onChanged: (value) {
-            if (enterPin.text != '') myWalletProvider.isPinLoading = true;
+            if (enterPin.text != '') {
+              ref.read(pinStateProvider.notifier).setLoading(true);
+            }
             if (pinColor != const Color(0xFFA4B600)) {
               pinColor = const Color(0xFFA4B600);
             }
-            myWalletProvider.reload();
+            // Force widget rebuild for PIN color change
+            setState(() {});
           },
         ),
       ),

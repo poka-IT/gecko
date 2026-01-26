@@ -6,13 +6,12 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
 import 'package:gecko/screens/home/welcome_home_widget.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/drawer.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -35,8 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showCesiumImportInfoDialogIfNeeded() {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-    final bool isWalletsExists = myWalletProvider.isWalletsExists;
+    final bool isWalletsExists = ref.read(isWalletsExistsProvider);
     final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
 
     if (!isWalletsExists && !alreadyShown) {
@@ -62,8 +60,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    final isWalletsExists = myWalletProvider.isWalletsExists;
+    final isWalletsExists = ref.watch(isWalletsExistsProvider);
 
     // Use view size instead of MediaQuery to avoid rebuilds when keyboard shows/hides
     final viewSize = View.of(context).physicalSize / View.of(context).devicePixelRatio;

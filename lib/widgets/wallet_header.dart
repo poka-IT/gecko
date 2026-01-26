@@ -11,8 +11,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
@@ -21,7 +21,6 @@ import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/certifications.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/commons/storage_builder.dart';
@@ -37,8 +36,7 @@ class WalletHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return StorageBuilder(
       builder: (context, ref) {
-        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-        final isOwner = myWalletProvider.isOwner(address);
+        final isOwner = ref.watch(isOwnerProvider(address));
 
         // Use hybrid provider to handle identity creation (solves closed stream issue)
         final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
@@ -376,8 +374,7 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                           _isPickerOpen = false;
                         });
                         // Reload wallets from database to update UI everywhere
-                        final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-                        await myWalletProvider.readAllWallets();
+                        await ref.read(walletsListProvider.notifier).loadWallets();
                       } else {
                         setState(() => _isPickerOpen = false);
                       }

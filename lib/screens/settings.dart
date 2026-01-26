@@ -16,8 +16,9 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/currency_provider.dart';
 
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 
@@ -36,7 +37,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final MyWalletsProvider _myWallets = MyWalletsProvider();
   final FocusNode _duniterFocusNode = FocusNode();
   final FocusNode _indexerFocusNode = FocusNode();
   late TextEditingController _endpointController;
@@ -683,7 +683,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         key: keyDeleteAllWallets,
                         onTap: () async {
                           log.w('Oublier tous mes coffres');
-                          await _myWallets.deleteAllWallet(context);
+                          final answer = await showConfirmationDialog(
+                            context: context,
+                            message: 'areYouSureForgetAllSafes'.tr(),
+                            type: ConfirmationDialogType.warning,
+                          );
+                          if (answer) {
+                            final success = await ref.read(walletActionsProvider.notifier).deleteAllWallets();
+                            if (success && mounted) {
+                              await Navigator.of(context).pushNamedAndRemoveUntil(
+                                RouteNames.home,
+                                (Route<dynamic> route) => false,
+                              );
+                            }
+                          }
                         },
                         child: Padding(
                           padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),

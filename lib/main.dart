@@ -23,11 +23,9 @@ import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers/squid_invalidation_provider.dart';
 
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/version_overlay.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -121,9 +119,7 @@ class Gecko extends StatelessWidget {
     // To configure multi_endpoints GraphQLProvider: https://stackoverflow.com/q/70656513/8301867
 
     return ProviderScope(
-      child: old_provider.MultiProvider(
-        providers: [old_provider.ChangeNotifierProvider(create: (_) => MyWalletsProvider())],
-        child: Consumer(
+      child: Consumer(
           builder: (context, ref, _) {
             // Activate the Squid endpoint change notifier to enable provider invalidation
             ref.watch(squidEndpointChangeNotifierProvider);
@@ -195,7 +191,6 @@ class Gecko extends StatelessWidget {
             );
           },
         ),
-      ),
     );
   }
 }

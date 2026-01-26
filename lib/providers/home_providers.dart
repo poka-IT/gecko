@@ -9,14 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/services/storage_init_service.dart';
 import 'package:gecko/services/wisdom_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 /// Provider for AppInfoService
 final appInfoServiceProvider = Provider<AppInfoService>((ref) {
@@ -218,9 +217,8 @@ class AppInitNotifier extends Notifier<AppInitState> {
       await ref.read(walletServiceProvider).clearWallets();
       configBox.put('dataVersion', dataVersion);
 
-      // Reload wallets using old provider for now
-      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-      myWalletProvider.reload();
+      // Reload wallets using Riverpod provider
+      ref.read(walletsListProvider.notifier).refresh();
     }
 
     walletHeaderDataBox = await Hive.openBox('wallet_header_cache');
@@ -236,9 +234,8 @@ class AppInitNotifier extends Notifier<AppInitState> {
       g1WalletsBox = await Hive.openBox('g1WalletsBox');
       contactsBox = await Hive.openBox('contactsBox');
 
-      // Reload wallets using old provider for now
-      final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-      myWalletProvider.reload();
+      // Reload wallets using Riverpod provider
+      ref.read(walletsListProvider.notifier).refresh();
 
       bool firstConnection = true;
 
@@ -278,9 +275,8 @@ class AppInitNotifier extends Notifier<AppInitState> {
               }
             }
 
-            // Load wallets list
-            final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-            await myWalletProvider.readAllWallets(ref: widgetRef);
+            // Load wallets list using Riverpod provider
+            await ref.read(walletsListProvider.notifier).loadWallets();
           }
         }
       }

@@ -16,7 +16,7 @@ import 'package:gecko/models/widgets_keys.dart';
 
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -24,7 +24,6 @@ import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:url_launcher/url_launcher.dart';
 
 // Simple function to show the payment popup - no longer depends on external ref
@@ -56,7 +55,7 @@ class PaymentPopupWidget extends ConsumerStatefulWidget {
 class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   double fees = 0;
   static const double shapeSize = 16;
-  late WalletEntity fromWallet;
+  WalletEntity? _fromWallet;
   bool canValidate = false;
   final amountFocus = FocusNode();
   final commentFocus = FocusNode();
@@ -66,28 +65,28 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   BigInt? toAddressBalance;
   bool balancesLoaded = false;
 
-  late MyWalletsProvider myWalletProvider;
+  WalletEntity get fromWallet => _fromWallet ?? ref.read(defaultWalletProvider);
+
+  set fromWallet(WalletEntity value) => _fromWallet = value;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize providers
-    myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
-    // Initialize default wallet
-    fromWallet = widget.fromWallet ?? myWalletProvider.getDefaultWallet();
-
     // Schedule reset state and wallet loading after build is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        // Initialize default wallet from Riverpod provider
+        if (widget.fromWallet != null) {
+          _fromWallet = widget.fromWallet;
+        }
+
         // Reset state after build is complete to avoid setState during build
         resetState();
 
-        // Load wallets and sort them
-        myWalletProvider.readAllWallets().then((value) {
+        // Load wallets and load balances after ready
+        ref.read(walletsListProvider.notifier).loadWallets().then((_) {
           if (mounted) {
-            myWalletProvider.listWallets.sort((a, b) => (a.derivation ?? -1).compareTo(b.derivation ?? -1));
             // Load balances after wallets are ready
             loadBalances();
           }
@@ -409,7 +408,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                               },
                               // This builds the widget that's visible when the dropdown is closed.
                               selectedItemBuilder: (context) {
-                                return myWalletProvider.listWallets.map((wallet) {
+                                return ref.watch(walletsListProvider).wallets.map((wallet) {
                                   return Container(
                                     // The dropdown automatically selects the correct widget to show.
                                     width: scaleSize(isTall ? 315 : 310),
@@ -430,7 +429,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                 if (newSelectedWalletAddress == null) return;
 
                                 // Find the full WalletEntity object that corresponds to the selected address.
-                                final newSelectedWallet = myWalletProvider.listWallets.firstWhere(
+                                final newSelectedWallet = ref.watch(walletsListProvider).wallets.firstWhere(
                                   (wallet) => wallet.address == newSelectedWalletAddress,
                                 );
 
@@ -448,7 +447,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                 amountFocus.requestFocus();
                               },
                               // This builds the list of choices the user sees when the dropdown is open.
-                              items: myWalletProvider.listWallets.map((WalletEntity wallet) {
+                              items: ref.watch(walletsListProvider).wallets.map((WalletEntity wallet) {
                                 return DropdownMenuItem<String>(
                                   // Each item's value is its unique ADDRESS string.
                                   value: wallet.address,

@@ -1,15 +1,16 @@
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:provider/provider.dart' as old_provider;
 
-class WalletTile extends StatefulWidget {
+class WalletTile extends ConsumerWidget {
   const WalletTile({
     super.key,
     required this.repository,
@@ -24,23 +25,18 @@ class WalletTile extends StatefulWidget {
   final int currentSafe; // Pass currentSafe to avoid provider access during layout
 
   @override
-  State<WalletTile> createState() => _WalletTileState();
-}
-
-class _WalletTileState extends State<WalletTile> {
-  @override
-  Widget build(BuildContext context) {
-    // Listen to MyWalletsProvider to get fresh wallet data
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
-    final freshWallet = myWalletProvider.getWalletDataByAddress(widget.repository.address) ?? widget.repository;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch wallets list to get fresh wallet data
+    final freshWallet = ref.watch(walletByAddressProvider(repository.address)) ?? repository;
 
     // Cache scale size to prevent recalculation during layout
     final padding = EdgeInsets.all(scaleSize(11));
     // Create stable key once
-    final gestureKey = ValueKey('wallet_${widget.repository.address}_safe${widget.currentSafe}_${widget.uniqueId}');
+    final gestureKey = ValueKey('wallet_${repository.address}_safe${currentSafe}_$uniqueId');
 
     // Check if this wallet is the default wallet
-    final isDefault = myWalletProvider.getDefaultWallet().address == freshWallet.address;
+    final defaultWallet = ref.watch(defaultWalletProvider);
+    final isDefault = defaultWallet.address == freshWallet.address;
 
     return Padding(
       padding: padding,
@@ -54,7 +50,7 @@ class _WalletTileState extends State<WalletTile> {
           );
         },
         child: ScaledSizedBox(
-          key: widget.tutorialKey, // Use the passed tutorial key directly
+          key: tutorialKey, // Use the passed tutorial key directly
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),

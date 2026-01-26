@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/security_providers.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
@@ -18,20 +18,16 @@ import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:pdf/widgets.dart' as pw;
 
 class ShowSeed extends ConsumerWidget {
-  const ShowSeed({Key? keyMyWallets, required this.walletName, required this.walletProvider})
+  const ShowSeed({Key? keyMyWallets, required this.walletName})
     : super(key: keyMyWallets);
   final String walletName;
-  final MyWalletsProvider walletProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
-    WalletEntity defaultWallet = myWalletProvider.getDefaultWallet();
+    WalletEntity defaultWallet = ref.watch(defaultWalletProvider);
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,

@@ -37,8 +37,7 @@ class WalletNameValidationNotifier extends Notifier<WalletNameValidationState> {
 
   /// Validate wallet name and update state
   ///
-  /// Requires context to access MyWalletsProvider for existing wallets list.
-  /// This is a temporary solution until MyWalletsProvider is migrated to Riverpod.
+  /// Takes the existing wallets list for validation against duplicates.
   void validateName(String name, List<WalletEntity> existingWallets) {
     if (name.isEmpty) {
       state = const WalletNameValidationState.initial();

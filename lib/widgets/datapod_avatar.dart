@@ -4,9 +4,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/avatar_providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class DatapodAvatar extends ConsumerWidget {
   const DatapodAvatar({super.key, required this.address, this.size = 15, this.name});
@@ -17,8 +16,7 @@ class DatapodAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context); // listen: true by default
-    final isLocalWallet = myWalletProvider.isOwner(address);
+    final isLocalWallet = ref.watch(isOwnerProvider(address));
 
     return Container(
       decoration: BoxDecoration(
@@ -28,14 +26,13 @@ class DatapodAvatar extends ConsumerWidget {
       child: ScaledSizedBox(
         width: size,
         height: size,
-        child: isLocalWallet ? _buildLocalWalletAvatar(context) : _buildRemoteAvatar(ref),
+        child: isLocalWallet ? _buildLocalWalletAvatar(ref) : _buildRemoteAvatar(ref),
       ),
     );
   }
 
-  Widget _buildLocalWalletAvatar(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context); // listen: true
-    final wallet = myWalletProvider.getWalletDataByAddress(address);
+  Widget _buildLocalWalletAvatar(WidgetRef ref) {
+    final wallet = ref.watch(walletByAddressProvider(address));
 
     if (wallet?.imagePath != null && wallet!.imagePath!.isNotEmpty) {
       // For local wallets, ALWAYS show local file (not Cesium+)

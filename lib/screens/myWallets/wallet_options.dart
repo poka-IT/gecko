@@ -12,7 +12,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/services/wallet_deletion_service.dart';
@@ -24,7 +24,6 @@ import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/migrate_g1v1_screen.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:gecko/widgets/buttons/manage_membership_button.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/screens/identity/confirm_identity.dart';
@@ -55,20 +54,18 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
-    final currentSafe = myWalletProvider.getCurrentSafe;
+    final walletsState = ref.watch(walletsListProvider);
+    final currentSafe = walletsState.currentSafeNumber;
     final isWalletNameIndexed = ref.read(squidServiceProvider).walletNameIndexer[widget.wallet.address] != null;
 
-    final isAlone = myWalletProvider.listWallets.length == 1;
+    final isAlone = walletsState.wallets.length == 1;
 
     final defaultWallet = ref.watch(defaultWalletProvider);
 
     return PopScope(
       onPopInvokedWithResult: (_, _) {
         // Reload wallets from database to catch avatar updates
-        myWalletProvider.readAllWallets();
-        myWalletProvider.reload();
+        ref.read(walletsListProvider.notifier).loadWallets();
       },
       child: Scaffold(
         appBar: WalletAppBar(
@@ -118,7 +115,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                           ],
                         ),
                       ),
-                    _buildWalletOptionsContent(context, ref, isAlone, myWalletProvider, currentSafe, defaultWallet),
+                    _buildWalletOptionsContent(context, ref, isAlone, currentSafe, defaultWallet),
                   ],
                 ),
               ),
@@ -177,9 +174,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                     setState(() {
                       widget.wallet.imagePath = newPath;
                     });
-                    // Notify MyWalletsProvider to update UI components
-                    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-                    myWalletProvider.reload();
+                    // Refresh wallets list to update UI components
+                    ref.read(walletsListProvider.notifier).refresh();
                   }
                 }
               },
@@ -239,19 +235,14 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   }
 
   Future setDefaultWallet(BuildContext context, WidgetRef ref, int currentSafe) async {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     await ref.read(walletServiceProvider).setDefaultAddress(widget.wallet.address);
-    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
-    myWalletProvider.reload();
+    await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
     // Invalidate the default wallet provider to trigger reactive updates
     ref.invalidate(defaultWalletProvider);
   }
 
   Widget deleteWallet(BuildContext context, WidgetRef ref, int currentSafe) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     // Use the reactive provider for consistency
     final defaultWallet = ref.watch(defaultWalletProvider);
     final bool isDefaultWallet = defaultWallet.address == widget.wallet.address;
@@ -285,10 +276,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                       if (result == 0) {
                         // Success - wallet was deleted, navigation handled by service
                         WidgetsBinding.instance.addPostFrameCallback((_) async {
-                          myWalletProvider.listWallets = await myWalletProvider.readAllWallets(
-                            safeBoxNumber: currentSafe,
-                          );
-                          myWalletProvider.reload();
+                          await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
                         });
                       }
                     }
@@ -330,7 +318,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   Widget buildDefaultWalletSection(
     BuildContext context,
     WidgetRef ref,
-    MyWalletsProvider myWalletProvider,
     int currentSafe,
     WalletEntity defaultWallet,
   ) {
@@ -379,7 +366,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     BuildContext context,
     WidgetRef ref,
     bool isAlone,
-    MyWalletsProvider myWalletProvider,
     int currentSafe,
     WalletEntity defaultWallet,
   ) {
@@ -396,7 +382,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           children: [
             buildConfirmIdentitySection(context, ref),
             buildOptionsSection(context),
-            if (!isAlone) buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
+            if (!isAlone) buildDefaultWalletSection(context, ref, currentSafe, defaultWallet),
             if (!hasIdentity)
               InkWell(
                 key: keyRenameWallet,
@@ -404,9 +390,9 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   final newName = await WalletNameDialogService.showEditWalletNameDialog(context, widget.wallet);
                   if (newName != null) {
                     // Reload wallets data to update the UI
-                    await myWalletProvider.readAllWallets(safeBoxNumber: currentSafe);
+                    await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
                     // Reload the wallet object to get the updated name
-                    final updatedWallet = myWalletProvider.getWalletDataByAddress(widget.wallet.address);
+                    final updatedWallet = ref.read(walletByAddressProvider(widget.wallet.address));
                     if (updatedWallet != null) {
                       widget.wallet.name = updatedWallet.name;
                       // Update the local state to rebuild the UI
@@ -414,7 +400,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                         currentWalletName = updatedWallet.name!;
                       });
                     }
-                    myWalletProvider.reload();
                   }
                 },
                 child: Container(
@@ -483,7 +468,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         children: [
           buildConfirmIdentitySection(context, ref),
           buildOptionsSection(context),
-          if (!isAlone) buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
+          if (!isAlone) buildDefaultWalletSection(context, ref, currentSafe, defaultWallet),
           // Show Cesium+ Profile button while loading
           InkWell(
             onTap: () {
@@ -524,7 +509,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         children: [
           buildConfirmIdentitySection(context, ref),
           buildOptionsSection(context),
-          if (!isAlone) buildDefaultWalletSection(context, ref, myWalletProvider, currentSafe, defaultWallet),
+          if (!isAlone) buildDefaultWalletSection(context, ref, currentSafe, defaultWallet),
           // Show Cesium+ Profile button on error
           InkWell(
             onTap: () {
@@ -726,8 +711,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     // For legacy wallets, we need to handle PIN change differently
     // because we need to re-encrypt the salt and password with the new PIN
 
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-
     // Ask for current PIN first
     if (!await PinCodeService.askPinCode(force: true)) return;
 
@@ -736,7 +719,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       context,
       MaterialPageRoute(
         builder: (context) =>
-            ChangePinScreen(walletName: widget.wallet.name ?? 'legacyWallet'.tr(), walletProvider: myWalletProvider),
+            ChangePinScreen(walletName: widget.wallet.name ?? 'legacyWallet'.tr()),
       ),
     );
   }
@@ -851,7 +834,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 }
 
 Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? onDerivationCreated}) {
-  final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+  final walletsState = ref.watch(walletsListProvider);
+  final derivationState = ref.watch(derivationStateProvider);
   return Column(
     children: [
       InkWell(
@@ -882,10 +866,11 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       ),
       InkWell(
         onTap: () async {
-          if (!myWalletProvider.isNewDerivationLoading) {
+          if (!derivationState.isLoading) {
             if (!await PinCodeService.askPinCode()) return;
-            String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
-            await myWalletProvider.generateNewDerivation(context, newDerivationName);
+            final lastWalletNumber = walletsState.wallets.isNotEmpty ? walletsState.wallets.last.number : -1;
+            String newDerivationName = '${'wallet'.tr()} ${lastWalletNumber + 2}';
+            await ref.read(walletActionsProvider.notifier).generateNewDerivation(newDerivationName);
 
             // Call the callback if provided (when embedded in WalletsHome)
             onDerivationCreated?.call();

@@ -6,15 +6,15 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_state_icon.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:easy_localization/easy_localization.dart';
 
-class TransactionInProgressScreen extends StatefulWidget {
+class TransactionInProgressScreen extends ConsumerStatefulWidget {
   final Stream<TransactionStatus> transactionStatus;
   final String transType;
   final String? fromAddress, toAddress, toUsername;
@@ -29,21 +29,24 @@ class TransactionInProgressScreen extends StatefulWidget {
   });
 
   @override
-  State<TransactionInProgressScreen> createState() => _TransactionInProgressScreenState();
+  ConsumerState<TransactionInProgressScreen> createState() => _TransactionInProgressScreenState();
 }
 
-class _TransactionInProgressScreenState extends State<TransactionInProgressScreen> {
+class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgressScreen> {
   late String fromAddressFormat;
   late String toAddressFormat;
   late String toUsernameFormat;
 
   @override
   void initState() {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(homeContext, listen: false);
+    super.initState();
 
-    String defaultWalletAddress = myWalletProvider.getDefaultWallet().address;
-    String defaultWalletName = myWalletProvider.getDefaultWallet().name ?? '';
-    String? walletDataName = myWalletProvider.getWalletDataByAddress(widget.toAddress ?? '')?.name;
+    final defaultWallet = ref.read(defaultWalletProvider);
+    final walletData = ref.read(walletByAddressProvider(widget.toAddress ?? ''));
+
+    String defaultWalletAddress = defaultWallet.address;
+    String defaultWalletName = defaultWallet.name ?? '';
+    String? walletDataName = walletData?.name;
 
     fromAddressFormat = widget.fromAddress ?? g1WalletsBox.get(defaultWalletAddress)?.username ?? defaultWalletName;
     toAddressFormat = widget.toAddress ?? ''; // No fallback - should not happen in normal flow
@@ -51,8 +54,6 @@ class _TransactionInProgressScreenState extends State<TransactionInProgressScree
         widget.toUsername ??
         walletDataName ??
         (toAddressFormat.isNotEmpty ? getShortPubkey(toAddressFormat) : 'Unknown');
-
-    super.initState();
   }
 
   @override

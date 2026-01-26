@@ -12,7 +12,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/routes.dart';
@@ -21,7 +21,6 @@ import 'package:gecko/widgets/buttons/safe_options_buttons.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:gecko/widgets/wallet_tile_membre.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 // Note: cleanupWalletsHomeKeys() is no longer needed since we use instance-specific state
@@ -59,15 +58,15 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final walletsState = ref.watch(walletsListProvider);
 
     // Use a Builder to properly handle state transitions
     return Builder(
       builder: (context) {
         // If only one wallet and we're not forcing multi-wallet view, show WalletOptions directly
-        if (myWalletProvider.listWallets.length == 1 && !_forceMultiWalletView) {
+        if (walletsState.wallets.length == 1 && !_forceMultiWalletView) {
           return WalletOptions(
-            wallet: myWalletProvider.listWallets[0],
+            wallet: walletsState.wallets[0],
             onDerivationCreated: () {
               // When a derivation is created from single wallet context,
               // force showing the multi-wallet view
@@ -79,7 +78,7 @@ class _WalletsHomeState extends ConsumerState<WalletsHome> with SingleTickerProv
         }
 
         // Reset the force flag when we have multiple wallets
-        if (myWalletProvider.listWallets.length > 1 && _forceMultiWalletView) {
+        if (walletsState.wallets.length > 1 && _forceMultiWalletView) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               setState(() {
@@ -117,11 +116,12 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
   @override
   Widget build(BuildContext context) {
     final ref = this.ref;
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context);
+    final walletsState = ref.watch(walletsListProvider);
+    final currentSafeNumber = ref.watch(currentSafeNumberProvider);
 
     final SafeEntity? currentSafe = () {
       try {
-        return ref.read(walletServiceProvider).getSafeBox(myWalletProvider.getCurrentSafe);
+        return ref.read(walletServiceProvider).getSafeBox(currentSafeNumber);
       } catch (e) {
         return null;
       }
@@ -142,7 +142,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
       _currentTutorialKey = null; // Reset tutorial key for new safe
     }
 
-    if (myWalletProvider.listWallets.isEmpty) {
+    if (walletsState.wallets.isEmpty) {
       return Center(
         child: Text(
           'Veuillez générer votre premier portefeuille',
@@ -168,7 +168,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
     return idtyWalletAsync.when(
       data: (idtyWallet) {
         // Data is ready, render the UI with correct wallet separation
-        final allWallets = myWalletProvider.listWallets;
+        final allWallets = walletsState.wallets;
         final walletsWithoutIdty = idtyWallet != null
             ? allWallets.where((w) => w.address != idtyWallet.address).toList()
             : allWallets;
@@ -181,7 +181,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
       },
       error: (error, stack) {
         // On error, treat as no identity wallet
-        final allWallets = myWalletProvider.listWallets;
+        final allWallets = walletsState.wallets;
 
         return _buildWalletsContent(
           context,
@@ -321,11 +321,11 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
                 // Identity wallet section
                 if (idtyWallet != null)
                   SliverToBoxAdapter(
-                    child: old_provider.Consumer<MyWalletsProvider>(
-                      builder: (context, myWalletProvider, child) {
+                    child: Consumer(
+                      builder: (context, ref, child) {
                         // Get the latest wallet data to ensure avatar updates are reflected
                         final latestIdtyWallet =
-                            myWalletProvider.getWalletDataByAddress(idtyWallet.address) ?? idtyWallet;
+                            ref.watch(walletByAddressProvider(idtyWallet.address)) ?? idtyWallet;
                         return DragTuleAction(
                           wallet: latestIdtyWallet,
                           child: WalletTileMembre(wallet: latestIdtyWallet, attachTutorialKey: false),
@@ -404,10 +404,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
         try {
           final container = ProviderScope.containerOf(context);
           // Reset drag state
-          final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-          myWalletProvider.lastFlyBy = null;
-          myWalletProvider.dragAddress = null;
-          myWalletProvider.reload();
+          container.read(dragDropProvider.notifier).clearDrag();
 
           // Fix route if it's empty (the main bug!)
 

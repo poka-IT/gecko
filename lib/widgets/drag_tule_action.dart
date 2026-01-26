@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/widgets/payment_popup.dart';
-import 'package:provider/provider.dart' as old_provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 
@@ -19,20 +18,20 @@ class DragTuleAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
     final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+    final dragDropNotifier = ref.read(dragDropProvider.notifier);
+    final lastFlyBy = ref.watch(dragDropProvider).lastFlyBy;
 
     return LongPressDraggable<String>(
       key: ValueKey('drag_${wallet.address}_safe$currentSafe'),
       delay: const Duration(milliseconds: 200),
       data: wallet.address,
       dragAnchorStrategy: (Draggable<Object> _, BuildContext _, Offset _) => const Offset(55, 55),
-      onDragStarted: () => myWalletProvider.dragAddress = wallet,
+      onDragStarted: () => dragDropNotifier.setDragAddress(wallet),
       onDragEnd: (_) {
         // Defer these operations to prevent layout mutations
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          myWalletProvider.lastFlyBy = null;
-          myWalletProvider.dragAddress = null;
+          dragDropNotifier.clearDrag();
         });
       },
       feedback: ElevatedButton(
@@ -49,7 +48,7 @@ class DragTuleAction extends ConsumerWidget {
       ),
       child: DragTarget<String>(
         onAcceptWithDetails: (senderAddress) async {
-          final walletData = myWalletProvider.getWalletDataByAddress(senderAddress.data);
+          final walletData = ref.read(walletByAddressProvider(senderAddress.data));
           paymentPopup(
             toAddress: wallet.address,
             username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!,
@@ -57,8 +56,8 @@ class DragTuleAction extends ConsumerWidget {
           );
         },
         onMove: (details) {
-          if (wallet.address != myWalletProvider.lastFlyBy?.address) {
-            myWalletProvider.lastFlyBy = wallet;
+          if (wallet.address != lastFlyBy?.address) {
+            dragDropNotifier.setLastFlyBy(wallet);
             // Don't call reload during drag to prevent layout mutations
             // The UI will update via the Consumer in bottom_app_bar.dart
           }

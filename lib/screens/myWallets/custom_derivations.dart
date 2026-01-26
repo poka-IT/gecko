@@ -3,22 +3,22 @@
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:provider/provider.dart' as old_provider;
 
-class CustomDerivation extends StatefulWidget {
+class CustomDerivation extends ConsumerStatefulWidget {
   const CustomDerivation({super.key});
 
   @override
-  State<CustomDerivation> createState() => _CustomDerivationState();
+  ConsumerState<CustomDerivation> createState() => _CustomDerivationState();
 }
 
-class _CustomDerivationState extends State<CustomDerivation> {
+class _CustomDerivationState extends ConsumerState<CustomDerivation> {
   String? dropdownValue;
 
   @override
@@ -29,11 +29,11 @@ class _CustomDerivationState extends State<CustomDerivation> {
 
   @override
   Widget build(BuildContext context) {
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletsList = ref.watch(walletsListProvider).wallets;
 
     final derivationList = <String>['root', for (var i = 0; i < 51; i += 1) i.toString()];
 
-    for (WalletEntity wallet in myWalletProvider.listWallets) {
+    for (WalletEntity wallet in walletsList) {
       derivationList.remove(wallet.derivation.toString());
       if (wallet.derivation == null) {
         derivationList.remove('root');
@@ -105,14 +105,13 @@ class _CustomDerivationState extends State<CustomDerivation> {
                   ),
                   onPressed: () async {
                     if (!await PinCodeService.askPinCode()) return;
-                    String newDerivationName = '${'wallet'.tr()} ${myWalletProvider.listWallets.last.number + 2}';
+                    String newDerivationName = '${'wallet'.tr()} ${walletsList.last.number + 2}';
                     if (dropdownValue == 'root') {
-                      await myWalletProvider.generateRootWallet(context, 'rootWallet'.tr());
+                      await ref.read(walletActionsProvider.notifier).generateRootWallet('rootWallet'.tr());
                     } else {
-                      await myWalletProvider.generateNewDerivation(
-                        context,
+                      await ref.read(walletActionsProvider.notifier).generateNewDerivation(
                         newDerivationName,
-                        int.parse(dropdownValue!),
+                        customDerivation: int.parse(dropdownValue!),
                       );
                     }
                     Navigator.popUntil(context, ModalRoute.withName(RouteNames.myWallets));

@@ -9,7 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/safe_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/screens/myWallets/custom_derivations.dart';
 import 'package:gecko/screens/myWallets/migrate_safe.dart';
@@ -18,7 +18,6 @@ import 'package:gecko/screens/myWallets/rename_safe.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/biometric/biometric_settings_tile.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 class SafeOptions extends ConsumerWidget {
   const SafeOptions({Key? keyMyWallets}) : super(key: keyMyWallets);
@@ -54,9 +53,9 @@ class SafeOptionsContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final safeManager = ref.read(safeManagerProvider);
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    final walletsState = ref.watch(walletsListProvider);
     final currentSafe = ref.watch(walletServiceProvider).defaultSafeBox;
-    final isAlone = myWalletProvider.listWallets.length == 1;
+    final isAlone = walletsState.wallets.length == 1;
 
     return Column(
       spacing: 5,
@@ -68,7 +67,7 @@ class SafeOptionsContent extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ShowSeed(walletName: currentSafe.name, walletProvider: myWalletProvider),
+                builder: (context) => ShowSeed(walletName: currentSafe.name),
               ),
             );
           },
@@ -127,7 +126,7 @@ class SafeOptionsContent extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ChangePinScreen(walletName: currentSafe.name, walletProvider: myWalletProvider),
+                builder: (context) => ChangePinScreen(walletName: currentSafe.name),
               ),
             );
           },

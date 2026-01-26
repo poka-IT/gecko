@@ -6,9 +6,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallet_name_validation_provider.dart';
-import 'package:gecko/providers_deprecated/my_wallets.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/wallet_management_service.dart';
-import 'package:provider/provider.dart' as old_provider;
 
 /// Service for showing wallet name editing dialogs
 ///
@@ -187,10 +186,9 @@ class _WalletNameEditDialogState extends ConsumerState<_WalletNameEditDialog> {
   }
 
   void _validateName(String name) {
-    // Get existing wallets from the old provider for validation
-    // This is temporary until MyWalletsProvider is migrated
-    final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
+    // Get existing wallets from Riverpod provider for validation
+    final existingWallets = ref.read(walletsListProvider).wallets;
 
-    ref.read(walletNameValidationProvider(widget.wallet).notifier).validateName(name, myWalletProvider.listWallets);
+    ref.read(walletNameValidationProvider(widget.wallet).notifier).validateName(name, existingWallets);
   }
 }

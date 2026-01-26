@@ -1,10 +1,11 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/text_size_mode.dart';
 
 // Provider for text scaling value
-class TextScalingNotifier extends StateNotifier<double> {
-  TextScalingNotifier() : super(_getInitialScale());
+class TextScalingNotifier extends Notifier<double> {
+  @override
+  double build() => _getInitialScale();
 
   static double _getInitialScale() {
     final savedScale = configBox.get('textScaleValue');
@@ -21,6 +22,4 @@ class TextScalingNotifier extends StateNotifier<double> {
 }
 
 // Provider instance
-final textScalingProvider = StateNotifierProvider<TextScalingNotifier, double>((ref) {
-  return TextScalingNotifier();
-});
+final textScalingProvider = NotifierProvider<TextScalingNotifier, double>(TextScalingNotifier.new);

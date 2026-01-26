@@ -1,16 +1,13 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
 /// Avatar cache provider using Riverpod
-final avatarCacheProvider = StateNotifierProvider<AvatarCacheNotifier, Map<String, Uint8List?>>((ref) {
-  return AvatarCacheNotifier(ref);
-});
+final avatarCacheProvider = NotifierProvider<AvatarCacheNotifier, Map<String, Uint8List?>>(AvatarCacheNotifier.new);
 
 /// Provider to get avatar for a specific address
 final avatarProvider = FutureProvider.family<Uint8List?, String>((ref, address) async {
@@ -19,10 +16,11 @@ final avatarProvider = FutureProvider.family<Uint8List?, String>((ref, address) 
 });
 
 /// Avatar cache notifier that manages avatar downloading and caching
-class AvatarCacheNotifier extends StateNotifier<Map<String, Uint8List?>> {
-  final Ref ref;
-
-  AvatarCacheNotifier(this.ref) : super({});
+class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
+  @override
+  Map<String, Uint8List?> build() {
+    return {};
+  }
 
   /// Get cache file for an address
   File _getCacheFile(String address) {

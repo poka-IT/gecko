@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -54,21 +53,29 @@ class NetworkActivityState {
   }
 }
 
-/// StateNotifier for managing network-wide transaction history with UD support
-class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
-  final Ref ref;
+/// Notifier for managing network-wide transaction history with UD support
+class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
   StreamSubscription<String?>? _networkActivitySubscription;
   String? _lastSeenTransactionId;
 
-  NetworkActivityNotifier(this.ref) : super(const NetworkActivityState()) {
+  @override
+  NetworkActivityState build() {
+    ref.onDispose(() => _networkActivitySubscription?.cancel());
+
     // Watch the cache buster to force refresh when Squid endpoint changes
     ref.listen(squidCacheBusterProvider, (previous, next) {
       log.i('🔥 Cache buster changed ($previous → $next) - reloading network activity');
       loadTransactions();
     });
 
-    loadTransactions();
-    _subscribeToNetworkActivity();
+    // Start initial load asynchronously
+    Future.microtask(() {
+      loadTransactions();
+      _subscribeToNetworkActivity();
+    });
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const NetworkActivityState(isLoading: true);
   }
 
   /// Subscribe to network-wide activity (triggers refreshes when new transactions occur)
@@ -126,6 +133,9 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        return; // Storage not ready yet
+      }
 
       // Fetch fresh network-wide transactions
       final result = await d.SquidService.client.getNetworkActivity(number: 20, cursor: null);
@@ -182,6 +192,10 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false, error: 'Storage not ready');
+        return;
+      }
       final includeUDs = ref.read(networkUniversalDividendsToggleProvider);
 
       List<TransactionDisplayItem> allTransactions = [];
@@ -282,6 +296,10 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false);
+        return;
+      }
       final includeUDs = ref.read(networkUniversalDividendsToggleProvider);
 
       // Fetch more network transactions using cursor pagination
@@ -323,30 +341,24 @@ class NetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
     state = const NetworkActivityState();
     await loadTransactions();
   }
-
-  @override
-  void dispose() {
-    _networkActivitySubscription?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for network activity
-final networkActivityProvider = StateNotifierProvider<NetworkActivityNotifier, NetworkActivityState>((ref) {
-  return NetworkActivityNotifier(ref);
-});
+final networkActivityProvider =
+    NotifierProvider<NetworkActivityNotifier, NetworkActivityState>(NetworkActivityNotifier.new);
 
 /// Provider for Universal Dividends toggle in network view
-final networkUniversalDividendsToggleProvider = StateNotifierProvider<UniversalDividendsToggleNotifier, bool>((ref) {
-  return UniversalDividendsToggleNotifier();
-});
+final networkUniversalDividendsToggleProvider =
+    NotifierProvider<UniversalDividendsToggleNotifier, bool>(UniversalDividendsToggleNotifier.new);
 
 /// Server-side filtered network activity notifier
-class ServerFilteredNetworkActivityNotifier extends StateNotifier<NetworkActivityState> {
-  final Ref ref;
+class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityState> {
   Timer? _debounceTimer;
 
-  ServerFilteredNetworkActivityNotifier(this.ref) : super(const NetworkActivityState()) {
+  @override
+  NetworkActivityState build() {
+    ref.onDispose(() => _debounceTimer?.cancel());
+
     // Listen to filter changes
     ref.listen(networkFiltersProvider, (previous, next) {
       if (previous != next) {
@@ -354,8 +366,11 @@ class ServerFilteredNetworkActivityNotifier extends StateNotifier<NetworkActivit
       }
     });
 
-    // Initial load
-    _loadNetworkActivityWithFilters();
+    // Initial load asynchronously
+    Future.microtask(() => _loadNetworkActivityWithFilters());
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const NetworkActivityState(isLoading: true);
   }
 
   /// Debounce filter updates to avoid excessive API calls
@@ -407,6 +422,10 @@ class ServerFilteredNetworkActivityNotifier extends StateNotifier<NetworkActivit
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false, error: 'Storage not ready');
+        return;
+      }
 
       if (hasFilters) {
         // Use server-side filtering via Durt2 (always start fresh, no cursor)
@@ -469,6 +488,10 @@ class ServerFilteredNetworkActivityNotifier extends StateNotifier<NetworkActivit
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false);
+        return;
+      }
 
       if (state.hasActiveFilters && state.appliedServerFilters != null) {
         // Load more with server filters (use only server-generated cursors)
@@ -513,19 +536,12 @@ class ServerFilteredNetworkActivityNotifier extends StateNotifier<NetworkActivit
     state = const NetworkActivityState();
     await _loadNetworkActivityWithFilters();
   }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for server-filtered network activity
 final serverFilteredNetworkActivityProvider =
-    StateNotifierProvider<ServerFilteredNetworkActivityNotifier, NetworkActivityState>((ref) {
-      return ServerFilteredNetworkActivityNotifier(ref);
-    });
+    NotifierProvider<ServerFilteredNetworkActivityNotifier, NetworkActivityState>(
+        ServerFilteredNetworkActivityNotifier.new);
 
 /// Adaptive network activity provider that chooses between server and client filtering
 final adaptiveFilteredNetworkActivityProvider = Provider<NetworkActivityState>((ref) {

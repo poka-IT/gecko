@@ -1,5 +1,5 @@
 import 'package:durt2/durt2.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 
 /// State for wallet name validation
@@ -21,15 +21,19 @@ class WalletNameValidationState {
 /// This provider manages the reactive validation state for wallet name input fields.
 /// It validates names based on length, character constraints, and uniqueness.
 final walletNameValidationProvider =
-    StateNotifierProvider.family<WalletNameValidationNotifier, WalletNameValidationState, WalletEntity?>(
-      (ref, editingWallet) => WalletNameValidationNotifier(editingWallet),
+    NotifierProvider.family<WalletNameValidationNotifier, WalletNameValidationState, WalletEntity?>(
+      (editingWallet) => WalletNameValidationNotifier(editingWallet),
     );
 
 /// Notifier for wallet name validation
-class WalletNameValidationNotifier extends StateNotifier<WalletNameValidationState> {
+class WalletNameValidationNotifier extends Notifier<WalletNameValidationState> {
+  WalletNameValidationNotifier(this._editingWallet);
   final WalletEntity? _editingWallet;
 
-  WalletNameValidationNotifier(this._editingWallet) : super(const WalletNameValidationState.initial());
+  @override
+  WalletNameValidationState build() {
+    return const WalletNameValidationState.initial();
+  }
 
   /// Validate wallet name and update state
   ///

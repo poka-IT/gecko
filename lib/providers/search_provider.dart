@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/providers/providers.dart';
 
@@ -25,11 +24,29 @@ class SearchState {
   bool get canValidate => searchText.length >= 2;
 }
 
-/// Search text state provider (simple StateProvider)
-final searchTextProvider = StateProvider<String>((ref) => '');
+/// Notifier for search text state
+class SearchTextNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void set(String value) => state = value;
+  void clear() => state = '';
+}
+
+/// Search text state provider
+final searchTextProvider = NotifierProvider<SearchTextNotifier, String>(SearchTextNotifier.new);
+
+/// Notifier for paste address state
+class PasteAddressNotifier extends Notifier<({bool canPaste, String address})> {
+  @override
+  ({bool canPaste, String address}) build() => (canPaste: false, address: '');
+
+  void set(({bool canPaste, String address}) value) => state = value;
+  void clear() => state = (canPaste: false, address: '');
+}
 
 /// Paste address state provider
-final pasteAddressProvider = StateProvider<({bool canPaste, String address})>((ref) => (canPaste: false, address: ''));
+final pasteAddressProvider = NotifierProvider<PasteAddressNotifier, ({bool canPaste, String address})>(PasteAddressNotifier.new);
 
 /// Search controller provider
 final searchControllerProvider = Provider<TextEditingController>((ref) {
@@ -37,7 +54,7 @@ final searchControllerProvider = Provider<TextEditingController>((ref) {
 
   // Listen to changes and update the search text provider
   controller.addListener(() {
-    ref.read(searchTextProvider.notifier).state = controller.text;
+    ref.read(searchTextProvider.notifier).set(controller.text);
   });
 
   // Cleanup when provider is disposed
@@ -53,7 +70,7 @@ final clearSearchProvider = Provider<VoidCallback>((ref) {
   return () {
     final controller = ref.read(searchControllerProvider);
     controller.clear();
-    ref.read(searchTextProvider.notifier).state = '';
+    ref.read(searchTextProvider.notifier).clear();
   };
 });
 
@@ -132,19 +149,25 @@ final searchStateProvider = Provider<SearchState>((ref) {
 /// Update paste address capability
 final updatePasteAddressProvider = Provider<void Function(bool, String)>((ref) {
   return (bool canPaste, String address) {
-    ref.read(pasteAddressProvider.notifier).state = (canPaste: canPaste, address: address);
+    ref.read(pasteAddressProvider.notifier).set((canPaste: canPaste, address: address));
   };
 });
 
 /// Clipboard monitoring state notifier
-class ClipboardMonitorNotifier extends StateNotifier<String?> {
-  final Ref ref;
+class ClipboardMonitorNotifier extends Notifier<String?> {
   Timer? _monitoringTimer;
   String? _lastClipboardContent;
   Timer? _debounceTimer;
 
-  ClipboardMonitorNotifier(this.ref) : super(null) {
+  @override
+  String? build() {
+    ref.onDispose(() {
+      _monitoringTimer?.cancel();
+      _debounceTimer?.cancel();
+    });
+
     _startMonitoring();
+    return null;
   }
 
   void _startMonitoring() {
@@ -199,19 +222,10 @@ class ClipboardMonitorNotifier extends StateNotifier<String?> {
       updatePasteAddress(false, '');
     }
   }
-
-  @override
-  void dispose() {
-    _monitoringTimer?.cancel();
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }
 
 /// Clipboard monitoring provider
-final clipboardMonitorProvider = StateNotifierProvider<ClipboardMonitorNotifier, String?>((ref) {
-  return ClipboardMonitorNotifier(ref);
-});
+final clipboardMonitorProvider = NotifierProvider<ClipboardMonitorNotifier, String?>(ClipboardMonitorNotifier.new);
 
 /// Provider to start clipboard monitoring (call this to initialize)
 final startClipboardMonitoringProvider = Provider<void>((ref) {

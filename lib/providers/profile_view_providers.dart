@@ -3,7 +3,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/routes.dart';
@@ -32,9 +31,15 @@ class ProfileViewState {
   }
 }
 
-/// StateNotifier for managing profile view state
-class ProfileViewNotifier extends StateNotifier<ProfileViewState> {
-  ProfileViewNotifier({String? initialAddress}) : super(ProfileViewState(address: initialAddress ?? ''));
+/// Notifier for managing profile view state
+class ProfileViewNotifier extends Notifier<ProfileViewState> {
+  ProfileViewNotifier(this._initialAddress);
+  final String? _initialAddress;
+
+  @override
+  ProfileViewState build() {
+    return ProfileViewState(address: _initialAddress ?? '');
+  }
 
   /// Updates the wallet address
   void setAddress(String address) {
@@ -71,12 +76,9 @@ class ProfileViewNotifier extends StateNotifier<ProfileViewState> {
 }
 
 /// Provider for profile view state
-final profileViewProvider = StateNotifierProvider.family<ProfileViewNotifier, ProfileViewState, String?>((
-  ref,
-  initialAddress,
-) {
-  return ProfileViewNotifier(initialAddress: initialAddress);
-});
+final profileViewProvider = NotifierProvider.family<ProfileViewNotifier, ProfileViewState, String?>(
+  (initialAddress) => ProfileViewNotifier(initialAddress),
+);
 
 /// Provider for payment amount controller
 final payAmountControllerProvider = Provider.family<TextEditingController, String?>((ref, address) {

@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/connection_providers.dart';
@@ -46,22 +45,34 @@ class TransactionHistoryState {
   }
 }
 
-/// StateNotifier for managing transfers-only transaction history
-class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState> {
-  final Ref ref;
-  final String address;
+/// Notifier for managing transfers-only transaction history
+class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
+  TransfersOnlyHistoryNotifier(this._address);
+  final String _address;
+
   StreamSubscription<String?>? _activitySubscription;
   String? _lastSeenTransactionId;
 
-  TransfersOnlyHistoryNotifier(this.ref, this.address) : super(const TransactionHistoryState()) {
+  String get address => _address;
+
+  @override
+  TransactionHistoryState build() {
+    ref.onDispose(() => _activitySubscription?.cancel());
+
     // Watch the cache buster to force refresh when Squid endpoint changes
     ref.listen(squidCacheBusterProvider, (previous, next) {
-      log.i('🔥 Cache buster changed ($previous → $next) - reloading transfers history for $address');
+      log.i('🔥 Cache buster changed ($previous → $next) - reloading transfers history for $_address');
       loadTransactions();
     });
 
-    loadTransactions();
-    _subscribeToAccountActivity();
+    // Start initial load asynchronously
+    Future.microtask(() {
+      loadTransactions();
+      _subscribeToAccountActivity();
+    });
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const TransactionHistoryState(isLoading: true);
   }
 
   /// Subscribe to account activity (simple subscription that triggers refreshes)
@@ -75,11 +86,11 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
 
     try {
       _activitySubscription = d.SquidService.client
-          .subscribeAccountActivity(address)
+          .subscribeAccountActivity(_address)
           .listen(
             (transactionId) {
               if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                print('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
+                print('New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
                 _lastSeenTransactionId = transactionId;
                 _onAccountActivity();
               } else if (transactionId != null) {
@@ -115,15 +126,18 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        return; // Storage not ready yet
+      }
 
-      print('🔄 Fetching fresh transfers-only data for $address');
+      print('🔄 Fetching fresh transfers-only data for $_address');
 
       // Fetch only transfers (simple pagination)
-      final result = await d.SquidService.client.getAccountHistory(address, number: 20, cursor: null);
+      final result = await d.SquidService.client.getAccountHistory(_address, number: 20, cursor: null);
 
       if (result != null) {
         final newTransactions = result.edges
-            .map((edge) => TransactionDisplayItem.fromGraphQLNode(edge.node, address, genesisTime))
+            .map((edge) => TransactionDisplayItem.fromGraphQLNode(edge.node, _address, genesisTime))
             .toList();
 
         // Check if we actually have new transactions by comparing with current state
@@ -173,9 +187,13 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false, error: 'Storage not ready');
+        return;
+      }
 
       // Fetch only transfers (simple pagination)
-      final result = await d.SquidService.client.getAccountHistory(address, number: 20, cursor: null);
+      final result = await d.SquidService.client.getAccountHistory(_address, number: 20, cursor: null);
 
       if (result == null) {
         state = state.copyWith(transactions: [], isLoading: false, hasNextPage: false, cursor: null);
@@ -183,7 +201,7 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
       }
 
       final transactions = result.edges
-          .map((edge) => TransactionDisplayItem.fromGraphQLNode(edge.node, address, genesisTime))
+          .map((edge) => TransactionDisplayItem.fromGraphQLNode(edge.node, _address, genesisTime))
           .toList();
 
       // Store the most recent transaction ID for activity detection
@@ -216,9 +234,13 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false);
+        return;
+      }
 
       // Fetch more transfers using cursor pagination
-      final result = await d.SquidService.client.getAccountHistory(address, number: 20, cursor: state.cursor);
+      final result = await d.SquidService.client.getAccountHistory(_address, number: 20, cursor: state.cursor);
 
       if (result == null) {
         state = state.copyWith(isLoading: false);
@@ -226,7 +248,7 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
       }
 
       final newTransactions = result.edges
-          .map((edge) => TransactionDisplayItem.fromGraphQLNode(edge.node, address, genesisTime))
+          .map((edge) => TransactionDisplayItem.fromGraphQLNode(edge.node, _address, genesisTime))
           .toList();
 
       state = state.copyWith(
@@ -245,30 +267,36 @@ class TransfersOnlyHistoryNotifier extends StateNotifier<TransactionHistoryState
     state = const TransactionHistoryState();
     await loadTransactions();
   }
-
-  @override
-  void dispose() {
-    _activitySubscription?.cancel();
-    super.dispose();
-  }
 }
 
-/// StateNotifier for managing combined transaction history (transfers + UDs)
-class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
-  final Ref ref;
-  final String address;
+/// Notifier for managing combined transaction history (transfers + UDs)
+class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
+  CombinedHistoryNotifier(this._address);
+  final String _address;
+
   StreamSubscription<String?>? _activitySubscription;
   String? _lastSeenTransactionId;
 
-  CombinedHistoryNotifier(this.ref, this.address) : super(const TransactionHistoryState()) {
+  String get address => _address;
+
+  @override
+  TransactionHistoryState build() {
+    ref.onDispose(() => _activitySubscription?.cancel());
+
     // Watch the cache buster to force refresh when Squid endpoint changes
     ref.listen(squidCacheBusterProvider, (previous, next) {
-      log.i('🔥 Cache buster changed ($previous → $next) - reloading combined history for $address');
+      log.i('🔥 Cache buster changed ($previous → $next) - reloading combined history for $_address');
       loadTransactions();
     });
 
-    loadTransactions();
-    _subscribeToAccountActivity();
+    // Start initial load asynchronously
+    Future.microtask(() {
+      loadTransactions();
+      _subscribeToAccountActivity();
+    });
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const TransactionHistoryState(isLoading: true);
   }
 
   /// Subscribe to account activity (simple subscription that triggers refreshes)
@@ -282,11 +310,11 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
     try {
       _activitySubscription = d.SquidService.client
-          .subscribeAccountActivity(address)
+          .subscribeAccountActivity(_address)
           .listen(
             (transactionId) {
               if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                print('New activity detected for $address: $transactionId (previous: $_lastSeenTransactionId)');
+                print('New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
                 _lastSeenTransactionId = transactionId;
                 _onAccountActivity();
               } else if (transactionId != null) {
@@ -322,12 +350,15 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        return; // Storage not ready yet
+      }
 
-      print('Fetching fresh combined data for $address');
+      print('Fetching fresh combined data for $_address');
 
       // Fetch both transfers and UDs combined
       final result = await d.SquidService.client.getCombinedAccountHistory(
-        address,
+        _address,
         number: 20,
         cursor: null,
         includeUniversalDividends: true,
@@ -338,9 +369,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
         final newTransactions = result.items
             .map((item) {
               if (item is d.Query$GetAccountHistory$transfers$edges$node) {
-                return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
+                return TransactionDisplayItem.fromGraphQLNode(item, _address, genesisTime);
               } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
-                return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
+                return TransactionDisplayItem.fromUdHistoryNode(item, _address, genesisTime);
               } else {
                 log.e('Unknown item type in combined history: ${item.runtimeType}');
                 return null;
@@ -396,10 +427,14 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false, error: 'Storage not ready');
+        return;
+      }
 
       // Fetch both transfers and UDs combined
       final result = await d.SquidService.client.getCombinedAccountHistory(
-        address,
+        _address,
         number: 20,
         cursor: null,
         includeUniversalDividends: true,
@@ -414,9 +449,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
       final transactions = result.items
           .map((item) {
             if (item is d.Query$GetAccountHistory$transfers$edges$node) {
-              return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
+              return TransactionDisplayItem.fromGraphQLNode(item, _address, genesisTime);
             } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
-              return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
+              return TransactionDisplayItem.fromUdHistoryNode(item, _address, genesisTime);
             } else {
               log.e('Unknown item type in combined history: ${item.runtimeType}');
               return null;
@@ -455,6 +490,10 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false);
+        return;
+      }
 
       // Convert cursor (timestamp string) to DateTime for pagination
       DateTime? beforeTimestamp;
@@ -470,7 +509,7 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
 
       // Fetch more combined transactions using timestamp-based pagination
       final result = await d.SquidService.client.getCombinedAccountHistory(
-        address,
+        _address,
         number: 20,
         cursor: null,
         includeUniversalDividends: true,
@@ -485,9 +524,9 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
       final newTransactions = result.items
           .map((item) {
             if (item is d.Query$GetAccountHistory$transfers$edges$node) {
-              return TransactionDisplayItem.fromGraphQLNode(item, address, genesisTime);
+              return TransactionDisplayItem.fromGraphQLNode(item, _address, genesisTime);
             } else if (item is d.Query$GetUdHistoryViaIdentity$identities$edges$node$udHistory$edges$node) {
-              return TransactionDisplayItem.fromUdHistoryNode(item, address, genesisTime);
+              return TransactionDisplayItem.fromUdHistoryNode(item, _address, genesisTime);
             } else {
               log.e('Unknown item type in combined history: ${item.runtimeType}');
               return null;
@@ -512,27 +551,17 @@ class CombinedHistoryNotifier extends StateNotifier<TransactionHistoryState> {
     state = const TransactionHistoryState();
     await loadTransactions();
   }
-
-  @override
-  void dispose() {
-    _activitySubscription?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for transfers-only transaction history
 final transfersOnlyHistoryProvider =
-    StateNotifierProvider.family<TransfersOnlyHistoryNotifier, TransactionHistoryState, String>((ref, address) {
-      return TransfersOnlyHistoryNotifier(ref, address);
-    });
+    NotifierProvider.family<TransfersOnlyHistoryNotifier, TransactionHistoryState, String>(
+        (address) => TransfersOnlyHistoryNotifier(address));
 
 /// Provider for combined transaction history (transfers + UDs)
-final combinedHistoryProvider = StateNotifierProvider.family<CombinedHistoryNotifier, TransactionHistoryState, String>((
-  ref,
-  address,
-) {
-  return CombinedHistoryNotifier(ref, address);
-});
+final combinedHistoryProvider =
+    NotifierProvider.family<CombinedHistoryNotifier, TransactionHistoryState, String>(
+        (address) => CombinedHistoryNotifier(address));
 
 /// Conditional provider that switches between transfers-only and combined history based on toggle
 final transactionHistoryProvider = Provider.family<TransactionHistoryState, String>((ref, address) {
@@ -591,8 +620,9 @@ Future<void> loadMoreTransactions(WidgetRef ref, String address) async {
 }
 
 /// Simple notifier to trigger scroll to top events
-class ScrollToTopNotifier extends StateNotifier<int> {
-  ScrollToTopNotifier() : super(0);
+class ScrollToTopNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
 
   void triggerScrollToTop() {
     state = state + 1; // Increment to trigger watchers
@@ -600,9 +630,7 @@ class ScrollToTopNotifier extends StateNotifier<int> {
 }
 
 /// Provider for scroll to top events
-final scrollToTopProvider = StateNotifierProvider<ScrollToTopNotifier, int>((ref) {
-  return ScrollToTopNotifier();
-});
+final scrollToTopProvider = NotifierProvider<ScrollToTopNotifier, int>(ScrollToTopNotifier.new);
 
 /// Enhanced transaction history provider with adaptive server-side filtering
 final filteredTransactionHistoryProvider = Provider.family<TransactionHistoryState, String>((ref, address) {

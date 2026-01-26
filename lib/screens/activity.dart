@@ -140,13 +140,20 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
 
   Widget _buildFixedHeader() {
     final balanceAsync = ref.watch(smartBalanceStreamProvider(widget.address));
-    final balance = balanceAsync.hasValue ? balanceAsync.value?.transferableBalance : null;
-    final isEmptyWallet = balance == null || balance == BigInt.zero;
 
     // Determine background color based on wallet state
-    final backgroundColor = isEmptyWallet
-        ? Theme.of(context).colorScheme.error
-        : Theme.of(context).colorScheme.tertiary;
+    // Use tertiary (normal) color during loading to avoid flash
+    final Color backgroundColor;
+    if (balanceAsync.isLoading && !balanceAsync.hasValue) {
+      // Still loading, use neutral color
+      backgroundColor = Theme.of(context).colorScheme.tertiary;
+    } else {
+      final balance = balanceAsync.value?.transferableBalance;
+      final isEmptyWallet = balance == null || balance == BigInt.zero;
+      backgroundColor = isEmptyWallet
+          ? Theme.of(context).colorScheme.error
+          : Theme.of(context).colorScheme.tertiary;
+    }
 
     return Container(
       color: backgroundColor,

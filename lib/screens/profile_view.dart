@@ -344,7 +344,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
         // If no wallet is selected, default to the first one
         if (selectedAddress == null && identityWallets.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            ref.read(selectedCertificationWalletProvider.notifier).state = identityWallets.first.address;
+            ref.read(selectedCertificationWalletProvider.notifier).set(identityWallets.first.address);
           });
         }
 
@@ -381,7 +381,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
                 }).toList(),
                 onChanged: (newAddress) {
                   if (newAddress != null) {
-                    ref.read(selectedCertificationWalletProvider.notifier).state = newAddress;
+                    ref.read(selectedCertificationWalletProvider.notifier).set(newAddress);
                   }
                 },
               ),

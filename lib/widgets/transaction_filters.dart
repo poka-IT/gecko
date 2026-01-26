@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -151,9 +150,9 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
 
     // Update the appropriate provider state
     if (widget.mode == FilterMode.network) {
-      ref.read(networkFilterPanelExpandedProvider.notifier).state = _isExpanded;
+      ref.read(networkFilterPanelExpandedProvider.notifier).set(_isExpanded);
     } else {
-      ref.read(filterPanelExpandedProvider.notifier).state = _isExpanded;
+      ref.read(filterPanelExpandedProvider.notifier).set(_isExpanded);
     }
 
     if (_isExpanded) {
@@ -167,6 +166,21 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
 
     // Load current filter values before showing
     _loadCurrentFilters();
+
+    // Create local controllers for the modal to avoid using disposed parent controllers
+    final modalAddressController = TextEditingController(text: _addressController.text);
+    final modalCommentController = TextEditingController(text: _commentController.text);
+    final modalMinAmountController = TextEditingController(text: _minAmountController.text);
+    final modalMaxAmountController = TextEditingController(text: _maxAmountController.text);
+    final modalFromAddressController = TextEditingController(text: _fromAddressController.text);
+    final modalToAddressController = TextEditingController(text: _toAddressController.text);
+
+    // Local state for dates and exact match (copy from parent)
+    DateTime? modalStartDate = _startDate;
+    DateTime? modalEndDate = _endDate;
+    bool modalExactMatchAddress = _localExactMatchAddress;
+    bool modalExactMatchComment = _localExactMatchComment;
+    bool modalExactMatchDirection = _localExactMatchDirection;
 
     showModalBottomSheet(
       context: context,
@@ -237,13 +251,13 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                           modalContext,
                           setModalState,
                           label: 'searchAddressOrName'.tr(),
-                          controller: _addressController,
+                          controller: modalAddressController,
                           hintText: 'enterAddressOrName'.tr(),
                           icon: Icons.person_search,
-                          isExactMatch: _localExactMatchAddress,
+                          isExactMatch: modalExactMatchAddress,
                           onExactMatchChanged: () {
                             setModalState(() {
-                              _localExactMatchAddress = !_localExactMatchAddress;
+                              modalExactMatchAddress = !modalExactMatchAddress;
                             });
                           },
                         ),
@@ -253,13 +267,13 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                           modalContext,
                           setModalState,
                           label: 'fromAddressOrName'.tr(),
-                          controller: _fromAddressController,
+                          controller: modalFromAddressController,
                           hintText: 'enterFromAddressOrName'.tr(),
                           icon: Icons.call_made,
-                          isExactMatch: _localExactMatchDirection,
+                          isExactMatch: modalExactMatchDirection,
                           onExactMatchChanged: () {
                             setModalState(() {
-                              _localExactMatchDirection = !_localExactMatchDirection;
+                              modalExactMatchDirection = !modalExactMatchDirection;
                             });
                           },
                         ),
@@ -268,13 +282,13 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                           modalContext,
                           setModalState,
                           label: 'toAddressOrName'.tr(),
-                          controller: _toAddressController,
+                          controller: modalToAddressController,
                           hintText: 'enterToAddressOrName'.tr(),
                           icon: Icons.call_received,
-                          isExactMatch: _localExactMatchDirection,
+                          isExactMatch: modalExactMatchDirection,
                           onExactMatchChanged: () {
                             setModalState(() {
-                              _localExactMatchDirection = !_localExactMatchDirection;
+                              modalExactMatchDirection = !modalExactMatchDirection;
                             });
                           },
                         ),
@@ -286,17 +300,17 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                         modalContext,
                         setModalState,
                         label: 'searchComment'.tr(),
-                        controller: _commentController,
+                        controller: modalCommentController,
                         hintText: widget.mode == FilterMode.network
                             ? 'commentFilterDisabledNetwork'.tr()
                             : 'enterCommentKeywords'.tr(),
                         icon: Icons.comment_outlined,
-                        isExactMatch: _localExactMatchComment,
+                        isExactMatch: modalExactMatchComment,
                         onExactMatchChanged: widget.mode == FilterMode.network
                             ? null
                             : () {
                                 setModalState(() {
-                                  _localExactMatchComment = !_localExactMatchComment;
+                                  modalExactMatchComment = !modalExactMatchComment;
                                 });
                               },
                         enabled: widget.mode != FilterMode.network,
@@ -305,12 +319,32 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                       SizedBox(height: scaleSize(16)),
 
                       // Date range
-                      _buildDateRangeFilterModal(modalContext, setModalState),
+                      _buildDateRangeFilterModalWithState(
+                        modalContext,
+                        setModalState,
+                        startDate: modalStartDate,
+                        endDate: modalEndDate,
+                        onStartDateChanged: (date) {
+                          setModalState(() {
+                            modalStartDate = date;
+                          });
+                        },
+                        onEndDateChanged: (date) {
+                          setModalState(() {
+                            modalEndDate = date;
+                          });
+                        },
+                      ),
 
                       SizedBox(height: scaleSize(16)),
 
                       // Amount range
-                      _buildAmountRangeFilterModal(modalContext, setModalState),
+                      _buildAmountRangeFilterModalWithControllers(
+                        modalContext,
+                        setModalState,
+                        minController: modalMinAmountController,
+                        maxController: modalMaxAmountController,
+                      ),
 
                       SizedBox(height: scaleSize(16)),
 
@@ -343,6 +377,21 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                     Expanded(
                       child: TextButton(
                         onPressed: () {
+                          // Clear all modal controllers
+                          modalAddressController.clear();
+                          modalCommentController.clear();
+                          modalMinAmountController.clear();
+                          modalMaxAmountController.clear();
+                          modalFromAddressController.clear();
+                          modalToAddressController.clear();
+                          setModalState(() {
+                            modalStartDate = null;
+                            modalEndDate = null;
+                            modalExactMatchAddress = false;
+                            modalExactMatchComment = false;
+                            modalExactMatchDirection = false;
+                          });
+                          // Apply the cleared filters
                           _clearAllFilters();
                           Navigator.pop(modalContext);
                         },
@@ -365,7 +414,20 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          _applyAdvancedFilters();
+                          // Apply filters using modal controller values
+                          _applyAdvancedFiltersFromModal(
+                            addressText: modalAddressController.text,
+                            commentText: modalCommentController.text,
+                            minAmountText: modalMinAmountController.text,
+                            maxAmountText: modalMaxAmountController.text,
+                            fromAddressText: modalFromAddressController.text,
+                            toAddressText: modalToAddressController.text,
+                            startDate: modalStartDate,
+                            endDate: modalEndDate,
+                            exactMatchAddress: modalExactMatchAddress,
+                            exactMatchComment: modalExactMatchComment,
+                            exactMatchDirection: modalExactMatchDirection,
+                          );
                           Navigator.pop(modalContext);
                         },
                         style: ElevatedButton.styleFrom(
@@ -390,6 +452,11 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
         ),
       ),
     ).whenComplete(() {
+      // Note: We intentionally do NOT dispose the modal controllers here.
+      // Disposing them while the modal animation is completing can cause
+      // "TextEditingController was used after being disposed" errors.
+      // The controllers will be garbage collected when they're no longer referenced.
+
       // Reset expanded state when bottom sheet closes
       if (mounted) {
         setState(() {
@@ -397,70 +464,61 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
         });
         // Only update provider if widget is still mounted
         if (widget.mode == FilterMode.network) {
-          ref.read(networkFilterPanelExpandedProvider.notifier).state = false;
+          ref.read(networkFilterPanelExpandedProvider.notifier).set(false);
         } else {
-          ref.read(filterPanelExpandedProvider.notifier).state = false;
+          ref.read(filterPanelExpandedProvider.notifier).set(false);
         }
       }
     });
   }
 
-  void _applyAdvancedFilters() {
-    if (!mounted) return; // Check if widget is still mounted before using ref
+  /// Apply filters from modal values (avoids using potentially disposed parent controllers)
+  void _applyAdvancedFiltersFromModal({
+    required String addressText,
+    required String commentText,
+    required String minAmountText,
+    required String maxAmountText,
+    required String fromAddressText,
+    required String toAddressText,
+    required DateTime? startDate,
+    required DateTime? endDate,
+    required bool exactMatchAddress,
+    required bool exactMatchComment,
+    required bool exactMatchDirection,
+  }) {
+    if (!mounted) return;
 
     final filtersNotifier = widget.mode == FilterMode.network
         ? ref.read(networkFiltersProvider.notifier)
         : ref.read(transactionFiltersProvider.notifier);
 
-    // Handle amount filters with proper validation
-    String minAmountText = '';
-    String maxAmountText = '';
-
-    try {
-      if (widget.mode == FilterMode.account) {
-        // Apply account-specific filters
-        final addressText = _addressController.text.trim();
-        filtersNotifier.updateAddressOrNameSearch(addressText);
-      } else {
-        // Apply network-specific direction filters
-        final fromText = _fromAddressController.text.trim();
-        final toText = _toAddressController.text.trim();
-        filtersNotifier.updateDirectionFilter(fromText, toText);
-      }
-
-      // Apply common filters (except comment search for network mode)
-      if (widget.mode != FilterMode.network) {
-        final commentText = _commentController.text.trim();
-        filtersNotifier.updateCommentSearch(commentText);
-      } else {
-        // Clear comment filter for network mode
-        filtersNotifier.updateCommentSearch('');
-      }
-
-      filtersNotifier.updateDateRange(_startDate, _endDate);
-
-      // Get amount text values
-      minAmountText = _minAmountController.text.trim();
-      maxAmountText = _maxAmountController.text.trim();
-    } catch (e) {
-      // Controllers might be disposed, ignore and apply basic filters
-      filtersNotifier.updateAddressOrNameSearch('');
-      filtersNotifier.updateCommentSearch('');
-      filtersNotifier.updateDirectionFilter('', '');
-      filtersNotifier.updateDateRange(_startDate, _endDate);
-      return;
+    if (widget.mode == FilterMode.account) {
+      filtersNotifier.updateAddressOrNameSearch(addressText.trim());
+    } else {
+      filtersNotifier.updateDirectionFilter(fromAddressText.trim(), toAddressText.trim());
     }
 
-    final minAmount = minAmountText.isEmpty ? null : convertAmountToBigInt(double.tryParse(minAmountText) ?? 0);
-    final maxAmount = maxAmountText.isEmpty ? null : convertAmountToBigInt(double.tryParse(maxAmountText) ?? 0);
+    if (widget.mode != FilterMode.network) {
+      filtersNotifier.updateCommentSearch(commentText.trim());
+    } else {
+      filtersNotifier.updateCommentSearch('');
+    }
+
+    filtersNotifier.updateDateRange(startDate, endDate);
+
+    final minAmount = minAmountText.trim().isEmpty
+        ? null
+        : convertAmountToBigInt(double.tryParse(minAmountText.trim()) ?? 0);
+    final maxAmount = maxAmountText.trim().isEmpty
+        ? null
+        : convertAmountToBigInt(double.tryParse(maxAmountText.trim()) ?? 0);
 
     filtersNotifier.updateAmountRange(minAmount, maxAmount);
 
-    // Apply exact match settings
-    filtersNotifier.updateExactMatchAddress(_localExactMatchAddress);
-    filtersNotifier.updateExactMatchComment(_localExactMatchComment);
+    filtersNotifier.updateExactMatchAddress(exactMatchAddress);
+    filtersNotifier.updateExactMatchComment(exactMatchComment);
     if (widget.mode == FilterMode.network) {
-      filtersNotifier.updateExactMatchDirection(_localExactMatchDirection);
+      filtersNotifier.updateExactMatchDirection(exactMatchDirection);
     }
   }
 
@@ -752,7 +810,12 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
     );
   }
 
-  Widget _buildAmountRangeFilterModal(BuildContext modalContext, StateSetter setModalState) {
+  Widget _buildAmountRangeFilterModalWithControllers(
+    BuildContext modalContext,
+    StateSetter setModalState, {
+    required TextEditingController minController,
+    required TextEditingController maxController,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -769,7 +832,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
           children: [
             Expanded(
               child: TextField(
-                controller: _minAmountController,
+                controller: minController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   hintText: 'minimum'.tr(),
@@ -799,7 +862,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
             SizedBox(width: scaleSize(12)),
             Expanded(
               child: TextField(
-                controller: _maxAmountController,
+                controller: maxController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   hintText: 'maximum'.tr(),
@@ -832,7 +895,14 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
     );
   }
 
-  Widget _buildDateRangeFilterModal(BuildContext modalContext, StateSetter setModalState) {
+  Widget _buildDateRangeFilterModalWithState(
+    BuildContext modalContext,
+    StateSetter setModalState, {
+    required DateTime? startDate,
+    required DateTime? endDate,
+    required void Function(DateTime?) onStartDateChanged,
+    required void Function(DateTime?) onEndDateChanged,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -851,7 +921,23 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
             // Start date field
             Expanded(
               child: GestureDetector(
-                onTap: () => _selectStartDateModal(setModalState),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: startDate ?? DateTime.now(),
+                    firstDate: _minSelectableDate,
+                    lastDate: DateTime.now(),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(colorScheme: context.colorScheme),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (picked != null) {
+                    onStartDateChanged(picked);
+                  }
+                },
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
                   decoration: BoxDecoration(
@@ -864,18 +950,18 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                       SizedBox(width: scaleSize(8)),
                       Expanded(
                         child: Text(
-                          _startDate != null ? DateFormat('dd/MM/yyyy').format(_startDate!) : 'startDate'.tr(),
+                          startDate != null ? DateFormat('dd/MM/yyyy').format(startDate) : 'startDate'.tr(),
                           style: scaledTextStyle(
                             fontSize: 14,
-                            color: _startDate != null
+                            color: startDate != null
                                 ? modalContext.colorScheme.onSurface
                                 : modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
-                      if (_startDate != null)
+                      if (startDate != null)
                         GestureDetector(
-                          onTap: () => _clearStartDateModal(setModalState),
+                          onTap: () => onStartDateChanged(null),
                           child: Icon(
                             Icons.close,
                             size: scaleSize(16),
@@ -893,7 +979,23 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
             // End date field
             Expanded(
               child: GestureDetector(
-                onTap: () => _selectEndDateModal(setModalState),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: endDate ?? DateTime.now(),
+                    firstDate: _minSelectableDate,
+                    lastDate: DateTime.now(),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(colorScheme: context.colorScheme),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (picked != null) {
+                    onEndDateChanged(picked);
+                  }
+                },
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
                   decoration: BoxDecoration(
@@ -906,18 +1008,18 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                       SizedBox(width: scaleSize(8)),
                       Expanded(
                         child: Text(
-                          _endDate != null ? DateFormat('dd/MM/yyyy').format(_endDate!) : 'endDate'.tr(),
+                          endDate != null ? DateFormat('dd/MM/yyyy').format(endDate) : 'endDate'.tr(),
                           style: scaledTextStyle(
                             fontSize: 14,
-                            color: _endDate != null
+                            color: endDate != null
                                 ? modalContext.colorScheme.onSurface
                                 : modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
-                      if (_endDate != null)
+                      if (endDate != null)
                         GestureDetector(
-                          onTap: () => _clearEndDateModal(setModalState),
+                          onTap: () => onEndDateChanged(null),
                           child: Icon(
                             Icons.close,
                             size: scaleSize(16),
@@ -933,12 +1035,15 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
         ),
 
         // Clear all dates button
-        if (_startDate != null || _endDate != null) ...[
+        if (startDate != null || endDate != null) ...[
           SizedBox(height: scaleSize(8)),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
-              onPressed: () => _clearAllDatesModal(setModalState),
+              onPressed: () {
+                onStartDateChanged(null);
+                onEndDateChanged(null);
+              },
               icon: Icon(Icons.clear_all, size: scaleSize(16)),
               label: Text('clearDates'.tr()),
               style: TextButton.styleFrom(
@@ -950,70 +1055,5 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
         ],
       ],
     );
-  }
-
-  Future<void> _selectStartDateModal(StateSetter setModalState) async {
-    if (!mounted) return;
-
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _startDate ?? DateTime.now(),
-      firstDate: _minSelectableDate,
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(colorScheme: context.colorScheme),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && mounted) {
-      setModalState(() {
-        _startDate = picked;
-      });
-    }
-  }
-
-  Future<void> _selectEndDateModal(StateSetter setModalState) async {
-    if (!mounted) return;
-
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _endDate ?? DateTime.now(),
-      firstDate: _minSelectableDate,
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(colorScheme: context.colorScheme),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && mounted) {
-      setModalState(() {
-        _endDate = picked;
-      });
-    }
-  }
-
-  void _clearStartDateModal(StateSetter setModalState) {
-    setModalState(() {
-      _startDate = null;
-    });
-  }
-
-  void _clearEndDateModal(StateSetter setModalState) {
-    setModalState(() {
-      _endDate = null;
-    });
-  }
-
-  void _clearAllDatesModal(StateSetter setModalState) {
-    setModalState(() {
-      _startDate = null;
-      _endDate = null;
-    });
   }
 }

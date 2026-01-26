@@ -4,7 +4,6 @@ import 'package:durt2/durt2.dart' show BidouilleLang;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 
 import 'package:gecko/services/mnemonic_service.dart';
@@ -36,9 +35,12 @@ class MnemonicState {
   BidouilleLang? get originalLanguage => mnemonicResult?.originalLanguage;
 }
 
-/// StateNotifier for managing mnemonic generation and validation
-class MnemonicStateNotifier extends StateNotifier<MnemonicState> {
-  MnemonicStateNotifier() : super(const MnemonicState());
+/// Notifier for managing mnemonic generation and validation
+class MnemonicStateNotifier extends Notifier<MnemonicState> {
+  @override
+  MnemonicState build() {
+    return const MnemonicState();
+  }
 
   /// Generate a new mnemonic in the specified language
   Future<void> generateMnemonic({required BidouilleLang targetLanguage, bool forceEnglish = false}) async {
@@ -79,9 +81,7 @@ class MnemonicStateNotifier extends StateNotifier<MnemonicState> {
 }
 
 /// Provider for mnemonic state management
-final mnemonicStateProvider = StateNotifierProvider<MnemonicStateNotifier, MnemonicState>((ref) {
-  return MnemonicStateNotifier();
-});
+final mnemonicStateProvider = NotifierProvider<MnemonicStateNotifier, MnemonicState>(MnemonicStateNotifier.new);
 
 /// State for mnemonic word input validation
 class MnemonicInputState {
@@ -110,9 +110,12 @@ class MnemonicInputState {
   bool get hasAllWords => words.length == 12 && words.every((w) => w.isNotEmpty);
 }
 
-/// StateNotifier for managing mnemonic input validation
-class MnemonicInputNotifier extends StateNotifier<MnemonicInputState> {
-  MnemonicInputNotifier() : super(MnemonicInputState(words: List.filled(12, '')));
+/// Notifier for managing mnemonic input validation
+class MnemonicInputNotifier extends Notifier<MnemonicInputState> {
+  @override
+  MnemonicInputState build() {
+    return MnemonicInputState(words: List.filled(12, ''));
+  }
 
   /// Update a specific word and validate it
   Future<void> updateWord(int index, String word) async {
@@ -177,9 +180,7 @@ class MnemonicInputNotifier extends StateNotifier<MnemonicInputState> {
 }
 
 /// Provider for mnemonic input state
-final mnemonicInputProvider = StateNotifierProvider<MnemonicInputNotifier, MnemonicInputState>((ref) {
-  return MnemonicInputNotifier();
-});
+final mnemonicInputProvider = NotifierProvider<MnemonicInputNotifier, MnemonicInputState>(MnemonicInputNotifier.new);
 
 /// Text controllers for mnemonic input fields (12 controllers)
 final mnemonicControllersProvider = Provider<List<TextEditingController>>((ref) {
@@ -278,9 +279,12 @@ class WordChallengeState {
   }
 }
 
-/// StateNotifier for word validation challenge
-class WordChallengeNotifier extends StateNotifier<WordChallengeState> {
-  WordChallengeNotifier() : super(const WordChallengeState());
+/// Notifier for word validation challenge
+class WordChallengeNotifier extends Notifier<WordChallengeState> {
+  @override
+  WordChallengeState build() {
+    return const WordChallengeState();
+  }
 
   void checkWord(String input, String expectedWord) {
     final normalizedInput = input.trim().toLowerCase();
@@ -298,9 +302,7 @@ class WordChallengeNotifier extends StateNotifier<WordChallengeState> {
 }
 
 /// Provider for word validation challenge state
-final wordChallengeProvider = StateNotifierProvider<WordChallengeNotifier, WordChallengeState>((ref) {
-  return WordChallengeNotifier();
-});
+final wordChallengeProvider = NotifierProvider<WordChallengeNotifier, WordChallengeState>(WordChallengeNotifier.new);
 
 /// Provider for clearing mnemonic input
 final clearMnemonicInputProvider = Provider<VoidCallback>((ref) {

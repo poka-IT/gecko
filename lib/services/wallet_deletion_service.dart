@@ -152,7 +152,7 @@ class WalletDeletionService {
           case TransactionState.error || TransactionState.timeout || TransactionState.none:
             errorMessage = status.errorMessage ?? 'unknownError'.tr();
             break;
-          case TransactionState.pending || TransactionState.futureNonce:
+          case TransactionState.pending || TransactionState.futureNonce || TransactionState.retrying:
             continue;
         }
         // Exit the loop once we have a final state (success or error)

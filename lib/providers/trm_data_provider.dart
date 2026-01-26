@@ -1,6 +1,5 @@
 import 'package:durt2/durt2.dart' hide Provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:durt2/durt2.dart' as durt2;
@@ -76,14 +75,10 @@ class TrmData {
 }
 
 /// Provider for TRM data (Money supply and Members count)
-final trmDataProvider = StateNotifierProvider<TrmDataNotifier, AsyncValue<TrmData>>((ref) {
-  return TrmDataNotifier();
-});
+final trmDataProvider = NotifierProvider<TrmDataNotifier, AsyncValue<TrmData>>(TrmDataNotifier.new);
 
 /// Provider for current currency display mode
-final currencyDisplayModeProvider = StateNotifierProvider<CurrencyDisplayModeNotifier, CurrencyDisplayMode>((ref) {
-  return CurrencyDisplayModeNotifier();
-});
+final currencyDisplayModeProvider = NotifierProvider<CurrencyDisplayModeNotifier, CurrencyDisplayMode>(CurrencyDisplayModeNotifier.new);
 
 /// Provider for balance ratio calculation
 final balanceRatioProvider = Provider<BigInt>((ref) {
@@ -120,9 +115,11 @@ BigInt _getBalanceRatio(CurrencyDisplayMode displayMode, TrmData? trmData, Ref r
   }
 }
 
-class TrmDataNotifier extends StateNotifier<AsyncValue<TrmData>> {
-  TrmDataNotifier() : super(const AsyncValue.loading()) {
-    _loadTrmData();
+class TrmDataNotifier extends Notifier<AsyncValue<TrmData>> {
+  @override
+  AsyncValue<TrmData> build() {
+    Future.microtask(() => _loadTrmData());
+    return const AsyncValue.loading();
   }
 
   /// Load TRM data from Duniter blockchain
@@ -149,10 +146,7 @@ class TrmDataNotifier extends StateNotifier<AsyncValue<TrmData>> {
       );
     } catch (error, stackTrace) {
       log.e('Error loading TRM data: $error');
-      // Check if still mounted before updating state with error
-      if (mounted) {
-        state = AsyncValue.error(error, stackTrace);
-      }
+      state = AsyncValue.error(error, stackTrace);
     }
   }
 
@@ -162,10 +156,13 @@ class TrmDataNotifier extends StateNotifier<AsyncValue<TrmData>> {
   }
 }
 
-class CurrencyDisplayModeNotifier extends StateNotifier<CurrencyDisplayMode> {
-  CurrencyDisplayModeNotifier() : super(_getInitialMode());
+class CurrencyDisplayModeNotifier extends Notifier<CurrencyDisplayMode> {
+  @override
+  CurrencyDisplayMode build() {
+    return _getInitialMode();
+  }
 
-  static CurrencyDisplayMode _getInitialMode() {
+  CurrencyDisplayMode _getInitialMode() {
     // Check if user has legacy DU mode enabled
     final isUdUnit = configBox.get('isUdUnit') ?? false;
     if (isUdUnit) {

@@ -37,12 +37,15 @@ class CertificationDisplayItem {
     this.updatedBlockHeight,
   });
 
-  static Future<CertificationDisplayItem> fromNetworkCertificationNode(
+  static Future<CertificationDisplayItem?> fromNetworkCertificationNode(
     Query$GetNetworkCertifications$certs$edges$node node,
     Ref ref,
   ) async {
     // Get genesis blockchain time for block number conversion
     final genesisTime = await ref.read(genesisTimeProvider.future);
+    if (genesisTime == null) {
+      return null; // Storage not ready yet
+    }
 
     // Convert block numbers to proper timestamps
     final DateTime creationTime = Durt.i.storage.blocNumberToDate(node.createdOn, genesisTime);
@@ -93,12 +96,15 @@ class CertificationDisplayItem {
     );
   }
 
-  static Future<CertificationDisplayItem> fromFilteredNetworkCertificationNode(
+  static Future<CertificationDisplayItem?> fromFilteredNetworkCertificationNode(
     Query$GetNetworkCertificationsFiltered$certs$edges$node node,
     Ref ref,
   ) async {
     // Get genesis blockchain time for block number conversion
     final genesisTime = await ref.read(genesisTimeProvider.future);
+    if (genesisTime == null) {
+      return null; // Storage not ready yet
+    }
 
     // Convert block numbers to proper timestamps
     final DateTime creationTime = Durt.i.storage.blocNumberToDate(node.createdOn, genesisTime);

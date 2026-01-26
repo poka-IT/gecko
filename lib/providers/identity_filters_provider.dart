@@ -1,10 +1,13 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/identity_filters.dart';
 import 'package:gecko/models/transaction_filters.dart';
 
 /// Notifier for identity filter criteria
-class IdentityFiltersNotifier extends StateNotifier<IdentityFilterCriteria> {
-  IdentityFiltersNotifier() : super(const IdentityFilterCriteria());
+class IdentityFiltersNotifier extends Notifier<IdentityFilterCriteria> {
+  @override
+  IdentityFilterCriteria build() {
+    return const IdentityFilterCriteria();
+  }
 
   /// Update name search filter
   void updateNameSearch(String? nameSearch) {
@@ -53,9 +56,16 @@ class IdentityFiltersNotifier extends StateNotifier<IdentityFilterCriteria> {
 }
 
 /// Provider for identity filter criteria
-final identityFiltersProvider = StateNotifierProvider<IdentityFiltersNotifier, IdentityFilterCriteria>((ref) {
-  return IdentityFiltersNotifier();
-});
+final identityFiltersProvider = NotifierProvider<IdentityFiltersNotifier, IdentityFilterCriteria>(IdentityFiltersNotifier.new);
+
+/// Notifier for identity filter panel expansion state
+class IdentityFilterPanelExpandedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+  void set(bool value) => state = value;
+}
 
 /// Provider for identity filter panel expansion state
-final identityFilterPanelExpandedProvider = StateProvider<bool>((ref) => false);
+final identityFilterPanelExpandedProvider = NotifierProvider<IdentityFilterPanelExpandedNotifier, bool>(IdentityFilterPanelExpandedNotifier.new);

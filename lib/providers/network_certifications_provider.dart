@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/models/certification_display_item.dart';
@@ -49,15 +48,23 @@ class NetworkCertificationsState {
   }
 }
 
-/// StateNotifier for managing network-wide certification activity
-class NetworkCertificationsNotifier extends StateNotifier<NetworkCertificationsState> {
-  final Ref ref;
+/// Notifier for managing network-wide certification activity
+class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState> {
   StreamSubscription<String?>? _networkCertificationsSubscription;
   String? _lastSeenCertificationId;
 
-  NetworkCertificationsNotifier(this.ref) : super(const NetworkCertificationsState()) {
-    loadCertifications();
-    _subscribeToNetworkCertifications();
+  @override
+  NetworkCertificationsState build() {
+    ref.onDispose(() => _networkCertificationsSubscription?.cancel());
+
+    // Start initial load asynchronously
+    Future.microtask(() {
+      loadCertifications();
+      _subscribeToNetworkCertifications();
+    });
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const NetworkCertificationsState(isLoading: true);
   }
 
   /// Subscribe to network-wide certification activity (triggers refreshes when new certifications are issued)
@@ -117,9 +124,10 @@ class NetworkCertificationsNotifier extends StateNotifier<NetworkCertificationsS
       final result = await d.SquidService.client.getNetworkCertifications(number: 20, cursor: null);
 
       if (result != null) {
-        final newCertifications = await Future.wait(
+        final certificationResults = await Future.wait(
           result.edges.map((edge) => CertificationDisplayItem.fromNetworkCertificationNode(edge.node, ref)),
         );
+        final newCertifications = certificationResults.whereType<CertificationDisplayItem>().toList();
 
         // Check if we actually have new certifications by comparing with current state
         final hasNewCertifications =
@@ -175,9 +183,10 @@ class NetworkCertificationsNotifier extends StateNotifier<NetworkCertificationsS
         return;
       }
 
-      final certifications = await Future.wait(
+      final certificationResults = await Future.wait(
         result.edges.map((edge) => CertificationDisplayItem.fromNetworkCertificationNode(edge.node, ref)),
       );
+      final certifications = certificationResults.whereType<CertificationDisplayItem>().toList();
 
       state = state.copyWith(
         certifications: certifications,
@@ -216,9 +225,10 @@ class NetworkCertificationsNotifier extends StateNotifier<NetworkCertificationsS
         return;
       }
 
-      final newCertifications = await Future.wait(
+      final certificationResults = await Future.wait(
         result.edges.map((edge) => CertificationDisplayItem.fromNetworkCertificationNode(edge.node, ref)),
       );
+      final newCertifications = certificationResults.whereType<CertificationDisplayItem>().toList();
 
       state = state.copyWith(
         certifications: [...state.certifications, ...newCertifications],
@@ -236,20 +246,16 @@ class NetworkCertificationsNotifier extends StateNotifier<NetworkCertificationsS
     state = const NetworkCertificationsState();
     await loadCertifications();
   }
-
-  @override
-  void dispose() {
-    _networkCertificationsSubscription?.cancel();
-    super.dispose();
-  }
 }
 
 /// Server-side filtered network certifications notifier
-class ServerFilteredNetworkCertificationsNotifier extends StateNotifier<NetworkCertificationsState> {
-  final Ref ref;
+class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertificationsState> {
   Timer? _debounceTimer;
 
-  ServerFilteredNetworkCertificationsNotifier(this.ref) : super(const NetworkCertificationsState()) {
+  @override
+  NetworkCertificationsState build() {
+    ref.onDispose(() => _debounceTimer?.cancel());
+
     // Listen to filter changes
     ref.listen(certificationFiltersProvider, (previous, next) {
       if (previous != next) {
@@ -257,8 +263,11 @@ class ServerFilteredNetworkCertificationsNotifier extends StateNotifier<NetworkC
       }
     });
 
-    // Initial load
-    _loadNetworkCertificationsWithFilters();
+    // Initial load asynchronously
+    Future.microtask(() => _loadNetworkCertificationsWithFilters());
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const NetworkCertificationsState(isLoading: true);
   }
 
   /// Debounce filter updates to avoid excessive API calls
@@ -317,9 +326,10 @@ class ServerFilteredNetworkCertificationsNotifier extends StateNotifier<NetworkC
         );
 
         if (result != null) {
-          final displayItems = await Future.wait(
+          final itemResults = await Future.wait(
             result.items.map((node) => CertificationDisplayItem.fromFilteredNetworkCertificationNode(node, ref)),
           );
+          final displayItems = itemResults.whereType<CertificationDisplayItem>().toList();
 
           state = state.copyWith(
             certifications: displayItems,
@@ -376,9 +386,10 @@ class ServerFilteredNetworkCertificationsNotifier extends StateNotifier<NetworkC
         );
 
         if (result != null) {
-          final newItems = await Future.wait(
+          final itemResults = await Future.wait(
             result.items.map((node) => CertificationDisplayItem.fromFilteredNetworkCertificationNode(node, ref)),
           );
+          final newItems = itemResults.whereType<CertificationDisplayItem>().toList();
 
           state = state.copyWith(
             certifications: [...state.certifications, ...newItems],
@@ -411,26 +422,16 @@ class ServerFilteredNetworkCertificationsNotifier extends StateNotifier<NetworkC
     state = const NetworkCertificationsState();
     await _loadNetworkCertificationsWithFilters();
   }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for network certifications
-final networkCertificationsProvider = StateNotifierProvider<NetworkCertificationsNotifier, NetworkCertificationsState>((
-  ref,
-) {
-  return NetworkCertificationsNotifier(ref);
-});
+final networkCertificationsProvider =
+    NotifierProvider<NetworkCertificationsNotifier, NetworkCertificationsState>(NetworkCertificationsNotifier.new);
 
 /// Provider for server-filtered network certifications
 final serverFilteredNetworkCertificationsProvider =
-    StateNotifierProvider<ServerFilteredNetworkCertificationsNotifier, NetworkCertificationsState>((ref) {
-      return ServerFilteredNetworkCertificationsNotifier(ref);
-    });
+    NotifierProvider<ServerFilteredNetworkCertificationsNotifier, NetworkCertificationsState>(
+        ServerFilteredNetworkCertificationsNotifier.new);
 
 /// Adaptive network certifications provider that chooses between server and client filtering
 final adaptiveFilteredNetworkCertificationsProvider = Provider<NetworkCertificationsState>((ref) {

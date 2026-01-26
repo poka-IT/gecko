@@ -82,6 +82,9 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const SizedBox.shrink(),
       data: (genesisTime) {
+        if (genesisTime == null) {
+          return const SizedBox.shrink(); // Storage not ready yet
+        }
         // Calculate time since blockchain start
         final timeSinceStart = DateTime.now().difference(genesisTime);
         final startedAgo = _formatDuration(timeSinceStart.inMilliseconds);

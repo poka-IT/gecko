@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
@@ -18,6 +17,9 @@ final migrationFromDataProvider = FutureProvider.family<MigrationData?, String>(
     }
 
     final genesisTime = await ref.watch(genesisTimeProvider.future);
+    if (genesisTime == null) {
+      return null; // Storage not ready yet
+    }
     return await MigrationData.fromSquidMigrationFromNode(migrations!.migrationFrom!, genesisTime);
   } catch (e) {
     return null;
@@ -35,6 +37,9 @@ final migrationToDataProvider = FutureProvider.family<MigrationData?, String>((r
     }
 
     final genesisTime = await ref.watch(genesisTimeProvider.future);
+    if (genesisTime == null) {
+      return null; // Storage not ready yet
+    }
     return await MigrationData.fromSquidMigrationToNode(migrations!.migrationTo!, genesisTime);
   } catch (e) {
     return null;
@@ -85,6 +90,12 @@ final searchIdentityProvider = FutureProvider.family<List<d.IdentitySuggestion>,
 /// Provider to check if a certification already exists between effective wallet and target address
 /// Returns true if a certification exists (renewal case), false if not (new certification case)
 final certificationExistsProvider = FutureProvider.family<bool, String>((ref, targetAddress) async {
+  // Check if storage is initialized FIRST
+  final storageState = ref.watch(storageStateProvider);
+  if (storageState == StorageState.notInitialized) {
+    return false;
+  }
+
   final effectiveWallet = await ref.watch(effectiveCertificationWalletProvider.future);
   if (effectiveWallet == null) return false;
 
@@ -103,9 +114,16 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
 
   @override
   Future<d.WalletEntity?> build() async {
-    // Watch wallet service but don't rebuild on connection changes
+    // Check if storage is initialized FIRST before accessing any providers
+    final storageState = ref.watch(storageStateProvider);
+    if (storageState == StorageState.notInitialized) {
+      return _cachedResult;
+    }
+
+    // Now safe to watch other providers
     final walletService = ref.watch(walletServiceProvider);
     final storageService = ref.watch(storageServiceProvider);
+
     // Watch the default safe number provider to react to safe changes
     final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
 
@@ -217,10 +235,20 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
 /// Uses caching to prevent UI reload spam during connection changes
 final idtyWalletAsyncProvider = AsyncNotifierProvider<IdtyWalletNotifier, d.WalletEntity?>(() => IdtyWalletNotifier());
 
-/// State provider for selected certification wallet (development mode only)
+/// Notifier for selected certification wallet (development mode only)
 /// This allows developers to choose which identity wallet to use for certifications
 /// when using the test mnemonic with multiple identity wallets
-final selectedCertificationWalletProvider = StateProvider<String?>((ref) => null);
+class SelectedCertificationWalletNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? value) => state = value;
+  void clear() => state = null;
+}
+
+/// Provider for selected certification wallet (development mode only)
+final selectedCertificationWalletProvider =
+    NotifierProvider<SelectedCertificationWalletNotifier, String?>(SelectedCertificationWalletNotifier.new);
 
 /// Provider for certification state between effective wallet and target address
 /// Automatically updates when balance or certifications change, with caching to avoid UI jumps
@@ -233,6 +261,12 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
 
   @override
   Future<d.CertState?> build() async {
+    // Check storage state FIRST
+    final storageState = ref.watch(storageStateProvider);
+    if (storageState == StorageState.notInitialized) {
+      return null;
+    }
+
     final toAddress = arg;
     // Watch streams for auto-updates but keep previous state during loading
     ref.listen(smartBalanceStreamProvider(toAddress), (previous, next) {
@@ -255,6 +289,10 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
 
   /// Refresh cert state without clearing the previous value
   void _refreshCertState() async {
+    // Check storage state first
+    final storageState = ref.read(storageStateProvider);
+    if (storageState == StorageState.notInitialized) return;
+
     final effectiveWallet = await ref.read(effectiveCertificationWalletProvider.future);
     if (effectiveWallet == null) return;
 
@@ -265,14 +303,27 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
 
   /// Get cert state from storage
   Future<d.CertState?> _getCertState(String fromAddress, String toAddress) async {
+    // Check if storage is initialized
+    final storageState = ref.read(storageStateProvider);
+    if (storageState == StorageState.notInitialized) {
+      return null;
+    }
+
     return await ref.read(storageServiceProvider).getCertState(fromAddress: fromAddress, toAddress: toAddress);
   }
 }
 
 /// Provider to get all wallets with identity status for certification dropdown
 final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
+  // Check if storage is initialized FIRST
+  final storageState = ref.watch(storageStateProvider);
+  if (storageState == StorageState.notInitialized) {
+    return [];
+  }
+
   final walletService = ref.watch(walletServiceProvider);
   final storageService = ref.watch(storageServiceProvider);
+
   // Watch the default safe number provider to react to safe changes
   final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
 

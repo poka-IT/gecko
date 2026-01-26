@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -36,19 +35,31 @@ class CertificationListState {
   }
 }
 
-/// StateNotifier for managing certification lists
-class CertificationListNotifier extends StateNotifier<CertificationListState> {
-  final Ref ref;
-  final String address;
-  final CertDirection direction;
+/// Notifier for managing certification lists
+class CertificationListNotifier extends Notifier<CertificationListState> {
+  CertificationListNotifier(this._params);
+  final ({String address, CertDirection direction}) _params;
+
   StreamSubscription<String?>? _activitySubscription;
   String? _lastSeenCertId;
   DateTime? _lastCertTimestamp;
 
-  CertificationListNotifier(this.ref, this.address, this.direction) : super(const CertificationListState()) {
-    loadCertifications();
-    _subscribeToCertActivity();
+  @override
+  CertificationListState build() {
+    ref.onDispose(() => _activitySubscription?.cancel());
+
+    // Start initial load asynchronously
+    Future.microtask(() {
+      loadCertifications();
+      _subscribeToCertActivity();
+    });
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const CertificationListState(isLoading: true);
   }
+
+  String get address => _params.address;
+  CertDirection get direction => _params.direction;
 
   /// Subscribe to certification activity
   void _subscribeToCertActivity() {
@@ -179,6 +190,9 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
     try {
       // Get genesis time for block number conversion
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        return []; // Storage not ready yet
+      }
 
       if (direction == CertDirection.received) {
         final certConnection = await d.SquidService.client.getCertsReceived(address);
@@ -263,20 +277,10 @@ class CertificationListNotifier extends StateNotifier<CertificationListState> {
     state = const CertificationListState();
     await loadCertifications();
   }
-
-  @override
-  void dispose() {
-    _activitySubscription?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for certification lists
-final certificationListProvider =
-    StateNotifierProvider.family<
-      CertificationListNotifier,
-      CertificationListState,
-      ({String address, CertDirection direction})
-    >((ref, params) {
-      return CertificationListNotifier(ref, params.address, params.direction);
-    });
+final certificationListProvider = NotifierProvider.family<
+    CertificationListNotifier,
+    CertificationListState,
+    ({String address, CertDirection direction})>((params) => CertificationListNotifier(params));

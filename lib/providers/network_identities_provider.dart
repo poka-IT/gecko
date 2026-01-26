@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/models/identity_display_item.dart';
@@ -49,15 +48,19 @@ class NetworkIdentitiesState {
   }
 }
 
-/// StateNotifier for managing network-wide identity activity
-class NetworkIdentitiesNotifier extends StateNotifier<NetworkIdentitiesState> {
-  final Ref ref;
+/// Notifier for managing network-wide identity activity
+class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
   StreamSubscription<String?>? _networkIdentitiesSubscription;
   String? _lastSeenIdentityId;
 
-  NetworkIdentitiesNotifier(this.ref) : super(const NetworkIdentitiesState()) {
-    loadIdentities();
-    _subscribeToNetworkIdentities();
+  @override
+  NetworkIdentitiesState build() {
+    ref.onDispose(() => _networkIdentitiesSubscription?.cancel());
+    Future.microtask(() {
+      loadIdentities();
+      _subscribeToNetworkIdentities();
+    });
+    return const NetworkIdentitiesState();
   }
 
   /// Subscribe to network-wide identity activity (triggers refreshes when new identities are created)
@@ -231,20 +234,16 @@ class NetworkIdentitiesNotifier extends StateNotifier<NetworkIdentitiesState> {
     state = const NetworkIdentitiesState();
     await loadIdentities();
   }
-
-  @override
-  void dispose() {
-    _networkIdentitiesSubscription?.cancel();
-    super.dispose();
-  }
 }
 
 /// Server-side filtered network identities notifier
-class ServerFilteredNetworkIdentitiesNotifier extends StateNotifier<NetworkIdentitiesState> {
-  final Ref ref;
+class ServerFilteredNetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
   Timer? _debounceTimer;
 
-  ServerFilteredNetworkIdentitiesNotifier(this.ref) : super(const NetworkIdentitiesState()) {
+  @override
+  NetworkIdentitiesState build() {
+    ref.onDispose(() => _debounceTimer?.cancel());
+
     // Listen to filter changes
     ref.listen(identityFiltersProvider, (previous, next) {
       if (previous != next) {
@@ -253,7 +252,8 @@ class ServerFilteredNetworkIdentitiesNotifier extends StateNotifier<NetworkIdent
     });
 
     // Initial load
-    _loadNetworkIdentitiesWithFilters();
+    Future.microtask(() => _loadNetworkIdentitiesWithFilters());
+    return const NetworkIdentitiesState();
   }
 
   /// Debounce filter updates to avoid excessive API calls
@@ -404,24 +404,14 @@ class ServerFilteredNetworkIdentitiesNotifier extends StateNotifier<NetworkIdent
     state = const NetworkIdentitiesState();
     await _loadNetworkIdentitiesWithFilters();
   }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for network identities
-final networkIdentitiesProvider = StateNotifierProvider<NetworkIdentitiesNotifier, NetworkIdentitiesState>((ref) {
-  return NetworkIdentitiesNotifier(ref);
-});
+final networkIdentitiesProvider = NotifierProvider<NetworkIdentitiesNotifier, NetworkIdentitiesState>(NetworkIdentitiesNotifier.new);
 
 /// Provider for server-filtered network identities
 final serverFilteredNetworkIdentitiesProvider =
-    StateNotifierProvider<ServerFilteredNetworkIdentitiesNotifier, NetworkIdentitiesState>((ref) {
-      return ServerFilteredNetworkIdentitiesNotifier(ref);
-    });
+    NotifierProvider<ServerFilteredNetworkIdentitiesNotifier, NetworkIdentitiesState>(ServerFilteredNetworkIdentitiesNotifier.new);
 
 /// Adaptive network identities provider that chooses between server and client filtering
 final adaptiveFilteredNetworkIdentitiesProvider = Provider<NetworkIdentitiesState>((ref) {

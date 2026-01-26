@@ -13,9 +13,9 @@ import 'package:gecko/services/mnemonic_service.dart';
 /// This service provides pure functions for wallet derivation scanning operations.
 /// It does not manage UI state directly but provides the core logic.
 class WalletScanService {
-  final ProviderContainer _container;
+  final Ref _ref;
 
-  WalletScanService(this._container);
+  WalletScanService(this._ref);
 
   /// Scan wallet derivations for existing balances and import them.
   ///
@@ -47,7 +47,7 @@ class WalletScanService {
     required Function(int) onWalletCountChanged,
     required int maxDerivations,
   }) async {
-    if (!_container.read(durtProvider).isConnected) {
+    if (!_ref.read(durtProvider).isConnected) {
       return WalletScanResult.error('Not connected to network');
     }
 
@@ -116,10 +116,10 @@ class WalletScanService {
 
   Future<RootScanResult> _scanRootWallet(String englishMnemonic) async {
     try {
-      final keypair = await _container.read(walletServiceProvider).getKeyPairFromMnemonic(englishMnemonic);
+      final keypair = await _ref.read(walletServiceProvider).getKeyPairFromMnemonic(englishMnemonic);
       final address = keypair.address;
 
-      final balance = await _container
+      final balance = await _ref
           .read(storageServiceProvider)
           .getBalance(address)
           .timeout(const Duration(seconds: 1), onTimeout: () => WalletBalance.empty());
@@ -127,8 +127,8 @@ class WalletScanService {
       if (balance.free > BigInt.zero) {
         // Import root wallet
         final walletName = 'myRootWallet'.tr();
-        final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
-        final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);
+        final actualSafeNumber = _ref.read(walletServiceProvider).defaultSafeBoxNumber;
+        final safe = _ref.read(walletServiceProvider).getSafeBox(actualSafeNumber);
 
         final rootWallet = WalletEntity.create(
           address: address,
@@ -138,7 +138,7 @@ class WalletScanService {
         );
 
         rootWallet.safe.target = safe;
-        await _container.read(walletServiceProvider).walletBox.putAsync(rootWallet);
+        await _ref.read(walletServiceProvider).walletBox.putAsync(rootWallet);
 
         return RootScanResult(address: address, hasBalance: true);
       }
@@ -151,7 +151,7 @@ class WalletScanService {
   }
 
   Future<KeypairResult> _generateKeypair(String englishMnemonic, int derivation) async {
-    final keypair = await _container
+    final keypair = await _ref
         .read(walletServiceProvider)
         .getKeyPairFromMnemonic(englishMnemonic, derivation: derivation, keyPairType: Durt.defaultKeyPairType);
     return KeypairResult(address: keypair.address, derivation: derivation);
@@ -170,10 +170,10 @@ class WalletScanService {
     allAddresses.addAll(derivedAddresses);
 
     final duplicateAddresses = <String>[];
-    final currentSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
+    final currentSafeNumber = _ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
     for (final address in allAddresses) {
-      final existingWallet = _container
+      final existingWallet = _ref
           .read(walletServiceProvider)
           .walletBox
           .query(WalletEntity_.address.equals(address))
@@ -193,7 +193,7 @@ class WalletScanService {
 
   Future<Map<String, WalletBalance>> _scanBalances(List<String> addresses) async {
     try {
-      final balanceList = await _container
+      final balanceList = await _ref
           .read(storageServiceProvider)
           .getBalances(addresses)
           .timeout(const Duration(seconds: 20));
@@ -221,8 +221,8 @@ class WalletScanService {
     final sortedWallets = validWallets.toList()
       ..sort((a, b) => addressToDerivation[a.key]!.compareTo(addressToDerivation[b.key]!));
 
-    final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
-    final safe = _container.read(walletServiceProvider).getSafeBox(actualSafeNumber);
+    final actualSafeNumber = _ref.read(walletServiceProvider).defaultSafeBoxNumber;
+    final safe = _ref.read(walletServiceProvider).getSafeBox(actualSafeNumber);
 
     final importedWallets = <WalletEntity>[];
 
@@ -238,13 +238,13 @@ class WalletScanService {
         derivation: addressToDerivation[walletAddress],
         imagePath: 'assets/avatars/${walletIndex % 4}.png',
         keyPairType: Durt.defaultKeyPairType,
-        number: _container.read(walletServiceProvider).getNextWalletNumber,
+        number: _ref.read(walletServiceProvider).getNextWalletNumber,
       );
 
       wallet.safe.target = safe;
 
       // Save immediately to update the count for the next wallet
-      await _container.read(walletServiceProvider).walletBox.putAsync(wallet);
+      await _ref.read(walletServiceProvider).walletBox.putAsync(wallet);
       importedWallets.add(wallet);
       onWalletCountChanged(currentWalletCount + i + 1);
     }
@@ -259,19 +259,19 @@ class WalletScanService {
 
   Future<void> _cleanupFailedScan() async {
     try {
-      final actualSafeNumber = _container.read(walletServiceProvider).defaultSafeBoxNumber;
-      await _container.read(walletServiceProvider).deleteSafe(actualSafeNumber);
+      final actualSafeNumber = _ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      await _ref.read(walletServiceProvider).deleteSafe(actualSafeNumber);
 
       // Restore previous defaultSafeBoxNumber
-      final safeBox = _container.read(walletServiceProvider).safeBox;
+      final safeBox = _ref.read(walletServiceProvider).safeBox;
       if (!safeBox.isEmpty()) {
         final allSafes = safeBox.getAll();
         if (allSafes.isNotEmpty) {
           final maxSafeNumber = allSafes.map((s) => s.number).reduce((a, b) => a > b ? a : b);
-          _container.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(maxSafeNumber);
+          _ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(maxSafeNumber);
           // Invalidate identity providers to ensure they use the new safe
-          _container.invalidate(idtyWalletAsyncProvider);
-          _container.invalidate(identityWalletsAsyncProvider);
+          _ref.invalidate(idtyWalletAsyncProvider);
+          _ref.invalidate(identityWalletsAsyncProvider);
         }
       }
     } catch (e) {

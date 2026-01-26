@@ -21,9 +21,17 @@ class CompactWalletHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final balanceAsync = ref.watch(smartBalanceStreamProvider(address));
 
-    // Determine if wallet is empty (same logic as wallet_header.dart)
-    final balance = balanceAsync.hasValue ? balanceAsync.value?.transferableBalance : null;
-    final isEmptyWallet = balance == null || balance == BigInt.zero;
+    // Determine background color based on wallet state
+    // Use tertiary (normal) color during loading to avoid flash
+    final Color backgroundColor;
+    if (balanceAsync.isLoading && !balanceAsync.hasValue) {
+      // Still loading, use neutral color
+      backgroundColor = context.colorScheme.tertiary;
+    } else {
+      final balance = balanceAsync.value?.transferableBalance;
+      final isEmptyWallet = balance == null || balance == BigInt.zero;
+      backgroundColor = isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary;
+    }
 
     return Hero(
       tag: 'wallet_header_$address', // Unique tag for this wallet
@@ -31,7 +39,7 @@ class CompactWalletHeader extends ConsumerWidget {
         type: MaterialType.transparency,
         child: Container(
           padding: const EdgeInsets.fromLTRB(8, kToolbarHeight, 12, 8),
-          decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
+          decoration: BoxDecoration(color: backgroundColor),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

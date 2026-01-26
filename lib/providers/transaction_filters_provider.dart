@@ -1,10 +1,14 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/transaction_filters.dart';
 
-/// StateNotifier for managing transaction filter criteria
+/// Notifier for managing transaction filter criteria
 /// All actual filtering is done server-side via durt2 SquidService
-class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria> {
-  TransactionFiltersNotifier([FilterMode mode = FilterMode.account]) : super(TransactionFilterCriteria(mode: mode));
+class TransactionFiltersNotifier extends Notifier<TransactionFilterCriteria> {
+  TransactionFiltersNotifier(this._mode);
+  final FilterMode _mode;
+
+  @override
+  TransactionFilterCriteria build() => TransactionFilterCriteria(mode: _mode);
 
   /// Update address or name search filter
   void updateAddressOrNameSearch(String search) {
@@ -145,21 +149,40 @@ class TransactionFiltersNotifier extends StateNotifier<TransactionFilterCriteria
   }
 }
 
+/// Internal family provider for transaction filters
+final _transactionFiltersFamilyProvider =
+    NotifierProvider.family<TransactionFiltersNotifier, TransactionFilterCriteria, FilterMode>(
+        (mode) => TransactionFiltersNotifier(mode));
+
 /// Provider for transaction filter criteria (account mode)
-final transactionFiltersProvider = StateNotifierProvider<TransactionFiltersNotifier, TransactionFilterCriteria>((ref) {
-  return TransactionFiltersNotifier(FilterMode.account);
-});
+final transactionFiltersProvider = _transactionFiltersFamilyProvider(FilterMode.account);
 
 /// Provider for network activity filter criteria
-final networkFiltersProvider = StateNotifierProvider<TransactionFiltersNotifier, TransactionFilterCriteria>((ref) {
-  return TransactionFiltersNotifier(FilterMode.network);
-});
+final networkFiltersProvider = _transactionFiltersFamilyProvider(FilterMode.network);
+
+/// Notifier for filter panel expanded state
+class FilterPanelExpandedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+  void set(bool value) => state = value;
+}
 
 /// Provider to track if the filter panel is expanded/open
-final filterPanelExpandedProvider = StateProvider<bool>((ref) => false);
+final filterPanelExpandedProvider = NotifierProvider<FilterPanelExpandedNotifier, bool>(FilterPanelExpandedNotifier.new);
+
+/// Notifier for network filter panel expanded state
+class NetworkFilterPanelExpandedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+  void set(bool value) => state = value;
+}
 
 /// Provider to track if the network filter panel is expanded/open
-final networkFilterPanelExpandedProvider = StateProvider<bool>((ref) => false);
+final networkFilterPanelExpandedProvider = NotifierProvider<NetworkFilterPanelExpandedNotifier, bool>(NetworkFilterPanelExpandedNotifier.new);
 
 /// Utility functions for filter management
 

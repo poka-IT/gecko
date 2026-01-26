@@ -413,7 +413,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
 
           final currentRoute = container.read(currentRouteProvider);
           if (currentRoute.isEmpty || currentRoute != RouteNames.myWallets) {
-            container.read(currentRouteProvider.notifier).state = RouteNames.myWallets;
+            container.read(currentRouteProvider.notifier).set(RouteNames.myWallets);
           }
 
           // Show bottom app bar again when tutorial closes

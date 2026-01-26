@@ -426,7 +426,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
                   await _performLegacyMigrationWithProgress(context, ref, targetWallet, migrationData);
                   // Clear the pending migration data
-                  ref.read(pendingLegacyMigrationProvider.notifier).state = null;
+                  ref.read(pendingLegacyMigrationProvider.notifier).clear();
                 }
               }
 

@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -112,34 +111,28 @@ class TransactionStatusCache {
   }
 }
 
-// StateNotifier pour gérer l'état de la copie
-class CopyStateNotifier extends StateNotifier<bool> {
+// Notifier pour gérer l'état de la copie
+class CopyStateNotifier extends Notifier<bool> {
   Timer? _timer;
 
-  CopyStateNotifier() : super(false);
+  @override
+  bool build() {
+    ref.onDispose(() => _timer?.cancel());
+    return false;
+  }
 
   void setCopied() {
     _timer?.cancel();
 
     state = true;
     _timer = Timer(const Duration(seconds: 1), () {
-      if (mounted) {
-        state = false;
-      }
+      state = false;
     });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 }
 
 // Provider pour l'état de la copie
-final copyStateProvider = StateNotifierProvider<CopyStateNotifier, bool>((ref) {
-  return CopyStateNotifier();
-});
+final copyStateProvider = NotifierProvider<CopyStateNotifier, bool>(CopyStateNotifier.new);
 
 class TransactionInProgressTule extends ConsumerStatefulWidget {
   const TransactionInProgressTule({super.key, required this.transactionData});

@@ -150,7 +150,7 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
     setState(() {
       _isExpanded = false;
     });
-    ref.read(certificationFilterPanelExpandedProvider.notifier).state = false;
+    ref.read(certificationFilterPanelExpandedProvider.notifier).set(false);
   }
 
   void _resetFilters() {
@@ -159,7 +159,7 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
     setState(() {
       _isExpanded = false;
     });
-    ref.read(certificationFilterPanelExpandedProvider.notifier).state = false;
+    ref.read(certificationFilterPanelExpandedProvider.notifier).set(false);
   }
 
   void _toggleExpanded() {
@@ -170,7 +170,7 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
     });
 
     // Update the provider state
-    ref.read(certificationFilterPanelExpandedProvider.notifier).state = _isExpanded;
+    ref.read(certificationFilterPanelExpandedProvider.notifier).set(_isExpanded);
 
     if (_isExpanded) {
       // Show modal bottom sheet instead of inline expansion
@@ -374,7 +374,7 @@ class _CertificationFiltersState extends ConsumerState<CertificationFilters> {
         setState(() {
           _isExpanded = false;
         });
-        ref.read(certificationFilterPanelExpandedProvider.notifier).state = false;
+        ref.read(certificationFilterPanelExpandedProvider.notifier).set(false);
       }
     });
   }

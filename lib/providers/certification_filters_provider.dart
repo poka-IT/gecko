@@ -1,10 +1,11 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/certification_filters.dart';
 import 'package:gecko/models/transaction_filters.dart';
 
 /// Notifier for certification filter criteria
-class CertificationFiltersNotifier extends StateNotifier<CertificationFilterCriteria> {
-  CertificationFiltersNotifier() : super(const CertificationFilterCriteria(showActiveOnly: null));
+class CertificationFiltersNotifier extends Notifier<CertificationFilterCriteria> {
+  @override
+  CertificationFilterCriteria build() => const CertificationFilterCriteria(showActiveOnly: null);
 
   /// Update issuer search filter
   void updateIssuerSearch(String? issuerSearch) {
@@ -77,11 +78,18 @@ class CertificationFiltersNotifier extends StateNotifier<CertificationFilterCrit
 }
 
 /// Provider for certification filter criteria
-final certificationFiltersProvider = StateNotifierProvider<CertificationFiltersNotifier, CertificationFilterCriteria>((
-  ref,
-) {
-  return CertificationFiltersNotifier();
-});
+final certificationFiltersProvider =
+    NotifierProvider<CertificationFiltersNotifier, CertificationFilterCriteria>(CertificationFiltersNotifier.new);
+
+/// Notifier for certification filter panel expansion state
+class CertificationFilterPanelExpandedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+  void set(bool value) => state = value;
+}
 
 /// Provider for certification filter panel expansion state
-final certificationFilterPanelExpandedProvider = StateProvider<bool>((ref) => false);
+final certificationFilterPanelExpandedProvider =
+    NotifierProvider<CertificationFilterPanelExpandedNotifier, bool>(CertificationFilterPanelExpandedNotifier.new);

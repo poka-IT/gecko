@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/services/pin_security_service.dart';
 
 /// State class for PIN security information
@@ -64,11 +64,15 @@ class PinSecurityState {
 }
 
 /// Notifier for managing PIN security state
-class PinSecurityNotifier extends StateNotifier<PinSecurityState> {
-  PinSecurityNotifier() : super(const PinSecurityState());
-
+class PinSecurityNotifier extends Notifier<PinSecurityState> {
   Timer? _countdownTimer;
   int? _currentSafeNumber;
+
+  @override
+  PinSecurityState build() {
+    ref.onDispose(() => _stopCountdown());
+    return const PinSecurityState();
+  }
 
   /// Update security state for a specific safe
   void updateForSafe(int safeNumber) {
@@ -158,14 +162,7 @@ class PinSecurityNotifier extends StateNotifier<PinSecurityState> {
     _countdownTimer = null;
   }
 
-  @override
-  void dispose() {
-    _stopCountdown();
-    super.dispose();
-  }
 }
 
 /// Provider for PIN security state management
-final pinSecurityProvider = StateNotifierProvider<PinSecurityNotifier, PinSecurityState>((ref) {
-  return PinSecurityNotifier();
-});
+final pinSecurityProvider = NotifierProvider<PinSecurityNotifier, PinSecurityState>(PinSecurityNotifier.new);

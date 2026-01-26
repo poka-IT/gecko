@@ -1,7 +1,6 @@
 // Global RouteObserver for bottom app bar state updates
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/routes.dart';
 
 final RouteObserver<PageRoute> globalRouteObserver = RouteObserver<PageRoute>();
@@ -42,31 +41,35 @@ class BottomAppBarState {
   int get hashCode => Object.hash(shouldShowBottomBar, isKeyboardVisible, isDialogVisible);
 }
 
-/// Provider for tracking the current route name
-final currentRouteProvider = StateProvider<String>((ref) => '');
+/// Notifier for tracking the current route name
+class CurrentRouteNotifier extends Notifier<String> {
+  @override
+  String build() => '';
 
-/// Notifier for bottom app bar state management
-class BottomAppBarNotifier extends StateNotifier<BottomAppBarState> with WidgetsBindingObserver {
-  BottomAppBarNotifier()
-    : super(
-        const BottomAppBarState(
-          shouldShowBottomBar: false, // Home route should not show bottom bar initially
-          isKeyboardVisible: false,
-          isDialogVisible: false,
-        ),
-      ) {
+  void set(String value) => state = value;
+}
+
+/// Provider for tracking the current route name
+final currentRouteProvider = NotifierProvider<CurrentRouteNotifier, String>(CurrentRouteNotifier.new);
+
+/// Observer class to handle WidgetsBindingObserver for the notifier
+class _BottomAppBarObserver with WidgetsBindingObserver {
+  final BottomAppBarNotifier notifier;
+  bool _isDisposed = false;
+
+  _BottomAppBarObserver(this.notifier) {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  @override
   void dispose() {
+    _isDisposed = true;
     WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
   }
 
   @override
   void didChangeMetrics() {
     super.didChangeMetrics();
+    if (_isDisposed) return;
 
     try {
       // Safe access to viewInsets without context dependency
@@ -76,17 +79,36 @@ class BottomAppBarNotifier extends StateNotifier<BottomAppBarState> with Widgets
       final viewInsets = views.first.viewInsets;
       final bool keyboardVisible = viewInsets.bottom > 0;
 
-      if (state.isKeyboardVisible != keyboardVisible) {
-        // Use addPostFrameCallback to avoid calling during build
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            state = state.copyWith(isKeyboardVisible: keyboardVisible);
-          }
-        });
-      }
+      notifier._updateKeyboardVisibility(keyboardVisible);
     } catch (e) {
       // Silently handle any access errors during widget disposal
       return;
+    }
+  }
+}
+
+/// Notifier for bottom app bar state management
+class BottomAppBarNotifier extends Notifier<BottomAppBarState> {
+  _BottomAppBarObserver? _observer;
+
+  @override
+  BottomAppBarState build() {
+    _observer = _BottomAppBarObserver(this);
+    ref.onDispose(() => _observer?.dispose());
+
+    return const BottomAppBarState(
+      shouldShowBottomBar: false, // Home route should not show bottom bar initially
+      isKeyboardVisible: false,
+      isDialogVisible: false,
+    );
+  }
+
+  void _updateKeyboardVisibility(bool keyboardVisible) {
+    if (state.isKeyboardVisible != keyboardVisible) {
+      // Use addPostFrameCallback to avoid calling during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        state = state.copyWith(isKeyboardVisible: keyboardVisible);
+      });
     }
   }
 
@@ -119,9 +141,7 @@ class BottomAppBarNotifier extends StateNotifier<BottomAppBarState> with Widgets
     if (state.shouldShowBottomBar != shouldShow) {
       // Use addPostFrameCallback to avoid calling during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          state = state.copyWith(shouldShowBottomBar: shouldShow);
-        }
+        state = state.copyWith(shouldShowBottomBar: shouldShow);
       });
     }
   }
@@ -130,18 +150,14 @@ class BottomAppBarNotifier extends StateNotifier<BottomAppBarState> with Widgets
     if (state.isDialogVisible != visible) {
       // Use addPostFrameCallback to avoid calling during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          state = state.copyWith(isDialogVisible: visible);
-        }
+        state = state.copyWith(isDialogVisible: visible);
       });
     }
   }
 }
 
 /// Provider for bottom app bar state management
-final bottomAppBarProvider = StateNotifierProvider<BottomAppBarNotifier, BottomAppBarState>((ref) {
-  return BottomAppBarNotifier();
-});
+final bottomAppBarProvider = NotifierProvider<BottomAppBarNotifier, BottomAppBarState>(BottomAppBarNotifier.new);
 
 /// NavigatorObserver to track page changes and update Riverpod providers
 class BottomAppBarNavigatorObserver extends NavigatorObserver {
@@ -177,7 +193,7 @@ class BottomAppBarNavigatorObserver extends NavigatorObserver {
     // Delay provider updates to avoid modifying during build
     Future(() {
       // Update current route
-      ref.read(currentRouteProvider.notifier).state = routeName;
+      ref.read(currentRouteProvider.notifier).set(routeName);
 
       // Update bottom bar visibility
       ref.read(bottomAppBarProvider.notifier).updateCurrentPage(routeName, null);

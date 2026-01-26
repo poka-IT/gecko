@@ -6,7 +6,6 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -47,10 +46,14 @@ final appVersionProvider = FutureProvider<String>((ref) async {
 });
 
 /// Home message state and notifier
-class HomeMessageNotifier extends StateNotifier<String> {
+class HomeMessageNotifier extends Notifier<String> {
   Timer? _resetTimer;
 
-  HomeMessageNotifier() : super('');
+  @override
+  String build() {
+    ref.onDispose(() => _resetTimer?.cancel());
+    return '';
+  }
 
   /// Change the home message
   Future<void> changeMessage(String newMessage, [bool reset = false]) async {
@@ -62,16 +65,14 @@ class HomeMessageNotifier extends StateNotifier<String> {
         // Check connection status before changing to "noLizard"
         // Only set "noLizard" if both Duniter and Squid are in good state
         try {
-          final container = ProviderContainer();
-          final duniterStatus = container.read(duniterConnectionStatusProvider);
-          final squidStatus = container.read(squidConnectionStatusProvider);
+          final duniterStatus = ref.read(duniterConnectionStatusProvider);
+          final squidStatus = ref.read(squidConnectionStatusProvider);
 
           // Only show "noLizard" if we have a good connection
           if (duniterStatus == d.ConnectionStatus.connected && squidStatus == d.ConnectionStatus.connected) {
             state = "noLizard".tr();
           }
           // If connections are bad, keep the current message (which should reflect the connection state)
-          container.dispose();
         } catch (e) {
           log.w('Error checking connection status in changeMessage: $e');
           // If we can't check status, don't change the message to be safe
@@ -99,15 +100,13 @@ class HomeMessageNotifier extends StateNotifier<String> {
         _resetTimer = Timer(const Duration(seconds: 8), () {
           // Check connection status before changing back to "noLizard"
           try {
-            final container = ProviderContainer();
-            final duniterStatus = container.read(duniterConnectionStatusProvider);
-            final squidStatus = container.read(squidConnectionStatusProvider);
+            final duniterStatus = ref.read(duniterConnectionStatusProvider);
+            final squidStatus = ref.read(squidConnectionStatusProvider);
 
             // Only show "noLizard" if we have a good connection
             if (duniterStatus == d.ConnectionStatus.connected && squidStatus == d.ConnectionStatus.connected) {
               state = "noLizard".tr();
             }
-            container.dispose();
           } catch (e) {
             log.w('Error checking connection status in wisdom easter egg: $e');
             // If we can't check status, go back to "noLizard" anyway for the easter egg
@@ -119,18 +118,10 @@ class HomeMessageNotifier extends StateNotifier<String> {
       log.e('Error in showWisdomOfTheDay: $e');
     }
   }
-
-  @override
-  void dispose() {
-    _resetTimer?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for home message state
-final homeMessageProvider = StateNotifierProvider<HomeMessageNotifier, String>((ref) {
-  return HomeMessageNotifier();
-});
+final homeMessageProvider = NotifierProvider<HomeMessageNotifier, String>(HomeMessageNotifier.new);
 
 /// App initialization state
 class AppInitState {
@@ -159,14 +150,17 @@ class AppInitState {
 }
 
 /// App initialization notifier
-class AppInitNotifier extends StateNotifier<AppInitState> {
+class AppInitNotifier extends Notifier<AppInitState> {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
-  AppInitNotifier()
-    : super(const AppInitState(isStorageInitialized: false, isAppVersionLoaded: false, isConnected: false));
+  @override
+  AppInitState build() {
+    ref.onDispose(() => _connectivitySubscription?.cancel());
+    return const AppInitState(isStorageInitialized: false, isAppVersionLoaded: false, isConnected: false);
+  }
 
   /// Initialize the application
-  Future<void> initApp({required BuildContext context, required WidgetRef ref}) async {
+  Future<void> initApp({required BuildContext context, required WidgetRef widgetRef}) async {
     try {
       // Initialize storage
       final storageService = ref.read(storageInitServiceProvider);
@@ -184,10 +178,10 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
       });
 
       // Handle data version compatibility and initialization
-      await _handleDataVersionCompatibility(context, ref);
+      await _handleDataVersionCompatibility(context, widgetRef);
 
       // Setup connection handling
-      await _setupConnectionHandling(context, ref);
+      await _setupConnectionHandling(context, widgetRef);
     } catch (e) {
       log.e('Error during app initialization: $e');
       state = state.copyWith(error: e.toString());
@@ -195,7 +189,7 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
   }
 
   /// Handle data version compatibility
-  Future<void> _handleDataVersionCompatibility(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleDataVersionCompatibility(BuildContext context, WidgetRef widgetRef) async {
     // Check if versionData non compatible, drop everything
     if (configBox.get('dataVersion') == null) {
       configBox.put('dataVersion', dataVersion);
@@ -233,7 +227,7 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
   }
 
   /// Setup connection handling and network monitoring
-  Future<void> _setupConnectionHandling(BuildContext context, WidgetRef ref) async {
+  Future<void> _setupConnectionHandling(BuildContext context, WidgetRef widgetRef) async {
     final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
 
     if (!ref.read(durtProvider).isConnected) {
@@ -286,7 +280,7 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
 
             // Load wallets list
             final myWalletProvider = old_provider.Provider.of<MyWalletsProvider>(context, listen: false);
-            await myWalletProvider.readAllWallets(ref: ref);
+            await myWalletProvider.readAllWallets(ref: widgetRef);
           }
         }
       }
@@ -296,15 +290,7 @@ class AppInitNotifier extends StateNotifier<AppInitState> {
       state = state.copyWith(isConnected: true);
     }
   }
-
-  @override
-  void dispose() {
-    _connectivitySubscription?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for app initialization state
-final appInitProvider = StateNotifierProvider<AppInitNotifier, AppInitState>((ref) {
-  return AppInitNotifier();
-});
+final appInitProvider = NotifierProvider<AppInitNotifier, AppInitState>(AppInitNotifier.new);

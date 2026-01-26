@@ -676,5 +676,6 @@
     "profileUpdated": "Profile successfully updated",
     "profileUpdateFailed": "Failed to update profile",
     "add": "Add",
-    "pinNeeded": "PIN code required"
+    "pinNeeded": "PIN code required",
+    "retrying": "Retrying..."
 }

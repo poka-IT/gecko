@@ -3,7 +3,7 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart' show Box;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/routes.dart';
 
 /// Provides the global, initialized instance of [d.Durt].
@@ -57,7 +57,18 @@ final configBoxProvider = Provider<Box<d.Config>>((ref) {
 });
 
 /// Provides the genesis blockchain time for transaction date calculations.
-final genesisTimeProvider = FutureProvider<DateTime>((ref) async {
+/// Returns null if storage is not initialized or in offline mode.
+final genesisTimeProvider = FutureProvider<DateTime?>((ref) async {
+  final storageState = ref.watch(storageStateProvider);
+
+  if (storageState == StorageState.notInitialized) {
+    return null; // Loading state
+  }
+
+  if (storageState == StorageState.offlineMode) {
+    return null; // Pas de genesis time en offline
+  }
+
   final storageService = ref.watch(storageServiceProvider);
   return await storageService.getGenesisBlockchainTime();
 });
@@ -70,16 +81,28 @@ final defaultWalletProvider = Provider<d.WalletEntity>((ref) {
   return walletService.defaultWallet;
 });
 
+/// Notifier for pending legacy migration data
+class PendingLegacyMigrationNotifier extends Notifier<LegacyMigrationData?> {
+  @override
+  LegacyMigrationData? build() => null;
+
+  void set(LegacyMigrationData? value) => state = value;
+  void clear() => state = null;
+}
+
 /// Provider for pending legacy migration data
 /// This is used to store migration data between wallet options screen and onboarding completion
-final pendingLegacyMigrationProvider = StateProvider<LegacyMigrationData?>((ref) => null);
+final pendingLegacyMigrationProvider = NotifierProvider<PendingLegacyMigrationNotifier, LegacyMigrationData?>(PendingLegacyMigrationNotifier.new);
 
-/// State notifier for the default safe box number.
+/// Notifier for the default safe box number.
 /// This ensures that identity providers react to safe changes.
-class DefaultSafeBoxNumberNotifier extends StateNotifier<int> {
-  DefaultSafeBoxNumberNotifier(this._walletService) : super(_walletService.defaultSafeBoxNumber);
+class DefaultSafeBoxNumberNotifier extends Notifier<int> {
+  @override
+  int build() {
+    return ref.read(walletServiceProvider).defaultSafeBoxNumber;
+  }
 
-  final d.WalletService _walletService;
+  d.WalletService get _walletService => ref.read(walletServiceProvider);
 
   /// Update the default safe box number and sync with wallet service
   void setDefaultSafeBoxNumber(int safeBoxNumber) {
@@ -96,7 +119,4 @@ class DefaultSafeBoxNumberNotifier extends StateNotifier<int> {
 /// Reactive provider for the default safe box number.
 /// This provider watches the wallet service and automatically updates when the default safe changes.
 /// Other providers (like identity providers) should watch this to react to safe changes.
-final defaultSafeBoxNumberProvider = StateNotifierProvider<DefaultSafeBoxNumberNotifier, int>((ref) {
-  final walletService = ref.watch(walletServiceProvider);
-  return DefaultSafeBoxNumberNotifier(walletService);
-});
+final defaultSafeBoxNumberProvider = NotifierProvider<DefaultSafeBoxNumberNotifier, int>(DefaultSafeBoxNumberNotifier.new);

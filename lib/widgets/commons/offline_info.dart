@@ -11,7 +11,7 @@ class OfflineInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the connection status using the StateNotifierProvider
+    // Watch the connection status using the NotifierProvider
     final connectionStatus = ref.watch(connectionStatusProvider);
 
     // Since this is now a direct value, we don't need .when()

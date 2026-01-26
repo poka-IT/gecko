@@ -3,7 +3,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
@@ -14,8 +13,7 @@ import 'package:gecko/widgets/scan_derivations_info.dart';
 
 /// Provider for WalletScanService instance
 final walletScanServiceProvider = Provider<WalletScanService>((ref) {
-  final container = ProviderContainer();
-  return WalletScanService(container);
+  return WalletScanService(ref);
 });
 
 /// State for wallet derivation scanning
@@ -59,11 +57,14 @@ class WalletScanState {
   bool get hasWallets => result?.hasWallets ?? false;
 }
 
-/// StateNotifier for managing wallet scan state
-class WalletScanNotifier extends StateNotifier<WalletScanState> {
-  final WalletScanService _scanService;
+/// Notifier for managing wallet scan state
+class WalletScanNotifier extends Notifier<WalletScanState> {
+  @override
+  WalletScanState build() {
+    return const WalletScanState();
+  }
 
-  WalletScanNotifier(this._scanService) : super(const WalletScanState());
+  WalletScanService get _scanService => ref.read(walletScanServiceProvider);
 
   /// Start scanning derivations for the given mnemonic
   Future<ScanDerivationsResult> scanDerivations({
@@ -153,10 +154,7 @@ class WalletScanNotifier extends StateNotifier<WalletScanState> {
 }
 
 /// Provider for wallet scan state management
-final walletScanProvider = StateNotifierProvider<WalletScanNotifier, WalletScanState>((ref) {
-  final scanService = ref.watch(walletScanServiceProvider);
-  return WalletScanNotifier(scanService);
-});
+final walletScanProvider = NotifierProvider<WalletScanNotifier, WalletScanState>(WalletScanNotifier.new);
 
 /// Provider for the current scan status message
 final scanStatusMessageProvider = Provider<String>((ref) {

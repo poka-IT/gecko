@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:durt2/durt2.dart' show CsToV2AddressResult;
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/g1v1_migration_service.dart';
 
@@ -20,9 +19,12 @@ class G1v1MigrationUiState {
   }
 }
 
-/// State notifier for G1v1 migration UI visibility
-class G1v1MigrationUiNotifier extends StateNotifier<G1v1MigrationUiState> {
-  G1v1MigrationUiNotifier() : super(const G1v1MigrationUiState());
+/// Notifier for G1v1 migration UI visibility
+class G1v1MigrationUiNotifier extends Notifier<G1v1MigrationUiState> {
+  @override
+  G1v1MigrationUiState build() {
+    return const G1v1MigrationUiState();
+  }
 
   /// Toggle visibility of Cesium ID field
   void toggleCesiumIDVisibility() {
@@ -41,9 +43,7 @@ class G1v1MigrationUiNotifier extends StateNotifier<G1v1MigrationUiState> {
 }
 
 /// Provider for G1v1 migration UI state
-final g1v1MigrationUiProvider = StateNotifierProvider<G1v1MigrationUiNotifier, G1v1MigrationUiState>((ref) {
-  return G1v1MigrationUiNotifier();
-});
+final g1v1MigrationUiProvider = NotifierProvider<G1v1MigrationUiNotifier, G1v1MigrationUiState>(G1v1MigrationUiNotifier.new);
 
 /// Provider for Cesium salt TextEditingController
 final csSaltControllerProvider = Provider.autoDispose<TextEditingController>((ref) {

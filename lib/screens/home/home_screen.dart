@@ -29,7 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(appInitProvider.notifier).initApp(context: context, ref: ref);
+      await ref.read(appInitProvider.notifier).initApp(context: context, widgetRef: ref);
       _showCesiumImportInfoDialogIfNeeded();
     });
   }

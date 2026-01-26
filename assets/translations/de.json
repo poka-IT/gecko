@@ -121,5 +121,6 @@
     "profileUpdateFailed": "Fehler beim Aktualisieren des Profils",
     "add": "Hinzufügen",
     "cancel": "Abbrechen",
-    "pinNeeded": "PIN-Code erforderlich"
+    "pinNeeded": "PIN-Code erforderlich",
+    "retrying": "Erneuter Versuch..."
 }

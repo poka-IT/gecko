@@ -1,7 +1,6 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/providers.dart';
 
 // Theme color constants
@@ -48,41 +47,34 @@ enum ThemeModeSetting { system, light, dark }
 ///
 /// This provider handles the app's theme mode selection (system, light, dark)
 /// and persists the state using Durt's config storage for consistency across app restarts.
-final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeModeSetting>((ref) {
-  return ThemeNotifier(ref);
-});
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeModeSetting>(ThemeNotifier.new);
 
-/// StateNotifier for managing the global theme mode state.
+/// Notifier for managing the global theme mode state.
 ///
 /// Automatically loads the state from storage on initialization and saves
 /// changes back to storage when the theme mode is modified.
-class ThemeNotifier extends StateNotifier<ThemeModeSetting> {
+class ThemeNotifier extends Notifier<ThemeModeSetting> {
   static const String _storageKey = 'themeMode';
-  final Ref _ref;
 
-  ThemeNotifier(this._ref) : super(ThemeModeSetting.system) {
-    _loadThemePreference();
+  @override
+  ThemeModeSetting build() {
+    return _loadThemePreference();
   }
 
   /// Load the theme preference from persistent storage
-  void _loadThemePreference() {
+  ThemeModeSetting _loadThemePreference() {
     try {
-      final configBox = _ref.read(configBoxProvider);
+      final configBox = ref.read(configBoxProvider);
       final themeString = configBox.getValue(_storageKey, defaultValue: 'system');
 
-      switch (themeString) {
-        case 'light':
-          state = ThemeModeSetting.light;
-          break;
-        case 'dark':
-          state = ThemeModeSetting.dark;
-          break;
-        default:
-          state = ThemeModeSetting.system;
-      }
+      return switch (themeString) {
+        'light' => ThemeModeSetting.light,
+        'dark' => ThemeModeSetting.dark,
+        _ => ThemeModeSetting.system,
+      };
     } catch (e) {
       // Fallback to system theme if loading fails
-      state = ThemeModeSetting.system;
+      return ThemeModeSetting.system;
     }
   }
 
@@ -95,7 +87,7 @@ class ThemeNotifier extends StateNotifier<ThemeModeSetting> {
   /// Save the current theme mode to persistent storage
   Future<void> _saveToStorage() async {
     try {
-      final configBox = _ref.read(configBoxProvider);
+      final configBox = ref.read(configBoxProvider);
       configBox.putValue(_storageKey, state.toString().split('.').last);
     } catch (e) {
       // Silent fail - theme will revert to system on next restart

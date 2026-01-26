@@ -361,7 +361,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                             top: scaleSize(8),
                             left: 0,
                             right: 0,
-                            child: TransactionFilter(address: widget.address),
+                            child: TransactionFilter(key: ValueKey('filter_${widget.address}'), address: widget.address),
                           ),
                         ],
                       ),
@@ -455,7 +455,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                               opacity: keepFiltersVisible
                                   ? 1.0 // Always visible when filtering
                                   : (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
-                              child: TransactionFilter(address: widget.address), // Remove the wrapper container
+                              child: TransactionFilter(key: ValueKey('filter_${widget.address}'), address: widget.address), // Remove the wrapper container
                             ),
                           ),
                         ),

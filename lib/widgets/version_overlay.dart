@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/services/diagnostic_service.dart';
 
 // Provider for copy state indication
-final versionCopyStateProvider = StateNotifierProvider<CopyStateNotifier, bool>((ref) {
-  return CopyStateNotifier();
-});
+final versionCopyStateProvider = NotifierProvider<VersionCopyStateNotifier, bool>(VersionCopyStateNotifier.new);
 
-class CopyStateNotifier extends StateNotifier<bool> {
-  CopyStateNotifier() : super(false);
+class VersionCopyStateNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return false;
+  }
 
   void setCopied() {
     state = true;
     // Reset after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) state = false;
+      state = false;
     });
   }
 }

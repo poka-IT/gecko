@@ -1,6 +1,5 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/providers/providers.dart';
 
 /// Provides the current block height from the connected Duniter node.
@@ -8,26 +7,24 @@ import 'package:gecko/providers/providers.dart';
 /// Returns 0 when disconnected, and updates reactively when connected.
 /// The provider automatically handles connection status changes and starts/stops
 /// listening to block height updates accordingly.
-final blockHeightProvider = StateNotifierProvider<BlockHeightNotifier, int>((ref) {
-  return BlockHeightNotifier(ref);
-});
+final blockHeightProvider = NotifierProvider<BlockHeightNotifier, int>(BlockHeightNotifier.new);
 
 /// Notifier that manages block height state and connection status changes
-class BlockHeightNotifier extends StateNotifier<int> {
-  final Ref _ref;
-
-  BlockHeightNotifier(this._ref) : super(0) {
+class BlockHeightNotifier extends Notifier<int> {
+  @override
+  int build() {
     _init();
+    return 0;
   }
 
   void _init() {
     // Watch connection status and update accordingly
-    _ref.listen(durtConnectionStatusProvider, (previous, next) {
+    ref.listen(durtConnectionStatusProvider, (previous, next) {
       _handleConnectionStatusChange(next);
     });
 
     // Initialize with current connection status
-    final currentStatus = _ref.read(durtConnectionStatusProvider);
+    final currentStatus = ref.read(durtConnectionStatusProvider);
     _handleConnectionStatusChange(currentStatus);
   }
 
@@ -41,7 +38,7 @@ class BlockHeightNotifier extends StateNotifier<int> {
 
   void _startListening() {
     try {
-      final storageService = _ref.read(storageServiceProvider);
+      final storageService = ref.read(storageServiceProvider);
       final blockHeightNotifier = storageService.blockHeightNotifier;
 
       // Set initial value
@@ -49,15 +46,13 @@ class BlockHeightNotifier extends StateNotifier<int> {
 
       // Listen to changes
       void listener() {
-        if (mounted) {
-          state = blockHeightNotifier.value;
-        }
+        state = blockHeightNotifier.value;
       }
 
       blockHeightNotifier.addListener(listener);
 
       // Clean up listener when disposed
-      _ref.onDispose(() {
+      ref.onDispose(() {
         blockHeightNotifier.removeListener(listener);
       });
     } catch (e) {

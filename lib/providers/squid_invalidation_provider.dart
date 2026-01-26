@@ -39,9 +39,9 @@ void _invalidateSquidDependentProviders(Ref ref) {
     ref.invalidate(genesisTimeProvider);
     log.i('🔄 Invalidated genesisTimeProvider to force recalculation');
 
-    // 3. Trigger cache buster to force refresh of all StateNotifierProviders
+    // 3. Trigger cache buster to force refresh of all NotifierProviders
     final currentBuster = ref.read(squidCacheBusterProvider);
-    ref.read(squidCacheBusterProvider.notifier).state = currentBuster + 1;
+    ref.read(squidCacheBusterProvider.notifier).increment();
     log.i('🔥 Cache buster incremented to ${currentBuster + 1}');
 
     // 4. Force a complete refresh by invalidating self

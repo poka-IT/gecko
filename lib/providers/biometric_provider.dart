@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
@@ -11,9 +10,7 @@ import 'package:local_auth_android/local_auth_android.dart' show AndroidAuthMess
 import 'package:local_auth_ios/types/auth_messages_ios.dart' show IOSAuthMessages;
 
 /// Provider for biometric authentication state
-final biometricProvider = StateNotifierProvider<BiometricNotifier, BiometricState>((ref) {
-  return BiometricNotifier(ref);
-});
+final biometricProvider = NotifierProvider<BiometricNotifier, BiometricState>(BiometricNotifier.new);
 
 /// State class for biometric authentication
 class BiometricState {
@@ -55,16 +52,17 @@ class BiometricState {
   bool get canAuthenticate => isDeviceSupported && isAvailable && availableTypes.isNotEmpty && isEnrolledForCurrentSafe;
 }
 
-/// State notifier for biometric authentication
+/// Notifier for biometric authentication
 ///
 /// NOTE: This is a temporary implementation using local storage.
 /// When Durt2 is updated with biometric support, this will be updated to use the proper API.
-class BiometricNotifier extends StateNotifier<BiometricState> {
-  final Ref _ref;
+class BiometricNotifier extends Notifier<BiometricState> {
   final LocalAuthentication _localAuth = LocalAuthentication();
 
-  BiometricNotifier(this._ref) : super(const BiometricState()) {
-    _initializeBiometric();
+  @override
+  BiometricState build() {
+    Future.microtask(() => _initializeBiometric());
+    return const BiometricState();
   }
 
   /// Initialize biometric capabilities and state
@@ -98,7 +96,7 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
   Future<bool> _checkEnrollmentForCurrentSafe() async {
     try {
       // Get current default safe number explicitly
-      final walletService = _ref.read(walletServiceProvider);
+      final walletService = ref.read(walletServiceProvider);
       final currentSafe = walletService.defaultSafeBoxNumber;
 
       // Handle case where no default safe is set (e.g., after deleting all safes)
@@ -159,7 +157,7 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
       }
 
       // Use Durt2 to securely enroll biometric authentication
-      await _ref.read(walletServiceProvider).enableBiometric(pin: pin);
+      await ref.read(walletServiceProvider).enableBiometric(pin: pin);
 
       // Update state
       state = state.copyWith(isEnrolledForCurrentSafe: true, isLoading: false);
@@ -197,7 +195,7 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
       }
 
       // Use Durt2 to securely authenticate with biometric
-      final result = await _ref.read(walletServiceProvider).authenticateWithBiometric();
+      final result = await ref.read(walletServiceProvider).authenticateWithBiometric();
 
       state = state.copyWith(isLoading: false);
 
@@ -223,7 +221,7 @@ class BiometricNotifier extends StateNotifier<BiometricState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      await _ref.read(walletServiceProvider).disableBiometric();
+      await ref.read(walletServiceProvider).disableBiometric();
 
       state = state.copyWith(isEnrolledForCurrentSafe: false, isLoading: false);
 

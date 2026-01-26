@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/transaction_filters.dart';
@@ -52,13 +51,19 @@ class ServerFilteredHistoryState {
   }
 }
 
-/// StateNotifier for server-side filtered transaction history
-class ServerFilteredHistoryNotifier extends StateNotifier<ServerFilteredHistoryState> {
-  final Ref ref;
-  final String address;
+/// Notifier for server-side filtered transaction history
+class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState> {
+  ServerFilteredHistoryNotifier(this._address);
+  final String _address;
+
   Timer? _debounceTimer;
 
-  ServerFilteredHistoryNotifier(this.ref, this.address) : super(const ServerFilteredHistoryState()) {
+  String get address => _address;
+
+  @override
+  ServerFilteredHistoryState build() {
+    ref.onDispose(() => _debounceTimer?.cancel());
+
     // Listen to filter changes
     ref.listen(transactionFiltersProvider, (previous, next) {
       if (previous != next) {
@@ -66,8 +71,11 @@ class ServerFilteredHistoryNotifier extends StateNotifier<ServerFilteredHistoryS
       }
     });
 
-    // Initial load
-    _loadTransactionsWithFilters();
+    // Initial load asynchronously
+    Future.microtask(() => _loadTransactionsWithFilters());
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const ServerFilteredHistoryState(isLoading: true);
   }
 
   /// Debounce filter updates to avoid excessive API calls
@@ -121,6 +129,10 @@ class ServerFilteredHistoryNotifier extends StateNotifier<ServerFilteredHistoryS
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false, error: 'Storage not ready');
+        return;
+      }
 
       if (hasFilters) {
         // Use server-side filtering via Durt2 (always start fresh, no cursor)
@@ -184,6 +196,10 @@ class ServerFilteredHistoryNotifier extends StateNotifier<ServerFilteredHistoryS
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
+      if (genesisTime == null) {
+        state = state.copyWith(isLoading: false);
+        return;
+      }
 
       if (state.hasActiveFilters && state.appliedServerFilters != null) {
         // Load more with server filters (use only server-generated cursors)
@@ -234,16 +250,9 @@ class ServerFilteredHistoryNotifier extends StateNotifier<ServerFilteredHistoryS
     state = const ServerFilteredHistoryState();
     await _loadTransactionsWithFilters();
   }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }
 
 /// Provider for server-filtered transaction history
 final serverFilteredHistoryProvider =
-    StateNotifierProvider.family<ServerFilteredHistoryNotifier, ServerFilteredHistoryState, String>((ref, address) {
-      return ServerFilteredHistoryNotifier(ref, address);
-    });
+    NotifierProvider.family<ServerFilteredHistoryNotifier, ServerFilteredHistoryState, String>(
+        (address) => ServerFilteredHistoryNotifier(address));

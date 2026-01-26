@@ -11,6 +11,12 @@ class TransactionFilter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return TransactionFilters(mode: FilterMode.account, address: address);
+    // Pass a stable key to TransactionFilters to preserve its state when parent rebuilds
+    // This prevents the modal from being disposed while still animating
+    return TransactionFilters(
+      key: ValueKey('transaction_filters_$address'),
+      mode: FilterMode.account,
+      address: address,
+    );
   }
 }

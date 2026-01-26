@@ -635,11 +635,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           .getLegacyRawSeed(address: widget.wallet.address, pinCode: PinCodeService.pinCode);
 
       // Store migration data in provider for onboarding to pick up
-      ref.read(pendingLegacyMigrationProvider.notifier).state = LegacyMigrationData(
+      ref.read(pendingLegacyMigrationProvider.notifier).set(LegacyMigrationData(
         fromAddress: widget.wallet.address,
         rawSeed: rawSeed,
         hasIdentity: hasIdentity,
-      );
+      ));
 
       // Navigate to safe creation - the onboarding will handle migration automatically
       Navigator.pushNamed(context, RouteNames.onboardingStepOne);
@@ -707,7 +707,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           );
         } else {
           // No existing safes, go directly to import flow
-          ref.read(pendingLegacyMigrationProvider.notifier).state = migrationData;
+          ref.read(pendingLegacyMigrationProvider.notifier).set(migrationData);
           Navigator.pushNamed(context, RouteNames.restoreSafe, arguments: RestoreSafeArguments(skipIntro: true));
         }
       }

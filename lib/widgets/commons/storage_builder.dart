@@ -2,38 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/providers.dart';
-
-/// Provider that watches storage initialization status with better error handling
-final storageReadyProvider = StreamProvider<bool>((ref) async* {
-  while (true) {
-    final isConnected = ref.read(durtProvider).isConnected;
-    bool isStorageReady = false;
-
-    if (!isConnected) {
-      yield false;
-    } else {
-      try {
-        // More thorough check: not only access storage but try to use it
-        final storage = ref.read(durtProvider).storage;
-
-        // Try a real operation to ensure storage is fully ready
-        // Use a dummy address to test if storage can actually handle requests
-        await storage.getIdtyStatus('5F3sa2TJAWMqDhXG6jhV4N8ko9SxwGy8TpaNS1repo5EYjQX');
-
-        isStorageReady = true;
-        yield true;
-      } catch (e) {
-        // Storage not really ready yet
-        yield false;
-      }
-    }
-
-    // Check every 1s when not ready, every 10s when ready (reduced frequency)
-    final delayMs = isStorageReady ? 10000 : 1000;
-    await Future.delayed(Duration(milliseconds: delayMs));
-  }
-});
+import 'package:gecko/providers/connection_providers.dart';
 
 /// A generic widget that checks if Durt storage is initialized before building child content.
 /// Shows a placeholder when storage is not ready to prevent crashes.
@@ -57,38 +26,33 @@ class StorageBuilder extends ConsumerWidget {
     } catch (e) {
       // If building failed (probably storage not ready), watch storage readiness
       if (e.toString().contains('DuniterStorageService not initialized')) {
-        final storageReadyAsync = ref.watch(storageReadyProvider);
+        final storageState = ref.watch(storageStateProvider);
+        final isReady = storageState != StorageState.notInitialized;
 
-        return storageReadyAsync.when(
-          data: (isReady) {
-            if (isReady) {
-              // Defer the builder call to avoid setState during build
-              return Builder(
-                builder: (context) {
-                  // Use addPostFrameCallback to defer actual building
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    // This will trigger a rebuild on the next frame
-                    if (context.mounted) {
-                      (context as Element).markNeedsBuild();
-                    }
-                  });
+        if (isReady) {
+          // Defer the builder call to avoid setState during build
+          return Builder(
+            builder: (context) {
+              // Use addPostFrameCallback to defer actual building
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                // This will trigger a rebuild on the next frame
+                if (context.mounted) {
+                  (context as Element).markNeedsBuild();
+                }
+              });
 
-                  // For now, show placeholder and rebuild on next frame
-                  try {
-                    return builder(context, ref);
-                  } catch (e) {
-                    return placeholder ?? _buildDefaultPlaceholder(context);
-                  }
-                },
-              );
-            } else {
-              // Storage not ready, show placeholder
-              return placeholder ?? _buildDefaultPlaceholder(context);
-            }
-          },
-          loading: () => placeholder ?? _buildDefaultPlaceholder(context),
-          error: (error, stack) => placeholder ?? _buildDefaultPlaceholder(context),
-        );
+              // For now, show placeholder and rebuild on next frame
+              try {
+                return builder(context, ref);
+              } catch (e) {
+                return placeholder ?? _buildDefaultPlaceholder(context);
+              }
+            },
+          );
+        } else {
+          // Storage not ready, show placeholder
+          return placeholder ?? _buildDefaultPlaceholder(context);
+        }
       } else {
         // Other error, rethrow
         rethrow;

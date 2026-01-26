@@ -1,7 +1,6 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 
@@ -9,31 +8,30 @@ import 'package:gecko/providers/providers.dart';
 ///
 /// This provider handles the global toggle state for including Universal Dividends
 /// in calculations and persists the state using Durt's config storage.
-final universalDividendsToggleProvider = StateNotifierProvider<UniversalDividendsToggleNotifier, bool>((ref) {
-  return UniversalDividendsToggleNotifier();
-});
+final universalDividendsToggleProvider =
+    NotifierProvider<UniversalDividendsToggleNotifier, bool>(UniversalDividendsToggleNotifier.new);
 
-/// StateNotifier for managing the global Universal Dividends toggle state.
+/// Notifier for managing the global Universal Dividends toggle state.
 ///
 /// Automatically loads the state from storage on initialization and saves
 /// changes back to storage when the toggle is modified.
-class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
+class UniversalDividendsToggleNotifier extends Notifier<bool> {
   static const String _storageKey = 'include_universal_dividends_global';
 
-  UniversalDividendsToggleNotifier() : super(false) {
-    _loadFromStorage();
+  @override
+  bool build() {
+    return _loadFromStorage();
   }
 
   /// Load the toggle state from persistent storage
-  void _loadFromStorage() {
+  bool _loadFromStorage() {
     try {
-      final container = ProviderContainer();
-      final configBox = container.read(configBoxProvider);
+      final configBox = ref.read(configBoxProvider);
       final storedValue = configBox.getValue(_storageKey, defaultValue: 'false');
-      state = storedValue == 'true';
+      return storedValue == 'true';
     } catch (e) {
       log.e('Error loading UD toggle state: $e');
-      state = false;
+      return false;
     }
   }
 
@@ -47,8 +45,7 @@ class UniversalDividendsToggleNotifier extends StateNotifier<bool> {
   /// Save the current toggle state to persistent storage
   void _saveToStorage() {
     try {
-      final container = ProviderContainer();
-      final configBox = container.read(configBoxProvider);
+      final configBox = ref.read(configBoxProvider);
       configBox.putValue(_storageKey, state.toString());
     } catch (e) {
       log.e('Error saving UD toggle state: $e');

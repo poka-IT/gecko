@@ -190,10 +190,6 @@ coverage/
 # zsh
 .autoenv*
 
-# FVM Version Cache
-.fvm/flutter_sdk/
-.fvm/versions/
-
 # Exceptions to above rules
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3
@@ -205,6 +201,7 @@ coverage/
 # Tests related
 integration_test/screenshots/
 
-.fvm/flutter_sdk
-
 release/macos/
+
+# FVM Version Cache
+.fvm/

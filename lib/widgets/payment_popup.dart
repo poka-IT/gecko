@@ -282,40 +282,52 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     );
   }
 
-  bool canValidatePayment() {
-    if (!mounted) return false;
+  /// Returns validation error message or null if valid
+  String? getValidationError() {
+    if (!mounted) return null;
 
-    // Vérification du montant saisi
     final payAmount = ref.read(profileViewProvider(widget.toAddress)).payAmount;
-    if (payAmount.isEmpty) return false;
+    if (payAmount.isEmpty) return null; // No error message when empty
 
-    // Wait for balances to be loaded before validating
     if (!balancesLoaded || defaultWalletBalance == null || toAddressBalance == null) {
-      return false; // Cannot validate without balance data
+      return null; // Still loading
     }
 
     try {
-      // Get balance ratio using the provider
       final ratio = ref.watch(balanceRatioProvider);
-
-      // Calculate amount value in base units
       final BigInt payAmountValue = BigInt.from((double.parse(payAmount) * ratio.toDouble()).round());
-
       final existentialDeposit = ref.read(storageServiceProvider).currencyConstants.existentialDeposit;
-
-      // Vérifications de validité avec les vraies balances
-      final bool isAmountValid = payAmountValue > BigInt.zero;
-      final bool isNotSendingToSelf = widget.toAddress != fromWallet.address;
       final BigInt transferableBalance = defaultWalletBalance! - existentialDeposit;
-      final bool hasEnoughBalance = (payAmountValue <= transferableBalance) || defaultWalletBalance == payAmountValue;
-      final bool respectsExistentialDeposit = toAddressBalance! > BigInt.zero || payAmountValue >= existentialDeposit;
 
-      return isAmountValid && isNotSendingToSelf && hasEnoughBalance && respectsExistentialDeposit;
+      // Check each condition and return appropriate error
+      if (payAmountValue <= BigInt.zero) {
+        return 'invalidAmount'.tr();
+      }
+
+      if (widget.toAddress == fromWallet.address) {
+        return 'cannotSendToYourself'.tr();
+      }
+
+      if (payAmountValue > transferableBalance && defaultWalletBalance != payAmountValue) {
+        return 'insufficientBalance'.tr();
+      }
+
+      if (toAddressBalance! <= BigInt.zero && payAmountValue < existentialDeposit) {
+        // Convert existential deposit to display units
+        final displayAmount = (existentialDeposit.toDouble() / ratio.toDouble()).toStringAsFixed(2);
+        return 'minimumAmountRequired'.tr(args: [displayAmount]);
+      }
+
+      return null; // All validations passed
     } catch (e) {
-      // If ref is disposed or any error occurs, return false for safety
-      log.e('Error in canValidatePayment: $e');
-      return false;
+      return null;
     }
+  }
+
+  bool canValidatePayment() {
+    return getValidationError() == null &&
+        ref.read(profileViewProvider(widget.toAddress)).payAmount.isNotEmpty &&
+        balancesLoaded;
   }
 
   @override
@@ -616,6 +628,44 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                          ),
+                          // Error message display
+                          Builder(
+                            builder: (context) {
+                              final errorMessage = getValidationError();
+                              return AnimatedSize(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
+                                child: AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 150),
+                                  opacity: errorMessage != null ? 1.0 : 0.0,
+                                  child: errorMessage != null
+                                      ? Padding(
+                                          padding: EdgeInsets.only(top: scaleSize(6)),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.info_outline,
+                                                size: scaleSize(14),
+                                                color: Colors.orange[700],
+                                              ),
+                                              ScaledSizedBox(width: 4),
+                                              Text(
+                                                errorMessage,
+                                                style: scaledTextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.orange[700],
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                              );
+                            },
                           ),
                           Consumer(
                             builder: (context, ref, _) {

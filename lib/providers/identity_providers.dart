@@ -48,6 +48,7 @@ final migrationToDataProvider = FutureProvider.family<MigrationData?, String>((r
 
 /// Provides the name of an identity by address.
 /// Returns null if the address has no identity or if network is unavailable.
+/// @deprecated Use hybridIdentityNameProvider for real-time updates
 final identityNameProvider = FutureProvider.family<String?, String>((ref, address) async {
   // Check if we have Squid connection specifically (required for identity queries)
   final squidConnectionStatus = ref.watch(squidConnectionStatusProvider);
@@ -68,6 +69,89 @@ final identityNameProvider = FutureProvider.family<String?, String>((ref, addres
     return null;
   }
 });
+
+/// Hybrid identity name provider that combines initial fetch with periodic polling
+/// This ensures identity names are always up-to-date after migrations or identity creations
+class HybridIdentityNameNotifier extends AsyncNotifier<String?> {
+  HybridIdentityNameNotifier(this.arg);
+  final String arg;
+
+  Timer? _refreshTimer;
+
+  @override
+  Future<String?> build() async {
+    final address = arg;
+    // Cleanup when provider is disposed
+    ref.onDispose(() {
+      _refreshTimer?.cancel();
+    });
+
+    // Check Squid connection
+    final squidConnectionStatus = ref.watch(squidConnectionStatusProvider);
+    if (squidConnectionStatus != d.ConnectionStatus.connected) {
+      return null;
+    }
+
+    // Initial fetch
+    final identityName = await _fetchIdentityName(address);
+
+    // Start periodic polling
+    _startPeriodicRefresh(address);
+
+    return identityName;
+  }
+
+  Future<String?> _fetchIdentityName(String address) async {
+    try {
+      final identityName = await d.SquidService.client.getIdentityName(address);
+
+      // Cache the result
+      final squidService = ref.read(squidServiceProvider);
+      squidService.walletNameIndexer[address] = identityName;
+
+      return identityName;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void _startPeriodicRefresh(String address) {
+    _refreshTimer?.cancel();
+    // Poll every 3 seconds to catch identity name changes after migrations
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      // Check Squid connection
+      final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
+      if (squidConnectionStatus != d.ConnectionStatus.connected) {
+        return;
+      }
+
+      try {
+        final newName = await _fetchIdentityName(address);
+
+        // Only update if name actually changed
+        if (newName != state.value) {
+          state = AsyncValue.data(newName);
+        }
+      } catch (e) {
+        // Continue trying on error
+      }
+    });
+  }
+
+  void forceRefresh() async {
+    final address = arg;
+    try {
+      final newName = await _fetchIdentityName(address);
+      state = AsyncValue.data(newName);
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+}
+
+final hybridIdentityNameProvider = AsyncNotifierProvider.family<HybridIdentityNameNotifier, String?, String>(
+  HybridIdentityNameNotifier.new,
+);
 
 /// Provides identity search results for a given search term.
 /// Returns empty list if network is unavailable.
@@ -212,9 +296,9 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
         try {
           // These calls preload the providers without causing immediate rebuilds
           ref.read(smartBalanceStreamProvider(wallet.address));
-          ref.read(identityNameProvider(wallet.address));
+          ref.read(hybridIdentityNameProvider(wallet.address));
           ref.read(hybridIdtyStatusProvider(wallet.address));
-          ref.read(smartCertificationStreamProvider(wallet.address));
+          ref.read(hybridCertificationProvider(wallet.address));
           ref.read(smartAccountConsumersProvider(wallet.address));
         } catch (e) {
           // Ignore preload errors

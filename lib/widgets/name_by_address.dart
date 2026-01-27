@@ -39,7 +39,7 @@ class NameByAddress extends ConsumerWidget {
       return WalletName(wallet: wallet, size: size, color: finalColor);
     }
 
-    final identityNameAsync = ref.watch(identityNameProvider(wallet.address));
+    final identityNameAsync = ref.watch(hybridIdentityNameProvider(wallet.address));
 
     return identityNameAsync.when(
       data: (name) {

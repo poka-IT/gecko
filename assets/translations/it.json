@@ -694,5 +694,9 @@
     "legacyCreateNewSafe": "Crea invece una nuova cassaforte",
     "legacyIgnoreRecommendation": "Ignora raccomandazione",
     "legacyClicksRemaining": "{} clic rimanenti per confermare",
-    "identityInsufficientBalance": "Saldo insufficiente per creare un'identità"
+    "identityInsufficientBalance": "Saldo insufficiente per creare un'identità",
+    "insufficientBalance": "Saldo insufficiente",
+    "cannotSendToYourself": "Non puoi inviare a te stesso",
+    "minimumAmountRequired": "Minimo {} richiesto per questo conto",
+    "invalidAmount": "Importo non valido"
 }

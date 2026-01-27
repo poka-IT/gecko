@@ -107,13 +107,36 @@ class _WalletsHomeContent extends ConsumerStatefulWidget {
   ConsumerState<_WalletsHomeContent> createState() => _WalletsHomeContentState();
 }
 
-class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
+class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with SingleTickerProviderStateMixin {
   // Instance-specific state (no more static variables!)
   bool _tutorialShownInSession = false;
   int? _lastSafeNumber;
   int _keyCounter = 0;
   bool _tutorialScheduled = false;
   GlobalKey? _currentTutorialKey;
+
+  // Fade-in animation controller
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    // Start animation after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _fadeController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +169,10 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
       // Increment key counter and reset tutorial key for new safe
       _keyCounter++;
       _currentTutorialKey = null; // Reset tutorial key for new safe
+
+      // Restart fade-in animation for new safe
+      _fadeController.reset();
+      _fadeController.forward();
     }
 
     if (walletsState.wallets.isEmpty) {
@@ -330,84 +357,86 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
             ScaledSizedBox(width: 8),
           ],
         ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
-                // Identity wallet section
-                if (idtyWallet != null)
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              child: CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
+                  // Identity wallet section
+                  if (idtyWallet != null)
+                    SliverToBoxAdapter(
+                      child: Consumer(
+                        builder: (context, ref, child) {
+                          // Get the latest wallet data to ensure avatar updates are reflected
+                          final latestIdtyWallet = ref.watch(walletByAddressProvider(idtyWallet.address)) ?? idtyWallet;
+                          return DragTuleAction(
+                            wallet: latestIdtyWallet,
+                            child: WalletTileMembre(wallet: latestIdtyWallet, attachTutorialKey: false),
+                          );
+                        },
+                      ),
+                    ),
+                  // Regular wallets - manual grid using Column/Row
                   SliverToBoxAdapter(
-                    child: Consumer(
-                      builder: (context, ref, child) {
-                        // Get the latest wallet data to ensure avatar updates are reflected
-                        final latestIdtyWallet =
-                            ref.watch(walletByAddressProvider(idtyWallet.address)) ?? idtyWallet;
-                        return DragTuleAction(
-                          wallet: latestIdtyWallet,
-                          child: WalletTileMembre(wallet: latestIdtyWallet, attachTutorialKey: false),
+                    key: keyListWallets,
+                    child: Builder(
+                      builder: (context) {
+                        // Calculate tile size once, outside of any complex layout
+                        final screenWidth = MediaQuery.of(context).size.width;
+                        final availableWidth = screenWidth - 10; // Account for horizontal padding (5px each side)
+                        final tileWidth = (availableWidth / nTule) - 0.1; // Slight reduction to prevent overflow
+                        final tileHeight = tileWidth;
+
+                        // Create list of all items including add button
+                        final allItems = <Widget>[
+                          for (var i = 0; i < frozenWalletsWithoutIdty.length; i++)
+                            DragTuleAction(
+                              key: ValueKey(
+                                'wallet_container_${frozenWalletsWithoutIdty[i].address}_${widget.safeFingerprint}_$i',
+                              ),
+                              wallet: frozenWalletsWithoutIdty[i],
+                              child: WalletTile(
+                                repository: frozenWalletsWithoutIdty[i],
+                                tutorialKey: i == targetWalletIndex ? tutorialKey : null,
+                                uniqueId: 'grid_${widget.safeFingerprint}_$i',
+                                currentSafe: currentSafe.number,
+                              ),
+                            ),
+                          if (ref.read(durtProvider).isConnected && frozenWalletsWithoutIdty.length < maxWalletsInSafe)
+                            const AddNewDerivationButton(),
+                        ];
+
+                        // Build rows manually using Expanded to avoid overflow
+                        final rows = <Widget>[];
+                        for (int i = 0; i < allItems.length; i += nTule) {
+                          final rowItems = <Widget>[];
+                          for (int j = 0; j < nTule; j++) {
+                            if (i + j < allItems.length) {
+                              rowItems.add(
+                                Expanded(
+                                  child: SizedBox(height: tileHeight, child: allItems[i + j]),
+                                ),
+                              );
+                            } else {
+                              rowItems.add(Expanded(child: SizedBox(height: tileHeight)));
+                            }
+                          }
+                          rows.add(Row(children: rowItems));
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: Column(children: rows),
                         );
                       },
                     ),
                   ),
-                // Regular wallets - manual grid using Column/Row
-                SliverToBoxAdapter(
-                  key: keyListWallets,
-                  child: Builder(
-                    builder: (context) {
-                      // Calculate tile size once, outside of any complex layout
-                      final screenWidth = MediaQuery.of(context).size.width;
-                      final availableWidth = screenWidth - 10; // Account for horizontal padding (5px each side)
-                      final tileWidth = (availableWidth / nTule) - 0.1; // Slight reduction to prevent overflow
-                      final tileHeight = tileWidth;
-
-                      // Create list of all items including add button
-                      final allItems = <Widget>[
-                        for (var i = 0; i < frozenWalletsWithoutIdty.length; i++)
-                          DragTuleAction(
-                            key: ValueKey(
-                              'wallet_container_${frozenWalletsWithoutIdty[i].address}_${widget.safeFingerprint}_$i',
-                            ),
-                            wallet: frozenWalletsWithoutIdty[i],
-                            child: WalletTile(
-                              repository: frozenWalletsWithoutIdty[i],
-                              tutorialKey: i == targetWalletIndex ? tutorialKey : null,
-                              uniqueId: 'grid_${widget.safeFingerprint}_$i',
-                              currentSafe: currentSafe.number,
-                            ),
-                          ),
-                        if (ref.read(durtProvider).isConnected && frozenWalletsWithoutIdty.length < maxWalletsInSafe)
-                          const AddNewDerivationButton(),
-                      ];
-
-                      // Build rows manually using Expanded to avoid overflow
-                      final rows = <Widget>[];
-                      for (int i = 0; i < allItems.length; i += nTule) {
-                        final rowItems = <Widget>[];
-                        for (int j = 0; j < nTule; j++) {
-                          if (i + j < allItems.length) {
-                            rowItems.add(
-                              Expanded(
-                                child: SizedBox(height: tileHeight, child: allItems[i + j]),
-                              ),
-                            );
-                          } else {
-                            rowItems.add(Expanded(child: SizedBox(height: tileHeight)));
-                          }
-                        }
-                        rows.add(Row(children: rowItems));
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: Column(children: rows),
-                      );
-                    },
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SafeOptionsButtons()),
-              ],
+                  const SliverToBoxAdapter(child: SafeOptionsButtons()),
+                ],
+              ),
             ),
           ),
         ),

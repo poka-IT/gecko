@@ -70,8 +70,8 @@ class DebugTestWalletService {
   /// Import test wallet with multiple derivations (debug mode + local network only)
   static Future<void> importTestWallet(BuildContext context) async {
     try {
-      // Get the required providers
-      final container = ProviderContainer();
+      // Get the app's ProviderContainer (not a new isolated one!)
+      final container = ProviderScope.containerOf(context);
       final walletService = container.read(walletServiceProvider);
       final currentSafe = container.read(currentSafeNumberProvider);
 
@@ -111,6 +111,9 @@ class DebugTestWalletService {
       // 6. Reload wallets list using Riverpod provider
       await container.read(walletsListProvider.notifier).loadWallets();
       container.read(walletsListProvider.notifier).refresh();
+
+      // 7. Invalidate dependent providers to force UI refresh
+      container.invalidate(defaultWalletProvider);
 
       // Close loading dialog
       Navigator.pop(context);

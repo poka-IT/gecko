@@ -9,7 +9,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/pin_cache_service.dart';
-import 'package:gecko/utils.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -175,8 +174,8 @@ class ManageMembership extends ConsumerWidget {
                 return TransactionInProgressScreen(
                   transactionStatus: transactionStatus,
                   transType: 'revokeIdty',
-                  fromAddress: getShortPubkey(address),
-                  toAddress: getShortPubkey(address),
+                  fromAddress: address,
+                  toAddress: address,
                 );
               },
             ),

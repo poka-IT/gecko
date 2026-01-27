@@ -564,7 +564,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                 Consumer(
                                   builder: (context, ref, child) {
                                     final identityName = ref.watch(
-                                      identityNameProvider(_currentTransactionData.toAddress),
+                                      hybridIdentityNameProvider(_currentTransactionData.toAddress),
                                     );
 
                                     return identityName.when(

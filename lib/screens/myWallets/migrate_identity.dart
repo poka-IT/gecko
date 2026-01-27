@@ -453,8 +453,12 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        TransactionInProgressScreen(transactionStatus: broadcastStream),
+                                    builder: (context) => TransactionInProgressScreen(
+                                      transactionStatus: broadcastStream,
+                                      transType: 'identityMigration',
+                                      fromAddress: fromAddress,
+                                      toAddress: toKeypair!.address,
+                                    ),
                                   ),
                                 );
                               } catch (e) {

@@ -8,7 +8,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
-import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 class MembershipRenewal {
@@ -56,8 +55,8 @@ class MembershipRenewal {
           return TransactionInProgressScreen(
             transactionStatus: transactionStatus,
             transType: 'renewMembership',
-            fromAddress: getShortPubkey(address),
-            toAddress: getShortPubkey(address),
+            fromAddress: address,
+            toAddress: address,
           );
         },
       ),

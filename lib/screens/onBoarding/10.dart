@@ -18,7 +18,6 @@ import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/routes.dart';
-import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -95,8 +94,8 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
           builder: (context) => TransactionInProgressScreen(
             transactionStatus: broadcastStream,
             transType: migrationData.hasIdentity ? 'identityMigration' : 'accountMigration',
-            fromAddress: getShortPubkey(migrationData.fromAddress),
-            toAddress: getShortPubkey(targetWallet.address),
+            fromAddress: migrationData.fromAddress,
+            toAddress: targetWallet.address,
           ),
         ),
       );

@@ -131,5 +131,9 @@
     "legacyCreateNewSafe": "Stattdessen einen neuen Tresor erstellen",
     "legacyIgnoreRecommendation": "Empfehlung ignorieren",
     "legacyClicksRemaining": "{} Klick(s) verbleibend zur Bestätigung",
-    "identityInsufficientBalance": "Unzureichendes Guthaben, um eine Identität zu erstellen"
+    "identityInsufficientBalance": "Unzureichendes Guthaben, um eine Identität zu erstellen",
+    "insufficientBalance": "Unzureichendes Guthaben",
+    "cannotSendToYourself": "Sie können nicht an sich selbst senden",
+    "minimumAmountRequired": "Mindestens {} für dieses Konto erforderlich",
+    "invalidAmount": "Ungültiger Betrag"
 }

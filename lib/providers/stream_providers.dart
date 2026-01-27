@@ -552,3 +552,88 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
 final hybridIdtyStatusProvider = AsyncNotifierProvider.family<HybridIdtyStatusNotifier, d.IdtyStatus, String>(
   HybridIdtyStatusNotifier.new,
 );
+
+/// Hybrid certification provider using StateNotifier approach
+/// This ensures certifications are always up-to-date by combining streams with periodic polling
+/// Solves the issue where WebSocket notifications for IdtyCertMeta storage key are not triggered
+class HybridCertificationNotifier extends AsyncNotifier<d.CertificationData> {
+  HybridCertificationNotifier(this.arg);
+  final String arg;
+
+  Timer? _refreshTimer;
+  StreamSubscription<d.StorageChangeSet>? _certSubscription;
+
+  @override
+  Future<d.CertificationData> build() async {
+    final address = arg;
+    // Cleanup when provider is disposed
+    ref.onDispose(() {
+      _refreshTimer?.cancel();
+      _certSubscription?.cancel();
+    });
+
+    // Initial data fetch
+    final storageService = ref.watch(storageServiceProvider);
+    final certData = await storageService.getCertsCounter(address);
+
+    // Start both stream subscription and periodic polling for redundancy
+    _startCertSubscription(address);
+    _startPeriodicRefresh(address);
+
+    return certData;
+  }
+
+  void _startPeriodicRefresh(String address) {
+    _refreshTimer?.cancel();
+    // Poll every 3 seconds to catch any missed updates
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      try {
+        final storageService = ref.read(storageServiceProvider);
+        final newCertData = await storageService.getCertsCounter(address);
+
+        // Only update if data actually changed
+        final currentData = state.value;
+        if (currentData == null ||
+            newCertData.receivedCount != currentData.receivedCount ||
+            newCertData.sentCount != currentData.sentCount) {
+          state = AsyncValue.data(newCertData);
+        }
+      } catch (e) {
+        // Continue trying on error
+      }
+    });
+  }
+
+  void _startCertSubscription(String address) async {
+    _certSubscription?.cancel();
+    try {
+      final storageService = ref.read(storageServiceProvider);
+      _certSubscription = await storageService.subscribeToCertsCounter(address, (newCertData) {
+        final currentData = state.value;
+        if (currentData == null ||
+            newCertData.receivedCount != currentData.receivedCount ||
+            newCertData.sentCount != currentData.sentCount) {
+          state = AsyncValue.data(newCertData);
+        }
+      });
+    } catch (e) {
+      log.e('Error starting certification subscription for $address: $e');
+      // Polling will continue as fallback
+    }
+  }
+
+  void forceRefresh() async {
+    final address = arg;
+    try {
+      final storageService = ref.read(storageServiceProvider);
+      final newCertData = await storageService.getCertsCounter(address);
+      state = AsyncValue.data(newCertData);
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+}
+
+final hybridCertificationProvider = AsyncNotifierProvider.family<HybridCertificationNotifier, d.CertificationData, String>(
+  HybridCertificationNotifier.new,
+);

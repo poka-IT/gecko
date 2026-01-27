@@ -38,10 +38,10 @@ class WalletHeader extends ConsumerWidget {
       builder: (context, ref) {
         final isOwner = ref.watch(isOwnerProvider(address));
 
-        // Use hybrid provider to handle identity creation (solves closed stream issue)
+        // Use hybrid providers to handle identity creation and live updates
         final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
         final balanceAsync = ref.watch(smartBalanceStreamProvider(address));
-        final identityNameAsync = ref.watch(identityNameProvider(address));
+        final identityNameAsync = ref.watch(hybridIdentityNameProvider(address));
 
         final hasError = idtyStatusAsync.hasError || balanceAsync.hasError || identityNameAsync.hasError;
         final isLoading = !idtyStatusAsync.hasValue || !balanceAsync.hasValue || !identityNameAsync.hasValue;

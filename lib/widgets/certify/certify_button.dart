@@ -84,6 +84,7 @@ class CertifyButton extends ConsumerWidget {
                           return TransactionInProgressScreen(
                             transactionStatus: transactionStatus,
                             transType: 'cert',
+                            fromAddress: identityWallet.address,
                             toAddress: address,
                           );
                         },

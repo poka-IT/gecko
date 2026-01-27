@@ -686,5 +686,9 @@
     "legacyCreateNewSafe": "Create a new safe instead",
     "legacyIgnoreRecommendation": "Ignore recommendation",
     "legacyClicksRemaining": "{} click(s) remaining to confirm",
-    "identityInsufficientBalance": "Insufficient balance to create an identity"
+    "identityInsufficientBalance": "Insufficient balance to create an identity",
+    "insufficientBalance": "Insufficient balance",
+    "cannotSendToYourself": "Cannot send to yourself",
+    "minimumAmountRequired": "Minimum {} required for this account",
+    "invalidAmount": "Invalid amount"
 }

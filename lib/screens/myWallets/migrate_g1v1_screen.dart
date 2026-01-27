@@ -553,8 +553,8 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                                               return TransactionInProgressScreen(
                                                 transactionStatus: transactionStream,
                                                 transType: hasIdentity ? 'identityMigration' : 'accountMigration',
-                                                fromAddress: getShortPubkey(addressToMigrate),
-                                                toAddress: getShortPubkey(selectedWallet.address),
+                                                fromAddress: addressToMigrate,
+                                                toAddress: selectedWallet.address,
                                               );
                                             },
                                           ),

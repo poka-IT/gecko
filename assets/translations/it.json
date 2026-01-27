@@ -693,5 +693,6 @@
     "legacyRecommendation": "Crea prima una nuova cassaforte, poi migra il tuo vecchio account Cesium dalle impostazioni del portafoglio. Questo è l'approccio consigliato e sicuro.",
     "legacyCreateNewSafe": "Crea invece una nuova cassaforte",
     "legacyIgnoreRecommendation": "Ignora raccomandazione",
-    "legacyClicksRemaining": "{} clic rimanenti per confermare"
+    "legacyClicksRemaining": "{} clic rimanenti per confermare",
+    "identityInsufficientBalance": "Saldo insufficiente per creare un'identità"
 }

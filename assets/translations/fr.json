@@ -690,5 +690,6 @@
     "legacyRecommendation": "Créez d'abord un nouveau coffre, puis migrez votre ancien compte Cesium depuis les paramètres du portefeuille. C'est l'approche recommandée et sécurisée.",
     "legacyCreateNewSafe": "Créer un nouveau coffre à la place",
     "legacyIgnoreRecommendation": "Ignorer la recommandation",
-    "legacyClicksRemaining": "{} clic(s) restant(s) pour confirmer"
+    "legacyClicksRemaining": "{} clic(s) restant(s) pour confirmer",
+    "identityInsufficientBalance": "Solde insuffisant pour créer une identité"
 }

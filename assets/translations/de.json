@@ -130,5 +130,6 @@
     "legacyRecommendation": "Erstellen Sie zuerst einen neuen Tresor und migrieren Sie dann Ihr altes Cesium-Konto aus den Brieftascheneinstellungen. Dies ist der empfohlene und sichere Ansatz.",
     "legacyCreateNewSafe": "Stattdessen einen neuen Tresor erstellen",
     "legacyIgnoreRecommendation": "Empfehlung ignorieren",
-    "legacyClicksRemaining": "{} Klick(s) verbleibend zur Bestätigung"
+    "legacyClicksRemaining": "{} Klick(s) verbleibend zur Bestätigung",
+    "identityInsufficientBalance": "Unzureichendes Guthaben, um eine Identität zu erstellen"
 }

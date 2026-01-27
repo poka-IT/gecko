@@ -685,5 +685,6 @@
     "legacyRecommendation": "Create a new safe first, then migrate your old Cesium account from the wallet settings. This is the recommended and secure approach.",
     "legacyCreateNewSafe": "Create a new safe instead",
     "legacyIgnoreRecommendation": "Ignore recommendation",
-    "legacyClicksRemaining": "{} click(s) remaining to confirm"
+    "legacyClicksRemaining": "{} click(s) remaining to confirm",
+    "identityInsufficientBalance": "Insufficient balance to create an identity"
 }

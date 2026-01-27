@@ -32,4 +32,5 @@ Map<String, String> errorTransactionMap = {
       'youHaveToFeedThisAccountBeforeUsing'.tr(),
   'Token.FundsUnavailable': 'fundsUnavailable'.tr(),
   'wot.MembershipRenewalPeriodNotRespected': 'membershipRenewalPeriodNotRespected'.tr(),
+  'identity.InsufficientBalance': 'identityInsufficientBalance'.tr(),
 };

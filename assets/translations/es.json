@@ -693,5 +693,6 @@
     "legacyRecommendation": "Crea primero una nueva bóveda, luego migra tu antigua cuenta Cesium desde los ajustes del monedero. Este es el enfoque recomendado y seguro.",
     "legacyCreateNewSafe": "Crear una nueva bóveda en su lugar",
     "legacyIgnoreRecommendation": "Ignorar recomendación",
-    "legacyClicksRemaining": "{} clic(s) restante(s) para confirmar"
+    "legacyClicksRemaining": "{} clic(s) restante(s) para confirmar",
+    "identityInsufficientBalance": "Saldo insuficiente para crear una identidad"
 }

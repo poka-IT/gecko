@@ -1,11 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/avatar_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
+import 'package:gecko/widgets/commons/shimmer_avatar.dart';
 
 class DatapodAvatar extends ConsumerWidget {
   const DatapodAvatar({super.key, required this.address, this.size = 15, this.name});
@@ -18,16 +19,10 @@ class DatapodAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLocalWallet = ref.watch(isOwnerProvider(address));
 
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: context.colorScheme.onSecondaryContainer, width: 0.2),
-      ),
-      child: ScaledSizedBox(
-        width: size,
-        height: size,
-        child: isLocalWallet ? _buildLocalWalletAvatar(ref) : _buildRemoteAvatar(ref),
-      ),
+    return ScaledSizedBox(
+      width: size,
+      height: size,
+      child: isLocalWallet ? _buildLocalWalletAvatar(ref) : _buildRemoteAvatar(context, ref),
     );
   }
 
@@ -35,8 +30,6 @@ class DatapodAvatar extends ConsumerWidget {
     final wallet = ref.watch(walletByAddressProvider(address));
 
     if (wallet?.imagePath != null && wallet!.imagePath!.isNotEmpty) {
-      // For local wallets, ALWAYS show local file (not Cesium+)
-      // Use CachedAvatarImage for optimal performance
       return CachedAvatarImage(
         key: ValueKey(wallet.imagePath),
         imagePath: wallet.imagePath!,
@@ -44,7 +37,6 @@ class DatapodAvatar extends ConsumerWidget {
         isCircular: true,
       );
     } else {
-      // Use default avatar based on wallet number
       final walletNumber = wallet?.number ?? 0;
       return CachedAvatarImage(
         imagePath: 'assets/avatars/${walletNumber % 4}.png',
@@ -54,54 +46,72 @@ class DatapodAvatar extends ConsumerWidget {
     }
   }
 
-  Widget _buildRemoteAvatar(WidgetRef ref) {
+  Widget _buildRemoteAvatar(BuildContext context, WidgetRef ref) {
+    final pixelSize = (scaleSize(size) * MediaQuery.devicePixelRatioOf(context)).toInt();
+
+    // First check synchronous cache - if avatar is already in memory, show it immediately
+    final cachedAvatar = ref.watch(avatarSyncProvider(address));
+    if (cachedAvatar != null) {
+      return ClipOval(child: _buildFadeInImage(cachedAvatar, pixelSize));
+    }
+
+    // Otherwise, use async provider which will trigger loading
     final avatarAsync = ref.watch(avatarProvider(address));
 
     return ClipOval(
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeIn,
-        switchOutCurve: Curves.easeOut,
-        child: avatarAsync.when(
-          data: (avatarBytes) {
-            if (avatarBytes != null) {
-              return Image.memory(
-                key: ValueKey('avatar_loaded_$address'),
-                avatarBytes,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // If image loading fails, show default avatar
-                  return _buildDefaultAvatar();
-                },
-              );
-            } else {
-              // No avatar found, show default
-              return _buildDefaultAvatar();
-            }
-          },
-          loading: () => _buildDefaultAvatar(), // Show default avatar while loading instead of spinner
-          error: (error, stackTrace) {
-            // Error occurred, show default avatar
-            return _buildDefaultAvatar();
-          },
-        ),
+      child: avatarAsync.when(
+        data: (avatarBytes) {
+          if (avatarBytes != null) {
+            return _buildFadeInImage(avatarBytes, pixelSize);
+          } else {
+            return _buildDefaultAvatar(context);
+          }
+        },
+        loading: () => ShimmerAvatar(size: scaleSize(size)),
+        error: (error, stackTrace) => _buildDefaultAvatar(context),
       ),
     );
   }
 
-  Widget _buildDefaultAvatar() {
-    // If a name is provided, show name circle instead of icon_user.png
+  /// Build image with smooth fade-in during decode
+  Widget _buildFadeInImage(Uint8List avatarBytes, int pixelSize) {
+    return Image.memory(
+      avatarBytes,
+      key: ValueKey('avatar_$address'),
+      fit: BoxFit.cover,
+      gaplessPlayback: true,
+      cacheWidth: pixelSize,
+      cacheHeight: pixelSize,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded) {
+          return child;
+        }
+        return AnimatedOpacity(
+          opacity: frame == null ? 0 : 1,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          child: child,
+        );
+      },
+      errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(context),
+    );
+  }
+
+  Widget _buildDefaultAvatar(BuildContext context) {
     if (name != null && name!.isNotEmpty) {
-      return CircleAvatar(
+      return Container(
         key: ValueKey('avatar_default_name_$address'),
-        radius: size / 2,
-        backgroundColor: Theme.of(homeContext).colorScheme.primary.withValues(alpha: 0.1),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        ),
+        alignment: Alignment.center,
         child: Text(
           name![0].toUpperCase(),
           style: scaledTextStyle(
-            fontSize: size * 0.4, // Scale font size based on avatar size
+            fontSize: size * 0.4,
             fontWeight: FontWeight.w600,
-            color: Theme.of(homeContext).colorScheme.primary,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       );
@@ -109,8 +119,7 @@ class DatapodAvatar extends ConsumerWidget {
     return Image.asset(
       'assets/icon_user.png',
       key: ValueKey('avatar_default_icon_$address'),
-      height: size,
-      fit: BoxFit.fill,
+      fit: BoxFit.cover,
     );
   }
 }

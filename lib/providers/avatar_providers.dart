@@ -15,6 +15,14 @@ final avatarProvider = FutureProvider.family<Uint8List?, String>((ref, address) 
   return await avatarCache.getAvatar(address);
 });
 
+/// Synchronous provider to check if avatar is already in memory cache
+/// Returns the cached avatar bytes or null if not in memory
+/// Use this to avoid showing loading state when avatar is already cached
+final avatarSyncProvider = Provider.family<Uint8List?, String>((ref, address) {
+  final cache = ref.watch(avatarCacheProvider);
+  return cache[address];
+});
+
 /// Avatar cache notifier that manages avatar downloading and caching
 class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
   @override
@@ -165,4 +173,32 @@ class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
       log.e('Error clearing all avatar cache: $e');
     }
   }
+
+  /// Prefetch multiple avatars in parallel (useful for lists)
+  /// This loads avatars into cache without blocking, so when
+  /// the widgets render, they'll find the data already available
+  Future<void> prefetchAvatars(List<String> addresses) async {
+    // Filter out addresses already in memory cache
+    final uncachedAddresses = addresses.where((addr) => !state.containsKey(addr)).toList();
+
+    if (uncachedAddresses.isEmpty) return;
+
+    log.d('Prefetching ${uncachedAddresses.length} avatars');
+
+    // Load in parallel with concurrency limit to avoid overwhelming the network
+    const batchSize = 5;
+    for (var i = 0; i < uncachedAddresses.length; i += batchSize) {
+      final batch = uncachedAddresses.skip(i).take(batchSize);
+      await Future.wait(
+        batch.map((address) => getAvatar(address)),
+        eagerError: false,
+      );
+    }
+  }
+
+  /// Check if an avatar is already in memory cache (synchronous check)
+  bool hasAvatarInMemory(String address) => state.containsKey(address);
+
+  /// Get avatar synchronously from memory cache only (returns null if not in memory)
+  Uint8List? getAvatarSync(String address) => state[address];
 }

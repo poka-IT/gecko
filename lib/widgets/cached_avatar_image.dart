@@ -84,7 +84,7 @@ class _CachedAvatarImageState extends State<CachedAvatarImage> {
         _cachedImageBytes!,
         key: ValueKey(widget.imagePath),
         fit: widget.fit,
-        gaplessPlayback: false,
+        gaplessPlayback: true,
       );
       return widget.isCircular
           ? Container(

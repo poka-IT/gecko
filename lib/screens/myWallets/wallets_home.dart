@@ -19,6 +19,7 @@ import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
 import 'package:gecko/widgets/buttons/safe_options_buttons.dart';
+import 'package:gecko/widgets/bottom_sheets/safe_options_menu.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/wallet_tile.dart';
 import 'package:gecko/widgets/wallet_tile_membre.dart';
@@ -320,6 +321,11 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
               },
+            ),
+            IconButton(
+              icon: Icon(Icons.settings, color: context.colorScheme.onSurface, size: scaleSize(24)),
+              tooltip: 'manageSafe'.tr(),
+              onPressed: () => showSafeOptionsMenu(context),
             ),
             ScaledSizedBox(width: 8),
           ],

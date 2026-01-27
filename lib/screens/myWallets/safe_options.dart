@@ -24,7 +24,11 @@ class SafeOptions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentSafe = ref.watch(walletServiceProvider).defaultSafeBox;
+    final walletService = ref.watch(walletServiceProvider);
+    if (walletService.safeBox.isEmpty()) {
+      return const SizedBox.shrink(); // Widget se ferme, évite l'exception
+    }
+    final currentSafe = walletService.defaultSafeBox;
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
@@ -52,9 +56,13 @@ class SafeOptionsContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final walletService = ref.watch(walletServiceProvider);
+    if (walletService.safeBox.isEmpty()) {
+      return const SizedBox.shrink();
+    }
     final safeManager = ref.read(safeManagerProvider);
     final walletsState = ref.watch(walletsListProvider);
-    final currentSafe = ref.watch(walletServiceProvider).defaultSafeBox;
+    final currentSafe = walletService.defaultSafeBox;
     final isAlone = walletsState.wallets.length == 1;
 
     return Column(

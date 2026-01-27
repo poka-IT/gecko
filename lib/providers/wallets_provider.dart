@@ -139,7 +139,12 @@ class WalletsListNotifier extends Notifier<WalletsListState> {
     // Listen to safe number changes to auto-reload
     ref.listen(defaultSafeBoxNumberProvider, (previous, next) {
       if (previous != next) {
-        loadWallets(safeBoxNumber: next);
+        // Si pas de safe (-1), vider la liste au lieu de charger
+        if (next < 0) {
+          state = state.copyWith(wallets: [], isLoading: false, currentSafeNumber: next);
+        } else {
+          loadWallets(safeBoxNumber: next);
+        }
       }
     });
 
@@ -155,7 +160,8 @@ class WalletsListNotifier extends Notifier<WalletsListState> {
   Future<void> loadWallets({int? safeBoxNumber, WidgetRef? widgetRef}) async {
     final sbn = safeBoxNumber ?? _walletService.defaultSafeBoxNumber;
 
-    if (!_walletService.isWalletExist) {
+    // Pas de safe valide (-1), retourner une liste vide
+    if (sbn < 0 || !_walletService.isWalletExist) {
       state = state.copyWith(wallets: [], isLoading: false, currentSafeNumber: sbn);
       return;
     }

@@ -29,6 +29,10 @@ class SafeManager {
 
     if (!(confirmed ?? false)) return;
 
+    // IMPORTANT: Capturer le NavigatorState AVANT d'appeler deleteSafe
+    // Car le context sera invalidé quand les widgets se rebuild après la suppression
+    final navigator = Navigator.of(context);
+
     try {
       // Delete the safe from storage
       await _ref.read(walletServiceProvider).deleteSafe(safe.number);
@@ -38,8 +42,7 @@ class SafeManager {
 
       // Handle navigation based on whether safes remain
       final walletService = _ref.read(walletServiceProvider);
-      // ignore: use_build_context_synchronously
-      await _handlePostDeletionNavigation(context, walletService);
+      await _handlePostDeletionNavigation(navigator, walletService);
 
       // Add a small delay to ensure all async operations complete
       await Future.delayed(const Duration(milliseconds: 50));
@@ -59,36 +62,41 @@ class SafeManager {
 
   /// Handle navigation and state updates after safe deletion
   Future<void> _handlePostDeletionNavigation(
-    BuildContext context,
+    NavigatorState navigator,
     dynamic walletService,
   ) async {
     if (walletService.safeBox.isEmpty()) {
-      await _handleNoSafesRemaining(context, walletService);
+      await _handleNoSafesRemaining(navigator, walletService);
     } else {
-      await _handleSafesRemaining(context, walletService);
+      await _handleSafesRemaining(navigator, walletService);
     }
   }
 
   /// Handle case when no safes remain after deletion
   Future<void> _handleNoSafesRemaining(
-    BuildContext context,
+    NavigatorState navigator,
     dynamic walletService,
   ) async {
-    walletService.setDefaultSafeBoxNumber(-1);
+    // 1. Navigate FIRST with captured NavigatorState (before context becomes invalid)
+    navigator.pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
+
+    // 2. Small delay to let navigation start and unmount old widgets
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    // 3. Invalidate stream providers BEFORE modifying states
+    _ref.read(walletActionsProvider.notifier).invalidateProviders();
+
+    // 4. Update states (wallets already deleted by durt2)
+    _ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(-1);
     _ref.read(walletsListProvider.notifier).clear();
 
-    // Force refresh of biometric provider after safe state changes
+    // 5. Refresh biometric provider after navigation
     await _ref.read(biometricProvider.notifier).refresh();
-
-    // Navigate to home since no safes exist
-    if (context.mounted) {
-      Navigator.pushNamedAndRemoveUntil(context, RouteNames.home, (route) => false);
-    }
   }
 
   /// Handle case when safes remain after deletion
   Future<void> _handleSafesRemaining(
-    BuildContext context,
+    NavigatorState navigator,
     dynamic walletService,
   ) async {
     final remainingSafes = walletService.safeBox.getAll();
@@ -96,7 +104,7 @@ class SafeManager {
     if (remainingSafes.isEmpty) {
       // Edge case: no safes left after deletion (race condition)
       log.w('No remaining safes found after deletion');
-      await _handleNoSafesRemaining(context, walletService);
+      await _handleNoSafesRemaining(navigator, walletService);
       return;
     }
 
@@ -119,9 +127,7 @@ class SafeManager {
     await _ref.read(biometricProvider.notifier).refresh();
 
     // Navigate back to wallets home
-    if (context.mounted) {
-      Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));
-    }
+    navigator.popUntil(ModalRoute.withName(RouteNames.home));
   }
 
   /// Show confirmation dialog for safe deletion

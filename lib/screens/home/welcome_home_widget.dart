@@ -133,7 +133,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                         style:
                                             ElevatedButton.styleFrom(
                                               foregroundColor: Colors.white,
-                                              backgroundColor: homeContext.colorScheme.primary,
+                                              backgroundColor: context.colorScheme.primary,
                                               elevation: 0,
                                               padding: EdgeInsets.symmetric(
                                                 vertical: scaleSize(12),
@@ -175,7 +175,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                             OutlinedButton.styleFrom(
                                               side: BorderSide(
                                                 width: scaleSize(4),
-                                                color: homeContext.colorScheme.primary,
+                                                color: context.colorScheme.primary,
                                               ),
                                               padding: EdgeInsets.symmetric(
                                                 vertical: scaleSize(12),
@@ -205,7 +205,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                           "restoreWallet".tr(),
                                           style: scaledTextStyle(
                                             fontSize: 20,
-                                            color: homeContext.colorScheme.primary,
+                                            color: context.colorScheme.primary,
                                             fontWeight: FontWeight.w600,
                                           ),
                                           textAlign: TextAlign.center,

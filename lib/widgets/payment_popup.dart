@@ -447,9 +447,10 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                 if (newSelectedWalletAddress == null) return;
 
                                 // Find the full WalletEntity object that corresponds to the selected address.
-                                final newSelectedWallet = ref.watch(walletsListProvider).wallets.firstWhere(
-                                  (wallet) => wallet.address == newSelectedWalletAddress,
-                                );
+                                final newSelectedWallet = ref
+                                    .watch(walletsListProvider)
+                                    .wallets
+                                    .firstWhere((wallet) => wallet.address == newSelectedWalletAddress);
 
                                 // Update your local state and trigger a rebuild.
                                 setState(() {
@@ -645,11 +646,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                           child: Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              Icon(
-                                                Icons.info_outline,
-                                                size: scaleSize(14),
-                                                color: Colors.orange[700],
-                                              ),
+                                              Icon(Icons.info_outline, size: scaleSize(14), color: Colors.orange[700]),
                                               ScaledSizedBox(width: 4),
                                               Text(
                                                 errorMessage,

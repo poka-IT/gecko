@@ -189,10 +189,7 @@ class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
     const batchSize = 5;
     for (var i = 0; i < uncachedAddresses.length; i += batchSize) {
       final batch = uncachedAddresses.skip(i).take(batchSize);
-      await Future.wait(
-        batch.map((address) => getAvatar(address)),
-        eagerError: false,
-      );
+      await Future.wait(batch.map((address) => getAvatar(address)), eagerError: false);
     }
   }
 

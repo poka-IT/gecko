@@ -209,16 +209,19 @@ class SquidConnectionStatusNotifier extends Notifier<d.ConnectionStatus> {
 }
 
 /// Combined connection status provider (default)
-final connectionStatusProvider =
-    NotifierProvider<ConnectionStatusNotifier, d.ConnectionStatus>(ConnectionStatusNotifier.new);
+final connectionStatusProvider = NotifierProvider<ConnectionStatusNotifier, d.ConnectionStatus>(
+  ConnectionStatusNotifier.new,
+);
 
 /// Duniter-only connection status provider
-final duniterConnectionStatusProvider =
-    NotifierProvider<DuniterConnectionStatusNotifier, d.ConnectionStatus>(DuniterConnectionStatusNotifier.new);
+final duniterConnectionStatusProvider = NotifierProvider<DuniterConnectionStatusNotifier, d.ConnectionStatus>(
+  DuniterConnectionStatusNotifier.new,
+);
 
 /// Squid-only connection status provider
-final squidConnectionStatusProvider =
-    NotifierProvider<SquidConnectionStatusNotifier, d.ConnectionStatus>(SquidConnectionStatusNotifier.new);
+final squidConnectionStatusProvider = NotifierProvider<SquidConnectionStatusNotifier, d.ConnectionStatus>(
+  SquidConnectionStatusNotifier.new,
+);
 
 /// Provides the current Squid endpoint as a string.
 /// This can be used to rebuild widgets when the endpoint changes.

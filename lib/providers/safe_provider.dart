@@ -61,10 +61,7 @@ class SafeManager {
   }
 
   /// Handle navigation and state updates after safe deletion
-  Future<void> _handlePostDeletionNavigation(
-    NavigatorState navigator,
-    dynamic walletService,
-  ) async {
+  Future<void> _handlePostDeletionNavigation(NavigatorState navigator, dynamic walletService) async {
     if (walletService.safeBox.isEmpty()) {
       await _handleNoSafesRemaining(navigator, walletService);
     } else {
@@ -73,10 +70,7 @@ class SafeManager {
   }
 
   /// Handle case when no safes remain after deletion
-  Future<void> _handleNoSafesRemaining(
-    NavigatorState navigator,
-    dynamic walletService,
-  ) async {
+  Future<void> _handleNoSafesRemaining(NavigatorState navigator, dynamic walletService) async {
     // 1. Navigate FIRST with captured NavigatorState (before context becomes invalid)
     navigator.pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
 
@@ -95,10 +89,7 @@ class SafeManager {
   }
 
   /// Handle case when safes remain after deletion
-  Future<void> _handleSafesRemaining(
-    NavigatorState navigator,
-    dynamic walletService,
-  ) async {
+  Future<void> _handleSafesRemaining(NavigatorState navigator, dynamic walletService) async {
     final remainingSafes = walletService.safeBox.getAll();
 
     if (remainingSafes.isEmpty) {

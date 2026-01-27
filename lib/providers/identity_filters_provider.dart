@@ -56,7 +56,9 @@ class IdentityFiltersNotifier extends Notifier<IdentityFilterCriteria> {
 }
 
 /// Provider for identity filter criteria
-final identityFiltersProvider = NotifierProvider<IdentityFiltersNotifier, IdentityFilterCriteria>(IdentityFiltersNotifier.new);
+final identityFiltersProvider = NotifierProvider<IdentityFiltersNotifier, IdentityFilterCriteria>(
+  IdentityFiltersNotifier.new,
+);
 
 /// Notifier for identity filter panel expansion state
 class IdentityFilterPanelExpandedNotifier extends Notifier<bool> {
@@ -68,4 +70,6 @@ class IdentityFilterPanelExpandedNotifier extends Notifier<bool> {
 }
 
 /// Provider for identity filter panel expansion state
-final identityFilterPanelExpandedProvider = NotifierProvider<IdentityFilterPanelExpandedNotifier, bool>(IdentityFilterPanelExpandedNotifier.new);
+final identityFilterPanelExpandedProvider = NotifierProvider<IdentityFilterPanelExpandedNotifier, bool>(
+  IdentityFilterPanelExpandedNotifier.new,
+);

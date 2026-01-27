@@ -173,10 +173,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                         key: keyRestoreSafe,
                                         style:
                                             OutlinedButton.styleFrom(
-                                              side: BorderSide(
-                                                width: scaleSize(4),
-                                                color: context.colorScheme.primary,
-                                              ),
+                                              side: BorderSide(width: scaleSize(4), color: context.colorScheme.primary),
                                               padding: EdgeInsets.symmetric(
                                                 vertical: scaleSize(12),
                                                 horizontal: scaleSize(16),

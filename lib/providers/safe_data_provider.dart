@@ -27,25 +27,20 @@ class SafeOnChainData {
     this.isFullyLoaded = false,
   });
 
-  factory SafeOnChainData.empty() => const SafeOnChainData(
-        balances: {},
-        certifications: {},
-        identityStatuses: {},
-        isFullyLoaded: false,
-      );
+  factory SafeOnChainData.empty() =>
+      const SafeOnChainData(balances: {}, certifications: {}, identityStatuses: {}, isFullyLoaded: false);
 
   SafeOnChainData copyWith({
     Map<String, d.WalletBalance>? balances,
     Map<String, d.CertificationData>? certifications,
     Map<String, d.IdtyStatus>? identityStatuses,
     bool? isFullyLoaded,
-  }) =>
-      SafeOnChainData(
-        balances: balances ?? this.balances,
-        certifications: certifications ?? this.certifications,
-        identityStatuses: identityStatuses ?? this.identityStatuses,
-        isFullyLoaded: isFullyLoaded ?? this.isFullyLoaded,
-      );
+  }) => SafeOnChainData(
+    balances: balances ?? this.balances,
+    certifications: certifications ?? this.certifications,
+    identityStatuses: identityStatuses ?? this.identityStatuses,
+    isFullyLoaded: isFullyLoaded ?? this.isFullyLoaded,
+  );
 
   /// Update a single wallet's balance
   SafeOnChainData updateBalance(String address, d.WalletBalance balance) {
@@ -163,37 +158,28 @@ class SafeOnChainDataNotifier extends AsyncNotifier<SafeOnChainData> {
 
     try {
       // Single subscription for all balance updates
-      _balanceSubscription = await storageService.subscribeBalancesBatch(
-        addresses,
-        (address, balance) {
-          final currentState = state.value;
-          if (currentState != null) {
-            state = AsyncValue.data(currentState.updateBalance(address, balance));
-          }
-        },
-      );
+      _balanceSubscription = await storageService.subscribeBalancesBatch(addresses, (address, balance) {
+        final currentState = state.value;
+        if (currentState != null) {
+          state = AsyncValue.data(currentState.updateBalance(address, balance));
+        }
+      });
 
       // Single subscription for all certification updates
-      _certSubscription = await storageService.subscribeCertsBatch(
-        addresses,
-        (address, certData) {
-          final currentState = state.value;
-          if (currentState != null) {
-            state = AsyncValue.data(currentState.updateCertification(address, certData));
-          }
-        },
-      );
+      _certSubscription = await storageService.subscribeCertsBatch(addresses, (address, certData) {
+        final currentState = state.value;
+        if (currentState != null) {
+          state = AsyncValue.data(currentState.updateCertification(address, certData));
+        }
+      });
 
       // Single subscription for all identity status updates
-      _idtySubscription = await storageService.subscribeIdtyStatusBatch(
-        addresses,
-        (address, status) {
-          final currentState = state.value;
-          if (currentState != null) {
-            state = AsyncValue.data(currentState.updateIdtyStatus(address, status));
-          }
-        },
-      );
+      _idtySubscription = await storageService.subscribeIdtyStatusBatch(addresses, (address, status) {
+        final currentState = state.value;
+        if (currentState != null) {
+          state = AsyncValue.data(currentState.updateIdtyStatus(address, status));
+        }
+      });
 
       log.d('🔔 Batch subscriptions started for ${addresses.length} addresses');
     } catch (e) {
@@ -226,11 +212,9 @@ class SafeOnChainDataNotifier extends AsyncNotifier<SafeOnChainData> {
         final newBalances = Map<String, d.WalletBalance>.from(currentState.balances)..remove(address);
         final newCerts = Map<String, d.CertificationData>.from(currentState.certifications)..remove(address);
         final newStatuses = Map<String, d.IdtyStatus>.from(currentState.identityStatuses)..remove(address);
-        state = AsyncValue.data(currentState.copyWith(
-          balances: newBalances,
-          certifications: newCerts,
-          identityStatuses: newStatuses,
-        ));
+        state = AsyncValue.data(
+          currentState.copyWith(balances: newBalances, certifications: newCerts, identityStatuses: newStatuses),
+        );
       }
     }
   }
@@ -256,11 +240,7 @@ final safeWalletBalanceProvider = Provider.family<d.WalletBalance?, String>((ref
   final currentSafe = ref.watch(currentSafeNumberProvider);
   final safeData = ref.watch(safeOnChainDataProvider(currentSafe));
 
-  return safeData.when(
-    data: (data) => data.balances[address],
-    loading: () => null,
-    error: (e, st) => null,
-  );
+  return safeData.when(data: (data) => data.balances[address], loading: () => null, error: (e, st) => null);
 });
 
 /// Check if a wallet belongs to the current safe
@@ -275,11 +255,7 @@ final safeWalletCertProvider = Provider.family<d.CertificationData?, String>((re
   final currentSafe = ref.watch(currentSafeNumberProvider);
   final safeData = ref.watch(safeOnChainDataProvider(currentSafe));
 
-  return safeData.when(
-    data: (data) => data.certifications[address],
-    loading: () => null,
-    error: (e, st) => null,
-  );
+  return safeData.when(data: (data) => data.certifications[address], loading: () => null, error: (e, st) => null);
 });
 
 /// Identity status for a specific wallet address from the current safe's batch-loaded data.
@@ -288,20 +264,12 @@ final safeWalletIdtyStatusProvider = Provider.family<d.IdtyStatus?, String>((ref
   final currentSafe = ref.watch(currentSafeNumberProvider);
   final safeData = ref.watch(safeOnChainDataProvider(currentSafe));
 
-  return safeData.when(
-    data: (data) => data.identityStatuses[address],
-    loading: () => null,
-    error: (e, st) => null,
-  );
+  return safeData.when(data: (data) => data.identityStatuses[address], loading: () => null, error: (e, st) => null);
 });
 
 /// Check if safe data is fully loaded.
 /// Useful for showing loading indicators.
 final isSafeDataLoadedProvider = Provider.family<bool, int>((ref, safeNumber) {
   final safeData = ref.watch(safeOnChainDataProvider(safeNumber));
-  return safeData.when(
-    data: (data) => data.isFullyLoaded,
-    loading: () => false,
-    error: (e, st) => false,
-  );
+  return safeData.when(data: (data) => data.isFullyLoaded, loading: () => false, error: (e, st) => false);
 });

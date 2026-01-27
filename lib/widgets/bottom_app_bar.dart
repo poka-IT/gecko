@@ -40,10 +40,7 @@ class GlobalBottomAppBar extends ConsumerWidget {
         return dragState.lastFlyBy == null
             ? const _GeckoBottomAppBar(actualRoute: 'safeHome')
             : SafeArea(
-                child: DragWalletsInfo(
-                  lastFlyBy: dragState.lastFlyBy!,
-                  dragAddress: dragState.dragAddress!,
-                ),
+                child: DragWalletsInfo(lastFlyBy: dragState.lastFlyBy!, dragAddress: dragState.dragAddress!),
               );
       }
 

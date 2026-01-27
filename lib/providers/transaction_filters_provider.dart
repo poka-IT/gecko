@@ -152,7 +152,8 @@ class TransactionFiltersNotifier extends Notifier<TransactionFilterCriteria> {
 /// Internal family provider for transaction filters
 final _transactionFiltersFamilyProvider =
     NotifierProvider.family<TransactionFiltersNotifier, TransactionFilterCriteria, FilterMode>(
-        (mode) => TransactionFiltersNotifier(mode));
+      (mode) => TransactionFiltersNotifier(mode),
+    );
 
 /// Provider for transaction filter criteria (account mode)
 final transactionFiltersProvider = _transactionFiltersFamilyProvider(FilterMode.account);
@@ -170,7 +171,9 @@ class FilterPanelExpandedNotifier extends Notifier<bool> {
 }
 
 /// Provider to track if the filter panel is expanded/open
-final filterPanelExpandedProvider = NotifierProvider<FilterPanelExpandedNotifier, bool>(FilterPanelExpandedNotifier.new);
+final filterPanelExpandedProvider = NotifierProvider<FilterPanelExpandedNotifier, bool>(
+  FilterPanelExpandedNotifier.new,
+);
 
 /// Notifier for network filter panel expanded state
 class NetworkFilterPanelExpandedNotifier extends Notifier<bool> {
@@ -182,7 +185,9 @@ class NetworkFilterPanelExpandedNotifier extends Notifier<bool> {
 }
 
 /// Provider to track if the network filter panel is expanded/open
-final networkFilterPanelExpandedProvider = NotifierProvider<NetworkFilterPanelExpandedNotifier, bool>(NetworkFilterPanelExpandedNotifier.new);
+final networkFilterPanelExpandedProvider = NotifierProvider<NetworkFilterPanelExpandedNotifier, bool>(
+  NetworkFilterPanelExpandedNotifier.new,
+);
 
 /// Utility functions for filter management
 

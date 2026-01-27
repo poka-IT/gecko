@@ -104,10 +104,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                   Navigator.push(
                     context,
                     FaderTransition(
-                      page: ConfirmChangePinScreen(
-                        walletName: widget.walletName,
-                        newPinCode: pin,
-                      ),
+                      page: ConfirmChangePinScreen(walletName: widget.walletName, newPinCode: pin),
                       isFast: false,
                     ),
                   );

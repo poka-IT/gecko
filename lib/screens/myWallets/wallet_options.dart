@@ -315,12 +315,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     return activityWidget(context);
   }
 
-  Widget buildDefaultWalletSection(
-    BuildContext context,
-    WidgetRef ref,
-    int currentSafe,
-    WalletEntity defaultWallet,
-  ) {
+  Widget buildDefaultWalletSection(BuildContext context, WidgetRef ref, int currentSafe, WalletEntity defaultWallet) {
     return InkWell(
       key: keySetDefaultWallet,
       onTap: defaultWallet.address != widget.wallet.address
@@ -620,11 +615,9 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           .getLegacyRawSeed(address: widget.wallet.address, pinCode: PinCodeService.pinCode);
 
       // Store migration data in provider for onboarding to pick up
-      ref.read(pendingLegacyMigrationProvider.notifier).set(LegacyMigrationData(
-        fromAddress: widget.wallet.address,
-        rawSeed: rawSeed,
-        hasIdentity: hasIdentity,
-      ));
+      ref
+          .read(pendingLegacyMigrationProvider.notifier)
+          .set(LegacyMigrationData(fromAddress: widget.wallet.address, rawSeed: rawSeed, hasIdentity: hasIdentity));
 
       // Navigate to safe creation - the onboarding will handle migration automatically
       Navigator.pushNamed(context, RouteNames.onboardingStepOne);
@@ -717,10 +710,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     // Navigate to change PIN screen
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) =>
-            ChangePinScreen(walletName: widget.wallet.name ?? 'legacyWallet'.tr()),
-      ),
+      MaterialPageRoute(builder: (context) => ChangePinScreen(walletName: widget.wallet.name ?? 'legacyWallet'.tr())),
     );
   }
 

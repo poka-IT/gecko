@@ -344,12 +344,14 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
 }
 
 /// Provider for network activity
-final networkActivityProvider =
-    NotifierProvider<NetworkActivityNotifier, NetworkActivityState>(NetworkActivityNotifier.new);
+final networkActivityProvider = NotifierProvider<NetworkActivityNotifier, NetworkActivityState>(
+  NetworkActivityNotifier.new,
+);
 
 /// Provider for Universal Dividends toggle in network view
-final networkUniversalDividendsToggleProvider =
-    NotifierProvider<UniversalDividendsToggleNotifier, bool>(UniversalDividendsToggleNotifier.new);
+final networkUniversalDividendsToggleProvider = NotifierProvider<UniversalDividendsToggleNotifier, bool>(
+  UniversalDividendsToggleNotifier.new,
+);
 
 /// Server-side filtered network activity notifier
 class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityState> {
@@ -541,7 +543,8 @@ class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityStat
 /// Provider for server-filtered network activity
 final serverFilteredNetworkActivityProvider =
     NotifierProvider<ServerFilteredNetworkActivityNotifier, NetworkActivityState>(
-        ServerFilteredNetworkActivityNotifier.new);
+      ServerFilteredNetworkActivityNotifier.new,
+    );
 
 /// Adaptive network activity provider that chooses between server and client filtering
 final adaptiveFilteredNetworkActivityProvider = Provider<NetworkActivityState>((ref) {

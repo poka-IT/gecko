@@ -634,6 +634,7 @@ class HybridCertificationNotifier extends AsyncNotifier<d.CertificationData> {
   }
 }
 
-final hybridCertificationProvider = AsyncNotifierProvider.family<HybridCertificationNotifier, d.CertificationData, String>(
-  HybridCertificationNotifier.new,
-);
+final hybridCertificationProvider =
+    AsyncNotifierProvider.family<HybridCertificationNotifier, d.CertificationData, String>(
+      HybridCertificationNotifier.new,
+    );

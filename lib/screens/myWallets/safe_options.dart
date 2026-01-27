@@ -72,12 +72,7 @@ class SafeOptionsContent extends ConsumerWidget {
           key: keyShowSeed,
           onTap: () async {
             if (!await PinCodeService.askPinCode(force: true)) return;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ShowSeed(walletName: currentSafe.name),
-              ),
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ShowSeed(walletName: currentSafe.name)));
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -133,9 +128,7 @@ class SafeOptionsContent extends ConsumerWidget {
             if (!await PinCodeService.askPinCode(force: true)) return;
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ChangePinScreen(walletName: currentSafe.name),
-              ),
+              MaterialPageRoute(builder: (context) => ChangePinScreen(walletName: currentSafe.name)),
             );
           },
           child: Container(

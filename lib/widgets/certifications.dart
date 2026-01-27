@@ -22,11 +22,7 @@ class Certifications extends ConsumerWidget {
       data: (certData) {
         return _buildCertificationsRow(certData.receivedCount, certData.sentCount, finalColor);
       },
-      loading: () => ShimmerPlaceholder(
-        width: scaleSize(50),
-        height: scaleSize(size * 1.2),
-        baseColor: finalColor,
-      ),
+      loading: () => ShimmerPlaceholder(width: scaleSize(50), height: scaleSize(size * 1.2), baseColor: finalColor),
       error: (error, stack) {
         log.e('❌ Certifications widget error for $address: $error');
         return const SizedBox.shrink();

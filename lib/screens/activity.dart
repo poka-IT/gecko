@@ -147,9 +147,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
     } else {
       final balance = balanceAsync.value?.transferableBalance;
       final isEmptyWallet = balance == null || balance == BigInt.zero;
-      backgroundColor = isEmptyWallet
-          ? Theme.of(context).colorScheme.error
-          : Theme.of(context).colorScheme.tertiary;
+      backgroundColor = isEmptyWallet ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.tertiary;
     }
 
     return Container(

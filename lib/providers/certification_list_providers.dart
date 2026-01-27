@@ -280,7 +280,9 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 }
 
 /// Provider for certification lists
-final certificationListProvider = NotifierProvider.family<
-    CertificationListNotifier,
-    CertificationListState,
-    ({String address, CertDirection direction})>((params) => CertificationListNotifier(params));
+final certificationListProvider =
+    NotifierProvider.family<
+      CertificationListNotifier,
+      CertificationListState,
+      ({String address, CertDirection direction})
+    >((params) => CertificationListNotifier(params));

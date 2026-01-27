@@ -116,10 +116,6 @@ class DatapodAvatar extends ConsumerWidget {
         ),
       );
     }
-    return Image.asset(
-      'assets/icon_user.png',
-      key: ValueKey('avatar_default_icon_$address'),
-      fit: BoxFit.cover,
-    );
+    return Image.asset('assets/icon_user.png', key: ValueKey('avatar_default_icon_$address'), fit: BoxFit.cover);
   }
 }

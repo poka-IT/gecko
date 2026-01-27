@@ -26,10 +26,7 @@ class _ShimmerPlaceholderState extends State<ShimmerPlaceholder> with SingleTick
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    )..repeat();
+    _controller = AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)..repeat();
   }
 
   @override
@@ -114,10 +111,7 @@ class ShimmerToContent extends StatelessWidget {
               borderRadius: shimmerBorderRadius,
               baseColor: shimmerColor,
             )
-          : KeyedSubtree(
-              key: const ValueKey('content'),
-              child: child,
-            ),
+          : KeyedSubtree(key: const ValueKey('content'), child: child),
     );
   }
 }

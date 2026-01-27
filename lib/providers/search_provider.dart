@@ -46,7 +46,9 @@ class PasteAddressNotifier extends Notifier<({bool canPaste, String address})> {
 }
 
 /// Paste address state provider
-final pasteAddressProvider = NotifierProvider<PasteAddressNotifier, ({bool canPaste, String address})>(PasteAddressNotifier.new);
+final pasteAddressProvider = NotifierProvider<PasteAddressNotifier, ({bool canPaste, String address})>(
+  PasteAddressNotifier.new,
+);
 
 /// Search controller provider
 final searchControllerProvider = Provider<TextEditingController>((ref) {

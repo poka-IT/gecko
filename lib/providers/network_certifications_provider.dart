@@ -425,13 +425,15 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
 }
 
 /// Provider for network certifications
-final networkCertificationsProvider =
-    NotifierProvider<NetworkCertificationsNotifier, NetworkCertificationsState>(NetworkCertificationsNotifier.new);
+final networkCertificationsProvider = NotifierProvider<NetworkCertificationsNotifier, NetworkCertificationsState>(
+  NetworkCertificationsNotifier.new,
+);
 
 /// Provider for server-filtered network certifications
 final serverFilteredNetworkCertificationsProvider =
     NotifierProvider<ServerFilteredNetworkCertificationsNotifier, NetworkCertificationsState>(
-        ServerFilteredNetworkCertificationsNotifier.new);
+      ServerFilteredNetworkCertificationsNotifier.new,
+    );
 
 /// Adaptive network certifications provider that chooses between server and client filtering
 final adaptiveFilteredNetworkCertificationsProvider = Provider<NetworkCertificationsState>((ref) {

@@ -21,8 +21,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class ShowSeed extends ConsumerWidget {
-  const ShowSeed({Key? keyMyWallets, required this.walletName})
-    : super(key: keyMyWallets);
+  const ShowSeed({Key? keyMyWallets, required this.walletName}) : super(key: keyMyWallets);
   final String walletName;
 
   @override

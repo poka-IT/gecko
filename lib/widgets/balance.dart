@@ -46,11 +46,7 @@ class Balance extends ConsumerWidget {
             final transferableBalance = walletBalance.transferableBalance;
             return BalanceDisplay(value: transferableBalance, size: size, color: finalColor);
           },
-          loading: () => ShimmerPlaceholder(
-            width: scaleSize(60),
-            height: scaleSize(size * 1.2),
-            baseColor: finalColor,
-          ),
+          loading: () => ShimmerPlaceholder(width: scaleSize(60), height: scaleSize(size * 1.2), baseColor: finalColor),
           error: (error, stack) {
             log.e('❌ Balance widget error for $address: $error');
             return const SizedBox.shrink();

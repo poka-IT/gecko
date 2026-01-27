@@ -78,7 +78,9 @@ class TrmData {
 final trmDataProvider = NotifierProvider<TrmDataNotifier, AsyncValue<TrmData>>(TrmDataNotifier.new);
 
 /// Provider for current currency display mode
-final currencyDisplayModeProvider = NotifierProvider<CurrencyDisplayModeNotifier, CurrencyDisplayMode>(CurrencyDisplayModeNotifier.new);
+final currencyDisplayModeProvider = NotifierProvider<CurrencyDisplayModeNotifier, CurrencyDisplayMode>(
+  CurrencyDisplayModeNotifier.new,
+);
 
 /// Provider for balance ratio calculation
 final balanceRatioProvider = Provider<BigInt>((ref) {

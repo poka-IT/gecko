@@ -13,11 +13,7 @@ import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ConfirmChangePinScreen extends ConsumerStatefulWidget {
-  const ConfirmChangePinScreen({
-    super.key,
-    required this.walletName,
-    required this.newPinCode,
-  });
+  const ConfirmChangePinScreen({super.key, required this.walletName, required this.newPinCode});
 
   final String walletName;
   final String newPinCode;

@@ -109,10 +109,9 @@ class _CustomDerivationState extends ConsumerState<CustomDerivation> {
                     if (dropdownValue == 'root') {
                       await ref.read(walletActionsProvider.notifier).generateRootWallet('rootWallet'.tr());
                     } else {
-                      await ref.read(walletActionsProvider.notifier).generateNewDerivation(
-                        newDerivationName,
-                        customDerivation: int.parse(dropdownValue!),
-                      );
+                      await ref
+                          .read(walletActionsProvider.notifier)
+                          .generateNewDerivation(newDerivationName, customDerivation: int.parse(dropdownValue!));
                     }
                     Navigator.popUntil(context, ModalRoute.withName(RouteNames.myWallets));
                   },

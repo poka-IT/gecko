@@ -37,16 +37,10 @@ void showSafeOptionsMenu(BuildContext context) {
             ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(24), vertical: scaleSize(8)),
               leading: Image.asset('assets/safes/config.png', height: scaleSize(36)),
-              title: Text(
-                'manageSafe'.tr(),
-                style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-              ),
+              title: Text('manageSafe'.tr(), style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => SafeOptions()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => SafeOptions()));
               },
             ),
             // Option 2: Import Cesium account
@@ -60,10 +54,7 @@ void showSafeOptionsMenu(BuildContext context) {
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MigrateG1v1()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const MigrateG1v1()));
               },
             ),
             SizedBox(height: 24 + bottomPadding),

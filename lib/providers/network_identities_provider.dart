@@ -407,11 +407,15 @@ class ServerFilteredNetworkIdentitiesNotifier extends Notifier<NetworkIdentities
 }
 
 /// Provider for network identities
-final networkIdentitiesProvider = NotifierProvider<NetworkIdentitiesNotifier, NetworkIdentitiesState>(NetworkIdentitiesNotifier.new);
+final networkIdentitiesProvider = NotifierProvider<NetworkIdentitiesNotifier, NetworkIdentitiesState>(
+  NetworkIdentitiesNotifier.new,
+);
 
 /// Provider for server-filtered network identities
 final serverFilteredNetworkIdentitiesProvider =
-    NotifierProvider<ServerFilteredNetworkIdentitiesNotifier, NetworkIdentitiesState>(ServerFilteredNetworkIdentitiesNotifier.new);
+    NotifierProvider<ServerFilteredNetworkIdentitiesNotifier, NetworkIdentitiesState>(
+      ServerFilteredNetworkIdentitiesNotifier.new,
+    );
 
 /// Adaptive network identities provider that chooses between server and client filtering
 final adaptiveFilteredNetworkIdentitiesProvider = Provider<NetworkIdentitiesState>((ref) {

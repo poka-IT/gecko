@@ -161,7 +161,6 @@ class PinSecurityNotifier extends Notifier<PinSecurityState> {
     _countdownTimer?.cancel();
     _countdownTimer = null;
   }
-
 }
 
 /// Provider for PIN security state management

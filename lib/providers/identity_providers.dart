@@ -331,8 +331,9 @@ class SelectedCertificationWalletNotifier extends Notifier<String?> {
 }
 
 /// Provider for selected certification wallet (development mode only)
-final selectedCertificationWalletProvider =
-    NotifierProvider<SelectedCertificationWalletNotifier, String?>(SelectedCertificationWalletNotifier.new);
+final selectedCertificationWalletProvider = NotifierProvider<SelectedCertificationWalletNotifier, String?>(
+  SelectedCertificationWalletNotifier.new,
+);
 
 /// Provider for certification state between effective wallet and target address
 /// Automatically updates when balance or certifications change, with caching to avoid UI jumps

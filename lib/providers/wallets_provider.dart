@@ -24,19 +24,9 @@ class WalletsListState {
   final int currentSafeNumber;
   final String? error;
 
-  const WalletsListState({
-    this.wallets = const [],
-    this.isLoading = false,
-    this.currentSafeNumber = 0,
-    this.error,
-  });
+  const WalletsListState({this.wallets = const [], this.isLoading = false, this.currentSafeNumber = 0, this.error});
 
-  WalletsListState copyWith({
-    List<d.WalletEntity>? wallets,
-    bool? isLoading,
-    int? currentSafeNumber,
-    String? error,
-  }) {
+  WalletsListState copyWith({List<d.WalletEntity>? wallets, bool? isLoading, int? currentSafeNumber, String? error}) {
     return WalletsListState(
       wallets: wallets ?? this.wallets,
       isLoading: isLoading ?? this.isLoading,
@@ -58,17 +48,9 @@ class PinState {
   final bool isLoading;
   final int? pinLength;
 
-  const PinState({
-    this.isValid = false,
-    this.isLoading = true,
-    this.pinLength,
-  });
+  const PinState({this.isValid = false, this.isLoading = true, this.pinLength});
 
-  PinState copyWith({
-    bool? isValid,
-    bool? isLoading,
-    int? pinLength,
-  }) {
+  PinState copyWith({bool? isValid, bool? isLoading, int? pinLength}) {
     return PinState(
       isValid: isValid ?? this.isValid,
       isLoading: isLoading ?? this.isLoading,
@@ -82,10 +64,7 @@ class DragDropState {
   final d.WalletEntity? lastFlyBy;
   final d.WalletEntity? dragAddress;
 
-  const DragDropState({
-    this.lastFlyBy,
-    this.dragAddress,
-  });
+  const DragDropState({this.lastFlyBy, this.dragAddress});
 
   DragDropState copyWith({
     d.WalletEntity? lastFlyBy,
@@ -109,18 +88,9 @@ class DerivationState {
   final String? mnemonic;
   final String? error;
 
-  const DerivationState({
-    this.isLoading = false,
-    this.mnemonic,
-    this.error,
-  });
+  const DerivationState({this.isLoading = false, this.mnemonic, this.error});
 
-  DerivationState copyWith({
-    bool? isLoading,
-    String? mnemonic,
-    String? error,
-    bool clearMnemonic = false,
-  }) {
+  DerivationState copyWith({bool? isLoading, String? mnemonic, String? error, bool clearMnemonic = false}) {
     return DerivationState(
       isLoading: isLoading ?? this.isLoading,
       mnemonic: clearMnemonic ? null : (mnemonic ?? this.mnemonic),
@@ -194,11 +164,7 @@ class WalletsListNotifier extends Notifier<WalletsListState> {
 
       final wallets = safe.wallets.toList()..sort((a, b) => a.number.compareTo(b.number));
 
-      state = state.copyWith(
-        wallets: wallets,
-        isLoading: false,
-        currentSafeNumber: safe.number,
-      );
+      state = state.copyWith(wallets: wallets, isLoading: false, currentSafeNumber: safe.number);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -330,10 +296,7 @@ class WalletActionsNotifier extends Notifier<void> {
 
         // Get the mnemonic from the safe
         final defaultWallet = ref.read(defaultWalletProvider);
-        final mnemonic = await _walletService.getSeed(
-          address: defaultWallet.address,
-          pin: PinCodeService.pinCode,
-        );
+        final mnemonic = await _walletService.getSeed(address: defaultWallet.address, pin: PinCodeService.pinCode);
 
         // Generate keypair with the custom derivation
         final keypair = await _walletService.getKeyPairFromMnemonic(
@@ -462,29 +425,19 @@ class WalletActionsNotifier extends Notifier<void> {
 // ============================================================================
 
 /// Provider for the wallets list state
-final walletsListProvider = NotifierProvider<WalletsListNotifier, WalletsListState>(
-  WalletsListNotifier.new,
-);
+final walletsListProvider = NotifierProvider<WalletsListNotifier, WalletsListState>(WalletsListNotifier.new);
 
 /// Provider for PIN state
-final pinStateProvider = NotifierProvider<PinStateNotifier, PinState>(
-  PinStateNotifier.new,
-);
+final pinStateProvider = NotifierProvider<PinStateNotifier, PinState>(PinStateNotifier.new);
 
 /// Provider for drag & drop state
-final dragDropProvider = NotifierProvider<DragDropNotifier, DragDropState>(
-  DragDropNotifier.new,
-);
+final dragDropProvider = NotifierProvider<DragDropNotifier, DragDropState>(DragDropNotifier.new);
 
 /// Provider for derivation state
-final derivationStateProvider = NotifierProvider<DerivationStateNotifier, DerivationState>(
-  DerivationStateNotifier.new,
-);
+final derivationStateProvider = NotifierProvider<DerivationStateNotifier, DerivationState>(DerivationStateNotifier.new);
 
 /// Provider for wallet actions (stateless)
-final walletActionsProvider = NotifierProvider<WalletActionsNotifier, void>(
-  WalletActionsNotifier.new,
-);
+final walletActionsProvider = NotifierProvider<WalletActionsNotifier, void>(WalletActionsNotifier.new);
 
 // ============================================================================
 // DERIVED PROVIDERS (COMPUTED)

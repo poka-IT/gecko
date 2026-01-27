@@ -255,4 +255,5 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
 /// Provider for server-filtered transaction history
 final serverFilteredHistoryProvider =
     NotifierProvider.family<ServerFilteredHistoryNotifier, ServerFilteredHistoryState, String>(
-        (address) => ServerFilteredHistoryNotifier(address));
+      (address) => ServerFilteredHistoryNotifier(address),
+    );

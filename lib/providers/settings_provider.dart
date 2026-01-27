@@ -8,8 +8,9 @@ import 'package:gecko/providers/providers.dart';
 ///
 /// This provider handles the global toggle state for including Universal Dividends
 /// in calculations and persists the state using Durt's config storage.
-final universalDividendsToggleProvider =
-    NotifierProvider<UniversalDividendsToggleNotifier, bool>(UniversalDividendsToggleNotifier.new);
+final universalDividendsToggleProvider = NotifierProvider<UniversalDividendsToggleNotifier, bool>(
+  UniversalDividendsToggleNotifier.new,
+);
 
 /// Notifier for managing the global Universal Dividends toggle state.
 ///

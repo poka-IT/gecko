@@ -120,77 +120,75 @@ class Gecko extends StatelessWidget {
 
     return ProviderScope(
       child: Consumer(
-          builder: (context, ref, _) {
-            // Activate the Squid endpoint change notifier to enable provider invalidation
-            ref.watch(squidEndpointChangeNotifierProvider);
+        builder: (context, ref, _) {
+          // Activate the Squid endpoint change notifier to enable provider invalidation
+          ref.watch(squidEndpointChangeNotifierProvider);
 
-            return SentryContextProvider(
-              child: Builder(
-                builder: (context) {
-                  // Create the navigator observer with Riverpod ref
-                  final navigatorObserver = BottomAppBarNavigatorObserver(ref);
-                  final textScale = ref.watch(textScalingProvider);
-                  final themeMode = ref.watch(currentThemeModeProvider);
+          return SentryContextProvider(
+            child: Builder(
+              builder: (context) {
+                // Create the navigator observer with Riverpod ref
+                final navigatorObserver = BottomAppBarNavigatorObserver(ref);
+                final textScale = ref.watch(textScalingProvider);
+                final themeMode = ref.watch(currentThemeModeProvider);
 
-                  return MaterialApp(
-                    localizationsDelegates: context.localizationDelegates,
-                    supportedLocales: context.supportedLocales,
-                    locale: context.locale,
-                    theme: lightTheme,
-                    darkTheme: darkTheme,
-                    themeMode: themeMode,
-                    navigatorKey: _navigatorKey,
-                    navigatorObservers: [
-                      navigatorObserver,
-                      // Add RouteObserver for immediate bottom bar state updates
-                      globalRouteObserver,
-                    ],
-                    builder: (context, child) {
-                      // Apply text scaling using Builder to preserve original MediaQuery context
-                      final scaledChild = Builder(
-                        builder: (builderContext) {
-                          final originalData = MediaQuery.of(builderContext);
-                          return MediaQuery(
-                            data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
-                            child: child!,
-                          );
-                        },
-                      );
+                return MaterialApp(
+                  localizationsDelegates: context.localizationDelegates,
+                  supportedLocales: context.supportedLocales,
+                  locale: context.locale,
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  themeMode: themeMode,
+                  navigatorKey: _navigatorKey,
+                  navigatorObservers: [
+                    navigatorObserver,
+                    // Add RouteObserver for immediate bottom bar state updates
+                    globalRouteObserver,
+                  ],
+                  builder: (context, child) {
+                    // Apply text scaling using Builder to preserve original MediaQuery context
+                    final scaledChild = Builder(
+                      builder: (builderContext) {
+                        final originalData = MediaQuery.of(builderContext);
+                        return MediaQuery(
+                          data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
+                          child: child!,
+                        );
+                      },
+                    );
 
-                      final responsiveChild = ResponsiveBreakpoints.builder(
-                        child: scaledChild,
-                        breakpoints: [
-                          const Breakpoint(start: 0, end: 450, name: MOBILE),
-                          const Breakpoint(start: 451, end: 800, name: TABLET),
-                          const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-                        ],
-                      );
+                    final responsiveChild = ResponsiveBreakpoints.builder(
+                      child: scaledChild,
+                      breakpoints: [
+                        const Breakpoint(start: 0, end: 450, name: MOBILE),
+                        const Breakpoint(start: 451, end: 800, name: TABLET),
+                        const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                      ],
+                    );
 
-                      // Wrap with padding wrapper to avoid content being hidden behind bottom bar
-                      final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
+                    // Wrap with padding wrapper to avoid content being hidden behind bottom bar
+                    final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
 
-                      // Wrap with offline overlay and version overlay
-                      final finalChild = showVersionOverlay
-                          ? VersionOverlay(child: childWithPadding)
-                          : childWithPadding;
+                    // Wrap with offline overlay and version overlay
+                    final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
 
-                      // Add the global bottom app bar as an overlay
-                      return Stack(
-                        children: [
-                          GlobalOfflineOverlay(child: finalChild),
-                          Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
-                        ],
-                      );
-                    },
-                    title: 'Ğecko',
-                    initialRoute: AppRoutes.initialRoute,
-                    routes: AppRoutes.getRoutes(),
-                  );
-                },
-              ),
-            );
-          },
-        ),
+                    // Add the global bottom app bar as an overlay
+                    return Stack(
+                      children: [
+                        GlobalOfflineOverlay(child: finalChild),
+                        Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                      ],
+                    );
+                  },
+                  title: 'Ğecko',
+                  initialRoute: AppRoutes.initialRoute,
+                  routes: AppRoutes.getRoutes(),
+                );
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }

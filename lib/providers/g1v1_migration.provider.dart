@@ -43,7 +43,9 @@ class G1v1MigrationUiNotifier extends Notifier<G1v1MigrationUiState> {
 }
 
 /// Provider for G1v1 migration UI state
-final g1v1MigrationUiProvider = NotifierProvider<G1v1MigrationUiNotifier, G1v1MigrationUiState>(G1v1MigrationUiNotifier.new);
+final g1v1MigrationUiProvider = NotifierProvider<G1v1MigrationUiNotifier, G1v1MigrationUiState>(
+  G1v1MigrationUiNotifier.new,
+);
 
 /// Provider for Cesium salt TextEditingController
 final csSaltControllerProvider = Provider.autoDispose<TextEditingController>((ref) {

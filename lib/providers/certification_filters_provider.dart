@@ -78,8 +78,9 @@ class CertificationFiltersNotifier extends Notifier<CertificationFilterCriteria>
 }
 
 /// Provider for certification filter criteria
-final certificationFiltersProvider =
-    NotifierProvider<CertificationFiltersNotifier, CertificationFilterCriteria>(CertificationFiltersNotifier.new);
+final certificationFiltersProvider = NotifierProvider<CertificationFiltersNotifier, CertificationFilterCriteria>(
+  CertificationFiltersNotifier.new,
+);
 
 /// Notifier for certification filter panel expansion state
 class CertificationFilterPanelExpandedNotifier extends Notifier<bool> {
@@ -91,5 +92,6 @@ class CertificationFilterPanelExpandedNotifier extends Notifier<bool> {
 }
 
 /// Provider for certification filter panel expansion state
-final certificationFilterPanelExpandedProvider =
-    NotifierProvider<CertificationFilterPanelExpandedNotifier, bool>(CertificationFilterPanelExpandedNotifier.new);
+final certificationFilterPanelExpandedProvider = NotifierProvider<CertificationFilterPanelExpandedNotifier, bool>(
+  CertificationFilterPanelExpandedNotifier.new,
+);

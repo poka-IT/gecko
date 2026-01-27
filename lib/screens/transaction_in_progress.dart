@@ -38,7 +38,9 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
   late String _toAddress;
 
   bool get _isSelfTransaction =>
-      _fromAddress.isNotEmpty && _toAddress.isNotEmpty && _normalizeAddress(_fromAddress) == _normalizeAddress(_toAddress);
+      _fromAddress.isNotEmpty &&
+      _toAddress.isNotEmpty &&
+      _normalizeAddress(_fromAddress) == _normalizeAddress(_toAddress);
 
   String _normalizeAddress(String address) {
     if (address.length > 8) return address;
@@ -170,19 +172,10 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
                     color: context.colorScheme.primary.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.arrow_downward_rounded,
-                    size: scaleSize(14),
-                    color: context.colorScheme.primary,
-                  ),
+                  child: Icon(Icons.arrow_downward_rounded, size: scaleSize(14), color: context.colorScheme.primary),
                 ),
                 ScaledSizedBox(width: 16),
-                Expanded(
-                  child: Container(
-                    height: 1,
-                    color: context.colorScheme.outline.withValues(alpha: 0.1),
-                  ),
-                ),
+                Expanded(child: Container(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.1))),
               ],
             ),
           ),
@@ -337,10 +330,7 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
     return Container(
       width: scaleSize(72),
       height: scaleSize(72),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: statusColor.withValues(alpha: 0.1),
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor.withValues(alpha: 0.1)),
       child: Center(child: TransactionStateIcon(txStatus.state, size: 36, stroke: 3)),
     );
   }

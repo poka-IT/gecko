@@ -556,12 +556,13 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
 /// Provider for transfers-only transaction history
 final transfersOnlyHistoryProvider =
     NotifierProvider.family<TransfersOnlyHistoryNotifier, TransactionHistoryState, String>(
-        (address) => TransfersOnlyHistoryNotifier(address));
+      (address) => TransfersOnlyHistoryNotifier(address),
+    );
 
 /// Provider for combined transaction history (transfers + UDs)
-final combinedHistoryProvider =
-    NotifierProvider.family<CombinedHistoryNotifier, TransactionHistoryState, String>(
-        (address) => CombinedHistoryNotifier(address));
+final combinedHistoryProvider = NotifierProvider.family<CombinedHistoryNotifier, TransactionHistoryState, String>(
+  (address) => CombinedHistoryNotifier(address),
+);
 
 /// Conditional provider that switches between transfers-only and combined history based on toggle
 final transactionHistoryProvider = Provider.family<TransactionHistoryState, String>((ref, address) {

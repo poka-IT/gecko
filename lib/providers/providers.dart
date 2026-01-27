@@ -92,7 +92,9 @@ class PendingLegacyMigrationNotifier extends Notifier<LegacyMigrationData?> {
 
 /// Provider for pending legacy migration data
 /// This is used to store migration data between wallet options screen and onboarding completion
-final pendingLegacyMigrationProvider = NotifierProvider<PendingLegacyMigrationNotifier, LegacyMigrationData?>(PendingLegacyMigrationNotifier.new);
+final pendingLegacyMigrationProvider = NotifierProvider<PendingLegacyMigrationNotifier, LegacyMigrationData?>(
+  PendingLegacyMigrationNotifier.new,
+);
 
 /// Notifier for the default safe box number.
 /// This ensures that identity providers react to safe changes.
@@ -119,4 +121,6 @@ class DefaultSafeBoxNumberNotifier extends Notifier<int> {
 /// Reactive provider for the default safe box number.
 /// This provider watches the wallet service and automatically updates when the default safe changes.
 /// Other providers (like identity providers) should watch this to react to safe changes.
-final defaultSafeBoxNumberProvider = NotifierProvider<DefaultSafeBoxNumberNotifier, int>(DefaultSafeBoxNumberNotifier.new);
+final defaultSafeBoxNumberProvider = NotifierProvider<DefaultSafeBoxNumberNotifier, int>(
+  DefaultSafeBoxNumberNotifier.new,
+);

@@ -268,13 +268,9 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
 
   /// Wait for biometric provider to load and setup biometric if possible
   Future<void> _waitForBiometricAndSetup(BuildContext context, WidgetRef ref, String pinCode) async {
-    // Read the biometric provider and wait for it to finish loading
-    ref.read(biometricProvider.notifier);
-
-    // Keep checking until the provider is no longer loading
-    while (ref.read(biometricProvider).isLoading) {
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
+    // Wait for biometric provider to finish initialization
+    final biometricNotifier = ref.read(biometricProvider.notifier);
+    await biometricNotifier.waitForInitialization();
 
     // Now read the final state and check if we can enroll
     final biometricState = ref.read(biometricProvider);

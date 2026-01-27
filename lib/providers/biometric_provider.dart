@@ -19,6 +19,7 @@ class BiometricState {
   final List<BiometricType> availableTypes;
   final bool isEnrolledForCurrentSafe;
   final bool isLoading;
+  final bool isInitialized;
   final String? errorMessage;
 
   const BiometricState({
@@ -26,7 +27,8 @@ class BiometricState {
     this.isAvailable = false,
     this.availableTypes = const [],
     this.isEnrolledForCurrentSafe = false,
-    this.isLoading = false,
+    this.isLoading = true, // Start as loading by default
+    this.isInitialized = false, // Track if initialization is complete
     this.errorMessage,
   });
 
@@ -36,6 +38,7 @@ class BiometricState {
     List<BiometricType>? availableTypes,
     bool? isEnrolledForCurrentSafe,
     bool? isLoading,
+    bool? isInitialized,
     String? errorMessage,
   }) {
     return BiometricState(
@@ -44,6 +47,7 @@ class BiometricState {
       availableTypes: availableTypes ?? this.availableTypes,
       isEnrolledForCurrentSafe: isEnrolledForCurrentSafe ?? this.isEnrolledForCurrentSafe,
       isLoading: isLoading ?? this.isLoading,
+      isInitialized: isInitialized ?? this.isInitialized,
       errorMessage: errorMessage,
     );
   }
@@ -67,7 +71,7 @@ class BiometricNotifier extends Notifier<BiometricState> {
 
   /// Initialize biometric capabilities and state
   Future<void> _initializeBiometric() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, isInitialized: false);
 
     try {
       // Check device capabilities
@@ -84,11 +88,16 @@ class BiometricNotifier extends Notifier<BiometricState> {
         availableTypes: availableTypes,
         isEnrolledForCurrentSafe: isEnrolled,
         isLoading: false,
+        isInitialized: true,
         errorMessage: null,
       );
     } catch (e) {
       log.e('Error initializing biometric: $e');
-      state = state.copyWith(isLoading: false, errorMessage: 'Failed to initialize biometric authentication: $e');
+      state = state.copyWith(
+        isLoading: false,
+        isInitialized: true,
+        errorMessage: 'Failed to initialize biometric authentication: $e',
+      );
     }
   }
 
@@ -131,7 +140,7 @@ class BiometricNotifier extends Notifier<BiometricState> {
     await Future.delayed(const Duration(milliseconds: 100));
 
     // Clear any cached state first
-    state = state.copyWith(isEnrolledForCurrentSafe: false, isLoading: true, errorMessage: null);
+    state = state.copyWith(isEnrolledForCurrentSafe: false, isLoading: true, isInitialized: false, errorMessage: null);
 
     // Force a complete re-initialization to ensure fresh state
     await _initializeBiometric();
@@ -286,9 +295,13 @@ class BiometricNotifier extends Notifier<BiometricState> {
 
   /// Wait for biometric initialization to complete
   Future<void> waitForInitialization() async {
-    // Simply wait until isLoading becomes false
-    while (state.isLoading) {
+    // Wait until initialization is complete (with timeout to prevent infinite loops)
+    final timeout = DateTime.now().add(const Duration(seconds: 5));
+    while (!state.isInitialized && DateTime.now().isBefore(timeout)) {
       await Future.delayed(const Duration(milliseconds: 50));
+    }
+    if (!state.isInitialized) {
+      log.w('Biometric initialization timeout after 5 seconds');
     }
   }
 }

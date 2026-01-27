@@ -163,6 +163,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   }
 
   void executeTransactionInBackground(
+    WalletEntity capturedFromWallet,
     StreamController<TransactionStatus> statusController,
     String payAmount,
     String payComment,
@@ -177,7 +178,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
       // Heavy operation 1: Derive keypair (cryptographic operation)
       // Break this into smaller chunks to avoid blocking UI
-      final keypair = await deriveKeypairWithYield(fromWallet.address, PinCodeService.pinCode, walletService);
+      final keypair = await deriveKeypairWithYield(capturedFromWallet.address, PinCodeService.pinCode, walletService);
 
       // Give UI another chance to update
       await Future.microtask(() {});
@@ -229,6 +230,10 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   }
 
   Future executeTransfert() async {
+    // Capture fromWallet first, before any async operations that might dispose the widget
+    // This avoids accessing ref after the widget is unmounted
+    final capturedFromWallet = fromWallet;
+
     // Capture all required data before any async operations that might dispose the widget
     final payAmount = ref.read(profileViewProvider(widget.toAddress)).payAmount;
     final payComment = ref.read(profileViewProvider(widget.toAddress)).payComment;
@@ -259,13 +264,14 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       homeContext,
       MaterialPageRoute(
         builder: (context) {
-          return ActivityScreen(address: fromWallet.address, transactionData: transactionData);
+          return ActivityScreen(address: capturedFromWallet.address, transactionData: transactionData);
         },
       ),
     );
 
     // Execute heavy operations asynchronously in background
     executeTransactionInBackground(
+      capturedFromWallet,
       statusController,
       payAmount,
       payComment,

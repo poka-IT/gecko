@@ -11,7 +11,7 @@ subprojects {
     afterEvaluate {
         if (project.hasProperty('android')) {
             android {
-                compileSdkVersion 35
+                compileSdkVersion 36
             }
         }
         if (project.plugins.hasPlugin('org.jetbrains.kotlin.android') || project.plugins.hasPlugin('org.jetbrains.kotlin.jvm')) {

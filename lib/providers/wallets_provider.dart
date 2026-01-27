@@ -9,6 +9,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/certification_list_providers.dart';
+import 'package:gecko/providers/safe_data_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -447,6 +448,7 @@ class WalletActionsNotifier extends Notifier<void> {
       ref.invalidate(combinedHistoryProvider);
       ref.invalidate(transactionHistoryProvider);
       ref.invalidate(certificationListProvider);
+      ref.invalidate(safeOnChainDataProvider);
 
       log.i('Invalidated all family providers after safe operation');
     } catch (e) {

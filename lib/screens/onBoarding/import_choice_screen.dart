@@ -5,7 +5,6 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:gecko/globals.dart';
 
 /// Screen allowing users to choose between importing a mnemonic or legacy Cesium wallet
 class ImportChoiceScreen extends StatelessWidget {
@@ -71,19 +70,19 @@ class ImportChoiceScreen extends StatelessWidget {
 
   /// Main prominent card for recovery phrase import
   Widget _buildMainImportCard(BuildContext context) {
+    final primaryColor = context.colorScheme.primary;
+
     return InkWell(
       onTap: () => Navigator.pushNamed(context, RouteNames.restoreSafe),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [greenColor.withValues(alpha: 0.15), greenColor.withValues(alpha: 0.05)],
-          ),
+          color: context.colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: greenColor.withValues(alpha: 0.4), width: 2),
-          boxShadow: [BoxShadow(color: greenColor.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 8))],
+          border: Border.all(color: primaryColor.withValues(alpha: 0.3), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
         ),
         child: Column(
           children: [
@@ -95,8 +94,8 @@ class ImportChoiceScreen extends StatelessWidget {
                   Container(
                     width: scaleSize(70),
                     height: scaleSize(70),
-                    decoration: BoxDecoration(color: greenColor.withValues(alpha: 0.15), shape: BoxShape.circle),
-                    child: Icon(Icons.security, color: greenColor, size: scaleSize(36)),
+                    decoration: BoxDecoration(color: primaryColor.withValues(alpha: 0.12), shape: BoxShape.circle),
+                    child: Icon(Icons.security, color: primaryColor, size: scaleSize(36)),
                   ),
                   ScaledSizedBox(height: 20),
 
@@ -124,7 +123,7 @@ class ImportChoiceScreen extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(vertical: scaleSize(14)),
-                    decoration: BoxDecoration(color: greenColor, borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(color: primaryColor, borderRadius: BorderRadius.circular(12)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -146,7 +145,7 @@ class ImportChoiceScreen extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
               decoration: BoxDecoration(
-                color: greenColor.withValues(alpha: 0.2),
+                color: context.colorScheme.secondary.withValues(alpha: 0.4),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(14),
                   bottomRight: Radius.circular(14),
@@ -155,11 +154,11 @@ class ImportChoiceScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.verified, color: greenColor, size: scaleSize(16)),
+                  Icon(Icons.verified, color: primaryColor, size: scaleSize(16)),
                   ScaledSizedBox(width: 6),
                   Text(
                     'recommended'.tr(),
-                    style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: greenColor),
+                    style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: primaryColor),
                   ),
                 ],
               ),
@@ -287,12 +286,16 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.lightbulb_outline, color: greenColor, size: scaleSize(20)),
+                Icon(Icons.lightbulb_outline, color: context.colorScheme.primary, size: scaleSize(20)),
                 ScaledSizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'legacyRecommendation'.tr(),
-                    style: scaledTextStyle(fontSize: 13, color: greenColor, fontWeight: FontWeight.w500),
+                    style: scaledTextStyle(
+                      fontSize: 13,
+                      color: context.colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
@@ -310,7 +313,7 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
                   navigator.pushReplacementNamed(RouteNames.onboardingStepOne); // Replace with safe creation flow
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: greenColor,
+                  backgroundColor: context.colorScheme.primary,
                   padding: EdgeInsets.symmetric(vertical: scaleSize(14)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),

@@ -13,6 +13,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/providers/safe_data_provider.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/routes.dart';
@@ -131,6 +132,10 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
       return const Center(child: Text('Error: Safe not found'));
     }
 
+    // Preload safe on-chain data (balances, certifications, identity statuses)
+    // This ensures all data is loaded before wallets are displayed
+    final safeDataAsync = ref.watch(safeOnChainDataProvider(currentSafeNumber));
+
     // Reset tutorial session flag when safe changes
     if (_lastSafeNumber != currentSafe.number) {
       _tutorialShownInSession = false;
@@ -164,10 +169,15 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
     // Get identity wallet info and wait for it to resolve to avoid flash
     final idtyWalletAsync = ref.watch(idtyWalletAsyncProvider);
 
-    // Show loading state while identity wallet is being determined
+    // safeDataAsync is watched to trigger loading - actual data display is handled
+    // by individual widgets (Balance, Certifications) with shimmer placeholders
+    // ignore: unused_local_variable
+    final _ = safeDataAsync;
+
     return idtyWalletAsync.when(
       data: (idtyWallet) {
         // Data is ready, render the UI with correct wallet separation
+        // Balance/Certification widgets will show shimmer while their data loads
         final allWallets = walletsState.wallets;
         final walletsWithoutIdty = idtyWallet != null
             ? allWallets.where((w) => w.address != idtyWallet.address).toList()
@@ -176,8 +186,10 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> {
         return _buildWalletsContent(context, ref, currentSafe, allWallets, idtyWallet, walletsWithoutIdty, nTule);
       },
       loading: () {
-        // Show loading while determining identity wallet to prevent flash
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        // Show wallets immediately with shimmer placeholders for balances
+        // This provides a smoother UX than a blocking loader
+        final allWallets = walletsState.wallets;
+        return _buildWalletsContent(context, ref, currentSafe, allWallets, null, allWallets, nTule);
       },
       error: (error, stack) {
         // On error, treat as no identity wallet

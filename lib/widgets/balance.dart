@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/safe_data_provider.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/widgets/balance_display.dart';
+import 'package:gecko/widgets/commons/shimmer_placeholder.dart';
 import 'package:gecko/widgets/commons/storage_builder.dart';
 
 class Balance extends ConsumerWidget {
@@ -24,11 +26,16 @@ class Balance extends ConsumerWidget {
         if (isOwnedWallet) {
           // Use centralized batch-loaded data for owned wallets
           final safeBalance = ref.watch(safeWalletBalanceProvider(address));
-          if (safeBalance != null) {
-            return BalanceDisplay(value: safeBalance.transferableBalance, size: size, color: finalColor);
-          }
-          // Safe data is still loading, show empty while waiting
-          return const SizedBox.shrink();
+
+          return ShimmerToContent(
+            isLoading: safeBalance == null,
+            shimmerWidth: scaleSize(60),
+            shimmerHeight: scaleSize(size * 1.2),
+            shimmerColor: finalColor,
+            child: safeBalance != null
+                ? BalanceDisplay(value: safeBalance.transferableBalance, size: size, color: finalColor)
+                : const SizedBox.shrink(),
+          );
         }
 
         // Fallback to stream provider for external wallets
@@ -39,7 +46,11 @@ class Balance extends ConsumerWidget {
             final transferableBalance = walletBalance.transferableBalance;
             return BalanceDisplay(value: transferableBalance, size: size, color: finalColor);
           },
-          loading: () => const SizedBox.shrink(),
+          loading: () => ShimmerPlaceholder(
+            width: scaleSize(60),
+            height: scaleSize(size * 1.2),
+            baseColor: finalColor,
+          ),
           error: (error, stack) {
             log.e('❌ Balance widget error for $address: $error');
             return const SizedBox.shrink();

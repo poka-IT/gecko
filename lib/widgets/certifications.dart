@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/safe_data_provider.dart';
 import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/widgets/commons/shimmer_placeholder.dart';
 import 'package:gecko/globals.dart';
 
 class Certifications extends ConsumerWidget {
@@ -21,11 +22,16 @@ class Certifications extends ConsumerWidget {
     if (isOwnedWallet) {
       // Use centralized batch-loaded data for owned wallets
       final safeCert = ref.watch(safeWalletCertProvider(address));
-      if (safeCert != null) {
-        return _buildCertificationsRow(safeCert.receivedCount, safeCert.sentCount, finalColor);
-      }
-      // Safe data is still loading, show empty while waiting
-      return const SizedBox.shrink();
+
+      return ShimmerToContent(
+        isLoading: safeCert == null,
+        shimmerWidth: scaleSize(50),
+        shimmerHeight: scaleSize(size * 1.2),
+        shimmerColor: finalColor,
+        child: safeCert != null
+            ? _buildCertificationsRow(safeCert.receivedCount, safeCert.sentCount, finalColor)
+            : const SizedBox.shrink(),
+      );
     }
 
     // Fallback to stream provider for external wallets
@@ -35,7 +41,11 @@ class Certifications extends ConsumerWidget {
       data: (certData) {
         return _buildCertificationsRow(certData.receivedCount, certData.sentCount, finalColor);
       },
-      loading: () => const SizedBox.shrink(),
+      loading: () => ShimmerPlaceholder(
+        width: scaleSize(50),
+        height: scaleSize(size * 1.2),
+        baseColor: finalColor,
+      ),
       error: (error, stack) {
         log.e('❌ Certifications widget error for $address: $error');
         return const SizedBox.shrink();

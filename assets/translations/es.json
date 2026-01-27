@@ -685,5 +685,13 @@
     "profileUpdateFailed": "Error al actualizar el perfil",
     "add": "Agregar",
     "pinNeeded": "Código PIN requerido",
-    "retrying": "Reintentando..."
+    "retrying": "Reintentando...",
+    "or": "o",
+    "legacyImportLink": "Tengo una cuenta Cesium antigua",
+    "legacyWarningTitle": "No recomendado",
+    "legacyWarningMessage": "Importar una cuenta Cesium directamente no es recomendado. Este formato es obsoleto y eventualmente será eliminado.\n\nTus fondos e identidad pueden ser migrados a una bóveda moderna y más segura.",
+    "legacyRecommendation": "Crea primero una nueva bóveda, luego migra tu antigua cuenta Cesium desde los ajustes del monedero. Este es el enfoque recomendado y seguro.",
+    "legacyCreateNewSafe": "Crear una nueva bóveda en su lugar",
+    "legacyIgnoreRecommendation": "Ignorar recomendación",
+    "legacyClicksRemaining": "{} clic(s) restante(s) para confirmar"
 }

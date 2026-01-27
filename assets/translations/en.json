@@ -677,5 +677,13 @@
     "profileUpdateFailed": "Failed to update profile",
     "add": "Add",
     "pinNeeded": "PIN code required",
-    "retrying": "Retrying..."
+    "retrying": "Retrying...",
+    "or": "or",
+    "legacyImportLink": "I have an old Cesium account",
+    "legacyWarningTitle": "Not recommended",
+    "legacyWarningMessage": "Importing a Cesium account directly is not recommended. This format is obsolete and will eventually be removed.\n\nYour funds and identity can be migrated to a modern, more secure safe.",
+    "legacyRecommendation": "Create a new safe first, then migrate your old Cesium account from the wallet settings. This is the recommended and secure approach.",
+    "legacyCreateNewSafe": "Create a new safe instead",
+    "legacyIgnoreRecommendation": "Ignore recommendation",
+    "legacyClicksRemaining": "{} click(s) remaining to confirm"
 }

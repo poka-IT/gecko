@@ -122,5 +122,13 @@
     "add": "Hinzufügen",
     "cancel": "Abbrechen",
     "pinNeeded": "PIN-Code erforderlich",
-    "retrying": "Erneuter Versuch..."
+    "retrying": "Erneuter Versuch...",
+    "or": "oder",
+    "legacyImportLink": "Ich habe ein altes Cesium-Konto",
+    "legacyWarningTitle": "Nicht empfohlen",
+    "legacyWarningMessage": "Das direkte Importieren eines Cesium-Kontos wird nicht empfohlen. Dieses Format ist veraltet und wird irgendwann entfernt.\n\nIhre Mittel und Identität können in einen modernen, sichereren Tresor migriert werden.",
+    "legacyRecommendation": "Erstellen Sie zuerst einen neuen Tresor und migrieren Sie dann Ihr altes Cesium-Konto aus den Brieftascheneinstellungen. Dies ist der empfohlene und sichere Ansatz.",
+    "legacyCreateNewSafe": "Stattdessen einen neuen Tresor erstellen",
+    "legacyIgnoreRecommendation": "Empfehlung ignorieren",
+    "legacyClicksRemaining": "{} Klick(s) verbleibend zur Bestätigung"
 }

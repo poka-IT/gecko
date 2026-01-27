@@ -682,5 +682,13 @@
     "profileUpdateFailed": "Échec de la mise à jour du profil",
     "add": "Ajouter",
     "pinNeeded": "Code PIN requis",
-    "retrying": "Nouvel essai en cours..."
+    "retrying": "Nouvel essai en cours...",
+    "or": "ou",
+    "legacyImportLink": "J'ai un ancien compte Cesium",
+    "legacyWarningTitle": "Non recommandé",
+    "legacyWarningMessage": "Importer un compte Cesium directement n'est pas recommandé. Ce format est obsolète et sera à terme supprimé.\n\nVos fonds et votre identité peuvent être migrés vers un coffre moderne et plus sécurisé.",
+    "legacyRecommendation": "Créez d'abord un nouveau coffre, puis migrez votre ancien compte Cesium depuis les paramètres du portefeuille. C'est l'approche recommandée et sécurisée.",
+    "legacyCreateNewSafe": "Créer un nouveau coffre à la place",
+    "legacyIgnoreRecommendation": "Ignorer la recommandation",
+    "legacyClicksRemaining": "{} clic(s) restant(s) pour confirmer"
 }

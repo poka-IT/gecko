@@ -691,10 +691,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           if (answer) {
                             final success = await ref.read(walletActionsProvider.notifier).deleteAllWallets();
                             if (success && mounted) {
-                              await Navigator.of(context).pushNamedAndRemoveUntil(
-                                RouteNames.home,
-                                (Route<dynamic> route) => false,
-                              );
+                              await Navigator.of(
+                                context,
+                              ).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
                             }
                           }
                         },
@@ -984,11 +983,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 Icon(Icons.dns_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
                 ScaledSizedBox(width: 12),
-                Text(
-                  'currencyNode'.tr(),
-                  style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                Expanded(
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      // Watch connection status to rebuild when endpoint changes
+                      final connectionStatus = ref.watch(duniterConnectionStatusProvider);
+                      final endpoint = Networks.duniterEndpoint;
+                      final displayName = endpoint.isEmpty
+                          ? (connectionStatus == ConnectionStatus.connecting ? 'connecting'.tr() : 'currencyNode'.tr())
+                          : _extractNodeHostname(endpoint);
+                      return Text(
+                        displayName,
+                        style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    },
+                  ),
                 ),
-                ScaledSizedBox(width: 12),
+                ScaledSizedBox(width: 8),
                 Consumer(
                   builder: (context, ref, _) {
                     return Icon(
@@ -2091,6 +2103,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  /// Extracts hostname from a WebSocket URL (e.g., "wss://node.example.com:9944" -> "node.example.com")
+  String _extractNodeHostname(String endpoint) {
+    try {
+      // Remove protocol prefix
+      String cleaned = endpoint;
+      if (cleaned.startsWith('wss://')) {
+        cleaned = cleaned.substring(6);
+      } else if (cleaned.startsWith('ws://')) {
+        cleaned = cleaned.substring(5);
+      }
+      // Remove port and path
+      final colonIndex = cleaned.indexOf(':');
+      final slashIndex = cleaned.indexOf('/');
+      if (colonIndex > 0) {
+        cleaned = cleaned.substring(0, colonIndex);
+      } else if (slashIndex > 0) {
+        cleaned = cleaned.substring(0, slashIndex);
+      }
+      return cleaned;
+    } catch (e) {
+      return endpoint;
+    }
   }
 
   IconData _getConnectionStatusIcon(WidgetRef ref) {

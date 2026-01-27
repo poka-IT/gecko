@@ -1,5 +1,6 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 
 /// Provides the current block height from the connected Duniter node.
@@ -14,17 +15,31 @@ class BlockHeightNotifier extends Notifier<int> {
   @override
   int build() {
     _init();
+    // Try to get initial block height if already connected
+    return _getInitialBlockHeight();
+  }
+
+  int _getInitialBlockHeight() {
+    try {
+      final status = ref.read(duniterConnectionStatusProvider);
+      if (status == d.ConnectionStatus.connected) {
+        final storageService = ref.read(storageServiceProvider);
+        return storageService.blockHeightNotifier.value;
+      }
+    } catch (e) {
+      // Ignore errors during initialization
+    }
     return 0;
   }
 
   void _init() {
-    // Watch connection status and update accordingly
-    ref.listen(durtConnectionStatusProvider, (previous, next) {
+    // Watch connection status using the stream-based provider
+    ref.listen(duniterConnectionStatusProvider, (previous, next) {
       _handleConnectionStatusChange(next);
     });
 
     // Initialize with current connection status
-    final currentStatus = ref.read(durtConnectionStatusProvider);
+    final currentStatus = ref.read(duniterConnectionStatusProvider);
     _handleConnectionStatusChange(currentStatus);
   }
 
@@ -70,9 +85,3 @@ class BlockHeightNotifier extends Notifier<int> {
     _init();
   }
 }
-
-/// Provides the current Duniter connection status
-final durtConnectionStatusProvider = Provider<d.ConnectionStatus>((ref) {
-  final durt = ref.watch(durtProvider);
-  return durt.duniterConnectionStatus;
-});

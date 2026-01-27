@@ -101,6 +101,8 @@ publish:forum:apk:
     - export VERSION=$(cat artifacts/version.txt)
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
     - export FORUM_MODE="apk_only"
+    # Fetch all tags for changelog generation
+    - git fetch --tags --unshallow || git fetch --tags
     - echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
     - python3 scripts/publish-forum.py
 
@@ -129,6 +131,8 @@ publish:forum:complete:
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
     - export LINUX_JOB_ID=$(cat artifacts/linux_job_id.txt)
     # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
+    # Fetch all tags for changelog generation
+    - git fetch --tags --unshallow || git fetch --tags
     - echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
     - python3 scripts/publish-forum.py
 
@@ -468,59 +472,61 @@ release:gitlab:
   script:
     - apk update && apk add git
     - export VERSION=$(cat artifacts/version.txt)
+    # URL-encode the + character as %2B for artifact URLs
+    - export VERSION_URL=$(echo "$VERSION" | sed 's/+/%2B/g')
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
     - export LINUX_JOB_ID=$(cat artifacts/linux_job_id.txt)
     # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
-    
-    # Generate changelog
-    - git fetch --tags
+
+    # Generate changelog (limited to 30 commits to avoid "Argument list too long" error)
+    - git fetch --tags --unshallow || git fetch --tags
     - LAST_VERSION=$(git tag --sort=-v:refname | sed -n '2p')
     - |
       if [ -n "$LAST_VERSION" ]; then
-        git log --pretty="format:- %s ([%h]($CI_PROJECT_URL/-/commit/%h))" HEAD...$LAST_VERSION --reverse > release_description.txt
+        git log --pretty="format:- %s ([%h]($CI_PROJECT_URL/-/commit/%h))" HEAD...$LAST_VERSION --reverse | head -30 > release_description.txt
+        TOTAL_COMMITS=$(git rev-list --count HEAD...$LAST_VERSION)
+        if [ "$TOTAL_COMMITS" -gt 30 ]; then
+          echo "" >> release_description.txt
+          echo "- ... and $((TOTAL_COMMITS - 30)) more commits" >> release_description.txt
+        fi
       else
-        echo "Initial release" > release_description.txt
+        echo "- Initial release" > release_description.txt
       fi
-  release:
-    name: "Gecko v$CI_COMMIT_TAG"
-    description: |
+
+    # Build description file
+    - |
+      cat > release_description_full.md << 'EOF'
       ## What's New
-      
-      $(cat release_description.txt)
-      
+
+      EOF
+    - cat release_description.txt >> release_description_full.md
+    - |
+      cat >> release_description_full.md << EOF
+
       ## Downloads
-      
+
       ### Android
       - **Google Play Store**: Available through the Play Store app
       - **Direct APK downloads**: See assets below
-      
+
       ### iOS
       - **App Store**: Available through the App Store app
-      
+
       ### Desktop
       - **Linux (x64)**: tar.gz archive below
-      - **macOS (Apple Silicon)**: zip archive below
-    tag_name: "$CI_COMMIT_TAG"
-    assets:
-      links:
-        # Android APKs
-        - name: "Gecko v$CI_COMMIT_TAG APK (ARMv7)"
-          url: "$CI_PROJECT_URL/-/jobs/${APK_JOB_ID}/artifacts/raw/artifacts/android/gecko-${VERSION}-v7a.apk"
-          link_type: "package"
-        - name: "Gecko v$CI_COMMIT_TAG APK (ARM64)"
-          url: "$CI_PROJECT_URL/-/jobs/${APK_JOB_ID}/artifacts/raw/artifacts/android/gecko-${VERSION}-v8a.apk"
-          link_type: "package"
-        - name: "Gecko v$CI_COMMIT_TAG APK (x86_64)"
-          url: "$CI_PROJECT_URL/-/jobs/${APK_JOB_ID}/artifacts/raw/artifacts/android/gecko-${VERSION}-x86_64.apk"
-          link_type: "package"
-        # Linux Desktop
-        - name: "Gecko v$CI_COMMIT_TAG Linux Desktop (x64)"
-          url: "$CI_PROJECT_URL/-/jobs/${LINUX_JOB_ID}/artifacts/raw/artifacts/linux/gecko-${VERSION}-linux.tar.gz"
-          link_type: "package"
-        # macOS Desktop
-        # - name: "Gecko v$CI_COMMIT_TAG macOS Desktop (Apple Silicon)"
-        #   url: "$CI_PROJECT_URL/-/jobs/${MACOS_JOB_ID}/artifacts/raw/artifacts/macos/gecko-${VERSION}-macos-arm64.dmg"
-        #   link_type: "package"
+      EOF
+
+    # Create release using release-cli directly (avoids "Argument list too long" error)
+    # Use VERSION_URL (with + encoded as %2B) for artifact URLs
+    - |
+      release-cli create \
+        --name "Gecko $CI_COMMIT_TAG" \
+        --tag-name "$CI_COMMIT_TAG" \
+        --description "$(cat release_description_full.md)" \
+        --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG APK (ARMv7)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$APK_JOB_ID/artifacts/raw/artifacts/android/gecko-$VERSION_URL-v7a.apk\",\"link_type\":\"package\"}" \
+        --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG APK (ARM64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$APK_JOB_ID/artifacts/raw/artifacts/android/gecko-$VERSION_URL-v8a.apk\",\"link_type\":\"package\"}" \
+        --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG APK (x86_64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$APK_JOB_ID/artifacts/raw/artifacts/android/gecko-$VERSION_URL-x86_64.apk\",\"link_type\":\"package\"}" \
+        --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG Linux Desktop (x64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$LINUX_JOB_ID/artifacts/raw/artifacts/linux/gecko-$VERSION_URL-linux.tar.gz\",\"link_type\":\"package\"}"
 
 # --- macOS (app + dmg) ---
 # build:macos:

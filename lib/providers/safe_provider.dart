@@ -10,6 +10,7 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/certification_queue_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 /// Safe management operations provider
@@ -34,14 +35,22 @@ class SafeManager {
     final navigator = Navigator.of(context);
 
     try {
+      // IMPORTANT: Delete certification queue data BEFORE deleting the safe
+      // Otherwise we lose access to the wallet addresses
+      final walletService = _ref.read(walletServiceProvider);
+      final walletsInSafe = walletService.getWalletDataList(safe.number);
+      final addresses = walletsInSafe.map((w) => w.address).toList();
+
+      log.d('🗑️ [SafeManager] Deleting certification queues for ${addresses.length} wallet addresses');
+      await CertificationQueueService.deleteQueuesForAddresses(addresses);
+
       // Delete the safe from storage
-      await _ref.read(walletServiceProvider).deleteSafe(safe.number);
+      await walletService.deleteSafe(safe.number);
 
       // Clear the PIN for security after successful deletion
       PinCodeService.pinCode = '';
 
       // Handle navigation based on whether safes remain
-      final walletService = _ref.read(walletServiceProvider);
       await _handlePostDeletionNavigation(navigator, walletService);
 
       // Add a small delay to ensure all async operations complete

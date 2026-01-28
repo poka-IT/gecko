@@ -8,9 +8,13 @@ import 'package:gecko/models/scale_functions.dart';
 
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/providers/certification_queue_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
+import 'package:gecko/screens/certification_queue_screen.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
 import 'package:gecko/screens/home/welcome_home_widget.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/certify/ready_certification_modal.dart';
 import 'package:gecko/widgets/drawer.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -30,6 +34,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(appInitProvider.notifier).initApp(context: context, widgetRef: ref);
       _showCesiumImportInfoDialogIfNeeded();
+      _checkReadyCertifications();
+    });
+  }
+
+  /// Check if there are any ready certifications and show notification modal
+  void _checkReadyCertifications() {
+    // Also check current state on startup (delayed to ensure providers are ready)
+    Future.delayed(const Duration(seconds: 2), () async {
+      if (!mounted) return;
+
+      // Get the effective certification wallet
+      final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
+      if (identityWallet == null) return;
+
+      final issuerAddress = identityWallet.address;
+
+      // Listen for ready certification notifications for this issuer
+      ref.listenManual(readyCertificationNotifierProvider(issuerAddress), (previous, next) {
+        if (next != null && context.mounted) {
+          ReadyCertificationModal.show(
+            context: context,
+            pendingCert: next,
+            issuerAddress: issuerAddress,
+            onCertify: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+              );
+            },
+            onViewQueue: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+              );
+            },
+            onDismiss: () {
+              // Notification dismissed, will be shown again on next check
+            },
+          );
+        }
+      });
+
+      // Check current state
+      final readyCert = ref.read(readyCertificationNotifierProvider(issuerAddress));
+      if (readyCert != null && context.mounted) {
+        ReadyCertificationModal.show(
+          context: context,
+          pendingCert: readyCert,
+          issuerAddress: issuerAddress,
+          onCertify: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+            );
+          },
+          onViewQueue: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+            );
+          },
+          onDismiss: () {},
+        );
+      }
     });
   }
 

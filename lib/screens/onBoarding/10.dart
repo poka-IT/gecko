@@ -372,6 +372,12 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
               await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
+              // Invalidate identity providers to ensure fresh data after wallet import
+              // This fixes the bug where identity status isn't recognized after import
+              ref.read(walletActionsProvider.notifier).invalidateProviders();
+              ref.invalidate(idtyWalletAsyncProvider);
+              ref.invalidate(identityWalletsAsyncProvider);
+
               // Clear mnemonic state after safe creation
               ref.read(resetMnemonicStateProvider)();
               PinCodeService.debounceResetPinCode();

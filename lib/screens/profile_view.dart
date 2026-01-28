@@ -118,6 +118,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
                             ScaledSizedBox(height: 20),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildActionButton(
                                   context: context,

@@ -31,6 +31,8 @@ import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/providers/certification_queue_provider.dart';
+import 'package:gecko/screens/certification_queue_screen.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated}) : super(key: keyMyWallets);
@@ -449,6 +451,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             if (defaultWallet.address != widget.wallet.address && !hasIdentity && !isAlone)
               deleteWallet(context, ref, currentSafe),
             if (hasIdentity) ManageMembershipButton(address: widget.wallet.address),
+            if (hasIdentity) _buildCertificationQueueButton(context, ref),
             if (isAlone)
               isLegacyWallet
                   ? _buildLegacyWalletOptions()
@@ -711,6 +714,81 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ChangePinScreen(walletName: widget.wallet.name ?? 'legacyWallet'.tr())),
+    );
+  }
+
+  Widget _buildCertificationQueueButton(BuildContext context, WidgetRef ref) {
+    final issuerAddress = widget.wallet.address;
+    final hasItems = ref.watch(hasQueueItemsProvider(issuerAddress));
+    final hasReady = ref.watch(hasReadyCertificationProvider(issuerAddress));
+    final queueLength = ref.watch(queueLengthProvider(issuerAddress));
+
+    return InkWell(
+      key: keyCertificationQueue,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Stack(
+              children: [
+                Icon(
+                  Icons.queue,
+                  size: scaleSize(22),
+                  color: hasReady ? Colors.green : Colors.orange.withValues(alpha: 0.8),
+                ),
+                if (hasItems && queueLength > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: hasReady ? Colors.green : Colors.blue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                      child: Text(
+                        '$queueLength',
+                        style: scaledTextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            ScaledSizedBox(width: 18),
+            Expanded(
+              child: Row(
+                children: [
+                  Text(
+                    'certificationQueue'.tr(),
+                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                  ),
+                  if (hasReady) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(12)),
+                      child: Text(
+                        'certificationReady'.tr(),
+                        style: scaledTextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, size: scaleSize(20), color: context.colorScheme.onSurface.withValues(alpha: 0.5)),
+          ],
+        ),
+      ),
     );
   }
 

@@ -135,9 +135,10 @@ class CopyStateNotifier extends Notifier<bool> {
 final copyStateProvider = NotifierProvider<CopyStateNotifier, bool>(CopyStateNotifier.new);
 
 class TransactionInProgressTule extends ConsumerStatefulWidget {
-  const TransactionInProgressTule({super.key, required this.transactionData});
+  const TransactionInProgressTule({super.key, required this.transactionData, required this.viewingAddress});
 
   final TransactionInProgressData transactionData;
+  final String viewingAddress;
 
   @override
   ConsumerState<TransactionInProgressTule> createState() => _TransactionInProgressTuleState();
@@ -521,7 +522,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
       delay: const Duration(seconds: 2),
       duration: const Duration(milliseconds: 700),
       onCompleted: () {
-        ref.invalidate(transactionHistoryProvider(_currentTransactionData.toAddress));
+        ref.invalidate(transactionHistoryProvider(widget.viewingAddress));
         _status = TransactionStatus(state: TransactionState.none);
         // Cache the final 'none' status to prevent reappearance
         TransactionStatusCache.setLastKnownStatus(_currentTransactionData, _status);

@@ -5,6 +5,7 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as pp;
+import 'package:gecko/services/certification_queue_service.dart';
 
 /// Service for handling Hive initialization and storage setup
 class StorageInitService {
@@ -94,6 +95,9 @@ class StorageInitService {
   Future<void> _openRequiredBoxes() async {
     // Open config box first
     configBox = await Hive.openBox("configBox");
+
+    // Initialize certification queue service
+    await CertificationQueueService.init();
   }
 
   /// Handle version compatibility and migrations

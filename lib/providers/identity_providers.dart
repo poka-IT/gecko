@@ -343,9 +343,15 @@ final certStateProvider = AsyncNotifierProvider.family<CertStateNotifier, d.Cert
 class CertStateNotifier extends AsyncNotifier<d.CertState?> {
   CertStateNotifier(this.arg);
   final String arg;
+  Timer? _periodicRefreshTimer;
 
   @override
   Future<d.CertState?> build() async {
+    // Clean up timer on dispose
+    ref.onDispose(() {
+      _periodicRefreshTimer?.cancel();
+    });
+
     // Check storage state FIRST
     final storageState = ref.watch(storageStateProvider);
     if (storageState == StorageState.notInitialized) {
@@ -369,7 +375,35 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
       }
     });
 
-    return await _getCertState(effectiveWallet.address, toAddress);
+    final certState = await _getCertState(effectiveWallet.address, toAddress);
+
+    // Start periodic refresh if we're in a waiting state
+    _startPeriodicRefreshIfNeeded(certState);
+
+    return certState;
+  }
+
+  /// Start periodic refresh timer if the cert state has a duration (waiting state)
+  void _startPeriodicRefreshIfNeeded(d.CertState? certState) {
+    _periodicRefreshTimer?.cancel();
+
+    if (certState == null) return;
+
+    // Only start timer if we're in a waiting state with a duration
+    final hasWaitingDuration = certState.duration != null && certState.duration! > Duration.zero;
+    if (!hasWaitingDuration) return;
+
+    // Determine refresh interval based on remaining duration
+    final duration = certState.duration!;
+    final refreshInterval = duration.inMinutes <= 5
+        ? const Duration(seconds: 10) // Refresh every 10s when < 5 min remaining
+        : duration.inMinutes <= 30
+            ? const Duration(seconds: 30) // Refresh every 30s when < 30 min remaining
+            : const Duration(minutes: 1); // Refresh every minute otherwise
+
+    _periodicRefreshTimer = Timer.periodic(refreshInterval, (_) {
+      _refreshCertState();
+    });
   }
 
   /// Refresh cert state without clearing the previous value
@@ -384,6 +418,9 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
     // Update state smoothly - keep previous value visible during loading
     final newCertState = await _getCertState(effectiveWallet.address, arg);
     state = AsyncValue.data(newCertState);
+
+    // Update periodic refresh interval based on new state
+    _startPeriodicRefreshIfNeeded(newCertState);
   }
 
   /// Get cert state from storage

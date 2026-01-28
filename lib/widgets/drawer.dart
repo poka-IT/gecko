@@ -87,7 +87,6 @@ class MainDrawer extends ConsumerWidget {
                       },
                     ),
                     ScaledSizedBox(height: scaleSize(4)),
-                    if (isWalletsExists) ScaledSizedBox(height: scaleSize(4)),
                     if (kDebugMode)
                       ListTile(
                         key: keyDebugScreen,

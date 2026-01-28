@@ -150,6 +150,8 @@
     "month11": "Noviembre",
     "month12": "Diciembre",
     "today": "Hoy",
+    "tomorrow": "Mañana",
+    "inXDays": "En {} días",
     "yesterday": "Ayer",
     "thisWeek": "Esta semana",
     "safeNotCompatibleMustReinstallGecko": "La versión de tus bóvedas ya no es compatible con esta versión de Ğecko.\nTodos tus bóvedas serán olvidadas, debes importarlas de nuevo.",

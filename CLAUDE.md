@@ -15,9 +15,9 @@ flutter run
 # Build APK
 ./scripts/build-apk.sh
 
-# Run integration tests (starts local Duniter node in Docker)
-./integration_test/launch_test.sh                    # default: gecko_complete
-./integration_test/launch_test.sh <scenario_name>   # specific scenario
+# Run unit tests
+flutter test                                         # all unit tests
+flutter test test/providers/                         # provider tests only
 
 # Code generation (Hive adapters)
 ./scripts/build_runner.sh
@@ -78,15 +78,52 @@ The `durt2` package provides all Duniter blockchain interactions:
 - `storageStateProvider` tracks: `notInitialized`, `offlineMode`, `ready`
 - Reconnection triggers provider invalidation for automatic data refresh
 
-## Integration Tests
+## Unit Tests
 
-Tests run against a local Duniter node in Docker. Available scenarios in `integration_test/scenarios/`:
-- `gecko_complete.dart` - Main test: import safe, transaction, certification, UD generation
-- `cert_state.dart`, `identity_revocation.dart`, `migrate_cesium_identity.dart`, `ud_creation_state.dart`
+Unit tests use durt2's test mode to mock blockchain services without network connections.
 
-Test mnemonic: `pipe paddle ketchup filter life ice feel embody glide quantum ride usage`
+### Running tests
 
-Widget keys for test interactions: `lib/models/widgets_keys.dart`
+```bash
+flutter test                          # all tests
+flutter test test/providers/          # provider tests only
+```
+
+### Test mode setup (durt2)
+
+The `durt2` package provides `DurtTestMode` to mock `Durt.storage` and `Durt.wallets`:
+
+```dart
+import 'package:durt2/durt2.dart';
+
+setUpAll(() async {
+  await DurtTestMode.init();
+});
+
+tearDownAll(() {
+  Durt.resetTestMode();
+});
+```
+
+### Testing async providers (priming technique)
+
+When testing providers that use `ref.watch()` on `AsyncNotifierProvider`, you must "prime" them first to avoid hanging on `AsyncLoading`:
+
+```dart
+final container = ProviderContainer(overrides: [...]);
+
+// Prime async providers BEFORE reading the main provider
+await container.read(certStateProvider(address).future);
+await container.read(certificationQueueProvider(address).future);
+
+// Now safe to read the provider that watches them
+final state = await container.read(certButtonStateProvider(address).future);
+```
+
+### Test structure
+
+- `test/providers/` - Riverpod provider unit tests
+- Widget keys for test interactions: `lib/models/widgets_keys.dart`
 
 ## Localization
 

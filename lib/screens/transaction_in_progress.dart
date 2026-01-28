@@ -5,8 +5,10 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -36,6 +38,7 @@ class TransactionInProgressScreen extends ConsumerStatefulWidget {
 class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgressScreen> {
   late String _fromAddress;
   late String _toAddress;
+  bool _hasInvalidatedProviders = false;
 
   bool get _isSelfTransaction =>
       _fromAddress.isNotEmpty &&
@@ -55,6 +58,50 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
 
     _fromAddress = widget.fromAddress ?? defaultWallet.address;
     _toAddress = widget.toAddress ?? '';
+  }
+
+  bool _hasHandledFailure = false;
+
+  /// Remove certification from cache when transaction fails
+  void _handleFailedCertification() {
+    if (_hasHandledFailure) return;
+    _hasHandledFailure = true;
+
+    if (widget.transType == 'cert' && _toAddress.isNotEmpty && _fromAddress.isNotEmpty) {
+      log.d('❌ [TransactionInProgress] Certification FAILED! Removing from recent cache');
+      ref.read(recentCertificationsProvider.notifier).removeCertification(_fromAddress, _toAddress);
+
+      // Invalidate button state provider to allow retry
+      ref.invalidate(
+        certButtonStateProvider((issuerAddress: _fromAddress, targetAddress: _toAddress)),
+      );
+      log.d('❌ [TransactionInProgress] Removed from cache, user can retry certification');
+    }
+  }
+
+  /// Invalidate certification-related providers when a certification transaction is validated
+  void _invalidateCertificationProviders() {
+    if (_hasInvalidatedProviders) return;
+    _hasInvalidatedProviders = true;
+
+    if (widget.transType == 'cert' && _toAddress.isNotEmpty && _fromAddress.isNotEmpty) {
+      log.d('🔄 [TransactionInProgress] Certification validated! Updating local cache and invalidating providers');
+
+      // CRITICAL: Mark certification as completed (transitions from "in progress" to "completed")
+      // This ensures the button shows "disabled" with proper message instead of "in progress"
+      ref.read(recentCertificationsProvider.notifier).markCompleted(_fromAddress, _toAddress);
+
+      // Invalidate target-specific providers
+      ref.invalidate(certificationExistsProvider(_toAddress));
+      ref.invalidate(certStateProvider(_toAddress));
+      ref.invalidate(smartIdtyStatusStreamProvider(_toAddress));
+
+      // Invalidate button state provider (requires both issuer and target)
+      ref.invalidate(
+        certButtonStateProvider((issuerAddress: _fromAddress, targetAddress: _toAddress)),
+      );
+      log.d('🔄 [TransactionInProgress] All providers invalidated for issuer: $_fromAddress, target: $_toAddress');
+    }
   }
 
   String _getDisplayName(String address, String? providedUsername, String? identityName, String? walletName) {
@@ -303,6 +350,27 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
         }
 
         final txStatus = snapshot.data!;
+
+        // DEBUG: Log every state change
+        log.d('📡 [TransactionInProgress] State: ${txStatus.state}, transType: ${widget.transType}, from: $_fromAddress, to: $_toAddress');
+
+        // Invalidate certification providers when transaction is validated
+        // Use addPostFrameCallback to avoid modifying providers during build
+        if (txStatus.state == TransactionState.finalized || txStatus.state == TransactionState.inBlock) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            log.d('✅ [TransactionInProgress] Transaction SUCCESS - calling markCompleted()');
+            _invalidateCertificationProviders();
+          });
+        }
+
+        // Remove from recent certifications cache if transaction failed
+        if (txStatus.state == TransactionState.error) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            log.d('❌ [TransactionInProgress] Transaction ERROR - calling _handleFailedCertification()');
+            _handleFailedCertification();
+          });
+        }
+
         final (resultText, statusColor) = _getStatusInfo(txStatus);
 
         return Column(

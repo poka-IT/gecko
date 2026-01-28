@@ -26,6 +26,7 @@ import 'package:gecko/screens/onBoarding/wallet_selection_screen.dart';
 import 'package:gecko/screens/onBoarding/safe_selection_screen.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
+import 'package:gecko/screens/certification_queue_screen.dart';
 
 /// Base class for route arguments - provides type safety
 abstract class RouteArguments {}
@@ -177,6 +178,13 @@ class RestoreSafeArguments extends RouteArguments {
   RestoreSafeArguments({this.skipIntro = false});
 }
 
+/// Arguments for certification queue
+class CertificationQueueArguments extends RouteArguments {
+  final String issuerAddress;
+
+  CertificationQueueArguments({required this.issuerAddress});
+}
+
 /// Arguments for print wallet
 class PrintWalletArguments extends RouteArguments {
   final String sentence;
@@ -210,6 +218,7 @@ class RouteNames {
   static const String legacyLogin = '/legacyLogin';
   static const String walletSelection = '/walletSelection';
   static const String safeSelection = '/safeSelection';
+  static const String certificationQueue = '/certificationQueue';
 
   /// Generate wallet options route with address parameter
   static String walletOptionsWithAddress(String address) => '/walletoptions/$address';
@@ -490,6 +499,10 @@ class AppRoutes {
       RouteNames.safeSelection: (context) {
         final args = RouteUtils.getArguments<SafeSelectionArguments>(context);
         return SafeSelectionScreen(migrationData: args.migrationData, pinCode: args.pinCode);
+      },
+      RouteNames.certificationQueue: (context) {
+        final args = RouteUtils.getArguments<CertificationQueueArguments>(context);
+        return CertificationQueueScreen(issuerAddress: args.issuerAddress);
       },
     };
   }

@@ -148,6 +148,8 @@
     "month11": "Novembre",
     "month12": "Dicembre",
     "today": "Oggi",
+    "tomorrow": "Domani",
+    "inXDays": "Tra {} giorni",
     "yesterday": "Ieri",
     "thisWeek": "Questa settimana",
     "safeNotCompatibleMustReinstallGecko": "La versione delle cassaforti non è più compatibile con questa versione di Ğecko.\nTutte le cassaforti verranno dimenticate, dovrai importarle di nuovo.",

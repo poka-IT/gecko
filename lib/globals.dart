@@ -25,7 +25,10 @@ late Directory avatarsCacheDirectory;
 late bool isTall;
 
 // Contexts
-BuildContext get homeContext => Gecko.navigatorContext!;
+// Allow test context injection
+BuildContext? _testContext;
+void setTestContext(BuildContext? context) => _testContext = context;
+BuildContext get homeContext => _testContext ?? Gecko.navigatorContext!;
 
 // Logger with log collection
 final log = Logger(

@@ -78,21 +78,15 @@ Then, check this script and launch it:
 
 You can contribute to translation of the app via our weblate: https://translate.nikoserveur.com/projects/gecko/
 
-### Integration tests
+### Unit tests
 
-Open an android or iOS emulator, then launch this script:
-
-```
-./integration_test/launch_test.sh
-```
-
-It will start the [default test scenario](https://git.duniter.org/clients/gecko/-/blob/master/integration_test/scenarios/gecko_complete.dart).
-
-You can start another scenario defined [here](https://git.duniter.org/clients/gecko/-/tree/master/integration_test/scenarios) specifying the name of the file without its extension, for example to run migrate_cesium_identity.dart test:
+Run unit tests with:
 
 ```
-./integration_test/launch_test.sh migrate_cesium_identity
+flutter test
 ```
+
+Tests use durt2's test mode (`DurtTestMode.init()`) to mock blockchain services without network connections. See `test/providers/` for examples.
 
 ### A problem ?
 

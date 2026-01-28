@@ -316,7 +316,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
               Column(
                 children: <Widget>[
                   if (widget.transactionData != null)
-                    TransactionInProgressTule(transactionData: widget.transactionData!),
+                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
                   ScaledSizedBox(height: 50),
                   Center(
                     child: Text(
@@ -348,7 +348,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                               child: Column(
                                 children: [
                                   if (widget.transactionData != null)
-                                    TransactionInProgressTule(transactionData: widget.transactionData!),
+                                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
                                   ScaledSizedBox(height: 40),
                                   _buildEmptyStateView(context),
                                 ],
@@ -375,7 +375,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                   return Column(
                     children: <Widget>[
                       if (widget.transactionData != null)
-                        TransactionInProgressTule(transactionData: widget.transactionData!),
+                        TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
                       ScaledSizedBox(height: 40),
                       _buildEmptyStateView(context),
                     ],
@@ -419,7 +419,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                   VisibilityDetector(
                                     key: const Key('transaction-in-progress-tile'),
                                     onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
-                                    child: TransactionInProgressTule(transactionData: widget.transactionData!),
+                                    child: TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
                                   ),
 
                                 HistoryView(

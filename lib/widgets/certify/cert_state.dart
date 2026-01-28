@@ -2,9 +2,13 @@ import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/widgets/certify/add_to_queue_button.dart';
 import 'package:gecko/widgets/certify/certify_button.dart';
+import 'package:gecko/widgets/certify/execute_queued_button.dart';
+import 'package:gecko/widgets/certify/in_queue_button.dart';
 import 'package:gecko/widgets/certify/wait_to_cert.dart';
 
 class CertStateWidget extends ConsumerWidget {
@@ -15,6 +19,83 @@ class CertStateWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Get the effective certification wallet (issuer)
+    final issuerWalletAsync = ref.watch(effectiveCertificationWalletProvider);
+
+    return issuerWalletAsync.when(
+      data: (issuerWallet) {
+        if (issuerWallet == null) {
+          return _buildLegacyWidget(context, ref);
+        }
+
+        final issuerAddress = issuerWallet.address;
+        final buttonStateAsync = ref.watch(
+          certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: address)),
+        );
+
+        return buttonStateAsync.when(
+          data: (buttonState) => _buildFromButtonState(context, ref, buttonState, issuerAddress),
+          loading: () => _buildLegacyWidget(context, ref),
+          error: (_, __) => _buildLegacyWidget(context, ref),
+        );
+      },
+      loading: () => _buildLegacyWidget(context, ref),
+      error: (_, __) => _buildLegacyWidget(context, ref),
+    );
+  }
+
+  Widget _buildFromButtonState(BuildContext context, WidgetRef ref, CertButtonState buttonState, String issuerAddress) {
+    // Use certState from buttonState if available, otherwise fallback to widget's certState
+    final effectiveCertState = buttonState.certState ?? certState;
+
+    switch (buttonState.action) {
+      case CertButtonAction.none:
+        return const SizedBox.shrink();
+
+      case CertButtonAction.certifyNow:
+        return _buildCertifyButton(ref);
+
+      case CertButtonAction.addToQueue:
+        return AddToQueueButton(address: address, certState: effectiveCertState, issuerAddress: issuerAddress);
+
+      case CertButtonAction.inQueue:
+        return InQueueButton(pendingCert: buttonState.pendingCert!, issuerAddress: issuerAddress);
+
+      case CertButtonAction.executeQueued:
+        return ExecuteQueuedButton(address: address, pendingCert: buttonState.pendingCert!, issuerAddress: issuerAddress);
+
+      case CertButtonAction.inProgress:
+        return WaitToCertWidget(label: 'certificationInProgress'.tr(), duration: '', showSpinner: true);
+
+      case CertButtonAction.disabled:
+        // Use effectiveCertState for up-to-date duration
+        return _buildDisabledButtonFromState(effectiveCertState, buttonState.disabledReason);
+    }
+  }
+
+  Widget _buildDisabledButtonFromState(CertState state, String? reason) {
+    final label = switch (reason ?? state.status.name) {
+      'canRenewCertInX' => 'canRenewCertInX'.tr(args: [formatDuration(state.duration ?? Duration.zero)]),
+      'mustWaitXBeforeCertify' => 'mustWaitXBeforeCertify'.tr(args: [formatDuration(state.duration ?? Duration.zero)]),
+      'justCertified' => 'justCertified'.tr(),
+      _ => _getLabelFromStatus(state),
+    };
+    return WaitToCertWidget(label: label, duration: formatDuration(state.duration ?? Duration.zero));
+  }
+
+  String _getLabelFromStatus(CertState state) {
+    return switch (state.status) {
+      CertStatus.canRenewIn => 'canRenewCertInX'.tr(args: [formatDuration(state.duration!)]),
+      CertStatus.mustWaitBeforeCert => 'mustWaitXBeforeCertify'.tr(args: [formatDuration(state.duration!)]),
+      CertStatus.mustConfirmIdentity => 'mustConfirmHisIdentity'.tr(),
+      CertStatus.emptyWallet => 'emptyWalletCannotBeCertified'.tr(),
+      CertStatus.revoked => 'revokedAccountCannotBeCertified'.tr(),
+      _ => '',
+    };
+  }
+
+  /// Fallback to legacy widget building when button state is loading/error
+  Widget _buildLegacyWidget(BuildContext context, WidgetRef ref) {
     String label;
     bool canCertify = false;
 
@@ -43,24 +124,28 @@ class CertStateWidget extends ConsumerWidget {
     }
 
     if (canCertify) {
-      // Check if certification already exists to determine if it's a renewal
-      final certExistsAsync = ref.watch(certificationExistsProvider(address));
-      final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
-
-      return certExistsAsync.when(
-        data: (certExists) {
-          return idtyStatusAsync.when(
-            data: (idtyStatus) => CertifyButton(address, isRenewal: certExists, idtyStatus: idtyStatus),
-            loading: () => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
-            error: (_, _) => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
-          );
-        },
-        loading: () => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
-        error: (_, _) => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
-      );
+      return _buildCertifyButton(ref);
     } else {
       return _buildDisabledButton(label);
     }
+  }
+
+  Widget _buildCertifyButton(WidgetRef ref) {
+    // Check if certification already exists to determine if it's a renewal
+    final certExistsAsync = ref.watch(certificationExistsProvider(address));
+    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
+
+    return certExistsAsync.when(
+      data: (certExists) {
+        return idtyStatusAsync.when(
+          data: (idtyStatus) => CertifyButton(address, isRenewal: certExists, idtyStatus: idtyStatus),
+          loading: () => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
+          error: (_, __) => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
+        );
+      },
+      loading: () => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
+      error: (_, __) => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
+    );
   }
 
   String formatDuration(Duration duration) {

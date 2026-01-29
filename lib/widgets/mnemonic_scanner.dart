@@ -24,6 +24,7 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
   CameraController? _cameraController;
   bool _isInitialized = false;
   bool _isProcessing = false;
+  bool _isDisposed = false;
   String _statusMessage = '';
 
   final TextRecognizer _textRecognizer = TextRecognizer();
@@ -37,6 +38,7 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _captureTimer?.cancel();
     _captureTimer = null;
 
@@ -93,14 +95,16 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
   }
 
   Future<void> _captureAndProcessImage() async {
-    if (!mounted || _cameraController == null || !_cameraController!.value.isInitialized) return;
+    if (_isDisposed || !mounted || _cameraController == null || !_cameraController!.value.isInitialized) return;
 
     setState(() {
       _isProcessing = true;
     });
 
     try {
+      if (_isDisposed) return;
       final XFile imageFile = await _cameraController!.takePicture();
+      if (_isDisposed) return;
       final inputImage = InputImage.fromFilePath(imageFile.path);
       final recognizedText = await _textRecognizer.processImage(inputImage);
 
@@ -108,12 +112,25 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
         final textWithPositions = _extractTextWithPositions(recognizedText.blocks);
         await _handleDetectedText(textWithPositions);
       }
+    } on CameraException catch (e) {
+      // Camera closed during capture (race condition on dispose) — ignore
+      if (e.description?.contains('Camera is closed') == true) return;
+      if (kDebugMode) {
+        debugPrint('🚨 MnemonicScanner: Camera error: $e');
+      }
+      SentryService.captureException(
+        e,
+        tag: 'mnemonic_scanner_error',
+        extra: {
+          'camera_initialized': _cameraController?.value.isInitialized ?? false,
+          'is_processing': _isProcessing,
+          'mounted': mounted,
+        },
+      );
     } catch (e) {
-      // Log the error to Sentry for debugging
       if (kDebugMode) {
         debugPrint('🚨 MnemonicScanner: Camera/ML Kit error: $e');
       }
-      // Report to Sentry in production
       SentryService.captureException(
         e,
         tag: 'mnemonic_scanner_error',
@@ -124,7 +141,7 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
         },
       );
     } finally {
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         setState(() {
           _isProcessing = false;
         });

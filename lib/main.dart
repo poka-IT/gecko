@@ -59,12 +59,16 @@ Future<void> main() async {
   // Initialize log collection service
   LogCollectionService.instance.initialize();
 
-  // Get saved network from config or default to gtest
-  final savedNetworkName = configBox.get('selectedNetwork') ?? 'gtest';
-  final selectedNetwork = Networks.values.firstWhere(
-    (network) => network.name == savedNetworkName,
-    orElse: () => Networks.gtest,
-  );
+  // Always start on the default network (Ğ1 if configured, otherwise ĞTest)
+  final selectedNetwork = Networks.defaultNetwork;
+
+  // Force the saved network to match so the rest of the app is consistent
+  configBox.put('selectedNetwork', selectedNetwork.name);
+
+  // Clear any custom endpoint configuration to ensure clean connection
+  configBox.delete('customEndpoint');
+  configBox.delete('customIndexer');
+  configBox.put('autoEndpoint', true);
 
   // Configure SSL certificate handling before any network connections
   // This allows connections to work on older Android devices and with self-signed certificates

@@ -59,10 +59,7 @@ class AddToQueueButton extends ConsumerWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.all(scaleSize(4)),
-              child: Image.asset('assets/gecko_certify.png'),
-            ),
+            child: Padding(padding: EdgeInsets.all(scaleSize(4)), child: Image.asset('assets/gecko_certify.png')),
           ),
           Positioned(
             bottom: 2,
@@ -212,8 +209,12 @@ class AddToQueueButton extends ConsumerWidget {
     if (!await PinCodeService.askPinCode()) return;
 
     // Add to local queue
-    final success =
-        await queueNotifier.addToQueue(receiverAddress: address, certType: certType, receiverUid: walletName, receiverName: walletName);
+    final success = await queueNotifier.addToQueue(
+      receiverAddress: address,
+      certType: certType,
+      receiverUid: walletName,
+      receiverName: walletName,
+    );
 
     if (!context.mounted) return;
 

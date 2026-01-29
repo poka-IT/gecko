@@ -135,7 +135,12 @@ class CopyStateNotifier extends Notifier<bool> {
 final copyStateProvider = NotifierProvider<CopyStateNotifier, bool>(CopyStateNotifier.new);
 
 class TransactionInProgressTule extends ConsumerStatefulWidget {
-  const TransactionInProgressTule({super.key, required this.transactionData, required this.viewingAddress, this.onAnimationComplete});
+  const TransactionInProgressTule({
+    super.key,
+    required this.transactionData,
+    required this.viewingAddress,
+    this.onAnimationComplete,
+  });
 
   final TransactionInProgressData transactionData;
   final String viewingAddress;

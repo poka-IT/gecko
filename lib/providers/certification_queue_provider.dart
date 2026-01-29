@@ -127,8 +127,9 @@ class RecentCertificationsNotifier extends Notifier<Map<String, RecentCertData>>
 }
 
 /// Provider for recent certifications cache
-final recentCertificationsProvider =
-    NotifierProvider<RecentCertificationsNotifier, Map<String, RecentCertData>>(RecentCertificationsNotifier.new);
+final recentCertificationsProvider = NotifierProvider<RecentCertificationsNotifier, Map<String, RecentCertData>>(
+  RecentCertificationsNotifier.new,
+);
 
 /// Action available for the certification button
 enum CertButtonAction {
@@ -713,8 +714,8 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 /// Provider for the certification queue - keyed by issuer address
 final certificationQueueProvider =
     AsyncNotifierProvider.family<CertificationQueueNotifier, d.CertificationQueueState?, String>(
-  (issuerAddress) => CertificationQueueNotifier(issuerAddress),
-);
+      (issuerAddress) => CertificationQueueNotifier(issuerAddress),
+    );
 
 /// Notifier for ready certification notifications - keyed by issuer address
 class ReadyCertificationNotifier extends Notifier<d.PendingCertification?> {
@@ -744,13 +745,15 @@ class ReadyCertificationNotifier extends Notifier<d.PendingCertification?> {
 /// Provider for ready certification notifications - keyed by issuer address
 final readyCertificationNotifierProvider =
     NotifierProvider.family<ReadyCertificationNotifier, d.PendingCertification?, String>(
-  (issuerAddress) => ReadyCertificationNotifier(issuerAddress),
-);
+      (issuerAddress) => ReadyCertificationNotifier(issuerAddress),
+    );
 
 /// Provider for the certification button state for a specific target address
 /// Takes (issuerAddress, targetAddress) as parameters
-final certButtonStateProvider =
-    FutureProvider.family<CertButtonState, ({String issuerAddress, String targetAddress})>((ref, params) async {
+final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String issuerAddress, String targetAddress})>((
+  ref,
+  params,
+) async {
   final issuerAddress = params.issuerAddress;
   final targetAddress = params.targetAddress;
 
@@ -808,10 +811,7 @@ final certButtonStateProvider =
 
     // Create a certState with estimated duration if the real one doesn't have it
     final effectiveCertState = (certState?.duration == null || certState!.duration == Duration.zero)
-        ? d.CertState(
-            status: d.CertStatus.mustWaitBeforeCert,
-            duration: certPeriodDuration,
-          )
+        ? d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: certPeriodDuration)
         : certState;
 
     return CertButtonState(
@@ -837,11 +837,7 @@ final certButtonStateProvider =
     case d.CertStatus.canCert:
       // If this target is in queue and ready, execute it
       if (pendingCert != null && pendingCert.isReady) {
-        return CertButtonState(
-          action: CertButtonAction.executeQueued,
-          certState: certState,
-          pendingCert: pendingCert,
-        );
+        return CertButtonState(action: CertButtonAction.executeQueued, certState: certState, pendingCert: pendingCert);
       }
 
       // If this target is already in queue (but not ready yet), show inQueue
@@ -904,14 +900,10 @@ final certButtonStateProvider =
         final disabledReason = certificationAlreadyExists
             ? 'canRenewCertInX' // We know cert exists, show renewal message
             : (targetIdtyStatus == d.IdtyStatus.unknown
-                ? 'mustWaitXBeforeCertify' // Status unknown, show generic cooldown message
-                : 'canRenewCertInX'); // Identity exists, show renewal message
+                  ? 'mustWaitXBeforeCertify' // Status unknown, show generic cooldown message
+                  : 'canRenewCertInX'); // Identity exists, show renewal message
 
-        return CertButtonState(
-          action: CertButtonAction.disabled,
-          certState: certState,
-          disabledReason: disabledReason,
-        );
+        return CertButtonState(action: CertButtonAction.disabled, certState: certState, disabledReason: disabledReason);
       }
 
       // Only propose to add to queue if target truly has NO identity

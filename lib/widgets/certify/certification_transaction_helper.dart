@@ -50,10 +50,15 @@ class CertificationTransactionHelper {
     });
 
     try {
-      final keypair = await walletService.getKeyPairFromAddress(address: issuerAddress, pinCode: PinCodeService.pinCode);
+      final keypair = await walletService.getKeyPairFromAddress(
+        address: issuerAddress,
+        pinCode: PinCodeService.pinCode,
+      );
 
       // Convert to broadcast stream so it can be listened to multiple times
-      final transactionStream = duniterService.certify(keypair: keypair, destAddress: targetAddress).asBroadcastStream();
+      final transactionStream = duniterService
+          .certify(keypair: keypair, destAddress: targetAddress)
+          .asBroadcastStream();
 
       // Listen to the stream independently to update the cache
       // This ensures we update the cache even if the user navigates away
@@ -74,10 +79,7 @@ class CertificationTransactionHelper {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => ProfileViewScreen(
-              address: targetAddress,
-              username: targetUsername,
-            ),
+            builder: (context) => ProfileViewScreen(address: targetAddress, username: targetUsername),
           ),
         );
       }

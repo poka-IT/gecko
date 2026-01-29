@@ -16,8 +16,9 @@ class InQueueButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formattedDate =
-        pendingCert.expectedAvailableDate != null ? _formatEstimatedDate(pendingCert.expectedAvailableDate!) : null;
+    final formattedDate = pendingCert.expectedAvailableDate != null
+        ? _formatEstimatedDate(pendingCert.expectedAvailableDate!)
+        : null;
 
     return ProfileActionButton(
       buttonKey: keyInQueue,
@@ -27,10 +28,9 @@ class InQueueButton extends ConsumerWidget {
       ),
       backgroundColor: Colors.blue.shade100,
       label: 'inQueuePosition'.tr(args: [pendingCert.position.toString()]),
-      labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w500,
-            color: Colors.blue.shade700,
-          ),
+      labelStyle: Theme.of(
+        context,
+      ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: Colors.blue.shade700),
       sublabel: formattedDate,
       sublabelStyle: scaledTextStyle(fontSize: buttonFontSize - 4, color: Colors.grey[600]),
       child: Stack(

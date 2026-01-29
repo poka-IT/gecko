@@ -398,8 +398,8 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
     final refreshInterval = duration.inMinutes <= 5
         ? const Duration(seconds: 10) // Refresh every 10s when < 5 min remaining
         : duration.inMinutes <= 30
-            ? const Duration(seconds: 30) // Refresh every 30s when < 30 min remaining
-            : const Duration(minutes: 1); // Refresh every minute otherwise
+        ? const Duration(seconds: 30) // Refresh every 30s when < 30 min remaining
+        : const Duration(minutes: 1); // Refresh every minute otherwise
 
     _periodicRefreshTimer = Timer.periodic(refreshInterval, (_) {
       _refreshCertState();

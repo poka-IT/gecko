@@ -30,17 +30,13 @@ class ExecuteQueuedButton extends ConsumerWidget {
       onTap: () => _executeCertification(context, ref),
       backgroundColor: Colors.green.shade300,
       label: 'executeNow'.tr(),
-      labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Colors.green.shade700,
-          ),
+      labelStyle: Theme.of(
+        context,
+      ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, color: Colors.green.shade700),
       child: Stack(
         children: [
           Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.all(scaleSize(4)),
-              child: Image.asset('assets/gecko_certify.png'),
-            ),
+            child: Padding(padding: EdgeInsets.all(scaleSize(4)), child: Image.asset('assets/gecko_certify.png')),
           ),
           Positioned(
             top: 2,

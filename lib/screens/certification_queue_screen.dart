@@ -51,7 +51,11 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
           if (_isSyncing)
             const Padding(
               padding: EdgeInsets.all(12),
-              child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              ),
             )
           else if (queueAsync.value?.isSynced == false)
             IconButton(
@@ -269,7 +273,12 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     } else if (daysRemaining == 1) {
       return (primary: 'tomorrow'.tr(), secondary: timeStr, isToday: false, isTomorrow: true);
     } else {
-      return (primary: 'inXDays'.tr(args: [daysRemaining.toString()]), secondary: dateStr, isToday: false, isTomorrow: false);
+      return (
+        primary: 'inXDays'.tr(args: [daysRemaining.toString()]),
+        secondary: dateStr,
+        isToday: false,
+        isTomorrow: false,
+      );
     }
   }
 
@@ -282,10 +291,10 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     final primaryColor = isReady
         ? Colors.green.shade700
         : timeInfo.isToday
-            ? Colors.orange.shade700
-            : timeInfo.isTomorrow
-                ? Colors.blue.shade600
-                : Colors.grey.shade600;
+        ? Colors.orange.shade700
+        : timeInfo.isTomorrow
+        ? Colors.blue.shade600
+        : Colors.grey.shade600;
 
     return Row(
       children: [
@@ -293,8 +302,8 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
           isReady
               ? Icons.check_circle
               : timeInfo.isToday
-                  ? Icons.schedule
-                  : Icons.calendar_today,
+              ? Icons.schedule
+              : Icons.calendar_today,
           size: scaleSize(14),
           color: primaryColor,
         ),
@@ -311,14 +320,8 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
           ScaledSizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              timeInfo.secondary!,
-              style: scaledTextStyle(fontSize: 11, color: Colors.grey.shade700),
-            ),
+            decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4)),
+            child: Text(timeInfo.secondary!, style: scaledTextStyle(fontSize: 11, color: Colors.grey.shade700)),
           ),
         ],
       ],

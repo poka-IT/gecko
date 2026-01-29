@@ -39,10 +39,7 @@ class CertifyButton extends ConsumerWidget {
       onTap: () => _onTap(context, ref),
       backgroundColor: const Color(0xffFFD58D),
       label: getButtonText(),
-      child: Padding(
-        padding: EdgeInsets.all(scaleSize(4)),
-        child: Image.asset('assets/gecko_certify.png'),
-      ),
+      child: Padding(padding: EdgeInsets.all(scaleSize(4)), child: Image.asset('assets/gecko_certify.png')),
     );
   }
 

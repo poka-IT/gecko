@@ -62,7 +62,11 @@ class CertStateWidget extends ConsumerWidget {
         return InQueueButton(pendingCert: buttonState.pendingCert!, issuerAddress: issuerAddress);
 
       case CertButtonAction.executeQueued:
-        return ExecuteQueuedButton(address: address, pendingCert: buttonState.pendingCert!, issuerAddress: issuerAddress);
+        return ExecuteQueuedButton(
+          address: address,
+          pendingCert: buttonState.pendingCert!,
+          issuerAddress: issuerAddress,
+        );
 
       case CertButtonAction.inProgress:
         return WaitToCertWidget(label: 'certificationInProgress'.tr(), duration: '', showSpinner: true);

@@ -80,8 +80,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
         }
 
         if (profile['socials'] != null) {
-          _socials =
-              (profile['socials'] as List).map((s) => CesiumSocial.fromJson(s as Map<String, dynamic>)).toList();
+          _socials = (profile['socials'] as List).map((s) => CesiumSocial.fromJson(s as Map<String, dynamic>)).toList();
         }
 
         if (profile['tags'] != null) {

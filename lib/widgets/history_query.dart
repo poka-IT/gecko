@@ -39,13 +39,16 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   bool _isTransactionInProgressVisible = false;
   bool _isDisposed = false;
   Timer? _hideIndicatorTimer;
+
   /// Whether the in-progress tile has completed its fade-out animation.
   /// When false and transactionData is present, the matching squid transaction is hidden.
   bool _inProgressTileGone = false;
+
   /// Timestamp when this screen was created with an in-progress transaction.
   /// Used to anchor the filter so only squid transactions created around this
   /// time are hidden (avoids hiding older transactions to the same address).
   DateTime? _inProgressCreatedAt;
+
   /// Once the matching squid transaction is identified, its squidId is stored
   /// here so subsequent rebuilds use exact id-based filtering.
   String? _hiddenSquidId;
@@ -63,8 +66,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     _scrollController.addListener(_onScroll);
 
     // If no in-progress transaction or it's already complete (cached), skip filtering
-    _inProgressTileGone = widget.transactionData == null ||
-        TransactionStatusCache.isTransactionComplete(widget.transactionData!);
+    _inProgressTileGone =
+        widget.transactionData == null || TransactionStatusCache.isTransactionComplete(widget.transactionData!);
 
     // Record when this screen was created with an in-progress transaction
     if (!_inProgressTileGone) {
@@ -400,7 +403,11 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
               Column(
                 children: <Widget>[
                   if (widget.transactionData != null)
-                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
+                    TransactionInProgressTule(
+                      transactionData: widget.transactionData!,
+                      viewingAddress: widget.address,
+                      onAnimationComplete: _onInProgressTileAnimationComplete,
+                    ),
                   ScaledSizedBox(height: 50),
                   Center(
                     child: Text(
@@ -432,7 +439,11 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                               child: Column(
                                 children: [
                                   if (widget.transactionData != null)
-                                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
+                                    TransactionInProgressTule(
+                                      transactionData: widget.transactionData!,
+                                      viewingAddress: widget.address,
+                                      onAnimationComplete: _onInProgressTileAnimationComplete,
+                                    ),
                                   ScaledSizedBox(height: 40),
                                   _buildEmptyStateView(context),
                                 ],
@@ -459,7 +470,11 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                   return Column(
                     children: <Widget>[
                       if (widget.transactionData != null)
-                        TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
+                        TransactionInProgressTule(
+                          transactionData: widget.transactionData!,
+                          viewingAddress: widget.address,
+                          onAnimationComplete: _onInProgressTileAnimationComplete,
+                        ),
                       ScaledSizedBox(height: 40),
                       _buildEmptyStateView(context),
                     ],
@@ -503,7 +518,11 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                   VisibilityDetector(
                                     key: const Key('transaction-in-progress-tile'),
                                     onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
-                                    child: TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
+                                    child: TransactionInProgressTule(
+                                      transactionData: widget.transactionData!,
+                                      viewingAddress: widget.address,
+                                      onAnimationComplete: _onInProgressTileAnimationComplete,
+                                    ),
                                   ),
 
                                 HistoryView(

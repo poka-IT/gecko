@@ -72,11 +72,7 @@ class ProfileActionButton extends StatelessWidget {
             ),
           ),
           ScaledSizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: labelStyle ?? defaultLabelStyle,
-          ),
+          Text(label, textAlign: TextAlign.center, style: labelStyle ?? defaultLabelStyle),
           if (sublabel != null)
             Text(
               sublabel!,

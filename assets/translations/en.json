@@ -746,5 +746,7 @@
     "typeWordNumber": "Type word #{}",
     "wordNofMnemonic": "Enter the word...",
     "correctWord": "Correct!",
-    "mnemonicVerificationFailed": "Failed to load your recovery phrase. Please try again."
+    "mnemonicVerificationFailed": "Failed to load your recovery phrase. Please try again.",
+    "showMore": "Show more",
+    "showLess": "Show less"
 }

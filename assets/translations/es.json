@@ -713,5 +713,7 @@
     "typeWordNumber": "Escriba la palabra n°{}",
     "wordNofMnemonic": "Introduzca la palabra...",
     "correctWord": "¡Correcto!",
-    "mnemonicVerificationFailed": "No se pudo cargar su frase de recuperación. Por favor, inténtelo de nuevo."
+    "mnemonicVerificationFailed": "No se pudo cargar su frase de recuperación. Por favor, inténtelo de nuevo.",
+    "showMore": "Ver más",
+    "showLess": "Ver menos"
 }

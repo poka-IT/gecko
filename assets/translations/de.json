@@ -144,5 +144,7 @@
     "wordNofMnemonic": "Wort eingeben...",
     "correctWord": "Richtig!",
     "mnemonicVerificationFailed": "Ihre Wiederherstellungsphrase konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
-    "biometricEnabled": "Biometrische Authentifizierung aktiviert"
+    "biometricEnabled": "Biometrische Authentifizierung aktiviert",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen"
 }

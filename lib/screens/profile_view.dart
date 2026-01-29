@@ -17,6 +17,7 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
+import 'package:gecko/widgets/cesium_profile_card.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
@@ -104,81 +105,82 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
             titleBuilder: (uname) => uname == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [uname]),
           ),
           body: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Column(
-                          children: [
-                            WalletHeader(address: address),
-                            ScaledSizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildActionButton(
-                                  context: context,
-                                  key: keyViewActivity,
-                                  icon: 'assets/walletOptions/clock.png',
-                                  label: "displayNActivity".tr(),
-                                  onTap: () async {
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
-                                            ActivityScreen(address: address),
-                                        transitionDuration: const Duration(milliseconds: 300),
-                                        reverseTransitionDuration: const Duration(milliseconds: 300),
-                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                          // Smooth slide transition from right to left
-                                          const begin = Offset(1.0, 0.0);
-                                          const end = Offset.zero;
-                                          const curve = Curves.easeInOut;
+            child: Column(
+              children: [
+                // Fixed top section: header + action buttons
+                WalletHeader(address: address),
+                ScaledSizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildActionButton(
+                      context: context,
+                      key: keyViewActivity,
+                      icon: 'assets/walletOptions/clock.png',
+                      label: "displayNActivity".tr(),
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => ActivityScreen(address: address),
+                            transitionDuration: const Duration(milliseconds: 300),
+                            reverseTransitionDuration: const Duration(milliseconds: 300),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
 
-                                          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-                                          return SlideTransition(position: animation.drive(tween), child: child);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                                Consumer(
-                                  builder: (context, ref, _) {
-                                    // Watch block height to trigger rebuilds when connection changes
-                                    ref.watch(blockHeightProvider);
-                                    return _buildCertificationSection(ref);
-                                  },
-                                ),
-                                _buildActionButton(
-                                  context: context,
-                                  key: keyCopyAddress,
-                                  icon: 'assets/copy_key.png',
-                                  label: "copyAddress".tr(),
-                                  onTap: () {
-                                    Clipboard.setData(ClipboardData(text: address));
-                                    SnackbarService.showAddressCopied(context);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            _buildTransferButton(ref),
-                            ScaledSizedBox(height: isTall ? 40 : 7),
-                          ],
-                        ),
-                      ],
+                              return SlideTransition(position: animation.drive(tween), child: child);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        ref.watch(blockHeightProvider);
+                        return _buildCertificationSection(ref);
+                      },
+                    ),
+                    _buildActionButton(
+                      context: context,
+                      key: keyCopyAddress,
+                      icon: 'assets/copy_key.png',
+                      label: "copyAddress".tr(),
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: address));
+                        SnackbarService.showAddressCopied(context);
+                      },
+                    ),
+                  ],
+                ),
+                // Flexible middle: profile card scrolls with bottom fade
+                Expanded(
+                  child: ShaderMask(
+                    shaderCallback: (bounds) => LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.white, Colors.white, Colors.white, Colors.transparent],
+                      stops: const [0.0, 0.85, 0.92, 1.0],
+                    ).createShader(bounds),
+                    blendMode: BlendMode.dstIn,
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.only(top: scaleSize(16), bottom: scaleSize(16)),
+                      child: CesiumProfileCard(address: address),
                     ),
                   ),
-                );
-              },
+                ),
+                // Fixed bottom: transfer button
+                Column(
+                  children: [
+                    _buildTransferButton(ref),
+                    ScaledSizedBox(height: isTall ? 40 : 7),
+                  ],
+                ),
+              ],
             ),
           ),
         );

@@ -25,6 +25,7 @@ class TransactionDisplayItem {
   final String? toAddress; // For network view: explicit to address
   final String? fromUsername; // For network view: from identity name
   final String? toUsername; // For network view: to identity name
+  final String? squidId; // Squid transfer id for exact deduplication
 
   TransactionDisplayItem({
     required this.address,
@@ -41,6 +42,7 @@ class TransactionDisplayItem {
     this.toAddress,
     this.fromUsername,
     this.toUsername,
+    this.squidId,
   });
 
   factory TransactionDisplayItem.fromGraphQLNode(
@@ -88,6 +90,7 @@ class TransactionDisplayItem {
       toAddress: node.toId,
       fromUsername: node.from?.identity?.name,
       toUsername: node.to?.identity?.name,
+      squidId: node.id,
     );
   }
 
@@ -125,6 +128,7 @@ class TransactionDisplayItem {
       toAddress: node.toId,
       fromUsername: node.from?.identity?.name,
       toUsername: node.to?.identity?.name,
+      squidId: node.id,
     );
   }
 

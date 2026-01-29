@@ -135,10 +135,11 @@ class CopyStateNotifier extends Notifier<bool> {
 final copyStateProvider = NotifierProvider<CopyStateNotifier, bool>(CopyStateNotifier.new);
 
 class TransactionInProgressTule extends ConsumerStatefulWidget {
-  const TransactionInProgressTule({super.key, required this.transactionData, required this.viewingAddress});
+  const TransactionInProgressTule({super.key, required this.transactionData, required this.viewingAddress, this.onAnimationComplete});
 
   final TransactionInProgressData transactionData;
   final String viewingAddress;
+  final VoidCallback? onAnimationComplete;
 
   @override
   ConsumerState<TransactionInProgressTule> createState() => _TransactionInProgressTuleState();
@@ -526,6 +527,9 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
         _status = TransactionStatus(state: TransactionState.none);
         // Cache the final 'none' status to prevent reappearance
         TransactionStatusCache.setLastKnownStatus(_currentTransactionData, _status);
+        // Notify parent that the tile animation is complete,
+        // so the matching squid transaction can be shown
+        widget.onAnimationComplete?.call();
       },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),

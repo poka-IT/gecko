@@ -15,6 +15,7 @@ import 'package:gecko/widgets/history_filters.dart';
 import 'package:gecko/widgets/history_view.dart';
 import 'package:gecko/widgets/transaction_in_progress_tile.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
+import 'package:gecko/models/transaction_display_item.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 const double _filterPadding = 32;
@@ -38,6 +39,16 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
   bool _isTransactionInProgressVisible = false;
   bool _isDisposed = false;
   Timer? _hideIndicatorTimer;
+  /// Whether the in-progress tile has completed its fade-out animation.
+  /// When false and transactionData is present, the matching squid transaction is hidden.
+  bool _inProgressTileGone = false;
+  /// Timestamp when this screen was created with an in-progress transaction.
+  /// Used to anchor the filter so only squid transactions created around this
+  /// time are hidden (avoids hiding older transactions to the same address).
+  DateTime? _inProgressCreatedAt;
+  /// Once the matching squid transaction is identified, its squidId is stored
+  /// here so subsequent rebuilds use exact id-based filtering.
+  String? _hiddenSquidId;
 
   // Filter visibility management (only when no filters are active)
   double _filterTranslationY = 0.0; // 0.0 = visible, -1.0 = hidden
@@ -50,6 +61,15 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+
+    // If no in-progress transaction or it's already complete (cached), skip filtering
+    _inProgressTileGone = widget.transactionData == null ||
+        TransactionStatusCache.isTransactionComplete(widget.transactionData!);
+
+    // Record when this screen was created with an in-progress transaction
+    if (!_inProgressTileGone) {
+      _inProgressCreatedAt = DateTime.now();
+    }
 
     // Animation for new transaction indicator
     _newTransactionController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
@@ -204,6 +224,70 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     }
   }
 
+  void _onInProgressTileAnimationComplete() {
+    if (mounted && !_isDisposed) {
+      setState(() {
+        _inProgressTileGone = true;
+      });
+    }
+  }
+
+  /// Checks if a squid transaction matches the in-progress transaction.
+  bool _isMatchingInProgressTransaction(TransactionDisplayItem tx) {
+    if (widget.transactionData == null || _inProgressCreatedAt == null) return false;
+    final inProgress = widget.transactionData!;
+
+    // Only match outgoing transfers
+    if (tx.isReceived || tx.type != TransactionType.transfer) return false;
+
+    // Match by recipient address
+    if (tx.address != inProgress.toAddress) return false;
+
+    // Match by comment
+    final txComment = tx.comment ?? '';
+    if (txComment != inProgress.comment) return false;
+
+    // Only match squid transactions whose block timestamp is close to when
+    // this in-progress tile was created. The block timestamp is typically
+    // 6-30s after tx submission. This prevents hiding older transactions
+    // to the same address/comment from a previous payment.
+    final diff = tx.timestamp.difference(_inProgressCreatedAt!);
+    if (diff.inSeconds < -5 || diff.inMinutes > 3) return false;
+
+    return true;
+  }
+
+  /// Filters out the squid transaction that matches the in-progress tile,
+  /// so they are never shown simultaneously.
+  ///
+  /// Uses a 2-step approach:
+  /// 1. First match: heuristic (address + comment + time window) to identify
+  ///    the squid transaction, then memorize its squidId.
+  /// 2. Subsequent rebuilds: filter by exact squidId for reliable deduplication.
+  List<TransactionDisplayItem> _filterInProgressDuplicate(List<TransactionDisplayItem> transactions) {
+    if (_inProgressTileGone || widget.transactionData == null) {
+      _hiddenSquidId = null;
+      return transactions;
+    }
+
+    // If we already identified the squidId, filter by exact match
+    if (_hiddenSquidId != null) {
+      return transactions.where((tx) => tx.squidId != _hiddenSquidId).toList();
+    }
+
+    // First identification: heuristic match + memorize squidId
+    bool found = false;
+    return transactions.where((tx) {
+      if (found) return true;
+      if (_isMatchingInProgressTransaction(tx)) {
+        _hiddenSquidId = tx.squidId;
+        found = true;
+        return false;
+      }
+      return true;
+    }).toList();
+  }
+
   Widget _buildEmptyStateView(BuildContext context) {
     return Center(
       child: Container(
@@ -316,7 +400,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
               Column(
                 children: <Widget>[
                   if (widget.transactionData != null)
-                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
+                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
                   ScaledSizedBox(height: 50),
                   Center(
                     child: Text(
@@ -348,7 +432,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                               child: Column(
                                 children: [
                                   if (widget.transactionData != null)
-                                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
+                                    TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
                                   ScaledSizedBox(height: 40),
                                   _buildEmptyStateView(context),
                                 ],
@@ -375,7 +459,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                   return Column(
                     children: <Widget>[
                       if (widget.transactionData != null)
-                        TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
+                        TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
                       ScaledSizedBox(height: 40),
                       _buildEmptyStateView(context),
                     ],
@@ -419,11 +503,11 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                   VisibilityDetector(
                                     key: const Key('transaction-in-progress-tile'),
                                     onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
-                                    child: TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address),
+                                    child: TransactionInProgressTule(transactionData: widget.transactionData!, viewingAddress: widget.address, onAnimationComplete: _onInProgressTileAnimationComplete),
                                   ),
 
                                 HistoryView(
-                                  transactions: historyState.transactions,
+                                  transactions: _filterInProgressDuplicate(historyState.transactions),
                                   address: widget.address,
                                   migrationFromData: migrationFromDataAsync.when(
                                     data: (migrationData) => migrationData,

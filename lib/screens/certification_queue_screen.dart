@@ -424,6 +424,8 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
         ref: ref,
         issuerAddress: identityWallet.address,
         targetAddress: cert.receiverAddress,
+        navigateToTargetProfile: true,
+        targetUsername: cert.receiverName ?? cert.receiverUid,
         onBeforeNavigate: () async {
           // Remove from queue with optimistic cooldown update
           await queueNotifier.removeExecutedCertification(cert.id);

@@ -179,6 +179,8 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
         ref: ref,
         issuerAddress: issuerAddress,
         targetAddress: pendingCert.receiverAddress,
+        navigateToTargetProfile: true,
+        targetUsername: pendingCert.receiverName ?? pendingCert.receiverUid,
         onBeforeNavigate: () async {
           // Remove from queue with optimistic cooldown update
           await queueNotifier.removeExecutedCertification(pendingCert.id);

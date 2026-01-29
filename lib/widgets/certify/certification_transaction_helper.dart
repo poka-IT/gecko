@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 
 /// Helper class for executing certification transactions with proper cache management
@@ -18,7 +18,11 @@ class CertificationTransactionHelper {
   /// 2. Creates a broadcast stream that can be listened to by multiple consumers
   /// 3. Sets up a listener to update the cache when the transaction completes
   /// 4. Calls optional [onBeforeNavigate] callback (e.g., for queue/sync operations)
-  /// 5. Navigates to TransactionInProgressScreen
+  /// 5. Navigates to the target's ProfileViewScreen if [navigateToTargetProfile] is true
+  ///
+  /// Set [navigateToTargetProfile] to true when calling from a screen that is NOT
+  /// already the target's profile (e.g., queue screen, global modal).
+  /// Leave false when already on the target's profile view.
   ///
   /// Returns the broadcast stream if successful, null if cancelled or failed before sending
   static Future<Stream<TransactionStatus>?> executeCertification({
@@ -27,6 +31,8 @@ class CertificationTransactionHelper {
     required String issuerAddress,
     required String targetAddress,
     Future<void> Function()? onBeforeNavigate,
+    bool navigateToTargetProfile = false,
+    String? targetUsername,
   }) async {
     // Capture ALL provider references NOW while ref is still valid
     // This prevents "ref used after widget unmounted" errors
@@ -49,8 +55,8 @@ class CertificationTransactionHelper {
       // Convert to broadcast stream so it can be listened to multiple times
       final transactionStream = duniterService.certify(keypair: keypair, destAddress: targetAddress).asBroadcastStream();
 
-      // Listen to the stream independently of the TransactionInProgressScreen
-      // This ensures we update the cache even if the user closes the screen
+      // Listen to the stream independently to update the cache
+      // This ensures we update the cache even if the user navigates away
       _listenToTransactionResult(
         notifier: notifier,
         transactionStream: transactionStream,
@@ -63,23 +69,18 @@ class CertificationTransactionHelper {
         await onBeforeNavigate();
       }
 
-      // Check if context is still mounted before navigating
-      if (!context.mounted) return transactionStream;
-
-      // Navigate to transaction screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return TransactionInProgressScreen(
-              transactionStatus: transactionStream,
-              transType: 'cert',
-              fromAddress: issuerAddress,
-              toAddress: targetAddress,
-            );
-          },
-        ),
-      );
+      // Navigate to target's profile if requested (when not already on it)
+      if (navigateToTargetProfile && context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProfileViewScreen(
+              address: targetAddress,
+              username: targetUsername,
+            ),
+          ),
+        );
+      }
 
       return transactionStream;
     } catch (e) {

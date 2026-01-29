@@ -855,8 +855,6 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
       return CertButtonState(action: CertButtonAction.certifyNow, certState: certState);
 
     case d.CertStatus.canRenewIn:
-      // Certification already exists - just show info, don't propose to add to queue
-      // (User just certified this person, no need to plan another certification)
       if (pendingCert != null) {
         // If somehow in queue, allow execution when ready
         if (pendingCert.isReady) {
@@ -868,11 +866,11 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
         }
         return CertButtonState(action: CertButtonAction.inQueue, certState: certState, pendingCert: pendingCert);
       }
-      // Show disabled state with renewal info
+      // Show appropriate message: renewal if cert exists, generic wait otherwise
       return CertButtonState(
         action: CertButtonAction.disabled,
         certState: certState,
-        disabledReason: 'canRenewCertInX',
+        disabledReason: certificationAlreadyExists ? 'canRenewCertInX' : 'mustWaitXBeforeCertify',
       );
 
     case d.CertStatus.mustWaitBeforeCert:
@@ -896,14 +894,10 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
       final hasIdentityOrUnknown = targetIdtyStatus != d.IdtyStatus.none;
 
       if (certificationAlreadyExists || hasIdentityOrUnknown) {
-        // Choose the appropriate disabled reason based on what we know
-        final disabledReason = certificationAlreadyExists
-            ? 'canRenewCertInX' // We know cert exists, show renewal message
-            : (targetIdtyStatus == d.IdtyStatus.unknown
-                  ? 'mustWaitXBeforeCertify' // Status unknown, show generic cooldown message
-                  : 'canRenewCertInX'); // Identity exists, show renewal message
-
-        return CertButtonState(action: CertButtonAction.disabled, certState: certState, disabledReason: disabledReason);
+        // Always show issuer cooldown message here - mustWaitBeforeCert is about
+        // the issuer's global cooldown, not about a specific certification renewal.
+        return CertButtonState(
+            action: CertButtonAction.disabled, certState: certState, disabledReason: 'mustWaitXBeforeCertify');
       }
 
       // Only propose to add to queue if target truly has NO identity

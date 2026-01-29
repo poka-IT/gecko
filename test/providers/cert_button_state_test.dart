@@ -189,13 +189,13 @@ void main() {
       container.dispose();
     });
 
-    test('en file && pas prêt → certifyNow (peut certifier maintenant)', () async {
+    test('en file && pas prêt → inQueue', () async {
       final container = await createContainer(
         certState: d.CertState(status: d.CertStatus.canCert),
         queueState: createQueueWithTarget(isReady: false),
       );
       final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-      expect(result.action, CertButtonAction.certifyNow);
+      expect(result.action, CertButtonAction.inQueue);
       container.dispose();
     });
   });
@@ -205,13 +205,25 @@ void main() {
   // ============================================================================
 
   group('CertStatus.canRenewIn', () {
-    test('pas en file → disabled (canRenewCertInX)', () async {
+    test('pas en file, cert existe → disabled (canRenewCertInX)', () async {
       final container = await createContainer(
         certState: d.CertState(status: d.CertStatus.canRenewIn, duration: const Duration(days: 30)),
+        certificationExists: true,
       );
       final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
       expect(result.action, CertButtonAction.disabled);
       expect(result.disabledReason, 'canRenewCertInX');
+      container.dispose();
+    });
+
+    test('pas en file, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
+      final container = await createContainer(
+        certState: d.CertState(status: d.CertStatus.canRenewIn, duration: const Duration(days: 30)),
+        certificationExists: false,
+      );
+      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      expect(result.action, CertButtonAction.disabled);
+      expect(result.disabledReason, 'mustWaitXBeforeCertify');
       container.dispose();
     });
 
@@ -264,14 +276,14 @@ void main() {
     });
 
     group('Pas en file - certification existante', () {
-      test('certificationExists → disabled (canRenewCertInX)', () async {
+      test('certificationExists → disabled (mustWaitXBeforeCertify) - cooldown émetteur prime', () async {
         final container = await createContainer(
           certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
           certificationExists: true,
         );
         final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
         expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'canRenewCertInX');
+        expect(result.disabledReason, 'mustWaitXBeforeCertify');
         container.dispose();
       });
     });
@@ -288,36 +300,36 @@ void main() {
         container.dispose();
       });
 
-      test('targetIdtyStatus.created → disabled (canRenewCertInX)', () async {
+      test('targetIdtyStatus.created, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
         final container = await createContainer(
           certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
           targetIdtyStatus: d.IdtyStatus.created,
         );
         final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
         expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'canRenewCertInX');
+        expect(result.disabledReason, 'mustWaitXBeforeCertify');
         container.dispose();
       });
 
-      test('targetIdtyStatus.confirmed → disabled (canRenewCertInX)', () async {
+      test('targetIdtyStatus.confirmed, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
         final container = await createContainer(
           certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
           targetIdtyStatus: d.IdtyStatus.confirmed,
         );
         final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
         expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'canRenewCertInX');
+        expect(result.disabledReason, 'mustWaitXBeforeCertify');
         container.dispose();
       });
 
-      test('targetIdtyStatus.validated → disabled (canRenewCertInX)', () async {
+      test('targetIdtyStatus.validated, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
         final container = await createContainer(
           certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
           targetIdtyStatus: d.IdtyStatus.validated,
         );
         final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
         expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'canRenewCertInX');
+        expect(result.disabledReason, 'mustWaitXBeforeCertify');
         container.dispose();
       });
 

@@ -310,14 +310,21 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               // Create safe: legacy or mnemonic based on parameters
               if (widget.legacySalt != null && widget.legacyPassword != null) {
                 // Create legacy safe
-                await ref
-                    .read(walletServiceProvider)
-                    .importLegacyWallet(
-                      salt: widget.legacySalt!,
-                      password: widget.legacyPassword!,
-                      pinCode: widget.pinCode,
-                      name: 'legacyWallet'.tr(),
-                    );
+                try {
+                  await ref
+                      .read(walletServiceProvider)
+                      .importLegacyWallet(
+                        salt: widget.legacySalt!,
+                        password: widget.legacyPassword!,
+                        pinCode: widget.pinCode,
+                        name: 'legacyWallet'.tr(),
+                      );
+                } catch (e) {
+                  if (!e.toString().contains('already been imported')) {
+                    rethrow;
+                  }
+                  log.i('Legacy wallet already imported - continuing with existing wallet');
+                }
               } else {
                 // Create mnemonic safe - but skip if it already exists (migration case)
                 final mnemonicState = ref.read(mnemonicStateProvider);

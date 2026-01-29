@@ -138,12 +138,10 @@ class QrScannerService {
 
     // For mobile platforms, use the barcode_scan2 plugin
     if (Platform.isAndroid || Platform.isIOS) {
-      // Request camera permission on Android platforms
-      if (Platform.isAndroid) {
-        final permissionStatus = await Permission.camera.request();
-        if (!permissionStatus.isGranted) {
-          return QrScanResult.error('Camera permission denied: ${permissionStatus.toString()}');
-        }
+      // Request camera permission on both Android and iOS
+      final permissionStatus = await Permission.camera.request();
+      if (!permissionStatus.isGranted) {
+        return QrScanResult.error('Camera permission denied: ${permissionStatus.toString()}');
       }
 
       try {
@@ -181,6 +179,24 @@ class QrScannerService {
 
         // Re-throw other TypeErrors
         rethrow;
+      } on PlatformException catch (e) {
+        // Handle permission denial from barcode_scan2 plugin
+        if (e.code == 'PERMISSION_NOT_GRANTED') {
+          return QrScanResult.error('Camera permission denied');
+        }
+        // Report other platform exceptions to Sentry
+        SentryService.captureException(
+          e,
+          tag: 'qr_scanner_error',
+          extra: {
+            'platform': Platform.isAndroid ? 'android' : 'ios',
+            'error_type': 'platform_exception',
+            'error_code': e.code,
+            'camera_permission_status': 'granted',
+            ...systemResources,
+          },
+        );
+        return QrScanResult.error('Scanner failed to initialize: ${e.toString()}');
       } catch (e) {
         // Handle native scanner initialization errors (e.g., camera access issues)
         // Report to Sentry for debugging native crashes with enhanced context

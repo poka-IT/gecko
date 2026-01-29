@@ -57,39 +57,47 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
 
-    final cesiumPlus = ref.read(cesiumPlusServiceProvider);
-    final profile = await cesiumPlus.getProfileByAddress(widget.address);
+    try {
+      final cesiumPlus = ref.read(cesiumPlusServiceProvider);
+      final profile = await cesiumPlus.getProfileByAddress(widget.address);
 
-    if (profile != null) {
-      _descriptionController.text = profile['description'] ?? '';
-      _cityController.text = profile['city'] ?? '';
+      if (profile != null) {
+        _descriptionController.text = profile['description'] ?? '';
+        _cityController.text = profile['city'] ?? '';
 
-      if (profile['geoPoint'] != null) {
-        final lat = double.tryParse(profile['geoPoint']['lat']?.toString() ?? '');
-        final lon = double.tryParse(profile['geoPoint']['lon']?.toString() ?? '');
-        if (lat != null && lon != null) {
-          _selectedLocation = LatLng(lat, lon);
-          // Center the map on the existing location after a small delay to ensure map is initialized
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted && _selectedLocation != null) {
-              _mapController.move(_selectedLocation!, 13.0);
-            }
-          });
+        if (profile['geoPoint'] != null) {
+          final lat = double.tryParse(profile['geoPoint']['lat']?.toString() ?? '');
+          final lon = double.tryParse(profile['geoPoint']['lon']?.toString() ?? '');
+          if (lat != null && lon != null) {
+            _selectedLocation = LatLng(lat, lon);
+            // Center the map on the existing location after a small delay to ensure map is initialized
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (mounted && _selectedLocation != null) {
+                _mapController.move(_selectedLocation!, 13.0);
+              }
+            });
+          }
         }
-      }
 
-      if (profile['socials'] != null) {
-        _socials = (profile['socials'] as List).map((s) => CesiumSocial.fromJson(s as Map<String, dynamic>)).toList();
-      }
+        if (profile['socials'] != null) {
+          _socials =
+              (profile['socials'] as List).map((s) => CesiumSocial.fromJson(s as Map<String, dynamic>)).toList();
+        }
 
-      if (profile['tags'] != null) {
-        _tags = List<String>.from(profile['tags'] as List);
-      }
+        if (profile['tags'] != null) {
+          _tags = List<String>.from(profile['tags'] as List);
+        }
 
-      _profile = profile;
+        _profile = profile;
+      }
+    } catch (e) {
+      log.e('Error loading Cesium+ profile: $e');
+      if (mounted) {
+        SnackbarService.showError(context, message: 'profileLoadFailed'.tr());
+      }
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _saveProfile() async {

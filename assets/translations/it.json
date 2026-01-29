@@ -686,6 +686,7 @@
     "saveProfile": "Salva profilo",
     "profileUpdated": "Profilo aggiornato con successo",
     "profileUpdateFailed": "Errore nell'aggiornamento del profilo",
+    "profileLoadFailed": "Errore nel caricamento del profilo",
     "add": "Aggiungi",
     "pinNeeded": "Codice PIN richiesto",
     "retrying": "Nuovo tentativo...",

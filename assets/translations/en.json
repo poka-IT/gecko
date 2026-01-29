@@ -678,6 +678,7 @@
     "saveProfile": "Save profile",
     "profileUpdated": "Profile successfully updated",
     "profileUpdateFailed": "Failed to update profile",
+    "profileLoadFailed": "Failed to load profile",
     "add": "Add",
     "pinNeeded": "PIN code required",
     "retrying": "Retrying...",

@@ -6,7 +6,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/services/certification_queue_service.dart';
 import 'package:uuid/uuid.dart';
 
@@ -786,16 +785,6 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
   final queueAsync = ref.watch(certificationQueueProvider(issuerAddress));
   final queue = queueAsync.value;
 
-  // Check if a certification already exists to this target - AWAIT to get real value
-  final certificationAlreadyExists = await ref.watch(certificationExistsProvider(targetAddress).future);
-
-  // Get target's identity status to check if we just created their identity
-  // CRITICAL: Use 'unknown' as fallback, NOT 'none'!
-  // 'none' means "no identity exists" which would incorrectly trigger "Schedule invitation"
-  // 'unknown' means "we don't know yet" and should be treated as "identity might exist"
-  final targetIdtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(targetAddress));
-  final targetIdtyStatus = targetIdtyStatusAsync.value ?? d.IdtyStatus.unknown;
-
   // Check if target is in queue
   final pendingCert = queue?.getCertificationByAddress(targetAddress);
   final isInQueue = pendingCert != null;
@@ -855,26 +844,11 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
       return CertButtonState(action: CertButtonAction.certifyNow, certState: certState);
 
     case d.CertStatus.canRenewIn:
-      if (pendingCert != null) {
-        // If somehow in queue, allow execution when ready
-        if (pendingCert.isReady) {
-          return CertButtonState(
-            action: CertButtonAction.executeQueued,
-            certState: certState,
-            pendingCert: pendingCert,
-          );
-        }
-        return CertButtonState(action: CertButtonAction.inQueue, certState: certState, pendingCert: pendingCert);
-      }
-      // Show appropriate message: renewal if cert exists, generic wait otherwise
-      return CertButtonState(
-        action: CertButtonAction.disabled,
-        certState: certState,
-        disabledReason: certificationAlreadyExists ? 'canRenewCertInX' : 'mustWaitXBeforeCertify',
-      );
-
     case d.CertStatus.mustWaitBeforeCert:
-      // Issuer's cooldown is active
+      // Both cases involve waiting before the user can certify.
+      // Always propose the queue so the user can schedule the certification/renewal.
+      // The wasCertifiedRecently guard (above) already prevents showing the queue
+      // button immediately after certifying.
       if (pendingCert != null) {
         if (pendingCert.isReady) {
           return CertButtonState(
@@ -885,25 +859,6 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
         }
         return CertButtonState(action: CertButtonAction.inQueue, certState: certState, pendingCert: pendingCert);
       }
-
-      // Determine if we should show disabled state or propose adding to queue
-      // Show disabled if:
-      // 1. certificationAlreadyExists is true (blockchain confirms certification exists)
-      // 2. Target has an identity (member, confirmed, created, etc.) - we just created it via invitation
-      // 3. Target status is unknown (loading) - don't show "Schedule invitation" prematurely
-      final hasIdentityOrUnknown = targetIdtyStatus != d.IdtyStatus.none;
-
-      if (certificationAlreadyExists || hasIdentityOrUnknown) {
-        // Always show issuer cooldown message here - mustWaitBeforeCert is about
-        // the issuer's global cooldown, not about a specific certification renewal.
-        return CertButtonState(
-          action: CertButtonAction.disabled,
-          certState: certState,
-          disabledReason: 'mustWaitXBeforeCertify',
-        );
-      }
-
-      // Only propose to add to queue if target truly has NO identity
       return CertButtonState(action: CertButtonAction.addToQueue, certState: certState);
 
     case d.CertStatus.mustConfirmIdentity:

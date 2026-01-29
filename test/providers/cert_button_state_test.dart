@@ -204,59 +204,25 @@ void main() {
   // 4. CertStatus.canRenewIn
   // ============================================================================
 
-  group('CertStatus.canRenewIn', () {
-    test('pas en file, cert existe → disabled (canRenewCertInX)', () async {
-      final container = await createContainer(
-        certState: d.CertState(status: d.CertStatus.canRenewIn, duration: const Duration(days: 30)),
-        certificationExists: true,
-      );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-      expect(result.action, CertButtonAction.disabled);
-      expect(result.disabledReason, 'canRenewCertInX');
-      container.dispose();
-    });
-
-    test('pas en file, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
-      final container = await createContainer(
-        certState: d.CertState(status: d.CertStatus.canRenewIn, duration: const Duration(days: 30)),
-        certificationExists: false,
-      );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-      expect(result.action, CertButtonAction.disabled);
-      expect(result.disabledReason, 'mustWaitXBeforeCertify');
-      container.dispose();
-    });
-
-    test('en file && prêt → executeQueued', () async {
-      final container = await createContainer(
-        certState: d.CertState(status: d.CertStatus.canRenewIn),
-        queueState: createQueueWithTarget(isReady: true),
-      );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-      expect(result.action, CertButtonAction.executeQueued);
-      container.dispose();
-    });
-
-    test('en file && pas prêt → inQueue', () async {
-      final container = await createContainer(
-        certState: d.CertState(status: d.CertStatus.canRenewIn),
-        queueState: createQueueWithTarget(isReady: false),
-      );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-      expect(result.action, CertButtonAction.inQueue);
-      container.dispose();
-    });
-  });
-
   // ============================================================================
-  // 5. CertStatus.mustWaitBeforeCert - Le cas le plus complexe
+  // 4 & 5. CertStatus.canRenewIn / mustWaitBeforeCert
+  // Both involve waiting → always propose the queue (addToQueue)
   // ============================================================================
 
-  group('CertStatus.mustWaitBeforeCert', () {
-    group('En file d\'attente', () {
+  for (final status in [d.CertStatus.canRenewIn, d.CertStatus.mustWaitBeforeCert]) {
+    group('CertStatus.${status.name}', () {
+      test('pas en file → addToQueue (planifier pour plus tard)', () async {
+        final container = await createContainer(
+          certState: d.CertState(status: status, duration: const Duration(days: 3)),
+        );
+        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+        expect(result.action, CertButtonAction.addToQueue);
+        container.dispose();
+      });
+
       test('en file && prêt → executeQueued', () async {
         final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
+          certState: d.CertState(status: status, duration: const Duration(days: 3)),
           queueState: createQueueWithTarget(isReady: true),
         );
         final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
@@ -266,7 +232,7 @@ void main() {
 
       test('en file && pas prêt → inQueue', () async {
         final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
+          certState: d.CertState(status: status, duration: const Duration(days: 3)),
           queueState: createQueueWithTarget(isReady: false),
         );
         final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
@@ -274,77 +240,7 @@ void main() {
         container.dispose();
       });
     });
-
-    group('Pas en file - certification existante', () {
-      test('certificationExists → disabled (mustWaitXBeforeCertify) - cooldown émetteur prime', () async {
-        final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
-          certificationExists: true,
-        );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-        expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'mustWaitXBeforeCertify');
-        container.dispose();
-      });
-    });
-
-    group('Pas en file - selon statut identité cible', () {
-      test('targetIdtyStatus.unknown → disabled (mustWaitXBeforeCertify) [BUG FIX]', () async {
-        final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
-          targetIdtyStatus: d.IdtyStatus.unknown,
-        );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-        expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'mustWaitXBeforeCertify');
-        container.dispose();
-      });
-
-      test('targetIdtyStatus.created, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
-        final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
-          targetIdtyStatus: d.IdtyStatus.created,
-        );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-        expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'mustWaitXBeforeCertify');
-        container.dispose();
-      });
-
-      test('targetIdtyStatus.confirmed, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
-        final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
-          targetIdtyStatus: d.IdtyStatus.confirmed,
-        );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-        expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'mustWaitXBeforeCertify');
-        container.dispose();
-      });
-
-      test('targetIdtyStatus.validated, cert n\'existe pas → disabled (mustWaitXBeforeCertify)', () async {
-        final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
-          targetIdtyStatus: d.IdtyStatus.validated,
-        );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-        expect(result.action, CertButtonAction.disabled);
-        expect(result.disabledReason, 'mustWaitXBeforeCertify');
-        container.dispose();
-      });
-
-      test('targetIdtyStatus.none → addToQueue (seul cas où on peut planifier)', () async {
-        final container = await createContainer(
-          certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert, duration: const Duration(days: 3)),
-          targetIdtyStatus: d.IdtyStatus.none,
-          certificationExists: false,
-        );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-        expect(result.action, CertButtonAction.addToQueue);
-        container.dispose();
-      });
-    });
-  });
+  }
 
   // ============================================================================
   // 6. Autres CertStatus - États terminaux
@@ -381,14 +277,13 @@ void main() {
   // ============================================================================
 
   group('Régressions', () {
-    test('Bug: unknown status ne doit pas proposer "Inviter ce compte"', () async {
-      // Après création d'identité, le status peut être unknown pendant le chargement
+    test('mustWaitBeforeCert → addToQueue (planifier pour plus tard)', () async {
+      // Même avec un status unknown, l'utilisateur peut planifier la certification
       final container = await createContainer(
         certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert),
-        targetIdtyStatus: d.IdtyStatus.unknown,
       );
       final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-      expect(result.action, isNot(CertButtonAction.addToQueue));
+      expect(result.action, CertButtonAction.addToQueue);
       container.dispose();
     });
 

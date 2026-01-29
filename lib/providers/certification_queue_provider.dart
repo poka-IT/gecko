@@ -897,7 +897,10 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
         // Always show issuer cooldown message here - mustWaitBeforeCert is about
         // the issuer's global cooldown, not about a specific certification renewal.
         return CertButtonState(
-            action: CertButtonAction.disabled, certState: certState, disabledReason: 'mustWaitXBeforeCertify');
+          action: CertButtonAction.disabled,
+          certState: certState,
+          disabledReason: 'mustWaitXBeforeCertify',
+        );
       }
 
       // Only propose to add to queue if target truly has NO identity

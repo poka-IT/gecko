@@ -298,17 +298,21 @@ class _MinimalTransactionWidgetState extends ConsumerState<_MinimalTransactionWi
           final txStatus = snapshot.data!;
 
           // Exactement la même logique que TransactionInProgressScreen
-          // Use addPostFrameCallback to avoid modifying providers during build
+          // Use Future.microtask to avoid modifying providers during build
           if (txStatus.state == d.TransactionState.finalized || txStatus.state == d.TransactionState.inBlock) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _invalidateCertificationProviders();
-            });
+            if (!_hasInvalidatedProviders) {
+              Future.microtask(() {
+                _invalidateCertificationProviders();
+              });
+            }
           }
 
           if (txStatus.state == d.TransactionState.error) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _handleFailedCertification();
-            });
+            if (!_hasHandledFailure) {
+              Future.microtask(() {
+                _handleFailedCertification();
+              });
+            }
           }
 
           return Text('Status: ${txStatus.state}');

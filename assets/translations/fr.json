@@ -558,6 +558,7 @@
     "reset": "Réinitialiser",
     "apply": "Appliquer",
     "certificationExpired": "Certification expirée",
+    "certificationExpiresIn": "Expire dans {} jours",
     "certificationExpiredShort": "Expirée",
     "certificationActive": "Certification active",
     "expiresIn": "Expire dans",

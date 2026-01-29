@@ -38,6 +38,7 @@ import 'package:gecko/services/log_collection_service.dart';
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/sentry_context_provider.dart';
+import 'package:gecko/widgets/certify/ready_certification_listener.dart';
 
 const bool enableSentry = true;
 const bool showVersionOverlay = true; // Set to false to hide version overlay in production
@@ -173,11 +174,14 @@ class Gecko extends StatelessWidget {
                     final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
 
                     // Add the global bottom app bar as an overlay
-                    return Stack(
-                      children: [
-                        GlobalOfflineOverlay(child: finalChild),
-                        Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
-                      ],
+                    // Wrap with ReadyCertificationListener to handle certification ready notifications globally
+                    return ReadyCertificationListener(
+                      child: Stack(
+                        children: [
+                          GlobalOfflineOverlay(child: finalChild),
+                          Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                        ],
+                      ),
                     );
                   },
                   title: 'Ğecko',

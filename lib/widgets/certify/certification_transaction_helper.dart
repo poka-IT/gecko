@@ -1,0 +1,133 @@
+import 'dart:async';
+
+import 'package:durt2/durt2.dart' show TransactionState, TransactionStatus;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/providers/certification_queue_provider.dart';
+import 'package:gecko/providers/providers.dart';
+import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/services/pin_cache_service.dart';
+
+/// Helper class for executing certification transactions with proper cache management
+class CertificationTransactionHelper {
+  /// Execute a certification transaction with proper cache management
+  ///
+  /// This method:
+  /// 1. Marks the certification as "in progress" immediately
+  /// 2. Creates a broadcast stream that can be listened to by multiple consumers
+  /// 3. Sets up a listener to update the cache when the transaction completes
+  /// 4. Calls optional [onBeforeNavigate] callback (e.g., for queue/sync operations)
+  /// 5. Navigates to TransactionInProgressScreen
+  ///
+  /// Returns the broadcast stream if successful, null if cancelled or failed before sending
+  static Future<Stream<TransactionStatus>?> executeCertification({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String issuerAddress,
+    required String targetAddress,
+    Future<void> Function()? onBeforeNavigate,
+  }) async {
+    // Capture ALL provider references NOW while ref is still valid
+    // This prevents "ref used after widget unmounted" errors
+    final notifier = ref.read(recentCertificationsProvider.notifier);
+    final walletService = ref.read(walletServiceProvider);
+    final duniterService = ref.read(duniterServiceProvider);
+    final container = ProviderScope.containerOf(context);
+
+    // Mark as in progress immediately
+    notifier.markInProgress(issuerAddress, targetAddress);
+
+    // Force refresh of the button state provider - use microtask to avoid "setState during build"
+    Future.microtask(() {
+      container.invalidate(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)));
+    });
+
+    try {
+      final keypair = await walletService.getKeyPairFromAddress(address: issuerAddress, pinCode: PinCodeService.pinCode);
+
+      // Convert to broadcast stream so it can be listened to multiple times
+      final transactionStream = duniterService.certify(keypair: keypair, destAddress: targetAddress).asBroadcastStream();
+
+      // Listen to the stream independently of the TransactionInProgressScreen
+      // This ensures we update the cache even if the user closes the screen
+      _listenToTransactionResult(
+        notifier: notifier,
+        transactionStream: transactionStream,
+        issuerAddress: issuerAddress,
+        targetAddress: targetAddress,
+      );
+
+      // Optional callback before navigation (e.g., queue removal, sync)
+      if (onBeforeNavigate != null) {
+        await onBeforeNavigate();
+      }
+
+      // Check if context is still mounted before navigating
+      if (!context.mounted) return transactionStream;
+
+      // Navigate to transaction screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return TransactionInProgressScreen(
+              transactionStatus: transactionStream,
+              transType: 'cert',
+              fromAddress: issuerAddress,
+              toAddress: targetAddress,
+            );
+          },
+        ),
+      );
+
+      return transactionStream;
+    } catch (e) {
+      // Remove from cache since certification failed before sending
+      notifier.removeCertification(issuerAddress, targetAddress);
+      // Use microtask to avoid "setState during build"
+      Future.microtask(() {
+        container.invalidate(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)));
+      });
+      log.d('❌ [CertificationHelper] Error before sending, removed from recent cache');
+      rethrow;
+    }
+  }
+
+  /// Listen to the transaction stream and update the cache when the transaction completes
+  static void _listenToTransactionResult({
+    required RecentCertificationsNotifier notifier,
+    required Stream<TransactionStatus> transactionStream,
+    required String issuerAddress,
+    required String targetAddress,
+  }) {
+    bool hasHandled = false;
+    late StreamSubscription<TransactionStatus> subscription;
+
+    subscription = transactionStream.listen(
+      (status) {
+        if (hasHandled) return;
+
+        if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
+          hasHandled = true;
+          log.d('✅ [CertificationHelper] Transaction SUCCESS - marking as completed');
+          notifier.markCompleted(issuerAddress, targetAddress);
+          subscription.cancel();
+        } else if (status.state == TransactionState.error) {
+          hasHandled = true;
+          log.d('❌ [CertificationHelper] Transaction ERROR - removing from cache');
+          notifier.removeCertification(issuerAddress, targetAddress);
+          subscription.cancel();
+        }
+      },
+      onError: (error) {
+        if (hasHandled) return;
+        hasHandled = true;
+        log.d('❌ [CertificationHelper] Stream ERROR - removing from cache: $error');
+        notifier.removeCertification(issuerAddress, targetAddress);
+        subscription.cancel();
+      },
+      cancelOnError: false,
+    );
+  }
+}

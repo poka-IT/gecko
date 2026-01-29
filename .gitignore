@@ -205,3 +205,5 @@ release/macos/
 
 # FVM Version Cache
 .fvm/
+
+scripts/show_cert_queue

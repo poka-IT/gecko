@@ -767,9 +767,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             Expanded(
               child: Row(
                 children: [
-                  Text(
-                    'certificationQueue'.tr(),
-                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                  Flexible(
+                    child: Text(
+                      'certificationQueue'.tr(),
+                      style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   if (hasReady) ...[
                     const SizedBox(width: 8),

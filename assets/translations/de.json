@@ -135,5 +135,6 @@
     "insufficientBalance": "Unzureichendes Guthaben",
     "cannotSendToYourself": "Sie können nicht an sich selbst senden",
     "minimumAmountRequired": "Mindestens {} für dieses Konto erforderlich",
-    "invalidAmount": "Ungültiger Betrag"
+    "invalidAmount": "Ungültiger Betrag",
+    "certificationExpiresIn": "Läuft in {} Tagen ab"
 }

@@ -9,11 +9,10 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
-import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/widgets/certify/certification_transaction_helper.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/profile_action_button.dart';
 
@@ -65,6 +64,10 @@ class ExecuteQueuedButton extends ConsumerWidget {
   }
 
   Future<void> _executeCertification(BuildContext context, WidgetRef ref) async {
+    // Capture provider references BEFORE async operations
+    final walletService = ref.read(walletServiceProvider);
+    final queueNotifier = ref.read(certificationQueueProvider(issuerAddress).notifier);
+
     final walletName = pendingCert.receiverName ?? pendingCert.receiverUid;
     final displayName = walletName ?? getShortPubkey(address);
 
@@ -79,63 +82,53 @@ class ExecuteQueuedButton extends ConsumerWidget {
     );
 
     if (!result) return;
-    await ref.read(walletServiceProvider).setDefaultAddress(address);
+    await walletService.setDefaultAddress(address);
 
     if (!await PinCodeService.askPinCode()) return;
-    final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
-
-    if (identityWallet == null) {
-      throw Exception('Identity wallet not found');
-    }
+    if (!context.mounted) return;
 
     try {
-      // CRITICAL: Mark as recently certified IMMEDIATELY before sending transaction
-      // This ensures the button shows "disabled" even if user returns to profile while tx is in progress
-      ref.read(recentCertificationsProvider.notifier).addCertification(identityWallet.address, address);
-
-      // Force refresh of the button state provider
-      ref.invalidate(certButtonStateProvider((issuerAddress: identityWallet.address, targetAddress: address)));
-
-      final keypair = await ref
-          .read(walletServiceProvider)
-          .getKeyPairFromAddress(address: identityWallet.address, pinCode: PinCodeService.pinCode);
-      final transactionStatus = ref.read(duniterServiceProvider).certify(keypair: keypair, destAddress: address);
-
-      await ref.read(certificationQueueProvider(issuerAddress).notifier).removeFromQueue(pendingCert.id);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return TransactionInProgressScreen(
-              transactionStatus: transactionStatus,
-              transType: 'cert',
-              fromAddress: identityWallet.address,
-              toAddress: address,
-            );
-          },
-        ),
+      // Use issuerAddress directly - it's the identity wallet address passed to this widget
+      await CertificationTransactionHelper.executeCertification(
+        context: context,
+        ref: ref,
+        issuerAddress: issuerAddress,
+        targetAddress: address,
+        onBeforeNavigate: () async {
+          // Remove from queue after successful certification start
+          await queueNotifier.removeFromQueue(pendingCert.id);
+          // Sync to CesiumPlus (we already have the PIN)
+          await _syncToRemote(walletService, queueNotifier);
+        },
       );
     } catch (e) {
-      // Remove from cache since certification failed before sending
-      ref.read(recentCertificationsProvider.notifier).removeCertification(identityWallet.address, address);
-      ref.invalidate(certButtonStateProvider((issuerAddress: identityWallet.address, targetAddress: address)));
-      log.d('❌ [ExecuteQueuedButton] Error before sending, removed from recent cache');
-
       if (!context.mounted) {
         log.w('Context not mounted when error occurred: $e');
         return;
       }
 
-      if (e is NotMemberException) {
-        showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
-      } else if (e is CantBeCertException) {
+      if (e is NotMemberException || e is CantBeCertException) {
         showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
       } else {
         log.e(e);
         showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
-        return;
       }
+    }
+  }
+
+  /// Sync the queue to CesiumPlus
+  Future<bool> _syncToRemote(dynamic walletService, CertificationQueueNotifier queueNotifier) async {
+    try {
+      final keyPair = await walletService.getKeyPairFromAddress(
+        address: issuerAddress,
+        pinCode: PinCodeService.pinCode,
+      );
+
+      log.d('🔄 [ExecuteQueuedButton] Syncing queue to CesiumPlus...');
+      return await queueNotifier.pushToRemote(keyPair.sign);
+    } catch (e) {
+      log.e('🔄 [ExecuteQueuedButton] Sync failed: $e');
+      return false;
     }
   }
 }

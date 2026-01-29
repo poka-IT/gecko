@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/utils.dart';
 
 class ReadyCertificationModal extends ConsumerWidget {
@@ -23,10 +24,21 @@ class ReadyCertificationModal extends ConsumerWidget {
   final VoidCallback onViewQueue;
   final VoidCallback onDismiss;
 
+  String _getDisplayName(String? hybridName) {
+    // Priority: hybrid identity name > receiverName > receiverUid > short address
+    if (hybridName != null && hybridName.isNotEmpty) return hybridName;
+    if (pendingCert.receiverName != null && pendingCert.receiverName!.isNotEmpty) return pendingCert.receiverName!;
+    if (pendingCert.receiverUid != null && pendingCert.receiverUid!.isNotEmpty) return pendingCert.receiverUid!;
+    return getShortPubkey(pendingCert.receiverAddress);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final displayName =
-        pendingCert.receiverName ?? pendingCert.receiverUid ?? getShortPubkey(pendingCert.receiverAddress);
+    final hybridNameAsync = ref.watch(hybridIdentityNameProvider(pendingCert.receiverAddress));
+    final displayName = hybridNameAsync.maybeWhen(
+      data: (name) => _getDisplayName(name),
+      orElse: () => _getDisplayName(null),
+    );
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -60,29 +72,33 @@ class ReadyCertificationModal extends ConsumerWidget {
             ),
             ScaledSizedBox(height: 24),
 
-            // Actions - Main buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // View queue button
-                OutlinedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    onViewQueue();
-                  },
-                  child: Text('viewQueue'.tr()),
+            // Actions - Main buttons (stacked vertically to avoid overflow)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
                 ),
-
-                // Certify button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    onCertify();
-                  },
-                  child: Text('certify'.tr()),
-                ),
-              ],
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  onCertify();
+                },
+                child: Text('certify'.tr(), style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              ),
+            ),
+            ScaledSizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: scaleSize(12))),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  onViewQueue();
+                },
+                child: Text('viewQueue'.tr(), style: scaledTextStyle(fontSize: 15)),
+              ),
             ),
             ScaledSizedBox(height: 12),
 

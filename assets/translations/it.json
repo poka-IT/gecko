@@ -460,6 +460,7 @@
     "reset": "Reimpostare",
     "apply": "Applicare",
     "certificationExpired": "Certificazione scaduta",
+    "certificationExpiresIn": "Scade tra {} giorni",
     "certificationExpiredShort": "Scaduta",
     "certificationActive": "Certificazione attiva",
     "expiresIn": "Scade tra",

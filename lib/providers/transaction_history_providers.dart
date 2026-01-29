@@ -65,6 +65,14 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
       loadTransactions();
     });
 
+    // Listen to Squid connection changes to re-establish subscription when reconnected
+    ref.listen(squidConnectionStatusProvider, (previous, next) {
+      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
+        log.i('🔄 Squid reconnected - re-establishing activity subscription for $_address');
+        _subscribeToAccountActivity();
+      }
+    });
+
     // Start initial load asynchronously
     Future.microtask(() {
       loadTransactions();
@@ -77,6 +85,9 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
 
   /// Subscribe to account activity (simple subscription that triggers refreshes)
   void _subscribeToAccountActivity() {
+    // Cancel existing subscription before creating new one
+    _activitySubscription?.cancel();
+
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
@@ -289,6 +300,14 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
       loadTransactions();
     });
 
+    // Listen to Squid connection changes to re-establish subscription when reconnected
+    ref.listen(squidConnectionStatusProvider, (previous, next) {
+      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
+        log.i('🔄 Squid reconnected - re-establishing activity subscription for $_address');
+        _subscribeToAccountActivity();
+      }
+    });
+
     // Start initial load asynchronously
     Future.microtask(() {
       loadTransactions();
@@ -301,6 +320,9 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
 
   /// Subscribe to account activity (simple subscription that triggers refreshes)
   void _subscribeToAccountActivity() {
+    // Cancel existing subscription before creating new one
+    _activitySubscription?.cancel();
+
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {

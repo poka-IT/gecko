@@ -275,10 +275,19 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
       final durt = ref.read(durtProvider);
 
-      // Check if CesiumPlus is connected
+      // Wait for Duniter to be connected (up to 10 seconds)
       if (!durt.isConnected) {
-        log.w('🔄 [CertQueueSync] Durt not connected, skipping sync');
-        return;
+        log.d('🔄 [CertQueueSync] Waiting for Duniter connection...');
+        int attempts = 0;
+        while (!durt.isConnected && attempts < 20) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          attempts++;
+        }
+        if (!durt.isConnected) {
+          log.w('🔄 [CertQueueSync] Duniter not connected after 10s, skipping sync');
+          return;
+        }
+        log.d('🔄 [CertQueueSync] Duniter connected after ${attempts * 500}ms');
       }
 
       // 1. PULL: Fetch remote queue from CesiumPlus
@@ -350,6 +359,15 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         '🔄 [CertQueueSync] Sync complete. Final state: ${mergedQueue.queueLength} items, '
         'isSynced: ${mergedQueue.isSynced}',
       );
+
+      // 5. Check and notify if any certification is ready immediately after sync
+      if (mergedQueue.hasReadyCertification) {
+        final readyCert = mergedQueue.nextReadyCertification;
+        if (readyCert != null) {
+          log.d('🔔 [CertQueueSync] Certification ready after sync for ${readyCert.receiverAddress}');
+          ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).notify(readyCert);
+        }
+      }
 
       log.d('🔄 [CertQueueSync] ====== SYNC COMPLETE ======');
     } catch (e, stack) {
@@ -696,6 +714,7 @@ final certButtonStateProvider =
       return const CertButtonState(action: CertButtonAction.none);
 
     case d.CertStatus.canCert:
+      // If this target is in queue and ready, execute it
       if (pendingCert != null && pendingCert.isReady) {
         return CertButtonState(
           action: CertButtonAction.executeQueued,
@@ -703,6 +722,19 @@ final certButtonStateProvider =
           pendingCert: pendingCert,
         );
       }
+
+      // If this target is already in queue (but not ready yet), show inQueue
+      if (pendingCert != null) {
+        return CertButtonState(action: CertButtonAction.inQueue, certState: certState, pendingCert: pendingCert);
+      }
+
+      // CRITICAL: If queue is not empty, this target must go to the queue
+      // to respect the queue order - even if we can technically certify now
+      if (queue != null && !queue.isEmpty) {
+        return CertButtonState(action: CertButtonAction.addToQueue, certState: certState);
+      }
+
+      // Queue is empty, can certify directly
       return CertButtonState(action: CertButtonAction.certifyNow, certState: certState);
 
     case d.CertStatus.canRenewIn:

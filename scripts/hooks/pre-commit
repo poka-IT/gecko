@@ -1,12 +1,26 @@
 #!/bin/sh
-# Pre-commit hook: auto-format only staged Dart files in lib/
+# Pre-commit hook: auto-format staged Dart files
 
-# Get list of staged .dart files in lib/
-STAGED_DART_FILES=$(git diff --cached --name-only --diff-filter=ACM -- 'lib/**.dart')
-
-if [ -n "$STAGED_DART_FILES" ]; then
-  dart format -l 120 $STAGED_DART_FILES
-  echo "$STAGED_DART_FILES" | xargs git add
+# Verify dart is available
+if ! command -v dart >/dev/null 2>&1; then
+  echo "ERROR: dart not found in PATH. Skipping format."
+  echo "Install Dart or add it to your PATH."
+  exit 1
 fi
 
-exit 0
+# Get list of staged .dart files (lib/ and test/)
+STAGED_DART_FILES=$(git diff --cached --name-only --diff-filter=ACM -- '*.dart')
+
+if [ -n "$STAGED_DART_FILES" ]; then
+  # Format uses analysis_options.yaml (page_width: 120) automatically
+  dart format $STAGED_DART_FILES
+
+  # Re-stage formatted files
+  echo "$STAGED_DART_FILES" | xargs git add
+
+  # Verify formatting passes (same check as CI)
+  if ! dart format --set-exit-if-changed $STAGED_DART_FILES >/dev/null 2>&1; then
+    echo "ERROR: dart format failed. This should not happen."
+    exit 1
+  fi
+fi

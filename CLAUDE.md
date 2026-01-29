@@ -25,8 +25,8 @@ flutter test test/providers/                         # provider tests only
 # Lint
 flutter analyze
 
-# Format (120 char line width)
-dart format -l 120 .
+# Format (uses page_width from analysis_options.yaml)
+dart format .
 ```
 
 ## Architecture

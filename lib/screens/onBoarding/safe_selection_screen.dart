@@ -37,7 +37,7 @@ class _SafeSelectionScreenState extends ConsumerState<SafeSelectionScreen> {
 
       // Filter out legacy safes and the current legacy safe being migrated
       availableSafes = allSafes.where((safe) {
-        return safe.safeType == SafeType.mnemonic && safe.number >= 0; // Exclude legacy safes (number = -1)
+        return safe.safeType == SafeType.mnemonic; // Exclude legacy safes
       }).toList();
 
       // Sort by safe number

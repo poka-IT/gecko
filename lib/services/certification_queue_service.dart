@@ -169,7 +169,9 @@ class CertificationQueueService {
     return queue.copyWith(
       pendingCertifications: updatedCertifications,
       nextIssuableOn: nextIssuableBlock,
-      lastUpdated: DateTime.now(),
+      // Do NOT update lastUpdated here - this is an internal recalculation,
+      // not a user action. Updating lastUpdated would make local always appear
+      // newer than remote, breaking CesiumPlus sync.
     );
   }
 }

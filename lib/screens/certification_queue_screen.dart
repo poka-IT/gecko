@@ -30,6 +30,15 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
   bool _isSyncing = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Pull remote queue on screen open (non-blocking, updates UI if remote is newer)
+    Future.microtask(() {
+      ref.read(certificationQueueProvider(widget.issuerAddress).notifier).pullFromRemote();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final queueAsync = ref.watch(certificationQueueProvider(widget.issuerAddress));
 
@@ -416,8 +425,8 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
         issuerAddress: identityWallet.address,
         targetAddress: cert.receiverAddress,
         onBeforeNavigate: () async {
-          // Remove from queue after successful certification start
-          await queueNotifier.removeFromQueue(cert.id);
+          // Remove from queue with optimistic cooldown update
+          await queueNotifier.removeExecutedCertification(cert.id);
           // Sync to CesiumPlus (we already have the PIN)
           await _syncToRemoteWithRefs(walletService, queueNotifier);
         },

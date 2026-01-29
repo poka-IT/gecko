@@ -95,8 +95,8 @@ class ExecuteQueuedButton extends ConsumerWidget {
         issuerAddress: issuerAddress,
         targetAddress: address,
         onBeforeNavigate: () async {
-          // Remove from queue after successful certification start
-          await queueNotifier.removeFromQueue(pendingCert.id);
+          // Remove from queue with optimistic cooldown update
+          await queueNotifier.removeExecutedCertification(pendingCert.id);
           // Sync to CesiumPlus (we already have the PIN)
           await _syncToRemote(walletService, queueNotifier);
         },

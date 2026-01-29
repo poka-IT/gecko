@@ -214,7 +214,9 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     return queue;
   }
 
-  /// Update the expected dates in the queue based on current blockchain state
+  /// Update the expected dates in the queue based on current blockchain state.
+  /// Uses the greater of blockchain's nextIssuableOn and the queue's local value
+  /// to avoid overwriting an optimistic update after a cert execution.
   Future<d.CertificationQueueState> _updateQueueDates(d.CertificationQueueState queue) async {
     try {
       final storageService = ref.read(storageServiceProvider);
@@ -223,11 +225,25 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       final genesisTime = await storageService.getGenesisBlockchainTime();
       final certPeriodBlocks = storageService.getCertPeriodBlocks();
 
+      // Use the greater of blockchain and local optimistic nextIssuableOn.
+      // After executing a cert, the local value is set optimistically to
+      // currentBlock + certPeriod. The blockchain won't reflect this until
+      // the TX is finalized. Taking the max prevents stale blockchain data
+      // from overwriting the optimistic value.
+      final blockchainNext = certData.nextIssuableOn;
+      final localNext = queue.nextIssuableOn;
+      int? effectiveNext;
+      if (blockchainNext != null && localNext != null) {
+        effectiveNext = blockchainNext > localNext ? blockchainNext : localNext;
+      } else {
+        effectiveNext = blockchainNext ?? localNext;
+      }
+
       return CertificationQueueService.updateExpectedDates(
         queue: queue,
         certPeriodBlocks: certPeriodBlocks,
         currentBlockNumber: currentBlock,
-        nextIssuableBlock: certData.nextIssuableOn,
+        nextIssuableBlock: effectiveNext,
         genesisTime: genesisTime,
       );
     } catch (e) {
@@ -267,12 +283,11 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     await CertificationQueueService.saveQueue(updatedQueue);
   }
 
-  /// Sync with CesiumPlus - PULL remote data first, then merge
+  /// Sync with CesiumPlus - at startup, remote is the source of truth
   Future<void> _syncWithCesiumPlus() async {
     log.d('🔄 [CertQueueSync] ====== STARTING SYNC for $issuerAddress ======');
 
     try {
-      final cesiumPlus = ref.read(cesiumPlusServiceProvider);
       final durt = ref.read(durtProvider);
 
       // Wait for Duniter to be connected (up to 10 seconds)
@@ -289,6 +304,23 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         }
         log.d('🔄 [CertQueueSync] Duniter connected after ${attempts * 500}ms');
       }
+
+      // Wait for CesiumPlus (datapod) to be initialized (up to 15 seconds)
+      if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
+        log.d('🔄 [CertQueueSync] Waiting for CesiumPlus initialization...');
+        int attempts = 0;
+        while (durt.datapodConnectionStatus != d.ConnectionStatus.connected && attempts < 30) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          attempts++;
+        }
+        if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
+          log.w('🔄 [CertQueueSync] CesiumPlus not initialized after 15s, skipping sync');
+          return;
+        }
+        log.d('🔄 [CertQueueSync] CesiumPlus initialized after ${attempts * 500}ms');
+      }
+
+      final cesiumPlus = ref.read(cesiumPlusServiceProvider);
 
       // 1. PULL: Fetch remote queue from CesiumPlus
       log.d('🔄 [CertQueueSync] Step 1: Fetching remote queue from CesiumPlus...');
@@ -309,60 +341,38 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         // Continue with local-only mode
       }
 
-      // 2. Get current local state
-      final localQueue = state.value;
-      log.d(
-        '🔄 [CertQueueSync] Local queue: ${localQueue?.queueLength ?? 0} items, '
-        'lastUpdated: ${localQueue?.lastUpdated}, isSynced: ${localQueue?.isSynced}',
-      );
+      // 2. Determine the final queue state
+      // At startup, remote is the source of truth - always use remote if it exists
+      d.CertificationQueueState? finalQueue;
 
-      // 3. MERGE: Determine which queue to use (last-write-wins)
-      d.CertificationQueueState? mergedQueue;
-
-      if (remoteQueue == null && localQueue == null) {
-        log.d('🔄 [CertQueueSync] Both queues null, nothing to sync');
-        return;
-      } else if (remoteQueue == null) {
-        // Only local exists - use local, mark as needing sync
-        log.d('🔄 [CertQueueSync] Only local queue exists, will need to push');
-        mergedQueue = localQueue!.copyWith(isSynced: localQueue.isEmpty);
-      } else if (localQueue == null || localQueue.isEmpty) {
-        // Only remote exists or local is empty - use remote
-        log.d('🔄 [CertQueueSync] Using remote queue (local empty or null)');
-        mergedQueue = await _updateQueueDates(remoteQueue);
-        mergedQueue = mergedQueue.copyWith(isSynced: true);
+      if (remoteQueue != null) {
+        // Remote exists - use it as the source of truth
+        log.d('🔄 [CertQueueSync] Using remote queue as source of truth');
+        finalQueue = await _updateQueueDates(remoteQueue);
+        finalQueue = finalQueue.copyWith(isSynced: true);
       } else {
-        // Both exist - use last-write-wins
-        log.d(
-          '🔄 [CertQueueSync] Both queues exist. '
-          'Remote: ${remoteQueue.lastUpdated}, Local: ${localQueue.lastUpdated}',
-        );
-
-        if (remoteQueue.lastUpdated.isAfter(localQueue.lastUpdated)) {
-          log.d('🔄 [CertQueueSync] Remote is NEWER, using remote queue');
-          mergedQueue = await _updateQueueDates(remoteQueue);
-          mergedQueue = mergedQueue.copyWith(isSynced: true);
-        } else if (localQueue.lastUpdated.isAfter(remoteQueue.lastUpdated)) {
-          log.d('🔄 [CertQueueSync] Local is NEWER, keeping local (needs push)');
-          mergedQueue = localQueue.copyWith(isSynced: false);
+        // No remote - keep local if it exists
+        final localQueue = state.value;
+        if (localQueue != null && !localQueue.isEmpty) {
+          log.d('🔄 [CertQueueSync] No remote queue, keeping local (needs push)');
+          finalQueue = localQueue.copyWith(isSynced: false);
         } else {
-          log.d('🔄 [CertQueueSync] Timestamps equal, marking as synced');
-          mergedQueue = localQueue.copyWith(isSynced: true);
+          log.d('🔄 [CertQueueSync] No remote or local queue, nothing to sync');
+          return;
         }
       }
 
-      // 4. Update state and save locally
-      // Note: mergedQueue is guaranteed to be non-null here because we return early if both queues are null
-      state = AsyncValue.data(mergedQueue);
-      await CertificationQueueService.saveQueue(mergedQueue);
+      // 3. Update state and save locally
+      state = AsyncValue.data(finalQueue);
+      await CertificationQueueService.saveQueue(finalQueue);
       log.d(
-        '🔄 [CertQueueSync] Sync complete. Final state: ${mergedQueue.queueLength} items, '
-        'isSynced: ${mergedQueue.isSynced}',
+        '🔄 [CertQueueSync] Sync complete. Final state: ${finalQueue.queueLength} items, '
+        'isSynced: ${finalQueue.isSynced}',
       );
 
-      // 5. Check and notify if any certification is ready immediately after sync
-      if (mergedQueue.hasReadyCertification) {
-        final readyCert = mergedQueue.nextReadyCertification;
+      // 4. Check and notify if any certification is ready immediately after sync
+      if (finalQueue.hasReadyCertification) {
+        final readyCert = finalQueue.nextReadyCertification;
         if (readyCert != null) {
           log.d('🔔 [CertQueueSync] Certification ready after sync for ${readyCert.receiverAddress}');
           ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).notify(readyCert);
@@ -528,6 +538,64 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     log.d('➖ [CertQueueRemove] Removed. Queue now has ${newQueue.queueLength} items');
   }
 
+  /// Remove a certification that was just executed.
+  /// Optimistically updates nextIssuableOn so remaining items get correct future dates
+  /// and the next cert is NOT falsely marked as "ready".
+  Future<void> removeExecutedCertification(String certificationId) async {
+    log.d('✅ [CertQueueExecuted] Removing executed certification $certificationId');
+
+    final currentQueue = state.value;
+    if (currentQueue == null) return;
+
+    final newCertifications = currentQueue.pendingCertifications.where((c) => c.id != certificationId).toList();
+
+    // Update positions
+    for (var i = 0; i < newCertifications.length; i++) {
+      newCertifications[i] = newCertifications[i].copyWith(position: i + 1);
+    }
+
+    // Optimistically compute the new nextIssuableOn:
+    // A certification was just executed, so the issuer's cooldown resets to currentBlock + certPeriod
+    try {
+      final storageService = ref.read(storageServiceProvider);
+      final currentBlock = await storageService.getCurrentBlockHeight();
+      final certPeriodBlocks = storageService.getCertPeriodBlocks();
+      final optimisticNextIssuable = currentBlock + certPeriodBlocks;
+
+      log.d(
+        '✅ [CertQueueExecuted] Optimistic nextIssuableOn: $optimisticNextIssuable '
+        '(current: $currentBlock + period: $certPeriodBlocks)',
+      );
+
+      var newQueue = currentQueue.copyWith(
+        pendingCertifications: newCertifications,
+        nextIssuableOn: optimisticNextIssuable,
+        lastUpdated: DateTime.now(),
+        isSynced: false,
+      );
+
+      // Recalculate dates using the optimistic nextIssuableOn
+      final genesisTime = await storageService.getGenesisBlockchainTime();
+      newQueue = CertificationQueueService.updateExpectedDates(
+        queue: newQueue,
+        certPeriodBlocks: certPeriodBlocks,
+        currentBlockNumber: currentBlock,
+        nextIssuableBlock: optimisticNextIssuable,
+        genesisTime: genesisTime,
+      );
+      // Preserve lastUpdated and isSynced (updateExpectedDates doesn't touch them)
+      newQueue = newQueue.copyWith(lastUpdated: DateTime.now(), isSynced: false);
+
+      state = AsyncValue.data(newQueue);
+      await CertificationQueueService.saveQueue(newQueue);
+
+      log.d('✅ [CertQueueExecuted] Removed. Queue now has ${newQueue.queueLength} items');
+    } catch (e) {
+      log.e('✅ [CertQueueExecuted] Error computing optimistic dates, falling back to removeFromQueue: $e');
+      await removeFromQueue(certificationId);
+    }
+  }
+
   /// Remove a certification by receiver address
   Future<void> removeByAddress(String receiverAddress) async {
     final currentQueue = state.value;
@@ -573,6 +641,59 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     await CertificationQueueService.saveQueue(newQueue);
 
     log.d('🔀 [CertQueueReorder] Reorder complete');
+  }
+
+  /// Pull the remote queue from CesiumPlus and update local state if remote is newer.
+  /// This is a read-only operation (no PIN required).
+  /// Returns true if the local state was updated from remote.
+  Future<bool> pullFromRemote() async {
+    log.d('⬇️ [CertQueuePull] Pulling remote queue for $issuerAddress');
+
+    try {
+      final durt = ref.read(durtProvider);
+
+      // Skip if CesiumPlus is not ready (don't block, just skip)
+      if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
+        log.d('⬇️ [CertQueuePull] CesiumPlus not connected, skipping pull');
+        return false;
+      }
+
+      final cesiumPlus = ref.read(cesiumPlusServiceProvider);
+      final remoteQueue = await cesiumPlus.getCertificationQueue(issuerAddress);
+
+      if (remoteQueue == null) {
+        log.d('⬇️ [CertQueuePull] No remote queue found');
+        return false;
+      }
+
+      // Compare lastUpdated timestamps to decide if update is needed
+      final localQueue = state.value;
+      if (localQueue != null && !localQueue.lastUpdated.isBefore(remoteQueue.lastUpdated)) {
+        log.d(
+          '⬇️ [CertQueuePull] Local is up-to-date '
+          '(local: ${localQueue.lastUpdated}, remote: ${remoteQueue.lastUpdated})',
+        );
+        return false;
+      }
+
+      log.d(
+        '⬇️ [CertQueuePull] Remote is newer '
+        '(local: ${localQueue?.lastUpdated}, remote: ${remoteQueue.lastUpdated}), updating...',
+      );
+
+      // Remote is newer — use it
+      var finalQueue = await _updateQueueDates(remoteQueue);
+      finalQueue = finalQueue.copyWith(isSynced: true);
+
+      state = AsyncValue.data(finalQueue);
+      await CertificationQueueService.saveQueue(finalQueue);
+
+      log.d('⬇️ [CertQueuePull] Updated from remote: ${finalQueue.queueLength} items');
+      return true;
+    } catch (e) {
+      log.e('⬇️ [CertQueuePull] Error: $e');
+      return false;
+    }
   }
 
   /// Force refresh the queue (re-sync from remote)

@@ -123,6 +123,14 @@ String padLine(String content) {
   return content + ' ' * padding;
 }
 
+/// Parse a timestamp that can be either Unix ms (int) or ISO8601 (String)
+DateTime? parseTimestamp(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+  if (value is String) return DateTime.tryParse(value);
+  return null;
+}
+
 /// Print certification queue in a nice format
 void printCertificationQueue(Map<String, dynamic> queueJson, String address) {
   print('');
@@ -136,14 +144,8 @@ void printCertificationQueue(Map<String, dynamic> queueJson, String address) {
     print('║ ${padLine('Issuer:  $issuerAddress')}║');
   }
 
-  final lastUpdated = queueJson['lastUpdated'] != null
-      ? DateTime.parse(queueJson['lastUpdated'] as String)
-      : null;
+  final lastUpdated = parseTimestamp(queueJson['lastUpdated']);
   print('║ ${padLine('Mise à jour: ${formatDateTime(lastUpdated)}')}║');
-
-  final isSynced = queueJson['isSynced'] as bool? ?? false;
-  final syncStatus = isSynced ? '✓ Synchronisé' : '⚠ Non synchronisé';
-  print('║ ${padLine('Statut: $syncStatus')}║');
 
   print('╠══════════════════════════════════════════════════════════════════╣');
 
@@ -163,12 +165,8 @@ void printCertificationQueue(Map<String, dynamic> queueJson, String address) {
       final receiverName = cert['receiverName'] as String?;
       final receiverUid = cert['receiverUid'] as String?;
       final certType = cert['certType'] as String? ?? 'certification';
-      final addedAt = cert['addedAt'] != null
-          ? DateTime.parse(cert['addedAt'] as String)
-          : null;
-      final expectedDate = cert['expectedAvailableDate'] != null
-          ? DateTime.parse(cert['expectedAvailableDate'] as String)
-          : null;
+      final addedAt = parseTimestamp(cert['addedAt']);
+      final expectedDate = parseTimestamp(cert['expectedAvailableDate']);
 
       // Check if ready
       final isReady = expectedDate != null && DateTime.now().isAfter(expectedDate);
@@ -263,9 +261,8 @@ void main(List<String> args) async {
     exit(0);
   }
 
-  // Check for certification queue in settings
-  final settings = profile['settings'] as Map<String, dynamic>?;
-  final certQueue = settings?['certificationQueue'] as Map<String, dynamic>?;
+  // Check for certification queue at profile root level
+  final certQueue = profile['certificationQueue'] as Map<String, dynamic>?;
 
   if (certQueue == null) {
     print('');

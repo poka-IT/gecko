@@ -180,8 +180,8 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
         issuerAddress: issuerAddress,
         targetAddress: pendingCert.receiverAddress,
         onBeforeNavigate: () async {
-          // Remove from queue after successful certification start
-          await queueNotifier.removeFromQueue(pendingCert.id);
+          // Remove from queue with optimistic cooldown update
+          await queueNotifier.removeExecutedCertification(pendingCert.id);
           // Sync to CesiumPlus (we already have the PIN)
           await _syncToRemote(walletService, queueNotifier, issuerAddress);
         },

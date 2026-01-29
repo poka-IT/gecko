@@ -735,5 +735,9 @@
     "queueNotSyncedConfirm": "The queue is not synced with the server.\n\nDo you want to sync now?",
     "queueSynced": "Queue synced successfully",
     "syncFailed": "Sync failed",
-    "noIdentityWallet": "No member wallet found"
+    "noIdentityWallet": "No member wallet found",
+    "identityMigratedWarningMessage": "Your identity **{}** has been migrated to another wallet (**{}**) from another application.",
+    "identityMigratedWarningExplanation": "This wallet no longer contains an identity. To recover your identity, you need to import the recovery phrase of your new wallet.",
+    "forgetAndImportNewMnemonic": "Forget this wallet and import my new recovery phrase",
+    "ignoreMigrationWarning": "Ignore this warning"
 }

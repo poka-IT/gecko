@@ -33,6 +33,7 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
+import 'package:gecko/widgets/migration_alert_card.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated}) : super(key: keyMyWallets);
@@ -86,6 +87,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 defaultImagePath: widget.wallet.imagePath,
               ),
             ),
+            // Migration alert (shown when identity was migrated away)
+            SliverToBoxAdapter(child: MigrationAlertCard(address: widget.wallet.address)),
             // Content as a sliver with proper padding
             SliverToBoxAdapter(
               child: Padding(

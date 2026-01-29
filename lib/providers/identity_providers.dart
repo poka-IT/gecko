@@ -6,6 +6,20 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
+/// Notifier to track whether the user has dismissed the migration warning for a given address.
+/// Resets on app restart, so the warning will reappear next session.
+class IgnoreMigrationWarningNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void ignore() => state = true;
+}
+
+/// Provider to track migration warning dismissal per address
+final ignoreMigrationWarningProvider = NotifierProvider.family<IgnoreMigrationWarningNotifier, bool, String>(
+  (_) => IgnoreMigrationWarningNotifier(),
+);
+
 /// Provides migration data for identities that migrated FROM this address using Squid
 final migrationFromDataProvider = FutureProvider.family<MigrationData?, String>((ref, address) async {
   try {

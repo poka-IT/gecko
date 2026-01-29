@@ -740,5 +740,9 @@
     "queueNotSyncedConfirm": "La file n'est pas synchronisée avec le serveur.\n\nVoulez-vous synchroniser maintenant ?",
     "queueSynced": "File synchronisée avec succès",
     "syncFailed": "Échec de la synchronisation",
-    "noIdentityWallet": "Aucun portefeuille membre trouvé"
+    "noIdentityWallet": "Aucun portefeuille membre trouvé",
+    "identityMigratedWarningMessage": "Votre identité **{}** a été migrée vers un autre portefeuille (**{}**) depuis une autre application.",
+    "identityMigratedWarningExplanation": "Ce portefeuille ne contient plus d'identité. Pour retrouver votre identité, vous devez importer la phrase de restauration de votre nouveau portefeuille.",
+    "forgetAndImportNewMnemonic": "Oublier ce portefeuille et importer ma nouvelle phrase de restauration",
+    "ignoreMigrationWarning": "Ignorer cet avertissement"
 }

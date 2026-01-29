@@ -702,5 +702,9 @@
     "insufficientBalance": "Saldo insufficiente",
     "cannotSendToYourself": "Non puoi inviare a te stesso",
     "minimumAmountRequired": "Minimo {} richiesto per questo conto",
-    "invalidAmount": "Importo non valido"
+    "invalidAmount": "Importo non valido",
+    "identityMigratedWarningMessage": "La tua identità **{}** è stata migrata verso un altro portafoglio (**{}**) da un'altra applicazione.",
+    "identityMigratedWarningExplanation": "Questo portafoglio non contiene più un'identità. Per recuperare la tua identità, devi importare la frase di ripristino del tuo nuovo portafoglio.",
+    "forgetAndImportNewMnemonic": "Dimentica questo portafoglio e importa la mia nuova frase di ripristino",
+    "ignoreMigrationWarning": "Ignora questo avviso"
 }

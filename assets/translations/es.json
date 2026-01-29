@@ -702,5 +702,9 @@
     "insufficientBalance": "Saldo insuficiente",
     "cannotSendToYourself": "No puedes enviarte a ti mismo",
     "minimumAmountRequired": "Mínimo {} requerido para esta cuenta",
-    "invalidAmount": "Monto inválido"
+    "invalidAmount": "Monto inválido",
+    "identityMigratedWarningMessage": "Tu identidad **{}** ha sido migrada a otro monedero (**{}**) desde otra aplicación.",
+    "identityMigratedWarningExplanation": "Este monedero ya no contiene una identidad. Para recuperar tu identidad, debes importar la frase semilla de tu nuevo monedero.",
+    "forgetAndImportNewMnemonic": "Olvidar este monedero e importar mi nueva frase semilla",
+    "ignoreMigrationWarning": "Ignorar esta advertencia"
 }

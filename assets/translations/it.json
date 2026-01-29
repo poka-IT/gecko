@@ -405,6 +405,7 @@
     "biometricAuthDescription": "Proteggi la tua cassaforte con l'autenticazione biometrica per un accesso rapido e sicuro.",
     "availableMethods": "Metodi disponibili:",
     "biometricSecurityNote": "Il tuo PIN sarà crittografato e memorizzato in modo sicuro sul tuo dispositivo",
+    "biometricEnabled": "Autenticazione biometrica abilitata",
     "biometricEnabledSuccess": "Autenticazione biometrica abilitata con successo",
     "biometricEnableFailed": "Impossibile abilitare l'autenticazione biometrica",
     "biometricAuth": "Autenticazione biometrica",
@@ -706,5 +707,11 @@
     "identityMigratedWarningMessage": "La tua identità **{}** è stata migrata verso un altro portafoglio (**{}**) da un'altra applicazione.",
     "identityMigratedWarningExplanation": "Questo portafoglio non contiene più un'identità. Per recuperare la tua identità, devi importare la frase di ripristino del tuo nuovo portafoglio.",
     "forgetAndImportNewMnemonic": "Dimentica questo portafoglio e importa la mia nuova frase di ripristino",
-    "ignoreMigrationWarning": "Ignora questo avviso"
+    "ignoreMigrationWarning": "Ignora questo avviso",
+    "mnemonicVerification": "Verifica della frase",
+    "enterTwoWordsToConfirm": "Per confermare, inserisci 2 parole della tua frase di ripristino.",
+    "typeWordNumber": "Digita la parola n°{}",
+    "wordNofMnemonic": "Inserisci la parola...",
+    "correctWord": "Corretto!",
+    "mnemonicVerificationFailed": "Impossibile caricare la frase di ripristino. Riprova."
 }

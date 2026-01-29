@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
+import 'package:gecko/widgets/bottom_sheets/mnemonic_challenge_sheet.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -537,6 +538,14 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                                         if (confirmed != true) return;
 
                                         if (!await PinCodeService.askPinCode()) return;
+
+                                        if (!await showMnemonicChallenge(
+                                          context: context,
+                                          ref: ref,
+                                          address: selectedWallet.address,
+                                        )) {
+                                          return;
+                                        }
 
                                         final transactionStream = _performG1v1Migration(
                                           salt: saltController.text,

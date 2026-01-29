@@ -137,5 +137,12 @@
     "cannotSendToYourself": "Sie können nicht an sich selbst senden",
     "minimumAmountRequired": "Mindestens {} für dieses Konto erforderlich",
     "invalidAmount": "Ungültiger Betrag",
-    "certificationExpiresIn": "Läuft in {} Tagen ab"
+    "certificationExpiresIn": "Läuft in {} Tagen ab",
+    "mnemonicVerification": "Phrasenüberprüfung",
+    "enterTwoWordsToConfirm": "Zur Bestätigung geben Sie 2 Wörter Ihrer Wiederherstellungsphrase ein.",
+    "typeWordNumber": "Geben Sie Wort Nr. {} ein",
+    "wordNofMnemonic": "Wort eingeben...",
+    "correctWord": "Richtig!",
+    "mnemonicVerificationFailed": "Ihre Wiederherstellungsphrase konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "biometricEnabled": "Biometrische Authentifizierung aktiviert"
 }

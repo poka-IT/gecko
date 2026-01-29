@@ -14,6 +14,7 @@ import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/widgets/bottom_sheets/mnemonic_challenge_sheet.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 
@@ -100,6 +101,8 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     if (confirmed != true) return;
 
     if (!await PinCodeService.askPinCode()) return;
+
+    if (!await showMnemonicChallenge(context: context, ref: ref, address: widget.address)) return;
 
     final keypair = await ref
         .read(walletServiceProvider)

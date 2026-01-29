@@ -490,6 +490,7 @@
     "biometricAuthDescription": "Securiza tu bóveda con la autenticación biométrica para un acceso rápido y seguro.",
     "availableMethods": "Métodos disponibles:",
     "biometricSecurityNote": "Tu PIN será cifrado y almacenado de forma segura en tu dispositivo",
+    "biometricEnabled": "Autenticación biométrica activada",
     "biometricEnabledSuccess": "Autenticación biométrica activada exitosamente",
     "biometricEnableFailed": "Error al activar la autenticación biométrica",
     "biometricAuth": "Autenticación biométrica",
@@ -706,5 +707,11 @@
     "identityMigratedWarningMessage": "Tu identidad **{}** ha sido migrada a otro monedero (**{}**) desde otra aplicación.",
     "identityMigratedWarningExplanation": "Este monedero ya no contiene una identidad. Para recuperar tu identidad, debes importar la frase semilla de tu nuevo monedero.",
     "forgetAndImportNewMnemonic": "Olvidar este monedero e importar mi nueva frase semilla",
-    "ignoreMigrationWarning": "Ignorar esta advertencia"
+    "ignoreMigrationWarning": "Ignorar esta advertencia",
+    "mnemonicVerification": "Verificación de la frase",
+    "enterTwoWordsToConfirm": "Para confirmar, introduzca 2 palabras de su frase de recuperación.",
+    "typeWordNumber": "Escriba la palabra n°{}",
+    "wordNofMnemonic": "Introduzca la palabra...",
+    "correctWord": "¡Correcto!",
+    "mnemonicVerificationFailed": "No se pudo cargar su frase de recuperación. Por favor, inténtelo de nuevo."
 }

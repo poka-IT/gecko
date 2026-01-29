@@ -482,6 +482,7 @@
     "biometricAuthDescription": "Use your fingerprint, face, or other biometric authentication to quickly and securely unlock your safe.",
     "availableMethods": "Available methods:",
     "biometricSecurityNote": "Your PIN will be encrypted and securely stored on your device",
+    "biometricEnabled": "Biometric authentication enabled",
     "biometricEnabledSuccess": "Biometric authentication enabled successfully",
     "biometricEnableFailed": "Failed to enable biometric authentication",
     "biometricAuth": "Biometric Authentication",
@@ -739,5 +740,11 @@
     "identityMigratedWarningMessage": "Your identity **{}** has been migrated to another wallet (**{}**) from another application.",
     "identityMigratedWarningExplanation": "This wallet no longer contains an identity. To recover your identity, you need to import the recovery phrase of your new wallet.",
     "forgetAndImportNewMnemonic": "Forget this wallet and import my new recovery phrase",
-    "ignoreMigrationWarning": "Ignore this warning"
+    "ignoreMigrationWarning": "Ignore this warning",
+    "mnemonicVerification": "Mnemonic Verification",
+    "enterTwoWordsToConfirm": "To confirm, enter 2 words from your recovery phrase.",
+    "typeWordNumber": "Type word #{}",
+    "wordNofMnemonic": "Enter the word...",
+    "correctWord": "Correct!",
+    "mnemonicVerificationFailed": "Failed to load your recovery phrase. Please try again."
 }

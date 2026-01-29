@@ -115,3 +115,9 @@ Key keyOpenWallet(String address) => ValueKey('keyOpenWallet$address');
 Key keySelectThisWallet(String address) => ValueKey('keySelectThisWallet$address');
 
 const keyRenewMembership = Key('renewMembership');
+
+// Mnemonic challenge
+const keyMnemonicChallengeInput = Key('keyMnemonicChallengeInput');
+const keyMnemonicChallengeConfirm = Key('keyMnemonicChallengeConfirm');
+const keyMnemonicChallengeClose = Key('keyMnemonicChallengeClose');
+Key keyMnemonicChallengeChip(int wordNumber) => ValueKey('keyMnemonicChallengeChip$wordNumber');

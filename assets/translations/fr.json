@@ -492,6 +492,7 @@
     "biometricAuthDescription": "Sécurisez votre coffre avec l'authentification biométrique pour un accès rapide et sécurisé.",
     "availableMethods": "Méthodes disponibles :",
     "biometricSecurityNote": "Votre code PIN sera chiffré et stocké en sécurité sur votre appareil",
+    "biometricEnabled": "Authentification biométrique activée",
     "biometricEnabledSuccess": "Authentification biométrique activée avec succès",
     "biometricEnableFailed": "Échec de l'activation de l'authentification biométrique",
     "biometricAuth": "Authentification biométrique",
@@ -744,5 +745,11 @@
     "identityMigratedWarningMessage": "Votre identité **{}** a été migrée vers un autre portefeuille (**{}**) depuis une autre application.",
     "identityMigratedWarningExplanation": "Ce portefeuille ne contient plus d'identité. Pour retrouver votre identité, vous devez importer la phrase de restauration de votre nouveau portefeuille.",
     "forgetAndImportNewMnemonic": "Oublier ce portefeuille et importer ma nouvelle phrase de restauration",
-    "ignoreMigrationWarning": "Ignorer cet avertissement"
+    "ignoreMigrationWarning": "Ignorer cet avertissement",
+    "mnemonicVerification": "Vérification de la phrase",
+    "enterTwoWordsToConfirm": "Pour confirmer, entrez 2 mots de votre phrase de restauration.",
+    "typeWordNumber": "Tapez le mot n°{}",
+    "wordNofMnemonic": "Entrez le mot...",
+    "correctWord": "Correct !",
+    "mnemonicVerificationFailed": "Impossible de charger votre phrase de restauration. Veuillez réessayer."
 }

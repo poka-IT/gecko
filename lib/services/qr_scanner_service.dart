@@ -138,10 +138,14 @@ class QrScannerService {
 
     // For mobile platforms, use the barcode_scan2 plugin
     if (Platform.isAndroid || Platform.isIOS) {
-      // Request camera permission on both Android and iOS
-      final permissionStatus = await Permission.camera.request();
-      if (!permissionStatus.isGranted) {
-        return QrScanResult.error('Camera permission denied: ${permissionStatus.toString()}');
+      // Request camera permission on Android platforms only.
+      // On iOS, barcode_scan2 handles its own native permission dialog —
+      // permission_handler can report incorrect status on iOS.
+      if (Platform.isAndroid) {
+        final permissionStatus = await Permission.camera.request();
+        if (!permissionStatus.isGranted) {
+          return QrScanResult.error('Camera permission denied: ${permissionStatus.toString()}');
+        }
       }
 
       try {

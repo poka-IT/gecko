@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt;
+import 'dart:isolate';
+import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt, Address, Keyring, KeyPairType;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,37 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/services/mnemonic_service.dart';
+
+/// Arguments for keypair generation in an isolate.
+class _KeypairGenerationArgs {
+  final String mnemonic;
+  final List<int> derivations;
+  final KeyPairType keyPairType;
+  final int ss58Prefix;
+
+  const _KeypairGenerationArgs({
+    required this.mnemonic,
+    required this.derivations,
+    required this.keyPairType,
+    required this.ss58Prefix,
+  });
+}
+
+/// Top-level function that generates addresses from a mnemonic in a separate isolate.
+/// Only returns addresses (String) since DurtKeyPair is not serializable across isolates.
+Future<List<KeypairResult>> _generateKeypairsInIsolate(_KeypairGenerationArgs args) async {
+  final keyring = Keyring();
+  final results = <KeypairResult>[];
+
+  for (final derivation in args.derivations) {
+    final uri = "${args.mnemonic}//$derivation";
+    final kp = await keyring.fromUri(uri, keyPairType: args.keyPairType);
+    final address = Address.decode(kp.address).encode(prefix: args.ss58Prefix);
+    results.add(KeypairResult(address: address, derivation: derivation));
+  }
+
+  return results;
+}
 
 /// Service for scanning wallet derivations and importing wallets.
 ///
@@ -64,14 +96,16 @@ class WalletScanService {
       onWalletCountChanged(scannedWalletCount);
     }
 
-    // 2. GENERATE DERIVATION KEYPAIRS
+    // 2. GENERATE DERIVATION KEYPAIRS (in a separate isolate to avoid blocking UI)
     onStatusChanged(WalletScanStatus.generatingKeypairs);
     final derivationNumbers = [for (var i = 0; i < maxDerivations; i += 1) i];
-    final keypairFutures = derivationNumbers
-        .map((derivationNbr) => _generateKeypair(mnemonicResult.englishMnemonic, derivationNbr))
-        .toList();
-
-    final keypairResults = await Future.wait(keypairFutures);
+    final args = _KeypairGenerationArgs(
+      mnemonic: mnemonicResult.englishMnemonic,
+      derivations: derivationNumbers,
+      keyPairType: Durt.defaultKeyPairType,
+      ss58Prefix: Durt.i.network.ss58,
+    );
+    final keypairResults = await Isolate.run(() => _generateKeypairsInIsolate(args));
     for (final entry in keypairResults) {
       addressToDerivation.putIfAbsent(entry.address, () => entry.derivation);
     }
@@ -148,13 +182,6 @@ class WalletScanService {
       log.e('Error scanning root wallet: $e');
       return RootScanResult(address: '', hasBalance: false);
     }
-  }
-
-  Future<KeypairResult> _generateKeypair(String englishMnemonic, int derivation) async {
-    final keypair = await _ref
-        .read(walletServiceProvider)
-        .getKeyPairFromMnemonic(englishMnemonic, derivation: derivation, keyPairType: Durt.defaultKeyPairType);
-    return KeypairResult(address: keypair.address, derivation: derivation);
   }
 
   Future<DuplicateCheckResult> _checkForDuplicateAddresses({

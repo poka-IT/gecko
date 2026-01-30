@@ -749,5 +749,5 @@
     "mnemonicVerificationFailed": "Failed to load your recovery phrase. Please try again.",
     "showMore": "Show more",
     "showLess": "Show less",
-    "infiniteName": "Infinite Name"
+    "undefinedName": "Undefined name"
 }

@@ -754,5 +754,5 @@
     "mnemonicVerificationFailed": "Impossible de charger votre phrase de restauration. Veuillez réessayer.",
     "showMore": "Voir plus",
     "showLess": "Voir moins",
-    "infiniteName": "Nom infini"
+    "undefinedName": "Nom indéfini"
 }

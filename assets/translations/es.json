@@ -716,5 +716,5 @@
     "mnemonicVerificationFailed": "No se pudo cargar su frase de recuperación. Por favor, inténtelo de nuevo.",
     "showMore": "Ver más",
     "showLess": "Ver menos",
-    "infiniteName": "Nombre infinito"
+    "undefinedName": "Nombre indefinido"
 }

@@ -20,14 +20,14 @@ class IdentityUtils {
   /// Returns the translated "Infinite Name" placeholder if status is created,
   /// otherwise returns the original name.
   static String? getDisplayName(String? name, d.IdtyStatus? status) {
-    if (isCreatedStatus(status)) return 'infiniteName'.tr();
+    if (isCreatedStatus(status)) return 'undefinedName'.tr();
     return name;
   }
 
   /// Returns the translated "Infinite Name" placeholder if the squid indexer
   /// status string corresponds to created, otherwise returns the original name.
   static String getDisplayNameFromString(String name, String? status) {
-    if (isCreatedStatusString(status)) return 'infiniteName'.tr();
+    if (isCreatedStatusString(status)) return 'undefinedName'.tr();
     return name;
   }
 

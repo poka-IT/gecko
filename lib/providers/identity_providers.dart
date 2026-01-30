@@ -131,8 +131,8 @@ class HybridIdentityNameNotifier extends AsyncNotifier<String?> {
 
   void _startPeriodicRefresh(String address) {
     _refreshTimer?.cancel();
-    // Poll every 3 seconds to catch identity name changes after migrations
-    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+    // Poll every 10 seconds to catch identity name changes after migrations
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
       // Check Squid connection
       final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
       if (squidConnectionStatus != d.ConnectionStatus.connected) {

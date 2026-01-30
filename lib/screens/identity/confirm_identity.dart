@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,7 @@ import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/bottom_sheets/mnemonic_challenge_sheet.dart';
+import 'package:gecko/widgets/commons/async_elevated_button.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 
@@ -30,9 +33,11 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
   final TextEditingController _identityNameController = TextEditingController();
   bool _canValidate = false;
   String _errorMessage = '';
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _identityNameController.dispose();
     super.dispose();
   }
@@ -65,6 +70,8 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
     // In degraded mode (no Squid), only validate format
     final isValid = !idtyExist && hasNoSpaces && isLengthValid;
+
+    if (!mounted) return;
 
     setState(() {
       _canValidate = isValid;
@@ -230,7 +237,12 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                     TextField(
                       key: keyEnterIdentityUsername,
                       controller: _identityNameController,
-                      onChanged: (_) => _validateIdentityName(),
+                      onChanged: (_) {
+                        _debounceTimer?.cancel();
+                        _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+                          _validateIdentityName();
+                        });
+                      },
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) {
                         if (_canValidate) {
@@ -255,7 +267,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
                     SizedBox(
                       width: double.infinity,
                       height: scaleSize(isSmallScreen ? 44 : 50),
-                      child: ElevatedButton(
+                      child: AsyncElevatedButton(
                         key: keyConfirm,
                         onPressed: _canValidate ? () => _confirmIdentity(context) : null,
                         style: ElevatedButton.styleFrom(

@@ -60,77 +60,91 @@ class HistoryView extends StatelessWidget {
     list.insert(insertIndex, event);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  /// Builds a flat list of widgets (separators, migration markers, transaction tiles)
+  /// for use with SliverList.builder in the parent.
+  List<Widget> buildItems(BuildContext context) {
     final mergedTransactions = _getMergedTransactionList();
 
     if (mergedTransactions.isEmpty) {
-      return Column(
-        children: <Widget>[
-          ScaledSizedBox(height: 50),
-          Text("noTransactionToDisplay".tr(), style: scaledTextStyle(fontSize: 16)),
-        ],
-      );
+      return [
+        Column(
+          children: <Widget>[
+            ScaledSizedBox(height: 50),
+            Text("noTransactionToDisplay".tr(), style: scaledTextStyle(fontSize: 16)),
+          ],
+        ),
+      ];
     }
 
+    final items = <Widget>[];
     int keyID = 0;
     const double avatarSize = 50;
     bool isMigrationPassed = false;
     List<String> pastDelimiters = [];
 
-    return Column(
-      children: <Widget>[
-        Column(
-          children: mergedTransactions.map((transaction) {
-            keyID++;
-            pastDelimiters.add(transaction.dateDelimiter);
+    for (final transaction in mergedTransactions) {
+      keyID++;
+      pastDelimiters.add(transaction.dateDelimiter);
 
-            bool isMigrationTime = false;
-            if (transaction.isMigrationTime && !isMigrationPassed) {
-              isMigrationPassed = true;
-              isMigrationTime = true;
-            }
+      bool isMigrationTime = false;
+      if (transaction.isMigrationTime && !isMigrationPassed) {
+        isMigrationPassed = true;
+        isMigrationTime = true;
+      }
 
-            return Column(
-              children: <Widget>[
-                if (isMigrationTime)
-                  Padding(
-                    padding: EdgeInsets.only(top: scaleSize(25), bottom: scaleSize(15)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
-                        Text(
-                          'blockchainStart'.tr(),
-                          style: scaledTextStyle(fontSize: 19, color: Colors.blueAccent, fontWeight: FontWeight.w400),
-                        ),
-                        Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
-                      ],
-                    ),
-                  ),
-                if (pastDelimiters.length == 1 ||
-                    pastDelimiters.length >= 2 &&
-                        !(pastDelimiters[pastDelimiters.length - 2] == transaction.dateDelimiter))
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    child: Text(
-                      transaction.dateDelimiter,
-                      style: scaledTextStyle(
-                        fontSize: 19,
-                        color: context.colorScheme.primary,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ),
-                TransactionTile(keyID: keyID, avatarSize: avatarSize, transaction: transaction, context: context),
+      if (isMigrationTime) {
+        items.add(
+          Padding(
+            padding: EdgeInsets.only(top: scaleSize(25), bottom: scaleSize(15)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
+                Text(
+                  'blockchainStart'.tr(),
+                  style: scaledTextStyle(fontSize: 19, color: Colors.blueAccent, fontWeight: FontWeight.w400),
+                ),
+                Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
               ],
-            );
-          }).toList(),
-        ),
-        if (isLoadingMore && hasNextPage)
-          const Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[Loading(size: 30, stroke: 3)]),
-        if (!hasNextPage) HistoryEndIndicator(isFiltered: isFiltered),
-      ],
-    );
+            ),
+          ),
+        );
+      }
+
+      if (pastDelimiters.length == 1 ||
+          pastDelimiters.length >= 2 && !(pastDelimiters[pastDelimiters.length - 2] == transaction.dateDelimiter)) {
+        items.add(
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                transaction.dateDelimiter,
+                style: scaledTextStyle(fontSize: 19, color: context.colorScheme.primary, fontWeight: FontWeight.w300),
+              ),
+            ),
+          ),
+        );
+      }
+
+      items.add(TransactionTile(keyID: keyID, avatarSize: avatarSize, transaction: transaction, context: context));
+    }
+
+    // Append loading indicator or end indicator
+    if (isLoadingMore && hasNextPage) {
+      items.add(
+        const Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[Loading(size: 30, stroke: 3)]),
+      );
+    }
+    if (!hasNextPage) {
+      items.add(HistoryEndIndicator(isFiltered: isFiltered));
+    }
+
+    return items;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Fallback: wraps buildItems in a Column for backward compatibility
+    return Column(children: buildItems(context));
   }
 }

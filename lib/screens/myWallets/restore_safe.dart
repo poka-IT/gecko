@@ -11,6 +11,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/commons/async_elevated_button.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/mnemonic_scanner.dart';
@@ -103,7 +104,7 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                       alignment: Alignment.center,
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                        child: ElevatedButton(
+                        child: AsyncElevatedButton(
                           key: keyGoNext,
                           style:
                               ElevatedButton.styleFrom(

@@ -477,7 +477,7 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
 
   void _startPeriodicRefresh(String address) {
     _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
         final storageService = ref.read(storageServiceProvider);
         final newStatus = await storageService.getIdtyStatus(address);
@@ -585,8 +585,8 @@ class HybridCertificationNotifier extends AsyncNotifier<d.CertificationData> {
 
   void _startPeriodicRefresh(String address) {
     _refreshTimer?.cancel();
-    // Poll every 3 seconds to catch any missed updates
-    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+    // Poll every 10 seconds to catch any missed updates
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
       try {
         final storageService = ref.read(storageServiceProvider);
         final newCertData = await storageService.getCertsCounter(address);

@@ -293,31 +293,30 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       // Wait for Duniter to be connected (up to 10 seconds)
       if (!durt.isConnected) {
         log.d('🔄 [CertQueueSync] Waiting for Duniter connection...');
-        int attempts = 0;
-        while (!durt.isConnected && attempts < 20) {
-          await Future.delayed(const Duration(milliseconds: 500));
-          attempts++;
-        }
-        if (!durt.isConnected) {
+        try {
+          await durt.duniterConnectionStatusStream
+              .firstWhere((status) => status == d.ConnectionStatus.connected)
+              .timeout(const Duration(seconds: 10));
+          log.d('🔄 [CertQueueSync] Duniter connected');
+        } on TimeoutException {
           log.w('🔄 [CertQueueSync] Duniter not connected after 10s, skipping sync');
           return;
         }
-        log.d('🔄 [CertQueueSync] Duniter connected after ${attempts * 500}ms');
       }
 
       // Wait for CesiumPlus (datapod) to be initialized (up to 15 seconds)
       if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
         log.d('🔄 [CertQueueSync] Waiting for CesiumPlus initialization...');
         int attempts = 0;
-        while (durt.datapodConnectionStatus != d.ConnectionStatus.connected && attempts < 30) {
-          await Future.delayed(const Duration(milliseconds: 500));
+        while (durt.datapodConnectionStatus != d.ConnectionStatus.connected && attempts < 15) {
+          await Future.delayed(const Duration(seconds: 1));
           attempts++;
         }
         if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
           log.w('🔄 [CertQueueSync] CesiumPlus not initialized after 15s, skipping sync');
           return;
         }
-        log.d('🔄 [CertQueueSync] CesiumPlus initialized after ${attempts * 500}ms');
+        log.d('🔄 [CertQueueSync] CesiumPlus initialized after ${attempts}s');
       }
 
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);

@@ -594,8 +594,9 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
   Future<void> _migrateToNewSafeSimplified(BuildContext context, WidgetRef ref) async {
     try {
-      // Check identity status of the legacy wallet
-      final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(widget.wallet.address);
+      // Check identity status of the legacy wallet (use cached provider)
+      final idtyStatusAsync = ref.read(hybridIdtyStatusProvider(widget.wallet.address));
+      final idtyStatus = idtyStatusAsync.value ?? IdtyStatus.none;
       final hasIdentity = idtyStatus != IdtyStatus.none && idtyStatus != IdtyStatus.unknown;
 
       // Show migration confirmation dialog for new safe
@@ -640,8 +641,9 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
   Future<void> _migrateToExistingSafeSimplified(BuildContext context, WidgetRef ref) async {
     try {
-      // Check identity status of the legacy wallet
-      final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(widget.wallet.address);
+      // Check identity status of the legacy wallet (use cached provider)
+      final idtyStatusAsync = ref.read(hybridIdtyStatusProvider(widget.wallet.address));
+      final idtyStatus = idtyStatusAsync.value ?? IdtyStatus.none;
       final hasIdentity = idtyStatus != IdtyStatus.none && idtyStatus != IdtyStatus.unknown;
 
       // Show migration confirmation dialog for existing safe

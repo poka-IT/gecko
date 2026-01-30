@@ -510,22 +510,9 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                   : scaleSize(_filterPadding) *
                                         (1.0 + _filterTranslationY).clamp(0.0, 1.0), // Animated when not filtering
                             ),
-                            child: ListView(
-                              key: keyListTransactions,
-                              controller: _scrollController,
-                              children: <Widget>[
-                                if (widget.transactionData != null)
-                                  VisibilityDetector(
-                                    key: const Key('transaction-in-progress-tile'),
-                                    onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
-                                    child: TransactionInProgressTule(
-                                      transactionData: widget.transactionData!,
-                                      viewingAddress: widget.address,
-                                      onAnimationComplete: _onInProgressTileAnimationComplete,
-                                    ),
-                                  ),
-
-                                HistoryView(
+                            child: Builder(
+                              builder: (context) {
+                                final historyView = HistoryView(
                                   transactions: _filterInProgressDuplicate(historyState.transactions),
                                   address: widget.address,
                                   migrationFromData: migrationFromDataAsync.when(
@@ -541,8 +528,34 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                   hasNextPage: historyState.hasNextPage,
                                   isLoadingMore: historyState.isLoading,
                                   isFiltered: hasAdvancedFilters,
-                                ),
-                              ],
+                                );
+                                final historyItems = historyView.buildItems(context);
+
+                                return CustomScrollView(
+                                  key: keyListTransactions,
+                                  controller: _scrollController,
+                                  slivers: <Widget>[
+                                    // Top padding to match spacing the old ListView Column provided
+                                    SliverPadding(padding: EdgeInsets.only(top: scaleSize(8))),
+                                    if (widget.transactionData != null)
+                                      SliverToBoxAdapter(
+                                        child: VisibilityDetector(
+                                          key: const Key('transaction-in-progress-tile'),
+                                          onVisibilityChanged: _onTransactionInProgressVisibilityChanged,
+                                          child: TransactionInProgressTule(
+                                            transactionData: widget.transactionData!,
+                                            viewingAddress: widget.address,
+                                            onAnimationComplete: _onInProgressTileAnimationComplete,
+                                          ),
+                                        ),
+                                      ),
+                                    SliverList.builder(
+                                      itemCount: historyItems.length,
+                                      itemBuilder: (context, index) => historyItems[index],
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ),

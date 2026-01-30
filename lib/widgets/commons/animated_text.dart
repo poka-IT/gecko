@@ -42,10 +42,11 @@ class AnimatedFadeOutInState<T> extends State<AnimatedFadeOutIn<T>> with SingleT
     super.initState();
     dataToShow = widget.initialData ?? widget.data;
     controller = AnimationController(vsync: this, duration: widget.duration)
-      ..addListener(() => setState(() {}))
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          dataToShow = widget.data;
+          setState(() {
+            dataToShow = widget.data;
+          });
           controller.reverse(from: 1.0);
         } else if (status == AnimationStatus.dismissed) {
           widget.onFadeComplete?.call();
@@ -77,5 +78,9 @@ class AnimatedFadeOutInState<T> extends State<AnimatedFadeOutIn<T>> with SingleT
   }
 
   @override
-  Widget build(BuildContext context) => Opacity(opacity: 1.0 - animation.value, child: widget.builder(dataToShow));
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: animation,
+    builder: (context, child) => Opacity(opacity: 1.0 - animation.value, child: child),
+    child: widget.builder(dataToShow),
+  );
 }

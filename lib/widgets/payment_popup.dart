@@ -23,6 +23,7 @@ import 'package:gecko/services/pin_cache_service.dart';
 
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/commons/async_elevated_button.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -120,11 +121,10 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
     try {
       final storageService = ref.read(storageServiceProvider);
-      final defaultBalance = await storageService.getBalance(fromWallet.address);
-
-      if (!mounted) return;
-
-      final toBalance = await storageService.getBalance(widget.toAddress);
+      final (defaultBalance, toBalance) = await (
+        storageService.getBalance(fromWallet.address),
+        storageService.getBalance(widget.toAddress),
+      ).wait;
 
       if (!mounted) return;
 
@@ -771,7 +771,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                           SizedBox(
                             width: double.infinity,
                             height: 50,
-                            child: ElevatedButton(
+                            child: AsyncElevatedButton(
                               key: keyConfirmPayment,
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,

@@ -9,6 +9,7 @@ import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/screens/qrcode_fullscreen.dart';
+import 'package:gecko/utils/identity_utils.dart';
 
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -45,10 +46,21 @@ class WalletAppBar extends ConsumerWidget implements PreferredSizeWidget {
   }
 
   Widget _buildAppBar(BuildContext context, WidgetRef ref, bool isEmptyWallet) {
+    // When using titleBuilder, check identity status to substitute name for created identities
+    String resolvedTitle;
+    if (title != null) {
+      resolvedTitle = title!;
+    } else {
+      final username = ref.watch(squidServiceProvider).walletNameIndexer[address];
+      final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
+      final idtyStatus = idtyStatusAsync.hasValue ? idtyStatusAsync.value : null;
+      resolvedTitle = titleBuilder!(IdentityUtils.getDisplayName(username, idtyStatus));
+    }
+
     return AppBar(
       backgroundColor: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary,
       titleSpacing: 10,
-      title: Text(title ?? titleBuilder!(ref.watch(squidServiceProvider).walletNameIndexer[address])),
+      title: Text(resolvedTitle),
       actions: [
         Row(
           children: [

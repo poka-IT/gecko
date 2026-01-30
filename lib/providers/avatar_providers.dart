@@ -39,6 +39,9 @@ class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
 
   /// Get avatar for an address, with persistent caching
   Future<Uint8List?> getAvatar(String address) async {
+    // Skip empty or invalid addresses
+    if (address.isEmpty) return null;
+
     try {
       // 1. Check if already in memory cache
       if (state.containsKey(address)) {

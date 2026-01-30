@@ -16,6 +16,7 @@ import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/certifications.dart';
@@ -102,6 +103,9 @@ class WalletHeaderContent extends StatelessWidget {
     final balance = walletBalance?.transferableBalance;
     final isEmptyWallet = balance == null || balance == BigInt.zero;
 
+    // Compute displayName: substitute with "Infinite Name" when status is created
+    final displayName = IdentityUtils.getDisplayName(identityName, idtyStatus);
+
     return Hero(
       tag: 'wallet_header_$address', // Same tag as CompactWalletHeader for transition
       child: Material(
@@ -117,7 +121,7 @@ class WalletHeaderContent extends StatelessWidget {
                 isOwner: isOwner,
                 customImagePath: customImagePath,
                 defaultImagePath: defaultImagePath,
-                identityName: identityName,
+                identityName: displayName,
               ),
               ScaledSizedBox(width: 16),
               Expanded(
@@ -147,7 +151,7 @@ class WalletHeaderContent extends StatelessWidget {
                       child: WalletHeaderIdentitySection(
                         address: address,
                         idtyStatus: idtyStatus,
-                        identityName: identityName ?? ' ',
+                        identityName: displayName ?? ' ',
                       ),
                     ),
                   ],
@@ -231,6 +235,8 @@ class _IdentityStatusDisplay extends StatelessWidget {
     // Use the identity name directly from the stream provider instead of NameByAddress
     final hasIdentityName = identityName.isNotEmpty;
 
+    final isCreated = IdentityUtils.isCreatedStatus(currentStatus);
+
     final nameWidget = hasIdentityName
         ? Text(
             identityName.length > 22 ? '${identityName.substring(0, 22)}...' : identityName,
@@ -242,7 +248,7 @@ class _IdentityStatusDisplay extends StatelessWidget {
                     fontStyle: FontStyle.normal,
                   )
                 : scaledTextStyle(
-                    fontSize: 16,
+                    fontSize: isCreated ? 17 : 16,
                     color: context.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
                     fontStyle: FontStyle.italic,

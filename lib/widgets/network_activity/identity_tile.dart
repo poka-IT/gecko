@@ -5,6 +5,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/identity_display_item.dart';
 import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 
 /// Tile widget for displaying identity activity
@@ -16,7 +17,11 @@ class IdentityTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Format the identity name for display
-    final displayName = identity.name.isEmpty ? (identity.accountId ?? "Unknown").substring(0, 8) : identity.name;
+    // Substitute with "Infinite Name" when identity status is created (Unconfirmed)
+    final isCreated = IdentityUtils.isCreatedStatusString(identity.status);
+    final displayName = identity.name.isEmpty
+        ? (identity.accountId ?? "Unknown").substring(0, 8)
+        : IdentityUtils.getDisplayNameFromString(identity.name, identity.status);
     const double avatarSize = 45;
 
     return Container(
@@ -68,8 +73,9 @@ class IdentityTile extends StatelessWidget {
                               displayName,
                               style: scaledTextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: context.colorScheme.onSurface,
+                                fontWeight: isCreated ? FontWeight.w500 : FontWeight.w600,
+                                fontStyle: isCreated ? FontStyle.italic : FontStyle.normal,
+                                color: isCreated ? context.colorScheme.onSurfaceVariant : context.colorScheme.onSurface,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),

@@ -6,6 +6,8 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/wallet_name.dart';
 import 'package:truncate/truncate.dart';
@@ -40,10 +42,12 @@ class NameByAddress extends ConsumerWidget {
     }
 
     final identityNameAsync = ref.watch(hybridIdentityNameProvider(wallet.address));
+    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(wallet.address));
+    final idtyStatus = idtyStatusAsync.hasValue ? idtyStatusAsync.value : null;
 
     return identityNameAsync.when(
       data: (name) {
-        // Store in G1 wallets list for compatibility
+        // Store the real name in G1 wallets list for compatibility (not the placeholder)
         if (name != null) {
           g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, username: name));
         }
@@ -56,10 +60,21 @@ class NameByAddress extends ConsumerWidget {
           return WalletName(wallet: wallet, size: size, color: finalColor);
         }
 
+        // Substitute display name when status is created
+        final isCreated = IdentityUtils.isCreatedStatus(idtyStatus);
+        final displayName = IdentityUtils.getDisplayName(name, idtyStatus) ?? name;
+        final displayColor = isCreated ? Theme.of(context).colorScheme.onSurfaceVariant : finalColor;
+        final displayFontStyle = isCreated ? FontStyle.italic : fontStyle;
+
         // Show identity name
         return Text(
-          truncate(name, 22),
-          style: scaledTextStyle(fontSize: size, color: finalColor, fontWeight: fontWeight, fontStyle: fontStyle),
+          truncate(displayName, 22),
+          style: scaledTextStyle(
+            fontSize: size,
+            color: displayColor,
+            fontWeight: fontWeight,
+            fontStyle: displayFontStyle,
+          ),
         );
       },
       loading: () => const Loading(),

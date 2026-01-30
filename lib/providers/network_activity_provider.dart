@@ -68,6 +68,15 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
       loadTransactions();
     });
 
+    // React to Squid connection changes: reload + resubscribe when connected
+    ref.listen(squidConnectionStatusProvider, (previous, next) {
+      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
+        log.i('🔄 Squid connected - loading network activity');
+        loadTransactions();
+        _subscribeToNetworkActivity();
+      }
+    });
+
     // Start initial load asynchronously
     Future.microtask(() {
       loadTransactions();
@@ -184,7 +193,7 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
 
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      state = state.copyWith(error: 'No network connection');
+      state = state.copyWith(isLoading: false, error: 'No network connection');
       return;
     }
 
@@ -368,6 +377,14 @@ class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityStat
       }
     });
 
+    // React to Squid connection changes: reload when connected
+    ref.listen(squidConnectionStatusProvider, (previous, next) {
+      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
+        log.i('🔄 Squid connected - loading filtered network activity');
+        _loadNetworkActivityWithFilters();
+      }
+    });
+
     // Initial load asynchronously
     Future.microtask(() => _loadNetworkActivityWithFilters());
 
@@ -406,7 +423,7 @@ class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityStat
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
       print('❌ [NETWORK DEBUG] No network connection');
-      state = state.copyWith(error: 'No network connection');
+      state = state.copyWith(isLoading: false, error: 'No network connection');
       return;
     }
 

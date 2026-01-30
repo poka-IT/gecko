@@ -715,5 +715,6 @@
     "correctWord": "¡Correcto!",
     "mnemonicVerificationFailed": "No se pudo cargar su frase de recuperación. Por favor, inténtelo de nuevo.",
     "showMore": "Ver más",
-    "showLess": "Ver menos"
+    "showLess": "Ver menos",
+    "infiniteName": "Nombre infinito"
 }

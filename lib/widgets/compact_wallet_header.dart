@@ -7,6 +7,7 @@ import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/extensions.dart';
@@ -106,6 +107,8 @@ class CompactWalletHeader extends ConsumerWidget {
                           idtyStatus != IdtyStatus.unknown &&
                           identityName != null &&
                           identityName.isNotEmpty) {
+                        final isCreated = IdentityUtils.isCreatedStatus(idtyStatus);
+                        final displayName = IdentityUtils.getDisplayName(identityName, idtyStatus) ?? identityName;
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -113,11 +116,14 @@ class CompactWalletHeader extends ConsumerWidget {
                           children: [
                             // Identity name - larger and more prominent with proper truncation
                             Text(
-                              identityName,
+                              displayName,
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: isCreated ? FontWeight.w500 : FontWeight.w600,
+                                fontStyle: isCreated ? FontStyle.italic : FontStyle.normal,
+                                color: isCreated
+                                    ? Theme.of(context).colorScheme.onSurfaceVariant
+                                    : Theme.of(context).colorScheme.onSurface,
                               ),
                               textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,

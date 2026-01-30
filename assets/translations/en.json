@@ -748,5 +748,6 @@
     "correctWord": "Correct!",
     "mnemonicVerificationFailed": "Failed to load your recovery phrase. Please try again.",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "infiniteName": "Infinite Name"
 }

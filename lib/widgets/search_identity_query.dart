@@ -10,6 +10,7 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
+import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 
 class SearchIdentityQuery extends ConsumerWidget {
@@ -18,12 +19,23 @@ class SearchIdentityQuery extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Check if we have network connection
-    final connectionStatus = ref.watch(connectionStatusProvider);
-    final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
+    // Check if Squid is connected (required for identity search)
+    final squidStatus = ref.watch(squidConnectionStatusProvider);
+    final isNetworkAvailable = squidStatus == d.ConnectionStatus.connected;
 
     if (!isNetworkAvailable) {
-      return Text('noResult'.tr());
+      return Expanded(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Loading(stroke: 3, size: 24),
+              const SizedBox(height: 12),
+              Text('connecting'.tr(), style: scaledTextStyle(fontSize: 14, color: Colors.grey)),
+            ],
+          ),
+        ),
+      );
     }
 
     final searchResults = ref.watch(searchIdentityProvider(name));

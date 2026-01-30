@@ -715,5 +715,6 @@
     "correctWord": "Corretto!",
     "mnemonicVerificationFailed": "Impossibile caricare la frase di ripristino. Riprova.",
     "showMore": "Mostra di più",
-    "showLess": "Mostra meno"
+    "showLess": "Mostra meno",
+    "infiniteName": "Nome infinito"
 }

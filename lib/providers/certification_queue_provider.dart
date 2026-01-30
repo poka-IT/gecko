@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -170,19 +171,12 @@ class CertButtonState {
 /// Main certification queue notifier - family notifier keyed by issuer address
 class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState?> {
   final String issuerAddress;
-  Timer? _checkTimer;
 
   CertificationQueueNotifier(this.issuerAddress);
 
   @override
   FutureOr<d.CertificationQueueState?> build() async {
     log.d('🔧 [CertQueueProvider] Building for issuer: $issuerAddress');
-
-    // Clean up timer on dispose
-    ref.onDispose(() {
-      log.d('🔧 [CertQueueProvider] Disposing for issuer: $issuerAddress');
-      _checkTimer?.cancel();
-    });
 
     // Check storage state first
     final storageState = ref.watch(storageStateProvider);
@@ -204,8 +198,13 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     // Update expected dates based on current blockchain state
     queue = await _updateQueueDates(queue);
 
-    // Start periodic check for ready certifications
-    _startPeriodicCheck();
+    // Listen to block height to check ready certifications (replaces Timer.periodic(30s))
+    ref.listen(blockHeightProvider, (previous, next) async {
+      if (next == 0 || next == previous) return;
+      final currentState = state.value;
+      if (currentState == null || currentState.isEmpty) return;
+      await _checkAndNotifyReadyCertifications();
+    });
 
     // Sync with CesiumPlus in background (don't block UI)
     log.d('🔧 [CertQueueProvider] Starting background CesiumPlus sync...');
@@ -250,14 +249,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       log.e('🔧 [CertQueueProvider] Error updating queue dates: $e');
       return queue;
     }
-  }
-
-  /// Start periodic check for ready certifications (every 30 seconds)
-  void _startPeriodicCheck() {
-    _checkTimer?.cancel();
-    _checkTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
-      await _checkAndNotifyReadyCertifications();
-    });
   }
 
   /// Check if any certifications are ready and notify

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 
 /// Provides real-time wallet balance stream for a given address.
 /// This uses Durt2's subscribeBalance to get live updates when balance changes.
@@ -447,15 +448,14 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
   HybridIdtyStatusNotifier(this.arg);
   final String arg;
 
-  Timer? _refreshTimer;
   StreamSubscription<d.StorageChangeSet>? _idtySubscription;
+  bool _listeningToBlockHeight = false;
 
   @override
   Future<d.IdtyStatus> build() async {
     final address = arg;
     // Cleanup when provider is disposed
     ref.onDispose(() {
-      _refreshTimer?.cancel();
       _idtySubscription?.cancel();
     });
 
@@ -465,8 +465,8 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
 
     // Setup appropriate listening mechanism based on current status
     if (status == d.IdtyStatus.none) {
-      // If no identity, set up polling to detect identity creation
-      _startPeriodicRefresh(address);
+      // If no identity, listen to block height to detect identity creation
+      _startBlockHeightListener(address);
     } else {
       // If identity exists, use normal stream subscription for real-time updates
       _startIdentitySubscription(address);
@@ -475,9 +475,12 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
     return status;
   }
 
-  void _startPeriodicRefresh(String address) {
-    _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+  /// Listen to new blocks to check for identity creation (replaces Timer.periodic(5s))
+  void _startBlockHeightListener(String address) {
+    if (_listeningToBlockHeight) return;
+    _listeningToBlockHeight = true;
+    ref.listen(blockHeightProvider, (previous, next) async {
+      if (next == 0 || next == previous) return;
       try {
         final storageService = ref.read(storageServiceProvider);
         final newStatus = await storageService.getIdtyStatus(address);
@@ -485,15 +488,14 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
         if (newStatus != state.value) {
           state = AsyncValue.data(newStatus);
 
-          // If identity was created, stop polling and start stream subscription
+          // If identity was created, switch to stream subscription
           if (newStatus != d.IdtyStatus.none) {
-            timer.cancel();
-            _refreshTimer = null;
+            _listeningToBlockHeight = false;
             _startIdentitySubscription(address);
           }
         }
       } catch (e) {
-        // Continue trying on error
+        // Continue trying on next block
       }
     });
   }
@@ -506,17 +508,18 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
         if (newStatus != state.value) {
           state = AsyncValue.data(newStatus);
 
-          // If identity disappears, switch back to polling
+          // If identity disappears, switch back to block height listener
           if (newStatus == d.IdtyStatus.none) {
             _idtySubscription?.cancel();
             _idtySubscription = null;
-            _startPeriodicRefresh(address);
+            _startBlockHeightListener(address);
           }
         }
       });
     } catch (e) {
       log.e('Error starting identity subscription for $address: $e');
-      // Fallback to manual refresh only
+      // Fallback to block height listener
+      _startBlockHeightListener(address);
     }
   }
 
@@ -532,21 +535,18 @@ class HybridIdtyStatusNotifier extends AsyncNotifier<d.IdtyStatus> {
       // Handle transition between different listening modes
       if (previousStatus == d.IdtyStatus.none && newStatus != d.IdtyStatus.none) {
         // Transition from no identity to having identity: switch to stream
-        _refreshTimer?.cancel();
-        _refreshTimer = null;
+        _listeningToBlockHeight = false;
         _startIdentitySubscription(address);
       } else if (previousStatus != d.IdtyStatus.none && newStatus == d.IdtyStatus.none) {
-        // Transition from having identity to no identity: switch to polling
+        // Transition from having identity to no identity: switch to block height
         _idtySubscription?.cancel();
         _idtySubscription = null;
-        _startPeriodicRefresh(address);
+        _startBlockHeightListener(address);
       }
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }
   }
-
-  // Cleanup is handled in build() with ref.onDispose()
 }
 
 final hybridIdtyStatusProvider = AsyncNotifierProvider.family<HybridIdtyStatusNotifier, d.IdtyStatus, String>(
@@ -560,48 +560,49 @@ class HybridCertificationNotifier extends AsyncNotifier<d.CertificationData> {
   HybridCertificationNotifier(this.arg);
   final String arg;
 
-  Timer? _refreshTimer;
   StreamSubscription<d.StorageChangeSet>? _certSubscription;
+  StreamSubscription<String?>? _certActivitySubscription;
 
   @override
   Future<d.CertificationData> build() async {
     final address = arg;
     // Cleanup when provider is disposed
     ref.onDispose(() {
-      _refreshTimer?.cancel();
       _certSubscription?.cancel();
+      _certActivitySubscription?.cancel();
     });
 
     // Initial data fetch
     final storageService = ref.watch(storageServiceProvider);
     final certData = await storageService.getCertsCounter(address);
 
-    // Start both stream subscription and periodic polling for redundancy
+    // Start Duniter stream subscription (primary source)
     _startCertSubscription(address);
-    _startPeriodicRefresh(address);
+    // Start Squid cert activity subscription (catches missed WebSocket updates)
+    _startCertActivitySubscription(address);
 
     return certData;
   }
 
-  void _startPeriodicRefresh(String address) {
-    _refreshTimer?.cancel();
-    // Poll every 10 seconds to catch any missed updates
-    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
-      try {
-        final storageService = ref.read(storageServiceProvider);
-        final newCertData = await storageService.getCertsCounter(address);
-
-        // Only update if data actually changed
-        final currentData = state.value;
-        if (currentData == null ||
-            newCertData.receivedCount != currentData.receivedCount ||
-            newCertData.sentCount != currentData.sentCount) {
-          state = AsyncValue.data(newCertData);
-        }
-      } catch (e) {
-        // Continue trying on error
-      }
-    });
+  /// Subscribe to Squid cert activity to detect changes (replaces Timer.periodic(10s))
+  void _startCertActivitySubscription(String address) {
+    _certActivitySubscription?.cancel();
+    try {
+      _certActivitySubscription = d.SquidService.client
+          .subscribeCertActivity(address)
+          .listen(
+            (certId) {
+              if (certId != null) {
+                forceRefresh();
+              }
+            },
+            onError: (error) {
+              log.e('Cert activity subscription error for $address: $error');
+            },
+          );
+    } catch (e) {
+      log.e('Failed to setup cert activity subscription for $address: $e');
+    }
   }
 
   void _startCertSubscription(String address) async {
@@ -618,7 +619,6 @@ class HybridCertificationNotifier extends AsyncNotifier<d.CertificationData> {
       });
     } catch (e) {
       log.e('Error starting certification subscription for $address: $e');
-      // Polling will continue as fallback
     }
   }
 

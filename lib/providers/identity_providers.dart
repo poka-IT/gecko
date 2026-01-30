@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
 /// Notifier to track whether the user has dismissed the migration warning for a given address.
@@ -90,14 +92,14 @@ class HybridIdentityNameNotifier extends AsyncNotifier<String?> {
   HybridIdentityNameNotifier(this.arg);
   final String arg;
 
-  Timer? _refreshTimer;
+  StreamSubscription<String?>? _nameSubscription;
 
   @override
   Future<String?> build() async {
     final address = arg;
     // Cleanup when provider is disposed
     ref.onDispose(() {
-      _refreshTimer?.cancel();
+      _nameSubscription?.cancel();
     });
 
     // Check Squid connection
@@ -109,8 +111,8 @@ class HybridIdentityNameNotifier extends AsyncNotifier<String?> {
     // Initial fetch
     final identityName = await _fetchIdentityName(address);
 
-    // Start periodic polling
-    _startPeriodicRefresh(address);
+    // Subscribe to identity name changes (replaces Timer.periodic(10s))
+    _startNameSubscription(address);
 
     return identityName;
   }
@@ -129,27 +131,30 @@ class HybridIdentityNameNotifier extends AsyncNotifier<String?> {
     }
   }
 
-  void _startPeriodicRefresh(String address) {
-    _refreshTimer?.cancel();
-    // Poll every 10 seconds to catch identity name changes after migrations
-    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
-      // Check Squid connection
-      final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
-      if (squidConnectionStatus != d.ConnectionStatus.connected) {
-        return;
-      }
+  /// Subscribe to identity name changes via Squid (replaces Timer.periodic(10s))
+  void _startNameSubscription(String address) {
+    _nameSubscription?.cancel();
+    try {
+      _nameSubscription = d.SquidService.client
+          .subscribeIdentityName(address)
+          .listen(
+            (newName) {
+              // Only update if name actually changed
+              if (newName != state.value) {
+                // Cache the result
+                final squidService = ref.read(squidServiceProvider);
+                squidService.walletNameIndexer[address] = newName;
 
-      try {
-        final newName = await _fetchIdentityName(address);
-
-        // Only update if name actually changed
-        if (newName != state.value) {
-          state = AsyncValue.data(newName);
-        }
-      } catch (e) {
-        // Continue trying on error
-      }
-    });
+                state = AsyncValue.data(newName);
+              }
+            },
+            onError: (error) {
+              log.e('Identity name subscription error for $address: $error');
+            },
+          );
+    } catch (e) {
+      log.e('Failed to setup identity name subscription for $address: $e');
+    }
   }
 
   void forceRefresh() async {
@@ -357,15 +362,9 @@ final certStateProvider = AsyncNotifierProvider.family<CertStateNotifier, d.Cert
 class CertStateNotifier extends AsyncNotifier<d.CertState?> {
   CertStateNotifier(this.arg);
   final String arg;
-  Timer? _periodicRefreshTimer;
 
   @override
   Future<d.CertState?> build() async {
-    // Clean up timer on dispose
-    ref.onDispose(() {
-      _periodicRefreshTimer?.cancel();
-    });
-
     // Check storage state FIRST
     final storageState = ref.watch(storageStateProvider);
     if (storageState == StorageState.notInitialized) {
@@ -391,33 +390,18 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
 
     final certState = await _getCertState(effectiveWallet.address, toAddress);
 
-    // Start periodic refresh if we're in a waiting state
-    _startPeriodicRefreshIfNeeded(certState);
-
-    return certState;
-  }
-
-  /// Start periodic refresh timer if the cert state has a duration (waiting state)
-  void _startPeriodicRefreshIfNeeded(d.CertState? certState) {
-    _periodicRefreshTimer?.cancel();
-
-    if (certState == null) return;
-
-    // Only start timer if we're in a waiting state with a duration
-    final hasWaitingDuration = certState.duration != null && certState.duration! > Duration.zero;
-    if (!hasWaitingDuration) return;
-
-    // Determine refresh interval based on remaining duration
-    final duration = certState.duration!;
-    final refreshInterval = duration.inMinutes <= 5
-        ? const Duration(seconds: 10) // Refresh every 10s when < 5 min remaining
-        : duration.inMinutes <= 30
-        ? const Duration(seconds: 30) // Refresh every 30s when < 30 min remaining
-        : const Duration(minutes: 1); // Refresh every minute otherwise
-
-    _periodicRefreshTimer = Timer.periodic(refreshInterval, (_) {
+    // Listen to block height to refresh cert state on each new block (replaces Timer.periodic)
+    // Only refresh when in a waiting state (duration > 0)
+    ref.listen(blockHeightProvider, (previous, next) {
+      if (next == 0 || next == previous) return;
+      final currentState = state.value;
+      if (currentState == null) return;
+      final hasWaitingDuration = currentState.duration != null && currentState.duration! > Duration.zero;
+      if (!hasWaitingDuration) return;
       _refreshCertState();
     });
+
+    return certState;
   }
 
   /// Refresh cert state without clearing the previous value
@@ -432,9 +416,6 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
     // Update state smoothly - keep previous value visible during loading
     final newCertState = await _getCertState(effectiveWallet.address, arg);
     state = AsyncValue.data(newCertState);
-
-    // Update periodic refresh interval based on new state
-    _startPeriodicRefreshIfNeeded(newCertState);
   }
 
   /// Get cert state from storage

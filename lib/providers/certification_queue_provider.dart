@@ -198,12 +198,22 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     // Update expected dates based on current blockchain state
     queue = await _updateQueueDates(queue);
 
-    // Listen to block height to check ready certifications (replaces Timer.periodic(30s))
+    // Listen to block height to check ready certifications.
+    // Only check when needed, not every block (~6s):
+    // 1. When block height reaches the next cert's expected block (becomes ready)
+    // 2. Every 50 blocks (~5 min) to catch external blockchain state changes
     ref.listen(blockHeightProvider, (previous, next) async {
       if (next == 0 || next == previous) return;
       final currentState = state.value;
       if (currentState == null || currentState.isEmpty) return;
-      await _checkAndNotifyReadyCertifications();
+
+      final targetBlock = currentState.pendingCertifications.first.expectedAvailableBlock;
+      final certMayBeReady = targetBlock != null && next >= targetBlock && !currentState.hasReadyCertification;
+      final periodicSync = previous != null && (next ~/ 50) > (previous ~/ 50);
+
+      if (certMayBeReady || periodicSync) {
+        await _checkAndNotifyReadyCertifications();
+      }
     });
 
     // Sync with CesiumPlus in background (don't block UI)
@@ -267,11 +277,26 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       }
     }
 
-    // Update state if dates changed
-    state = AsyncValue.data(updatedQueue);
+    // Only update state and save if something meaningful changed
+    if (_hasQueueChanged(currentState, updatedQueue)) {
+      state = AsyncValue.data(updatedQueue);
+      await CertificationQueueService.saveQueue(updatedQueue);
+    }
+  }
 
-    // Save updated queue locally
-    await CertificationQueueService.saveQueue(updatedQueue);
+  /// Check if the queue has meaningful changes (ignoring DateTime recalculations)
+  bool _hasQueueChanged(d.CertificationQueueState oldQueue, d.CertificationQueueState newQueue) {
+    if (oldQueue.nextIssuableOn != newQueue.nextIssuableOn) return true;
+    if (oldQueue.queueLength != newQueue.queueLength) return true;
+
+    for (var i = 0; i < oldQueue.pendingCertifications.length; i++) {
+      if (oldQueue.pendingCertifications[i].expectedAvailableBlock !=
+          newQueue.pendingCertifications[i].expectedAvailableBlock) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /// Sync with CesiumPlus - at startup, remote is the source of truth

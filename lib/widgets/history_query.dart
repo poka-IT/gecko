@@ -18,7 +18,7 @@ import 'package:gecko/models/transaction_in_progress_data.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-const double _filterPadding = 32;
+const double _filterPadding = 52;
 
 class HistoryQuery extends ConsumerStatefulWidget {
   const HistoryQuery({super.key, required this.address, this.transactionData});
@@ -568,7 +568,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                           child: Transform.translate(
                             offset: Offset(
                               0,
-                              keepFiltersVisible ? 0.0 : _filterTranslationY * 18.0, // Match the reduced padding
+                              keepFiltersVisible ? 0.0 : _filterTranslationY * 28.0, // Match the reduced padding
                             ),
                             child: Opacity(
                               opacity: keepFiltersVisible

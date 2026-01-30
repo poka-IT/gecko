@@ -59,10 +59,12 @@ Future<void> main() async {
   // Initialize log collection service
   LogCollectionService.instance.initialize();
 
-  // Always start on the default network (Ğ1 if configured, otherwise ĞTest)
-  final selectedNetwork = Networks.defaultNetwork;
+  // Always start on the default network (Ğ1), except if the user previously
+  // selected the local network — in that case, persist that choice across restarts.
+  final savedNetwork = configBox.get('selectedNetwork');
+  final selectedNetwork = savedNetwork == Networks.local.name ? Networks.local : Networks.defaultNetwork;
 
-  // Force the saved network to match so the rest of the app is consistent
+  // Sync the saved network so the rest of the app is consistent
   configBox.put('selectedNetwork', selectedNetwork.name);
 
   // Clear any custom endpoint configuration to ensure clean connection

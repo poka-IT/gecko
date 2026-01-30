@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 
@@ -67,6 +69,7 @@ class CertificationTransactionHelper {
         transactionStream: transactionStream,
         issuerAddress: issuerAddress,
         targetAddress: targetAddress,
+        container: container,
       );
 
       // Optional callback before navigation (e.g., queue removal, sync)
@@ -103,6 +106,7 @@ class CertificationTransactionHelper {
     required Stream<TransactionStatus> transactionStream,
     required String issuerAddress,
     required String targetAddress,
+    required ProviderContainer container,
   }) {
     bool hasHandled = false;
     late StreamSubscription<TransactionStatus> subscription;
@@ -115,6 +119,11 @@ class CertificationTransactionHelper {
           hasHandled = true;
           log.d('✅ [CertificationHelper] Transaction SUCCESS - marking as completed');
           notifier.markCompleted(issuerAddress, targetAddress);
+          // Invalidate identity status and cert existence for the target
+          // so child widgets (CertifyButton, AddToQueueButton) get fresh data.
+          // This is critical after an invitation that creates a new identity.
+          container.invalidate(idtyStatusStreamProvider(targetAddress));
+          container.invalidate(certificationExistsProvider(targetAddress));
           subscription.cancel();
         } else if (status.state == TransactionState.error) {
           hasHandled = true;

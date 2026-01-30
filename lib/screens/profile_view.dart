@@ -52,19 +52,15 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   }
 
   Future<WalletHeaderData> _loadWalletData() async {
-    final (idtyStatusValue, balanceResult, certData) = await (
-      ref.read(storageServiceProvider).getIdtyStatus(widget.address),
-      ref.read(storageServiceProvider).getBalance(widget.address),
-      ref.read(storageServiceProvider).getCertsCounter(widget.address),
-    ).wait;
+    final profileData = await ref.read(storageServiceProvider).getProfileData(widget.address);
 
     final data = WalletHeaderData(
-      hasIdentity: idtyStatusValue != IdtyStatus.none,
+      hasIdentity: profileData.idtyStatus != IdtyStatus.none,
       isOwner: ref.read(isOwnerProvider(address)),
       walletName: ref.read(squidServiceProvider).walletNameIndexer[address],
-      balance: balanceResult.transferableBalance,
-      certsReceived: certData.receivedCount,
-      certsSent: certData.sentCount,
+      balance: profileData.balance.transferableBalance,
+      certsReceived: profileData.certData.receivedCount,
+      certsSent: profileData.certData.sentCount,
     );
 
     await walletHeaderDataBox.put(address, data);

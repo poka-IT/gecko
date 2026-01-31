@@ -20,6 +20,7 @@ import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gif_view/gif_view.dart';
@@ -42,11 +43,274 @@ class OnboardingStepTen extends ConsumerStatefulWidget {
   final String? legacySalt;
   final String? legacyPassword;
   final LegacyMigrationData? legacyMigrationData;
+
   @override
   ConsumerState<OnboardingStepTen> createState() => _OnboardingStepTenState();
 }
 
 class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
+  final formKey = GlobalKey<FormState>();
+  Color? pinColor = const Color(0xFFA4B600);
+  bool hasError = false;
+  late final FocusNode pinFocus;
+  late final TextEditingController enterPin;
+
+  /// Blocks back navigation while safe creation/scan is in progress.
+  bool _isProcessing = false;
+
+  // Variables for cleanup after legacy migration
+  WalletService? _walletServiceForCleanup;
+  String? _legacyAddressForCleanup;
+  bool _cleanupCompleted = false;
+
+  bool get _isLegacy => widget.legacySalt != null && widget.legacyPassword != null;
+
+  @override
+  void initState() {
+    super.initState();
+    pinFocus = FocusNode(debugLabel: 'pinFocusNode10');
+    enterPin = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(resetScanProvider)();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Core flow: safe creation, wallet import, navigation
+  // ---------------------------------------------------------------------------
+
+  /// Main flow after PIN confirmation succeeds.
+  /// Creates the safe, imports wallets, and navigates to the next screen.
+  /// Wrapped in a global try-catch to guarantee cleanup on any failure.
+  Future<void> _handlePinConfirmed() async {
+    setState(() => _isProcessing = true);
+    bool safeJustCreated = false;
+
+    try {
+      final migrationData = widget.legacyMigrationData ?? ref.read(pendingLegacyMigrationProvider);
+      final isMigrationToExistingSafe = migrationData?.isToExistingSafe ?? false;
+
+      // --- Step 1: Create safe ---
+      safeJustCreated = await _createSafe();
+
+      await ref.read(biometricProvider.notifier).refresh();
+      final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+
+      // --- Step 2: Import wallets (scan derivations or root import) ---
+      if (!_isLegacy) {
+        final exitedEarly = await _scanAndImportWallets(isMigrationToExistingSafe);
+        if (exitedEarly) {
+          // Scan handler already cleaned up the safe and navigated to home.
+          // Only clear sensitive data before returning.
+          _clearSensitiveState();
+          return;
+        }
+      }
+
+      // --- Step 3: Load wallets and refresh providers ---
+      await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
+      ref.read(walletActionsProvider.notifier).invalidateProviders();
+      ref.invalidate(idtyWalletAsyncProvider);
+      ref.invalidate(identityWalletsAsyncProvider);
+
+      _clearSensitiveState();
+
+      // --- Step 4: Select default wallet ---
+      final defaultWallet = await _selectDefaultWallet();
+      if (defaultWallet != null) {
+        await ref.read(walletServiceProvider).setDefaultAddress(defaultWallet.address);
+      }
+
+      // --- Step 5: Handle legacy migration ---
+      if (migrationData != null && defaultWallet != null) {
+        final shouldReturn = await _handleLegacyMigration(migrationData, defaultWallet);
+        if (shouldReturn) return;
+      }
+
+      // --- Step 6: Final reload and navigate to congratulations ---
+      final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafeNumber);
+      ref.invalidate(defaultWalletProvider);
+
+      if (context.mounted) {
+        await AppNavigator.pushWithFader(
+          context,
+          RouteNames.onboardingStepEleven,
+          arguments: OnboardingStepElevenArguments(
+            fromRestore: widget.fromRestore,
+            pinCode: widget.pinCode,
+            isLegacyMode: _isLegacy,
+          ),
+        );
+      }
+    } catch (e) {
+      log.e('Error during safe setup: $e');
+
+      if (safeJustCreated) {
+        await _cleanupFailedCreation();
+      }
+      _clearSensitiveState();
+
+      if (context.mounted) {
+        await showConfirmationDialog(
+          context: context,
+          type: ConfirmationDialogType.error,
+          title: 'error'.tr(),
+          message: 'errorScanDerivations'.tr(),
+          hideCancelButton: true,
+        );
+        if (context.mounted) {
+          Navigator.of(context).pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helper methods
+  // ---------------------------------------------------------------------------
+
+  /// Creates the safe (mnemonic or legacy).
+  /// Returns true if a new safe was actually created (false if it already existed).
+  Future<bool> _createSafe() async {
+    if (_isLegacy) {
+      try {
+        await ref
+            .read(walletServiceProvider)
+            .importLegacyWallet(
+              salt: widget.legacySalt!,
+              password: widget.legacyPassword!,
+              pinCode: widget.pinCode,
+              name: 'legacyWallet'.tr(),
+            );
+        return true;
+      } catch (e) {
+        if (!e.toString().contains('already been imported')) rethrow;
+        log.i('Legacy wallet already imported - continuing with existing wallet');
+        return false;
+      }
+    }
+
+    final originalMnemonic = ref.read(mnemonicStateProvider).mnemonicResult?.displayMnemonic ?? '';
+    if (originalMnemonic.isEmpty) return false;
+
+    try {
+      await ref
+          .read(walletServiceProvider)
+          .createSafe(mnemonic: originalMnemonic, pinCode: widget.pinCode, safeName: 'safeBoxName'.tr());
+      return true;
+    } catch (e) {
+      if (!e.toString().contains('already exists') && !e.toString().contains('detect source language')) {
+        rethrow;
+      }
+      log.i('Safe already exists or language detection failed - continuing with existing safe');
+      return false;
+    }
+  }
+
+  /// Scans derivations and imports wallets for mnemonic safes.
+  /// Returns true if the scan handler already navigated away (timeout/error).
+  Future<bool> _scanAndImportWallets(bool isMigrationToExistingSafe) async {
+    final mnemonicState = ref.read(mnemonicStateProvider);
+    ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
+
+    if (widget.scanDerivation && mnemonicState.mnemonicResult != null) {
+      scanStatus = await ref.read(startScanProvider)(context, mnemonicState.mnemonicResult!);
+    }
+
+    switch (scanStatus) {
+      case ScanDerivationsResult.timeout:
+      case ScanDerivationsResult.error:
+        return true;
+      case ScanDerivationsResult.none:
+      case ScanDerivationsResult.walletNotFound:
+        if (!isMigrationToExistingSafe) {
+          await ref.read(walletServiceProvider).importRootWallet(pinCode: widget.pinCode);
+        }
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  /// Selects the best default wallet.
+  /// Priority: identity member > confirmed > any identity > wallet #0 > first.
+  Future<WalletEntity?> _selectDefaultWallet() async {
+    WalletEntity? defaultWallet;
+    try {
+      defaultWallet = await ref.read(idtyWalletAsyncProvider.future);
+    } catch (e) {
+      log.w('Error getting identity wallet during onboarding: $e');
+    }
+
+    final walletsList = ref.read(walletsListProvider).wallets;
+    defaultWallet ??= walletsList.firstWhereOrNull((w) => w.number == 0);
+    if (defaultWallet == null && walletsList.isNotEmpty) {
+      defaultWallet = walletsList.first;
+    }
+    return defaultWallet;
+  }
+
+  /// Handles legacy migration if applicable.
+  /// Returns true if the caller should return early (navigation happened).
+  Future<bool> _handleLegacyMigration(LegacyMigrationData migrationData, WalletEntity defaultWallet) async {
+    if (migrationData.isToExistingSafe && migrationData.targetWalletAddress == null) {
+      if (context.mounted) {
+        Navigator.pushReplacementNamed(
+          context,
+          RouteNames.walletSelection,
+          arguments: WalletSelectionArguments(migrationData: migrationData, pinCode: widget.pinCode),
+        );
+        return true;
+      }
+    } else {
+      WalletEntity targetWallet = defaultWallet;
+      if (migrationData.targetWalletAddress != null) {
+        targetWallet = ref.read(walletServiceProvider).getWalletData(migrationData.targetWalletAddress!);
+      }
+
+      await _performLegacyMigrationWithProgress(context, ref, targetWallet, migrationData);
+      ref.read(pendingLegacyMigrationProvider.notifier).clear();
+    }
+    return false;
+  }
+
+  /// Clears mnemonic from memory and schedules PIN cache reset.
+  void _clearSensitiveState() {
+    ref.read(resetMnemonicStateProvider)();
+    PinCodeService.debounceResetPinCode();
+  }
+
+  /// Deletes the newly created safe and restores the previous default safe number.
+  Future<void> _cleanupFailedCreation() async {
+    try {
+      final walletService = ref.read(walletServiceProvider);
+      final safeNumber = walletService.defaultSafeBoxNumber;
+      await walletService.deleteSafe(safeNumber);
+
+      final safeBox = walletService.safeBox;
+      if (!safeBox.isEmpty()) {
+        final allSafes = safeBox.getAll();
+        if (allSafes.isNotEmpty) {
+          final maxSafeNumber = allSafes.map((s) => s.number).reduce((a, b) => a > b ? a : b);
+          ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(maxSafeNumber);
+        }
+      } else {
+        ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(-1);
+      }
+    } catch (e) {
+      log.e('Error during safe cleanup: $e');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Legacy migration helpers
+  // ---------------------------------------------------------------------------
+
   /// Perform legacy migration with progress screen (used during onboarding)
   Future<void> _performLegacyMigrationWithProgress(
     BuildContext context,
@@ -55,39 +319,31 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     LegacyMigrationData migrationData,
   ) async {
     try {
-      // Get target keypair
       final toKeypair = await ref
           .read(walletServiceProvider)
           .getKeyPairFromAddress(address: targetWallet.address, pinCode: widget.pinCode);
 
-      // Switch to target safe BEFORE starting migration
       final walletService = ref.read(walletServiceProvider);
       final targetSafeNumber = targetWallet.safe.target!.number;
       ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(targetSafeNumber);
       log.i('Switched to target safe $targetSafeNumber before migration');
 
-      // Store wallet service reference for later use
       _walletServiceForCleanup = walletService;
       _legacyAddressForCleanup = migrationData.fromAddress;
 
-      // Perform migration using the new method
       final transactionStream = ref
           .read(duniterServiceProvider)
           .migrateLegacyFromSeed(rawSeed: migrationData.rawSeed, toKeypair: toKeypair, withBalance: true);
 
-      // Convert to broadcast stream so it can be listened to multiple times
       final broadcastStream = transactionStream.asBroadcastStream();
 
-      // Listen to transaction stream to detect success and delete legacy safe
       broadcastStream.listen((status) async {
         if ((status.state == TransactionState.finalized || status.state == TransactionState.inBlock) &&
             !_cleanupCompleted) {
-          // Delete legacy safe after successful migration (but don't change safe again)
           await _deleteLegacySafeAfterMigration();
         }
       });
 
-      // Navigate to transaction progress screen
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -101,18 +357,13 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       );
     } catch (e) {
       log.e('Error during legacy migration with progress: $e');
-      // Continue with onboarding even if migration fails
     }
   }
 
   /// Delete the legacy safe after successful migration
   Future<void> _deleteLegacySafeAfterMigration() async {
     try {
-      if (_cleanupCompleted) {
-        log.d('Cleanup already completed, skipping');
-        return;
-      }
-
+      if (_cleanupCompleted) return;
       if (_walletServiceForCleanup == null || _legacyAddressForCleanup == null) {
         log.w('Cannot delete legacy safe: missing wallet service or address');
         return;
@@ -125,10 +376,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       await walletService.deleteSafe(legacySafe.number);
       log.i('Legacy safe deleted successfully after migration');
 
-      // Mark cleanup as completed
       _cleanupCompleted = true;
-
-      // Clear references
       _walletServiceForCleanup = null;
       _legacyAddressForCleanup = null;
     } catch (e) {
@@ -136,38 +384,23 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     }
   }
 
-  final formKey = GlobalKey<FormState>();
-  Color? pinColor = const Color(0xFFA4B600);
-  bool hasError = false;
-  late final FocusNode pinFocus;
-
-  // Variables for cleanup after migration
-  WalletService? _walletServiceForCleanup;
-  String? _legacyAddressForCleanup;
-  bool _cleanupCompleted = false;
-  late final TextEditingController enterPin;
-  @override
-  void initState() {
-    super.initState();
-    pinFocus = FocusNode(debugLabel: 'pinFocusNode10');
-    enterPin = TextEditingController();
-    // Reset any scan state when entering this screen
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(resetScanProvider)();
-    });
-  }
+  // ---------------------------------------------------------------------------
+  // UI
+  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
-    // Watch pinState to trigger rebuilds when state changes
     ref.watch(pinStateProvider);
     final pinLenght = widget.pinCode.isEmpty ? pinLength : widget.pinCode.length;
     GifView.preFetchImage(AssetImage('assets/onBoarding/gecko-clin.gif'));
 
     return PopScope(
-      onPopInvokedWithResult: (_, _) {
-        ref.read(pinStateProvider.notifier).setValid(false);
-        ref.read(pinStateProvider.notifier).setLoading(true);
+      canPop: !_isProcessing,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          ref.read(pinStateProvider.notifier).setValid(false);
+          ref.read(pinStateProvider.notifier).setLoading(true);
+        }
       },
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
@@ -244,10 +477,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   }
 
   Widget pinForm(BuildContext context, int pinLenght, int walletNbr, int derivation) {
-    // Scan state is now managed by Riverpod providers
-
-    // Will get the current safe after safe creation - don't capture it too early
-
     return Form(
       key: formKey,
       child: Padding(
@@ -255,7 +484,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         child: PinCodeTextField(
           key: keyPinForm,
           textCapitalization: TextCapitalization.characters,
-          // autoDisposeControllers: false,
           focusNode: pinFocus,
           autoFocus: true,
           appContext: context,
@@ -297,174 +525,12 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
           onCompleted: (pin) async {
             PinCodeService.pinCode = pin.toUpperCase();
             ref.read(pinStateProvider.notifier).setPinLength(pinLenght);
+
             if (pin.toUpperCase() == widget.pinCode) {
               pinColor = Colors.green[500];
               ref.read(pinStateProvider.notifier).setLoading(false);
               ref.read(pinStateProvider.notifier).setValid(true);
-
-              // Check if we're in a migration to existing safe flow (needed early)
-              LegacyMigrationData? migrationData = widget.legacyMigrationData;
-              migrationData ??= ref.read(pendingLegacyMigrationProvider);
-              final isMigrationToExistingSafe = migrationData?.isToExistingSafe ?? false;
-
-              // Create safe: legacy or mnemonic based on parameters
-              if (widget.legacySalt != null && widget.legacyPassword != null) {
-                // Create legacy safe
-                try {
-                  await ref
-                      .read(walletServiceProvider)
-                      .importLegacyWallet(
-                        salt: widget.legacySalt!,
-                        password: widget.legacyPassword!,
-                        pinCode: widget.pinCode,
-                        name: 'legacyWallet'.tr(),
-                      );
-                } catch (e) {
-                  if (!e.toString().contains('already been imported')) {
-                    rethrow;
-                  }
-                  log.i('Legacy wallet already imported - continuing with existing wallet');
-                }
-              } else {
-                // Create mnemonic safe - but skip if it already exists (migration case)
-                final mnemonicState = ref.read(mnemonicStateProvider);
-                final originalMnemonic = mnemonicState.mnemonicResult?.displayMnemonic ?? '';
-
-                if (originalMnemonic.isNotEmpty) {
-                  try {
-                    await ref
-                        .read(walletServiceProvider)
-                        .createSafe(mnemonic: originalMnemonic, pinCode: widget.pinCode, safeName: 'safeBoxName'.tr());
-                  } catch (e) {
-                    // If safe already exists (migration case), that's fine, continue
-                    if (!e.toString().contains('already exists') && !e.toString().contains('detect source language')) {
-                      rethrow;
-                    }
-                    log.i('Safe already exists or language detection failed - continuing with existing safe');
-                  }
-                }
-              }
-
-              // Refresh biometric provider after safe creation
-              await ref.read(biometricProvider.notifier).refresh();
-
-              // Get the current safe AFTER creation - this ensures we use the newly created safe
-              final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
-
-              // Handle wallet import differently for legacy vs mnemonic
-              if (widget.legacySalt == null || widget.legacyPassword == null) {
-                // Only do derivation scan for mnemonic safes
-                final mnemonicState = ref.read(mnemonicStateProvider);
-                ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
-                if (widget.scanDerivation && mnemonicState.mnemonicResult != null) {
-                  scanStatus = await ref.read(startScanProvider)(context, mnemonicState.mnemonicResult!);
-                }
-                switch (scanStatus) {
-                  case ScanDerivationsResult.none:
-                  case ScanDerivationsResult.walletNotFound:
-                    // Let Durt2 handle wallet creation and number assignment
-                    // BUT skip if we're migrating to an existing safe (wallets already exist)
-                    if (!isMigrationToExistingSafe) {
-                      await ref.read(walletServiceProvider).importRootWallet(pinCode: widget.pinCode);
-                    }
-                    break;
-                  case ScanDerivationsResult.timeout:
-                  case ScanDerivationsResult.error:
-                    return;
-                  default:
-                    break;
-                }
-              }
-              // For legacy wallets, the wallet is already created by importLegacyWallet
-
-              await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
-
-              // Invalidate identity providers to ensure fresh data after wallet import
-              // This fixes the bug where identity status isn't recognized after import
-              ref.read(walletActionsProvider.notifier).invalidateProviders();
-              ref.invalidate(idtyWalletAsyncProvider);
-              ref.invalidate(identityWalletsAsyncProvider);
-
-              // Clear mnemonic state after safe creation
-              ref.read(resetMnemonicStateProvider)();
-              PinCodeService.debounceResetPinCode();
-
-              // Set default wallet intelligently based on identity status
-              // Priority: member > confirmed identity > any identity > wallet number 0 > first wallet
-              WalletEntity? defaultWallet;
-
-              try {
-                // First try to get wallet with best identity status
-                defaultWallet = await ref.read(idtyWalletAsyncProvider.future);
-              } catch (e) {
-                log.w('Error getting identity wallet during onboarding: $e');
-                defaultWallet = null;
-              }
-
-              // Fallback to numeric priority if no identity wallet found
-              final walletsList = ref.read(walletsListProvider).wallets;
-              defaultWallet ??= walletsList.firstWhereOrNull((w) => w.number == 0);
-
-              // Final fallback to first available wallet
-              if (defaultWallet == null && walletsList.isNotEmpty) {
-                defaultWallet = walletsList.first;
-              }
-
-              if (defaultWallet != null) {
-                await ref.read(walletServiceProvider).setDefaultAddress(defaultWallet.address);
-              }
-
-              // Perform legacy migration if requested (from arguments or provider)
-              // migrationData already defined above
-
-              if (migrationData != null && defaultWallet != null) {
-                if (migrationData.isToExistingSafe && migrationData.targetWalletAddress == null) {
-                  // Migration to existing safe but no target wallet selected yet
-                  // Navigate to wallet selection screen
-                  if (context.mounted) {
-                    Navigator.pushReplacementNamed(
-                      context,
-                      RouteNames.walletSelection,
-                      arguments: WalletSelectionArguments(migrationData: migrationData, pinCode: widget.pinCode),
-                    );
-                    return; // Don't continue to step 11
-                  }
-                } else {
-                  // Migration to new safe OR migration to existing safe with target wallet selected
-                  WalletEntity targetWallet = defaultWallet;
-                  if (migrationData.targetWalletAddress != null) {
-                    // Use the selected target wallet
-                    targetWallet = ref.read(walletServiceProvider).getWalletData(migrationData.targetWalletAddress!);
-                  }
-
-                  await _performLegacyMigrationWithProgress(context, ref, targetWallet, migrationData);
-                  // Clear the pending migration data
-                  ref.read(pendingLegacyMigrationProvider.notifier).clear();
-                }
-              }
-
-              // Force reload of wallets BEFORE navigation to ensure correct state
-              final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
-              await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafeNumber);
-
-              // Also invalidate Riverpod providers to ensure synchronization
-              ref.invalidate(defaultWalletProvider);
-
-              // Store context validity before async operation
-              if (context.mounted) {
-                // Determine if we're in legacy mode
-                final isLegacyMode = widget.legacySalt != null && widget.legacyPassword != null;
-
-                await AppNavigator.pushWithFader(
-                  context,
-                  RouteNames.onboardingStepEleven,
-                  arguments: OnboardingStepElevenArguments(
-                    fromRestore: widget.fromRestore,
-                    pinCode: widget.pinCode,
-                    isLegacyMode: isLegacyMode,
-                  ),
-                );
-              }
+              await _handlePinConfirmed();
             } else {
               hasError = true;
               ref.read(pinStateProvider.notifier).setLoading(false);
@@ -481,7 +547,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
             if (pinColor != const Color(0xFFA4B600)) {
               pinColor = const Color(0xFFA4B600);
             }
-            // Force widget rebuild for PIN color change
             setState(() {});
           },
         ),

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/providers/mnemonic_providers.dart';
 import 'package:gecko/services/mnemonic_service.dart';
 import 'package:gecko/services/wallet_scan_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -114,6 +115,7 @@ class WalletScanNotifier extends Notifier<WalletScanState> {
 
   Future<void> _handleTimeout(BuildContext context) async {
     state = state.copyWith(isScanning: false, error: 'Scan timed out', status: WalletScanStatus.none);
+    ref.read(resetMnemonicStateProvider)();
 
     await showConfirmationDialog(
       context: context,
@@ -123,12 +125,14 @@ class WalletScanNotifier extends Notifier<WalletScanState> {
       type: ConfirmationDialogType.error,
     );
 
-    // Navigate to home
-    await Navigator.of(context).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
+    if (context.mounted) {
+      await Navigator.of(context).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
+    }
   }
 
   Future<void> _handleError(BuildContext context, String error) async {
     state = state.copyWith(isScanning: false, error: error, status: WalletScanStatus.none);
+    ref.read(resetMnemonicStateProvider)();
 
     String message = "errorScanDerivations".tr();
     if (error.contains('already exists')) {
@@ -143,8 +147,9 @@ class WalletScanNotifier extends Notifier<WalletScanState> {
       hideCancelButton: true,
     );
 
-    // Navigate back to home
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    if (context.mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
+    }
   }
 
   /// Reset the scan state

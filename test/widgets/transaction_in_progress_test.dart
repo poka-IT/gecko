@@ -6,6 +6,7 @@
 ///
 /// Note: Ces tests utilisent un widget minimal pour éviter les dépendances
 /// complexes (Hive, avatars, etc.) tout en testant la logique critique.
+library;
 
 import 'dart:async';
 
@@ -40,11 +41,16 @@ void main() {
     return ProviderContainer(
       overrides: [
         storageStateProvider.overrideWith(() => _MockStorageStateNotifier(StorageState.onlineMode)),
-        certStateProvider(targetAddress).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
-        smartIdtyStatusStreamProvider(targetAddress).overrideWith((ref) => const AsyncValue.data(d.IdtyStatus.validated)),
+        certStateProvider(
+          targetAddress,
+        ).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
+        smartIdtyStatusStreamProvider(
+          targetAddress,
+        ).overrideWith((ref) => const AsyncValue.data(d.IdtyStatus.validated)),
         certificationExistsProvider(targetAddress).overrideWith((ref) async => false),
-        certificationQueueProvider(issuerAddress)
-            .overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
+        certificationQueueProvider(
+          issuerAddress,
+        ).overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
       ],
     );
   }
@@ -81,12 +87,14 @@ void main() {
       expect(container.read(recentCertificationsProvider.notifier).isInProgress(issuerAddress, targetAddress), isTrue);
 
       // 2. Construire le widget
-      await tester.pumpWidget(createMinimalTestWidget(
-        transactionStatus: streamController.stream,
-        container: container,
-        fromAddress: issuerAddress,
-        toAddress: targetAddress,
-      ));
+      await tester.pumpWidget(
+        createMinimalTestWidget(
+          transactionStatus: streamController.stream,
+          container: container,
+          fromAddress: issuerAddress,
+          toAddress: targetAddress,
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 50));
 
       // 3. Simuler "inBlock" (transaction validée)
@@ -117,12 +125,14 @@ void main() {
 
       container.read(recentCertificationsProvider.notifier).markInProgress(issuerAddress, targetAddress);
 
-      await tester.pumpWidget(createMinimalTestWidget(
-        transactionStatus: streamController.stream,
-        container: container,
-        fromAddress: issuerAddress,
-        toAddress: targetAddress,
-      ));
+      await tester.pumpWidget(
+        createMinimalTestWidget(
+          transactionStatus: streamController.stream,
+          container: container,
+          fromAddress: issuerAddress,
+          toAddress: targetAddress,
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 50));
 
       streamController.add(d.TransactionStatus(state: d.TransactionState.finalized));
@@ -130,7 +140,10 @@ void main() {
       await tester.pump(); // Execute addPostFrameCallback
 
       expect(container.read(recentCertificationsProvider.notifier).isInProgress(issuerAddress, targetAddress), isFalse);
-      expect(container.read(recentCertificationsProvider.notifier).wasCertifiedRecently(issuerAddress, targetAddress), isTrue);
+      expect(
+        container.read(recentCertificationsProvider.notifier).wasCertifiedRecently(issuerAddress, targetAddress),
+        isTrue,
+      );
 
       await streamController.close();
       container.dispose();
@@ -143,19 +156,20 @@ void main() {
       container.read(recentCertificationsProvider.notifier).markInProgress(issuerAddress, targetAddress);
       expect(container.read(recentCertificationsProvider.notifier).isInProgress(issuerAddress, targetAddress), isTrue);
 
-      await tester.pumpWidget(createMinimalTestWidget(
-        transactionStatus: streamController.stream,
-        container: container,
-        fromAddress: issuerAddress,
-        toAddress: targetAddress,
-      ));
+      await tester.pumpWidget(
+        createMinimalTestWidget(
+          transactionStatus: streamController.stream,
+          container: container,
+          fromAddress: issuerAddress,
+          toAddress: targetAddress,
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 50));
 
       // Simuler une erreur
-      streamController.add(d.TransactionStatus(
-        state: d.TransactionState.error,
-        errorMessage: 'identity.CanNotRevokeUnvalidated',
-      ));
+      streamController.add(
+        d.TransactionStatus(state: d.TransactionState.error, errorMessage: 'identity.CanNotRevokeUnvalidated'),
+      );
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(); // Execute addPostFrameCallback
 
@@ -181,12 +195,14 @@ void main() {
 
       container.read(recentCertificationsProvider.notifier).markInProgress(issuerAddress, targetAddress);
 
-      await tester.pumpWidget(createMinimalTestWidget(
-        transactionStatus: streamController.stream,
-        container: container,
-        fromAddress: issuerAddress,
-        toAddress: targetAddress,
-      ));
+      await tester.pumpWidget(
+        createMinimalTestWidget(
+          transactionStatus: streamController.stream,
+          container: container,
+          fromAddress: issuerAddress,
+          toAddress: targetAddress,
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 50));
 
       streamController.add(d.TransactionStatus(state: d.TransactionState.timeout));
@@ -208,13 +224,15 @@ void main() {
       final container = createContainer();
       final streamController = StreamController<d.TransactionStatus>();
 
-      await tester.pumpWidget(createMinimalTestWidget(
-        transactionStatus: streamController.stream,
-        container: container,
-        fromAddress: issuerAddress,
-        toAddress: targetAddress,
-        transType: 'pay',
-      ));
+      await tester.pumpWidget(
+        createMinimalTestWidget(
+          transactionStatus: streamController.stream,
+          container: container,
+          fromAddress: issuerAddress,
+          toAddress: targetAddress,
+          transType: 'pay',
+        ),
+      );
       await tester.pump(const Duration(milliseconds: 50));
 
       streamController.add(d.TransactionStatus(state: d.TransactionState.finalized));
@@ -267,9 +285,7 @@ class _MinimalTransactionWidgetState extends ConsumerState<_MinimalTransactionWi
 
     if (widget.transType == 'cert' && widget.toAddress.isNotEmpty && widget.fromAddress.isNotEmpty) {
       ref.read(recentCertificationsProvider.notifier).removeCertification(widget.fromAddress, widget.toAddress);
-      ref.invalidate(
-        certButtonStateProvider((issuerAddress: widget.fromAddress, targetAddress: widget.toAddress)),
-      );
+      ref.invalidate(certButtonStateProvider((issuerAddress: widget.fromAddress, targetAddress: widget.toAddress)));
     }
   }
 
@@ -283,9 +299,7 @@ class _MinimalTransactionWidgetState extends ConsumerState<_MinimalTransactionWi
       ref.invalidate(certificationExistsProvider(widget.toAddress));
       ref.invalidate(certStateProvider(widget.toAddress));
       ref.invalidate(smartIdtyStatusStreamProvider(widget.toAddress));
-      ref.invalidate(
-        certButtonStateProvider((issuerAddress: widget.fromAddress, targetAddress: widget.toAddress)),
-      );
+      ref.invalidate(certButtonStateProvider((issuerAddress: widget.fromAddress, targetAddress: widget.toAddress)));
     }
   }
 

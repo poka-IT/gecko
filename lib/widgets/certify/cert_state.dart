@@ -36,11 +36,11 @@ class CertStateWidget extends ConsumerWidget {
         return buttonStateAsync.when(
           data: (buttonState) => _buildFromButtonState(context, ref, buttonState, issuerAddress),
           loading: () => _buildLegacyWidget(context, ref),
-          error: (_, __) => _buildLegacyWidget(context, ref),
+          error: (_, _) => _buildLegacyWidget(context, ref),
         );
       },
       loading: () => _buildLegacyWidget(context, ref),
-      error: (_, __) => _buildLegacyWidget(context, ref),
+      error: (_, _) => _buildLegacyWidget(context, ref),
     );
   }
 
@@ -144,11 +144,11 @@ class CertStateWidget extends ConsumerWidget {
         return idtyStatusAsync.when(
           data: (idtyStatus) => CertifyButton(address, isRenewal: certExists, idtyStatus: idtyStatus),
           loading: () => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
-          error: (_, __) => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
+          error: (_, _) => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
         );
       },
       loading: () => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
-      error: (_, __) => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
+      error: (_, _) => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
     );
   }
 

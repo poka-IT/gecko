@@ -9,6 +9,7 @@
 /// - Le statut d'identité de la cible
 ///
 /// Actions possibles : none, certifyNow, addToQueue, inQueue, executeQueued, disabled
+library;
 
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gecko/providers/certification_queue_provider.dart'
     show
         CertButtonAction,
-        CertButtonState,
         CertificationQueueNotifier,
         RecentCertData,
         RecentCertState,
@@ -65,7 +65,9 @@ void main() {
         certStateProvider(targetAddress).overrideWith(() => _MockCertStateNotifier(certState)),
         smartIdtyStatusStreamProvider(targetAddress).overrideWith((ref) => AsyncValue.data(targetIdtyStatus)),
         certificationExistsProvider(targetAddress).overrideWith((ref) async => certificationExists),
-        certificationQueueProvider(issuerAddress).overrideWith(() => _MockCertificationQueueNotifier(effectiveQueueState)),
+        certificationQueueProvider(
+          issuerAddress,
+        ).overrideWith(() => _MockCertificationQueueNotifier(effectiveQueueState)),
         recentCertificationsProvider.overrideWith(() => _MockRecentCertsNotifier(recentCertifications ?? {})),
       ],
     );
@@ -107,7 +109,9 @@ void main() {
   group('Early returns', () {
     test('storageState.notInitialized → none', () async {
       final container = await createContainer(storageState: StorageState.notInitialized);
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.none);
       container.dispose();
     });
@@ -116,10 +120,15 @@ void main() {
       final container = await createContainer(
         certState: d.CertState(status: d.CertStatus.canCert),
         recentCertifications: {
-          '$issuerAddress:$targetAddress': RecentCertData(timestamp: DateTime.now(), certState: RecentCertState.completed),
+          '$issuerAddress:$targetAddress': RecentCertData(
+            timestamp: DateTime.now(),
+            certState: RecentCertState.completed,
+          ),
         },
       );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.disabled);
       expect(result.disabledReason, 'mustWaitXBeforeCertify');
       container.dispose();
@@ -129,25 +138,33 @@ void main() {
       final container = await createContainer(
         certState: d.CertState(status: d.CertStatus.canCert),
         recentCertifications: {
-          '$issuerAddress:$targetAddress':
-              RecentCertData(timestamp: DateTime.now().subtract(const Duration(minutes: 15)), certState: RecentCertState.completed),
+          '$issuerAddress:$targetAddress': RecentCertData(
+            timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
+            certState: RecentCertState.completed,
+          ),
         },
       );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.certifyNow);
       container.dispose();
     });
 
     test('certState null && pas en file → none', () async {
       final container = await createContainer(certState: null);
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.none);
       container.dispose();
     });
 
     test('certState null && en file → inQueue', () async {
       final container = await createContainer(certState: null, queueState: createQueueWithTarget());
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.inQueue);
       expect(result.pendingCert, isNotNull);
       container.dispose();
@@ -161,7 +178,9 @@ void main() {
   group('CertStatus.none', () {
     test('→ none', () async {
       final container = await createContainer(certState: d.CertState(status: d.CertStatus.none));
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.none);
       container.dispose();
     });
@@ -174,7 +193,9 @@ void main() {
   group('CertStatus.canCert', () {
     test('pas en file → certifyNow', () async {
       final container = await createContainer(certState: d.CertState(status: d.CertStatus.canCert));
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.certifyNow);
       container.dispose();
     });
@@ -184,7 +205,9 @@ void main() {
         certState: d.CertState(status: d.CertStatus.canCert),
         queueState: createQueueWithTarget(isReady: true),
       );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.executeQueued);
       container.dispose();
     });
@@ -194,7 +217,9 @@ void main() {
         certState: d.CertState(status: d.CertStatus.canCert),
         queueState: createQueueWithTarget(isReady: false),
       );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.inQueue);
       container.dispose();
     });
@@ -215,7 +240,9 @@ void main() {
         final container = await createContainer(
           certState: d.CertState(status: status, duration: const Duration(days: 3)),
         );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+        final result = await container.read(
+          certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+        );
         expect(result.action, CertButtonAction.addToQueue);
         container.dispose();
       });
@@ -225,7 +252,9 @@ void main() {
           certState: d.CertState(status: status, duration: const Duration(days: 3)),
           queueState: createQueueWithTarget(isReady: true),
         );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+        final result = await container.read(
+          certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+        );
         expect(result.action, CertButtonAction.executeQueued);
         container.dispose();
       });
@@ -235,7 +264,9 @@ void main() {
           certState: d.CertState(status: status, duration: const Duration(days: 3)),
           queueState: createQueueWithTarget(isReady: false),
         );
-        final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+        final result = await container.read(
+          certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+        );
         expect(result.action, CertButtonAction.inQueue);
         container.dispose();
       });
@@ -249,7 +280,9 @@ void main() {
   group('Autres CertStatus', () {
     test('mustConfirmIdentity → disabled (mustConfirmHisIdentity)', () async {
       final container = await createContainer(certState: d.CertState(status: d.CertStatus.mustConfirmIdentity));
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.disabled);
       expect(result.disabledReason, 'mustConfirmHisIdentity');
       container.dispose();
@@ -257,7 +290,9 @@ void main() {
 
     test('emptyWallet → disabled (emptyWalletCannotBeCertified)', () async {
       final container = await createContainer(certState: d.CertState(status: d.CertStatus.emptyWallet));
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.disabled);
       expect(result.disabledReason, 'emptyWalletCannotBeCertified');
       container.dispose();
@@ -265,7 +300,9 @@ void main() {
 
     test('revoked → disabled (revokedAccountCannotBeCertified)', () async {
       final container = await createContainer(certState: d.CertState(status: d.CertStatus.revoked));
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.disabled);
       expect(result.disabledReason, 'revokedAccountCannotBeCertified');
       container.dispose();
@@ -279,10 +316,10 @@ void main() {
   group('Régressions', () {
     test('mustWaitBeforeCert → addToQueue (planifier pour plus tard)', () async {
       // Même avec un status unknown, l'utilisateur peut planifier la certification
-      final container = await createContainer(
-        certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert),
+      final container = await createContainer(certState: d.CertState(status: d.CertStatus.mustWaitBeforeCert));
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
       );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
       expect(result.action, CertButtonAction.addToQueue);
       container.dispose();
     });
@@ -292,10 +329,15 @@ void main() {
       final container = await createContainer(
         certState: d.CertState(status: d.CertStatus.canCert),
         recentCertifications: {
-          '$issuerAddress:$targetAddress': RecentCertData(timestamp: DateTime.now(), certState: RecentCertState.completed),
+          '$issuerAddress:$targetAddress': RecentCertData(
+            timestamp: DateTime.now(),
+            certState: RecentCertState.completed,
+          ),
         },
       );
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.disabled);
       container.dispose();
     });
@@ -307,11 +349,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           storageStateProvider.overrideWith(() => _MockStorageStateNotifier(StorageState.onlineMode)),
-          certStateProvider(targetAddress).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
+          certStateProvider(
+            targetAddress,
+          ).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
           smartIdtyStatusStreamProvider(targetAddress).overrideWith((ref) => AsyncValue.data(d.IdtyStatus.validated)),
           certificationExistsProvider(targetAddress).overrideWith((ref) async => false),
-          certificationQueueProvider(issuerAddress)
-              .overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
+          certificationQueueProvider(
+            issuerAddress,
+          ).overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
         ],
       );
 
@@ -326,8 +371,14 @@ void main() {
       container.invalidate(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)));
 
       // Le bouton devrait être "inProgress" et NON "disabled"
-      final result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
-      expect(result.action, CertButtonAction.inProgress, reason: 'Devrait afficher "Certification en cours" pendant la transaction');
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
+      expect(
+        result.action,
+        CertButtonAction.inProgress,
+        reason: 'Devrait afficher "Certification en cours" pendant la transaction',
+      );
       expect(result.disabledReason, isNull, reason: 'Pas de raison de désactivation, juste en cours');
 
       container.dispose();
@@ -340,11 +391,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           storageStateProvider.overrideWith(() => _MockStorageStateNotifier(StorageState.onlineMode)),
-          certStateProvider(targetAddress).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
+          certStateProvider(
+            targetAddress,
+          ).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
           smartIdtyStatusStreamProvider(targetAddress).overrideWith((ref) => AsyncValue.data(d.IdtyStatus.validated)),
           certificationExistsProvider(targetAddress).overrideWith((ref) async => false),
-          certificationQueueProvider(issuerAddress)
-              .overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
+          certificationQueueProvider(
+            issuerAddress,
+          ).overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
         ],
       );
 
@@ -356,7 +410,9 @@ void main() {
       container.read(recentCertificationsProvider.notifier).markInProgress(issuerAddress, targetAddress);
 
       // Le bouton devrait être "inProgress" car la transaction est en cours
-      var result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      var result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.inProgress, reason: 'Devrait être inProgress car transaction en cours');
 
       // Simule l'échec de la transaction - on retire du cache
@@ -366,7 +422,9 @@ void main() {
       container.invalidate(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)));
 
       // Le bouton devrait revenir à certifyNow car la certification a échoué
-      result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.certifyNow, reason: 'Devrait permettre de recertifier après échec');
 
       container.dispose();
@@ -378,11 +436,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           storageStateProvider.overrideWith(() => _MockStorageStateNotifier(StorageState.onlineMode)),
-          certStateProvider(targetAddress).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
+          certStateProvider(
+            targetAddress,
+          ).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
           smartIdtyStatusStreamProvider(targetAddress).overrideWith((ref) => AsyncValue.data(d.IdtyStatus.validated)),
           certificationExistsProvider(targetAddress).overrideWith((ref) async => false),
-          certificationQueueProvider(issuerAddress)
-              .overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
+          certificationQueueProvider(
+            issuerAddress,
+          ).overrideWith(() => _MockCertificationQueueNotifier(d.CertificationQueueState.empty(issuerAddress))),
         ],
       );
 
@@ -394,7 +455,9 @@ void main() {
       container.read(recentCertificationsProvider.notifier).markInProgress(issuerAddress, targetAddress);
 
       // Le bouton devrait être "inProgress"
-      var result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      var result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.inProgress, reason: 'Devrait être inProgress');
 
       // Simule le succès de la transaction
@@ -404,7 +467,9 @@ void main() {
       container.invalidate(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)));
 
       // Le bouton devrait être "disabled" car certification récente complétée
-      result = await container.read(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future);
+      result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
       expect(result.action, CertButtonAction.disabled, reason: 'Devrait être disabled après certification réussie');
       expect(result.disabledReason, 'mustWaitXBeforeCertify');
 

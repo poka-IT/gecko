@@ -118,16 +118,15 @@ RUN chmod +x /usr/local/bin/setup-ci-dependencies.sh
 RUN chmod +x /usr/local/bin/setup-android-signing.sh
 
 # Verify installations
-RUN echo "=== Verification ===" && \
-    flutter --version && \
-    java -version && \
-    fastlane --version && \
-    python3 --version && \
-    pip3 --version && \
-    cmake --version && \
-    echo "Android SDK: $ANDROID_SDK_ROOT" && \
-    ls -la $ANDROID_SDK_ROOT/ndk/ && \
-    echo "=== All dependencies installed successfully ==="
+RUN flutter --version
+RUN java -version
+RUN fastlane --version
+RUN python3 --version
+RUN pip3 --version
+RUN cmake --version
+RUN echo "Android SDK: $ANDROID_SDK_ROOT"
+RUN ls -la $ANDROID_SDK_ROOT/ndk/
+RUN echo "test de cmd"
 
 # Default command
 CMD ["/bin/bash"]

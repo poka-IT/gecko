@@ -4,10 +4,10 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:ss58/ss58.dart' as ss58;
 import 'package:base_codecs/base_codecs.dart';
-import 'package:flutter/foundation.dart';
 
 const String cesiumPlusEndpoint = 'https://g1.data.e-is.pro';
 
@@ -133,31 +133,31 @@ DateTime? parseTimestamp(dynamic value) {
 
 /// Print certification queue in a nice format
 void printCertificationQueue(Map<String, dynamic> queueJson, String address) {
-  debugPrint('');
-  debugPrint('╔══════════════════════════════════════════════════════════════════╗');
-  debugPrint('║               FILE DE CERTIFICATIONS                             ║');
-  debugPrint('╠══════════════════════════════════════════════════════════════════╣');
-  debugPrint('║ ${padLine('Adresse: $address')}║');
+  print('');
+  print('╔══════════════════════════════════════════════════════════════════╗');
+  print('║               FILE DE CERTIFICATIONS                             ║');
+  print('╠══════════════════════════════════════════════════════════════════╣');
+  print('║ ${padLine('Adresse: $address')}║');
 
   final issuerAddress = queueJson['issuerAddress'] as String?;
   if (issuerAddress != null && issuerAddress != address) {
-    debugPrint('║ ${padLine('Issuer:  $issuerAddress')}║');
+    print('║ ${padLine('Issuer:  $issuerAddress')}║');
   }
 
   final lastUpdated = parseTimestamp(queueJson['lastUpdated']);
-  debugPrint('║ ${padLine('Mise à jour: ${formatDateTime(lastUpdated)}')}║');
+  print('║ ${padLine('Mise à jour: ${formatDateTime(lastUpdated)}')}║');
 
-  debugPrint('╠══════════════════════════════════════════════════════════════════╣');
+  print('╠══════════════════════════════════════════════════════════════════╣');
 
   final pendingCerts = queueJson['pendingCertifications'] as List<dynamic>?;
 
   if (pendingCerts == null || pendingCerts.isEmpty) {
-    debugPrint('║                                                                  ║');
-    debugPrint('║ ${padLine('    📭 Aucune certification en attente')}║');
-    debugPrint('║                                                                  ║');
+    print('║                                                                  ║');
+    print('║ ${padLine('    📭 Aucune certification en attente')}║');
+    print('║                                                                  ║');
   } else {
-    debugPrint('║ ${padLine('${pendingCerts.length} certification(s) en attente:')}║');
-    debugPrint('╠══════════════════════════════════════════════════════════════════╣');
+    print('║ ${padLine('${pendingCerts.length} certification(s) en attente:')}║');
+    print('╠══════════════════════════════════════════════════════════════════╣');
 
     for (final cert in pendingCerts) {
       final position = cert['position'] as int? ?? 0;
@@ -192,38 +192,38 @@ void printCertificationQueue(Map<String, dynamic> queueJson, String address) {
           typeLabel = 'Certification';
       }
 
-      debugPrint('║                                                                  ║');
-      debugPrint('║ ${padLine(' $readyIndicator #$position - $displayName')}║');
-      debugPrint('║ ${padLine('    $typeEmoji $typeLabel')}║');
-      debugPrint('║ ${padLine('    📍 ${shortAddress(receiverAddress)}')}║');
-      debugPrint('║ ${padLine('    📅 Ajouté: ${formatDateTime(addedAt)}')}║');
+      print('║                                                                  ║');
+      print('║ ${padLine(' $readyIndicator #$position - $displayName')}║');
+      print('║ ${padLine('    $typeEmoji $typeLabel')}║');
+      print('║ ${padLine('    📍 ${shortAddress(receiverAddress)}')}║');
+      print('║ ${padLine('    📅 Ajouté: ${formatDateTime(addedAt)}')}║');
 
       if (isReady) {
-        debugPrint('║ ${padLine('    ✅ PRÊT À CERTIFIER !')}║');
+        print('║ ${padLine('    ✅ PRÊT À CERTIFIER !')}║');
       } else if (expectedDate != null) {
-        debugPrint('║ ${padLine('    ⏳ Disponible: ${formatDateTime(expectedDate)}')}║');
+        print('║ ${padLine('    ⏳ Disponible: ${formatDateTime(expectedDate)}')}║');
       }
     }
   }
 
-  debugPrint('║                                                                  ║');
-  debugPrint('╚══════════════════════════════════════════════════════════════════╝');
-  debugPrint('');
+  print('║                                                                  ║');
+  print('╚══════════════════════════════════════════════════════════════════╝');
+  print('');
 }
 
 void printUsage() {
-  debugPrint('');
-  debugPrint('Usage: ./scripts/show_cert_queue <ADDRESS_OR_PUBKEY>');
-  debugPrint('');
-  debugPrint('Affiche la file de certifications stockée sur CesiumPlus.');
-  debugPrint('');
-  debugPrint('Accepte:');
-  debugPrint('  - Adresse SS58 (ex: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY)');
-  debugPrint('  - Pubkey base58 (ex: HgTTJLAQ5sqfknMq7yLPZbehtuLSsKj9CxWN7k8QvYJd)');
-  debugPrint('');
-  debugPrint('Options:');
-  debugPrint('  -v, --verbose  Affiche le JSON brut');
-  debugPrint('');
+  print('');
+  print('Usage: ./scripts/show_cert_queue <ADDRESS_OR_PUBKEY>');
+  print('');
+  print('Affiche la file de certifications stockée sur CesiumPlus.');
+  print('');
+  print('Accepte:');
+  print('  - Adresse SS58 (ex: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY)');
+  print('  - Pubkey base58 (ex: HgTTJLAQ5sqfknMq7yLPZbehtuLSsKj9CxWN7k8QvYJd)');
+  print('');
+  print('Options:');
+  print('  -v, --verbose  Affiche le JSON brut');
+  print('');
 }
 
 void main(List<String> args) async {
@@ -246,18 +246,18 @@ void main(List<String> args) async {
     exit(1);
   }
 
-  debugPrint('');
-  debugPrint('🔍 Recherche du profil CesiumPlus pour: ${shortAddress(address)}...');
-  debugPrint('   Pubkey (base58): $pubkey');
+  print('');
+  print('🔍 Recherche du profil CesiumPlus pour: ${shortAddress(address)}...');
+  print('   Pubkey (base58): $pubkey');
 
   // Fetch profile
   final profile = await getProfile(pubkey);
 
   if (profile == null) {
-    debugPrint('');
-    debugPrint('⚠️  Aucun profil CesiumPlus trouvé pour cette adresse.');
-    debugPrint('   La file de certifications est vide ou le profil n\'existe pas.');
-    debugPrint('');
+    print('');
+    print('⚠️  Aucun profil CesiumPlus trouvé pour cette adresse.');
+    print('   La file de certifications est vide ou le profil n\'existe pas.');
+    print('');
     exit(0);
   }
 
@@ -265,12 +265,12 @@ void main(List<String> args) async {
   final certQueue = profile['certificationQueue'] as Map<String, dynamic>?;
 
   if (certQueue == null) {
-    debugPrint('');
-    debugPrint('✅ Profil CesiumPlus trouvé, mais aucune file de certifications.');
+    print('');
+    print('✅ Profil CesiumPlus trouvé, mais aucune file de certifications.');
     if (profile['title'] != null) {
-      debugPrint('   Nom du profil: ${profile['title']}');
+      print('   Nom du profil: ${profile['title']}');
     }
-    debugPrint('');
+    print('');
     exit(0);
   }
 
@@ -279,9 +279,9 @@ void main(List<String> args) async {
 
   // Also print raw JSON if verbose
   if (args.contains('-v') || args.contains('--verbose')) {
-    debugPrint('--- JSON brut ---');
+    print('--- JSON brut ---');
     final encoder = JsonEncoder.withIndent('  ');
-    debugPrint(encoder.convert(certQueue));
-    debugPrint('');
+    print(encoder.convert(certQueue));
+    print('');
   }
 }

@@ -148,6 +148,69 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
     }
   }
 
+  Future<void> _deleteProfile() async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red.shade600, size: scaleSize(24)),
+            ScaledSizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'deleteProfileConfirmTitle'.tr(),
+                style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        content: Text('deleteProfileConfirmMessage'.tr(), style: scaledTextStyle(fontSize: 14)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('cancel'.tr())),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
+            child: Text('deleteProfile'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final pinCode = await PinCodeService.askPinCode();
+    if (!pinCode) {
+      SnackbarService.showError(context, message: 'pinNeeded'.tr());
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final walletService = ref.read(walletServiceProvider);
+      final keyPair = await walletService.getKeyPairFromAddress(
+        address: widget.address,
+        pinCode: PinCodeService.pinCode,
+      );
+
+      final cesiumPlus = ref.read(cesiumPlusServiceProvider);
+      final success = await cesiumPlus.deleteProfile(address: widget.address, signFunction: keyPair.sign);
+
+      if (success) {
+        SnackbarService.showSuccess(context, message: 'profileDeleted'.tr());
+        if (mounted) Navigator.pop(context);
+      } else {
+        SnackbarService.showError(context, message: 'profileDeleteFailed'.tr());
+      }
+    } catch (e) {
+      log.e('Error deleting Cesium+ profile: $e');
+      SnackbarService.showError(context, message: 'profileDeleteFailed'.tr());
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> _searchCities(String query) async {
     if (query.isEmpty) return [];
 
@@ -208,7 +271,18 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('cesiumProfile'.tr()), elevation: 0),
+      appBar: AppBar(
+        title: Text('cesiumProfile'.tr()),
+        elevation: 0,
+        actions: [
+          if (_profile != null)
+            IconButton(
+              icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+              tooltip: 'deleteProfile'.tr(),
+              onPressed: _isSaving ? null : _deleteProfile,
+            ),
+        ],
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -239,8 +313,17 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                                 border: const OutlineInputBorder(),
                                 filled: true,
                                 fillColor: context.colorScheme.surfaceContainer,
+                                suffixIcon: _descriptionController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear, size: 20),
+                                        onPressed: () {
+                                          setState(() => _descriptionController.clear());
+                                        },
+                                      )
+                                    : null,
                               ),
                               style: scaledTextStyle(fontSize: 14),
+                              onChanged: (_) => setState(() {}),
                             ),
                           ),
 
@@ -263,8 +346,20 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                                     border: const OutlineInputBorder(),
                                     filled: true,
                                     fillColor: context.colorScheme.surfaceContainer,
+                                    suffixIcon: _cityController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(Icons.clear, size: 20),
+                                            onPressed: () {
+                                              setState(() {
+                                                _cityController.clear();
+                                                _selectedLocation = null;
+                                              });
+                                            },
+                                          )
+                                        : null,
                                   ),
                                   style: scaledTextStyle(fontSize: 14),
+                                  onChanged: (_) => setState(() {}),
                                 );
                               },
                               hideOnEmpty: true,

@@ -17,6 +17,7 @@ import 'dart:async';
 import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType, SslConfigService;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Consumer;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
@@ -44,7 +45,8 @@ const bool enableSentry = true;
 const bool showVersionOverlay = true; // Set to false to hide version overlay in production
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await EasyLocalization.ensureInitialized();
 
   // Initialize storage service
@@ -83,6 +85,8 @@ Future<void> main() async {
   final appInfoService = AppInfoService();
   await appInfoService.init();
   appVersion = appInfoService.appVersion;
+
+  FlutterNativeSplash.remove();
 
   if (kReleaseMode && enableSentry) {
     await SentryService.init(

@@ -20,7 +20,7 @@ class MnemonicScanner extends StatefulWidget {
   State<MnemonicScanner> createState() => _MnemonicScannerState();
 }
 
-class _MnemonicScannerState extends State<MnemonicScanner> {
+class _MnemonicScannerState extends State<MnemonicScanner> with WidgetsBindingObserver {
   CameraController? _cameraController;
   bool _isInitialized = false;
   bool _isProcessing = false;
@@ -33,11 +33,25 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeCamera();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _captureTimer?.cancel();
+      _captureTimer = null;
+    } else if (state == AppLifecycleState.resumed) {
+      if (_isInitialized && !_isDisposed && _captureTimer == null) {
+        _startImageCapture();
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _isDisposed = true;
     _captureTimer?.cancel();
     _captureTimer = null;
@@ -134,8 +148,9 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
         }
       }
     } on CameraException catch (e) {
-      // Camera closed during capture (race condition on dispose) — ignore
+      // Camera closed or iOS background restriction — ignore silently
       if (e.description?.contains('Camera is closed') == true) return;
+      if (e.description?.contains('Cannot Record') == true) return;
       if (kDebugMode) {
         debugPrint('MnemonicScanner: Camera error: $e');
       }

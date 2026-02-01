@@ -767,5 +767,14 @@
     "noProfileAvailable": "No profile available",
     "externalLinkTitle": "External link",
     "externalLinkWarning": "You are about to leave the app to open an external link. Be careful and make sure you trust this link before proceeding.",
-    "openLink": "Open link"
+    "openLink": "Open link",
+    "paymentWarningNonExistentTitle": "Non-existent wallet",
+    "paymentWarningNonExistentMessage": "This wallet has never been funded. A {} payment will create the account on the blockchain.",
+    "paymentWarningEmptiedTitle": "Empty wallet",
+    "paymentWarningEmptiedMessage": "This {} wallet has been emptied. Last activity: {}. The owner may no longer have access.",
+    "paymentWarningInactiveTitle": "Inactive wallet",
+    "paymentWarningInactiveMessage": "This {} wallet has had no outgoing activity for a long time (last: {}). The owner may no longer have access.",
+    "timeAgoYears": "{} year(s) ago",
+    "timeAgoMonths": "{} month(s) ago",
+    "timeAgoDays": "{} day(s) ago"
 }

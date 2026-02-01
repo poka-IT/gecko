@@ -734,5 +734,14 @@
     "noProfileAvailable": "Nessun profilo disponibile",
     "externalLinkTitle": "Link esterno",
     "externalLinkWarning": "Stai per uscire dall'app per aprire un link esterno. Fai attenzione e assicurati che il link sia affidabile prima di continuare.",
-    "openLink": "Apri link"
+    "openLink": "Apri link",
+    "paymentWarningNonExistentTitle": "Portafoglio inesistente",
+    "paymentWarningNonExistentMessage": "Questo portafoglio non è mai stato finanziato. Un pagamento in {} creerà l'account sulla blockchain.",
+    "paymentWarningEmptiedTitle": "Portafoglio vuoto",
+    "paymentWarningEmptiedMessage": "Questo portafoglio {} è stato svuotato. Ultima attività: {}. Il proprietario potrebbe non avere più accesso.",
+    "paymentWarningInactiveTitle": "Portafoglio inattivo",
+    "paymentWarningInactiveMessage": "Questo portafoglio {} non ha avuto attività in uscita per molto tempo (ultima: {}). Il proprietario potrebbe non avere più accesso.",
+    "timeAgoYears": "{} anno/i fa",
+    "timeAgoMonths": "{} mese/i fa",
+    "timeAgoDays": "{} giorno/i fa"
 }

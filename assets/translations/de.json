@@ -161,5 +161,14 @@
     "noProfileAvailable": "Kein Profil verfügbar",
     "externalLinkTitle": "Externer Link",
     "externalLinkWarning": "Sie verlassen die App, um einen externen Link zu öffnen. Seien Sie vorsichtig und stellen Sie sicher, dass der Link vertrauenswürdig ist, bevor Sie fortfahren.",
-    "openLink": "Link öffnen"
+    "openLink": "Link öffnen",
+    "paymentWarningNonExistentTitle": "Nicht existierende Brieftasche",
+    "paymentWarningNonExistentMessage": "Diese Brieftasche wurde noch nie finanziert. Eine Zahlung in {} wird das Konto auf der Blockchain erstellen.",
+    "paymentWarningEmptiedTitle": "Leere Brieftasche",
+    "paymentWarningEmptiedMessage": "Diese {} Brieftasche wurde geleert. Letzte Aktivität: {}. Der Besitzer hat möglicherweise keinen Zugang mehr.",
+    "paymentWarningInactiveTitle": "Inaktive Brieftasche",
+    "paymentWarningInactiveMessage": "Diese {} Brieftasche hatte seit langem keine ausgehende Aktivität (letzte: {}). Der Besitzer hat möglicherweise keinen Zugang mehr.",
+    "timeAgoYears": "vor {} Jahr(en)",
+    "timeAgoMonths": "vor {} Monat(en)",
+    "timeAgoDays": "vor {} Tag(en)"
 }

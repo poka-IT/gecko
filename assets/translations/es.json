@@ -734,5 +734,14 @@
     "noProfileAvailable": "No hay perfil disponible",
     "externalLinkTitle": "Enlace externo",
     "externalLinkWarning": "Está a punto de salir de la aplicación para abrir un enlace externo. Tenga cuidado y asegúrese de que el enlace sea de confianza antes de continuar.",
-    "openLink": "Abrir enlace"
+    "openLink": "Abrir enlace",
+    "paymentWarningNonExistentTitle": "Monedero inexistente",
+    "paymentWarningNonExistentMessage": "Este monedero nunca ha sido financiado. Un pago en {} creará la cuenta en la blockchain.",
+    "paymentWarningEmptiedTitle": "Monedero vacío",
+    "paymentWarningEmptiedMessage": "Este monedero {} ha sido vaciado. Última actividad: {}. Es posible que el propietario ya no tenga acceso.",
+    "paymentWarningInactiveTitle": "Monedero inactivo",
+    "paymentWarningInactiveMessage": "Este monedero {} no ha tenido actividad saliente durante mucho tiempo (última: {}). Es posible que el propietario ya no tenga acceso.",
+    "timeAgoYears": "hace {} año(s)",
+    "timeAgoMonths": "hace {} mes(es)",
+    "timeAgoDays": "hace {} día(s)"
 }

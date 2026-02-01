@@ -2,7 +2,17 @@
 
 import 'dart:async';
 
-import 'package:durt2/durt2.dart' show TransactionStatus, WalletEntity, Durt, DuniterService, WalletService;
+import 'package:durt2/durt2.dart'
+    show
+        TransactionStatus,
+        WalletEntity,
+        Durt,
+        DuniterService,
+        WalletService,
+        SquidService,
+        AccountPaymentStatus,
+        ConnectionStatus,
+        SquidAccountQueries;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,7 +34,9 @@ import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/async_elevated_button.dart';
+import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Simple function to show the payment popup - no longer depends on external ref
@@ -229,6 +241,22 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     }
   }
 
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    final days = difference.inDays;
+
+    if (days >= 365) {
+      final years = (days / 365).floor();
+      return 'timeAgoYears'.tr(args: [years.toString()]);
+    } else if (days >= 30) {
+      final months = (days / 30).floor();
+      return 'timeAgoMonths'.tr(args: [months.toString()]);
+    } else {
+      return 'timeAgoDays'.tr(args: [days.toString()]);
+    }
+  }
+
   Future executeTransfert() async {
     // Capture fromWallet first, before any async operations that might dispose the widget
     // This avoids accessing ref after the widget is unmounted
@@ -241,6 +269,53 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     final trmDataAsync = ref.read(trmDataProvider);
     final duniterService = ref.read(duniterServiceProvider);
     final walletService = ref.read(walletServiceProvider);
+
+    // Check account status before payment (fail-open: skip if Squid unavailable)
+    final squidStatus = ref.read(squidConnectionStatusProvider);
+    if (squidStatus == ConnectionStatus.connected) {
+      try {
+        final accountStatus = await SquidService.client.getAccountPaymentStatus(widget.toAddress);
+        if (accountStatus != null && accountStatus.status != AccountPaymentStatus.active) {
+          final symbol = Durt.i.network.symbol;
+          final (String, String) warning = switch (accountStatus.status) {
+            AccountPaymentStatus.neverExisted => (
+              'paymentWarningNonExistentTitle'.tr(),
+              'paymentWarningNonExistentMessage'.tr(args: [symbol]),
+            ),
+            AccountPaymentStatus.emptied => (
+              'paymentWarningEmptiedTitle'.tr(),
+              'paymentWarningEmptiedMessage'.tr(
+                args: [
+                  symbol,
+                  accountStatus.lastActivityTime != null ? _formatTimeAgo(accountStatus.lastActivityTime!) : '?',
+                ],
+              ),
+            ),
+            AccountPaymentStatus.inactive => (
+              'paymentWarningInactiveTitle'.tr(),
+              'paymentWarningInactiveMessage'.tr(
+                args: [
+                  symbol,
+                  accountStatus.lastActivityTime != null ? _formatTimeAgo(accountStatus.lastActivityTime!) : '?',
+                ],
+              ),
+            ),
+            AccountPaymentStatus.active => ('', ''),
+          };
+
+          final confirmed = await showConfirmationDialog(
+            context: context,
+            title: warning.$1,
+            message: warning.$2,
+            type: ConfirmationDialogType.warning,
+          );
+          if (!confirmed) return;
+        }
+      } catch (e) {
+        // Fail-open: ignore errors and proceed with payment
+        log.d('Account status check failed (proceeding anyway): $e');
+      }
+    }
 
     // Close popup immediately to avoid blocking UI
     Navigator.pop(context);

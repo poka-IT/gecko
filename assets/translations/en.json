@@ -758,5 +758,8 @@
     "mnemonicVerificationFailed": "Failed to load your recovery phrase. Please try again.",
     "showMore": "Show more",
     "showLess": "Show less",
-    "undefinedName": "Undefined name"
+    "undefinedName": "Undefined name",
+    "commitSingleIdentity": "I commit to having only one member identity",
+    "viewProfile": "View profile",
+    "noProfileAvailable": "No profile available"
 }

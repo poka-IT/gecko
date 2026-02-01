@@ -725,5 +725,8 @@
     "mnemonicVerificationFailed": "Impossibile caricare la frase di ripristino. Riprova.",
     "showMore": "Mostra di più",
     "showLess": "Mostra meno",
-    "undefinedName": "Nome indefinito"
+    "undefinedName": "Nome indefinito",
+    "commitSingleIdentity": "Mi impegno ad avere una sola identità membro",
+    "viewProfile": "Vedi profilo",
+    "noProfileAvailable": "Nessun profilo disponibile"
 }

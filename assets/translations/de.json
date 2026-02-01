@@ -152,5 +152,8 @@
     "biometricEnabled": "Biometrische Authentifizierung aktiviert",
     "showMore": "Mehr anzeigen",
     "showLess": "Weniger anzeigen",
-    "generatingKeypairs": "Schlüsselpaare werden generiert"
+    "generatingKeypairs": "Schlüsselpaare werden generiert",
+    "commitSingleIdentity": "Ich verpflichte mich, nur eine Mitgliedsidentität zu haben",
+    "viewProfile": "Profil ansehen",
+    "noProfileAvailable": "Kein Profil verfügbar"
 }

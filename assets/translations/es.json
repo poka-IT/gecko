@@ -725,5 +725,8 @@
     "mnemonicVerificationFailed": "No se pudo cargar su frase de recuperación. Por favor, inténtelo de nuevo.",
     "showMore": "Ver más",
     "showLess": "Ver menos",
-    "undefinedName": "Nombre indefinido"
+    "undefinedName": "Nombre indefinido",
+    "commitSingleIdentity": "Me comprometo a tener solo una identidad de miembro",
+    "viewProfile": "Ver perfil",
+    "noProfileAvailable": "No hay perfil disponible"
 }

@@ -16,11 +16,13 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
+import 'package:gecko/screens/license_page.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/bottom_sheets/mnemonic_challenge_sheet.dart';
 import 'package:gecko/widgets/commons/async_elevated_button.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/commons/shimmer_placeholder.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 
 class ConfirmIdentityScreen extends ConsumerStatefulWidget {
@@ -33,14 +35,21 @@ class ConfirmIdentityScreen extends ConsumerStatefulWidget {
 
 class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
   final TextEditingController _identityNameController = TextEditingController();
+  final PageController _pageController = PageController();
+  final FocusNode _usernameFocusNode = FocusNode();
   bool _canValidate = false;
+  bool _singleIdentityCommitment = false;
+  bool _isValidating = false;
   String _errorMessage = '';
   Timer? _debounceTimer;
+  int _currentPage = 0;
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
     _identityNameController.dispose();
+    _pageController.dispose();
+    _usernameFocusNode.dispose();
     super.dispose();
   }
 
@@ -50,6 +59,8 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     // Check basic validation criteria first
     final hasNoSpaces = !name.contains(' ');
     final isLengthValid = name.length >= 3 && name.length <= 32;
+
+    if (mounted) setState(() => _isValidating = true);
 
     // Try to check if identity exists via Squid, but handle errors gracefully
     bool idtyExist = false;
@@ -76,6 +87,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     if (!mounted) return;
 
     setState(() {
+      _isValidating = false;
       _canValidate = isValid;
       if (idtyExist) {
         _errorMessage = 'thisIdentityAlreadyExist'.tr();
@@ -157,139 +169,286 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
       appBar: WalletAppBar(address: widget.address, title: 'chooseIdentityName'.tr()),
       body: Column(
         children: [
-          // Scrollable content area
           Expanded(
-            child: SingleChildScrollView(
+            child: PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) => setState(() => _currentPage = index),
+              children: [_buildPage1(context, isSmallScreen), _buildPage2(context, isSmallScreen)],
+            ),
+          ),
+          // Bottom section with page dots + action button
+          _buildBottomSection(context, isSmallScreen),
+        ],
+      ),
+    );
+  }
+
+  /// Page 1: Explanatory content + license link
+  Widget _buildPage1(BuildContext context, bool isSmallScreen) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(scaleSize(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with icon
+            Center(
+              child: Container(
+                width: scaleSize(isSmallScreen ? 60 : 80),
+                height: scaleSize(isSmallScreen ? 60 : 80),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.person_outline,
+                  size: scaleSize(isSmallScreen ? 30 : 40),
+                  color: context.colorScheme.primary,
+                ),
+              ),
+            ),
+            ScaledSizedBox(height: isSmallScreen ? 16 : 32),
+
+            // Main title
+            Text(
+              'identityInDuniterNetwork'.tr(args: [Durt.i.network.symbol]),
+              style: scaledTextStyle(fontSize: isSmallScreen ? 20 : 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+
+            // Explanatory text
+            Text('identityExplanation'.tr(), style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
+            ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+
+            // Important points
+            ...['identityNameUnique'.tr(), 'identityNameSearchable'.tr(), 'identityNamePermanent'.tr()].map(
+              (text) => Padding(
+                padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: context.colorScheme.primary,
+                      size: scaleSize(isSmallScreen ? 16 : 20),
+                    ),
+                    ScaledSizedBox(width: isSmallScreen ? 8 : 12),
+                    Expanded(
+                      child: Text(text, style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            ScaledSizedBox(height: isSmallScreen ? 24 : 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Page 2: Username input + commitment checkbox
+  Widget _buildPage2(BuildContext context, bool isSmallScreen) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(scaleSize(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ScaledSizedBox(height: isSmallScreen ? 8 : 16),
+
+            // Identity name input field
+            TextField(
+              key: keyEnterIdentityUsername,
+              controller: _identityNameController,
+              focusNode: _usernameFocusNode,
+              onChanged: (_) {
+                _debounceTimer?.cancel();
+                setState(() => _isValidating = true);
+                _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+                  _validateIdentityName();
+                });
+              },
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) {
+                if (_canValidate && _singleIdentityCommitment) {
+                  _confirmIdentity(context);
+                }
+              },
+              inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'^ '))],
+              decoration: InputDecoration(
+                hintText: 'enterIdentityName'.tr(),
+                errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
+                errorStyle: scaledTextStyle(color: Colors.red),
+                filled: true,
+                fillColor: context.colorScheme.surfaceContainerHighest,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+                suffixIcon: _isValidating
+                    ? Padding(
+                        padding: EdgeInsets.only(right: scaleSize(12)),
+                        child: ShimmerPlaceholder(width: scaleSize(40), height: scaleSize(16)),
+                      )
+                    : null,
+                suffixIconConstraints: BoxConstraints(maxHeight: scaleSize(24), maxWidth: scaleSize(52)),
+              ),
+              style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
+            ),
+            ScaledSizedBox(height: isSmallScreen ? 16 : 24),
+
+            // Commitment checkbox
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => setState(() => _singleIdentityCommitment = !_singleIdentityCommitment),
               child: Padding(
-                padding: EdgeInsets.all(scaleSize(16)),
-                child: Column(
+                padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header with icon
-                    Center(
-                      child: Container(
-                        width: scaleSize(isSmallScreen ? 60 : 80),
-                        height: scaleSize(isSmallScreen ? 60 : 80),
-                        decoration: BoxDecoration(
-                          color: context.colorScheme.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.person_outline,
-                          size: scaleSize(isSmallScreen ? 30 : 40),
-                          color: context.colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    ScaledSizedBox(height: isSmallScreen ? 16 : 32),
-
-                    // Main title
-                    Text(
-                      'identityInDuniterNetwork'.tr(args: [Durt.i.network.symbol]),
-                      style: scaledTextStyle(fontSize: isSmallScreen ? 20 : 24, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                    ScaledSizedBox(height: isSmallScreen ? 16 : 24),
-
-                    // Explanatory text
-                    Text('identityExplanation'.tr(), style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
-                    ScaledSizedBox(height: isSmallScreen ? 16 : 24),
-
-                    // Important points
-                    ...['identityNameUnique'.tr(), 'identityNameSearchable'.tr(), 'identityNamePermanent'.tr()].map(
-                      (text) => Padding(
-                        padding: EdgeInsets.only(bottom: scaleSize(isSmallScreen ? 8 : 12)),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: context.colorScheme.primary,
-                              size: scaleSize(isSmallScreen ? 16 : 20),
-                            ),
-                            ScaledSizedBox(width: isSmallScreen ? 8 : 12),
-                            Expanded(
-                              child: Text(text, style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16)),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Add extra bottom padding to ensure content doesn't get cut off
-                    ScaledSizedBox(height: isSmallScreen ? 24 : 32),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Fixed input section at bottom
-          Container(
-            decoration: BoxDecoration(
-              color: context.colorScheme.surface,
-              border: Border(top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.all(scaleSize(16)),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Identity name input field
-                    TextField(
-                      key: keyEnterIdentityUsername,
-                      controller: _identityNameController,
-                      onChanged: (_) {
-                        _debounceTimer?.cancel();
-                        _debounceTimer = Timer(const Duration(milliseconds: 400), () {
-                          _validateIdentityName();
-                        });
-                      },
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) {
-                        if (_canValidate) {
-                          _confirmIdentity(context);
-                        }
-                      },
-                      inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'^ '))],
-                      decoration: InputDecoration(
-                        hintText: 'enterIdentityName'.tr(),
-                        errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
-                        errorStyle: scaledTextStyle(color: Colors.red),
-                        filled: true,
-                        fillColor: context.colorScheme.surfaceContainerHighest,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                        contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
-                      ),
-                      style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
-                    ),
-                    ScaledSizedBox(height: 16),
-
-                    // Validate button
                     SizedBox(
-                      width: double.infinity,
-                      height: scaleSize(isSmallScreen ? 44 : 50),
-                      child: AsyncElevatedButton(
-                        key: keyConfirm,
-                        onPressed: _canValidate ? () => _confirmIdentity(context) : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.colorScheme.primary,
-                          disabledBackgroundColor: Colors.grey[300],
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: Text(
-                          'validate'.tr(),
-                          style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16, color: Colors.white),
-                        ),
+                      width: scaleSize(24),
+                      height: scaleSize(24),
+                      child: Checkbox(
+                        value: _singleIdentityCommitment,
+                        onChanged: (value) => setState(() => _singleIdentityCommitment = value ?? false),
+                        activeColor: context.colorScheme.primary,
+                      ),
+                    ),
+                    ScaledSizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'commitSingleIdentity'.tr(),
+                        style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// License link widget (same style as currency_page.dart)
+  Widget _buildLicenseLink(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonetaryLicensePage())),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: context.colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.2)),
           ),
-        ],
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(14)),
+          child: Row(
+            children: [
+              Icon(Icons.article_outlined, color: context.colorScheme.primary, size: scaleSize(22)),
+              ScaledSizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'readMonetaryLicense'.tr(),
+                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: context.colorScheme.primary),
+                ),
+              ),
+              Icon(Icons.chevron_right, color: context.colorScheme.primary, size: scaleSize(22)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Bottom section with page indicator and action button
+  Widget _buildBottomSection(BuildContext context, bool isSmallScreen) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface,
+        border: Border(top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.all(scaleSize(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Page indicator dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(2, (index) {
+                  final isActive = index == _currentPage;
+                  return Container(
+                    margin: EdgeInsets.symmetric(horizontal: scaleSize(4)),
+                    width: scaleSize(isActive ? 10 : 8),
+                    height: scaleSize(isActive ? 10 : 8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isActive
+                          ? context.colorScheme.primary
+                          : context.colorScheme.outline.withValues(alpha: 0.3),
+                    ),
+                  );
+                }),
+              ),
+              ScaledSizedBox(height: 16),
+
+              // Action button
+              if (_currentPage == 0) ...[
+                _buildLicenseLink(context),
+                ScaledSizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: scaleSize(isSmallScreen ? 44 : 50),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _pageController.animateToPage(
+                        1,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                      Future.delayed(const Duration(milliseconds: 350), () {
+                        if (mounted) _usernameFocusNode.requestFocus();
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.colorScheme.primary,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(
+                      'continue'.tr(),
+                      style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ] else
+                SizedBox(
+                  width: double.infinity,
+                  height: scaleSize(isSmallScreen ? 44 : 50),
+                  child: AsyncElevatedButton(
+                    key: keyConfirm,
+                    onPressed: _canValidate && _singleIdentityCommitment ? () => _confirmIdentity(context) : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.colorScheme.primary,
+                      disabledBackgroundColor: Colors.grey[300],
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(
+                      'validate'.tr(),
+                      style: scaledTextStyle(fontSize: isSmallScreen ? 14 : 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

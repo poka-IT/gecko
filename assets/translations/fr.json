@@ -763,5 +763,8 @@
     "mnemonicVerificationFailed": "Impossible de charger votre phrase de restauration. Veuillez réessayer.",
     "showMore": "Voir plus",
     "showLess": "Voir moins",
-    "undefinedName": "Nom indéfini"
+    "undefinedName": "Nom indéfini",
+    "commitSingleIdentity": "Je m'engage à n'avoir qu'une seule identité membre",
+    "viewProfile": "Voir le profil",
+    "noProfileAvailable": "Aucun profil disponible"
 }

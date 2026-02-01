@@ -781,5 +781,9 @@
     "paymentWarningInactiveMessage": "Ce portefeuille {} n'a eu aucune activité sortante depuis longtemps (dernière : {}). Le propriétaire n'y a peut-être plus accès.",
     "timeAgoYears": "il y a {} an(s)",
     "timeAgoMonths": "il y a {} mois",
-    "timeAgoDays": "il y a {} jour(s)"
+    "timeAgoDays": "il y a {} jour(s)",
+    "updateAvailableTitle": "Mise à jour disponible",
+    "updateAvailableMessage": "Une nouvelle version de Ğecko (**{}**) est disponible.\nVous utilisez actuellement la version {}.",
+    "updateNow": "Mettre à jour",
+    "updateLater": "Plus tard"
 }

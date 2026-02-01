@@ -6,12 +6,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/providers/app_update_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
 import 'package:gecko/screens/home/welcome_home_widget.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/drawer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       FlutterNativeSplash.remove();
       await ref.read(appInitProvider.notifier).initApp(context: context, widgetRef: ref);
       _showCesiumImportInfoDialogIfNeeded();
+      _checkForAppUpdate();
       // Note: Ready certification notifications are handled globally by ReadyCertificationListener in main.dart
     });
   }
@@ -52,6 +55,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
 
       configBox.put('cesiumImportInfoShown', true);
+    }
+  }
+
+  Future<void> _checkForAppUpdate() async {
+    try {
+      final result = await ref.read(appUpdateCheckProvider.future);
+      if (result == null) return;
+      if (!mounted) return;
+
+      final appInfoService = ref.read(appInfoServiceProvider);
+      final confirmed = await showConfirmationDialog(
+        context: context,
+        title: "updateAvailableTitle".tr(),
+        message: "updateAvailableMessage".tr(args: [result.latestVersion, appInfoService.appVersionShort]),
+        confirmText: "updateNow".tr(),
+        cancelText: "updateLater".tr(),
+        customIcon: Icon(Icons.system_update_rounded, color: context.colorScheme.primary, size: 32),
+      );
+
+      if (confirmed && mounted) {
+        await launchUrl(Uri.parse(result.updateUrl), mode: LaunchMode.externalApplication);
+      } else {
+        ref.read(appUpdateServiceProvider).dismissVersion(result.latestBuildNumber);
+      }
+    } catch (e) {
+      log.d('App update check error: $e');
     }
   }
 

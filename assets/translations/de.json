@@ -170,5 +170,9 @@
     "paymentWarningInactiveMessage": "Diese {} Brieftasche hatte seit langem keine ausgehende Aktivität (letzte: {}). Der Besitzer hat möglicherweise keinen Zugang mehr.",
     "timeAgoYears": "vor {} Jahr(en)",
     "timeAgoMonths": "vor {} Monat(en)",
-    "timeAgoDays": "vor {} Tag(en)"
+    "timeAgoDays": "vor {} Tag(en)",
+    "updateAvailableTitle": "Update verfügbar",
+    "updateAvailableMessage": "Eine neue Version von Ğecko (**{}**) ist verfügbar.\nSie verwenden derzeit Version {}.",
+    "updateNow": "Aktualisieren",
+    "updateLater": "Später"
 }

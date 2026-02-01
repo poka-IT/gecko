@@ -776,5 +776,9 @@
     "paymentWarningInactiveMessage": "This {} wallet has had no outgoing activity for a long time (last: {}). The owner may no longer have access.",
     "timeAgoYears": "{} year(s) ago",
     "timeAgoMonths": "{} month(s) ago",
-    "timeAgoDays": "{} day(s) ago"
+    "timeAgoDays": "{} day(s) ago",
+    "updateAvailableTitle": "Update Available",
+    "updateAvailableMessage": "A new version of Ğecko (**{}**) is available.\nYou are currently on version {}.",
+    "updateNow": "Update",
+    "updateLater": "Later"
 }

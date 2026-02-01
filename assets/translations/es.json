@@ -743,5 +743,9 @@
     "paymentWarningInactiveMessage": "Este monedero {} no ha tenido actividad saliente durante mucho tiempo (última: {}). Es posible que el propietario ya no tenga acceso.",
     "timeAgoYears": "hace {} año(s)",
     "timeAgoMonths": "hace {} mes(es)",
-    "timeAgoDays": "hace {} día(s)"
+    "timeAgoDays": "hace {} día(s)",
+    "updateAvailableTitle": "Actualización disponible",
+    "updateAvailableMessage": "Una nueva versión de Ğecko (**{}**) está disponible.\nActualmente usas la versión {}.",
+    "updateNow": "Actualizar",
+    "updateLater": "Más tarde"
 }

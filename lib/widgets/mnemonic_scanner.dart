@@ -203,6 +203,11 @@ class _MnemonicScannerState extends State<MnemonicScanner> with WidgetsBindingOb
   /// Main entry point: try multiple extraction strategies and return the first
   /// result that passes BIP39 checksum validation.
   Future<List<String>?> _parseMnemonicFromBlocks(List<TextBlock> blocks) async {
+    // Strategy 0: Use ML Kit's natural reading order (most reliable)
+    final mlKitResult = await _parseMlKitNaturalOrder(blocks);
+    if (mlKitResult != null) return mlKitResult;
+
+    // Fallback: extract elements with positions for spatial strategies
     final items = _extractAllTextElements(blocks);
     if (items.isEmpty) return null;
 
@@ -231,6 +236,54 @@ class _MnemonicScannerState extends State<MnemonicScanner> with WidgetsBindingOb
     // Strategy 2: Spatial reading order (works for both grid and inline)
     final result = await _parseSpatialOrder(bip39Items);
     if (result != null) return result;
+
+    return null;
+  }
+
+  /// Strategy 0: Walk ML Kit's blocks → lines → elements in natural reading order.
+  ///
+  /// ML Kit preserves left-to-right element order within TextLines and
+  /// top-to-bottom line order within TextBlocks. We sort blocks by position
+  /// to ensure correct cross-block ordering.
+  Future<List<String>?> _parseMlKitNaturalOrder(List<TextBlock> blocks) async {
+    // Sort blocks by vertical position, then horizontal
+    final sortedBlocks = List<TextBlock>.from(blocks);
+    sortedBlocks.sort((a, b) {
+      final dy = a.boundingBox.top - b.boundingBox.top;
+      if (dy.abs() > a.boundingBox.height * 0.3) return dy > 0 ? 1 : -1;
+      return a.boundingBox.left.compareTo(b.boundingBox.left);
+    });
+
+    final words = <String>[];
+    for (final block in sortedBlocks) {
+      for (final line in block.lines) {
+        for (final element in line.elements) {
+          // Skip grid numbers 1-12
+          if (_parseGridNumber(element.text) != null) continue;
+
+          final corrected = await _tryCorrectWord(element.text);
+          if (corrected != null) {
+            words.add(corrected);
+          }
+        }
+      }
+    }
+
+    // Exact 12-word match
+    if (words.length == 12) {
+      if (await _validateMnemonic(words)) return words;
+      // Try reverse order (handles mirrored/rotated images)
+      final reversed = words.reversed.toList();
+      if (await _validateMnemonic(reversed)) return reversed;
+    }
+
+    // Sliding window for >12 words (extra text detected as valid BIP39 words)
+    if (words.length > 12 && words.length <= 24) {
+      for (int start = 0; start <= words.length - 12; start++) {
+        final window = words.sublist(start, start + 12);
+        if (await _validateMnemonic(window)) return window;
+      }
+    }
 
     return null;
   }
@@ -324,6 +377,9 @@ class _MnemonicScannerState extends State<MnemonicScanner> with WidgetsBindingOb
     // Exact match: exactly 12 valid words
     if (words.length == 12) {
       if (await _validateMnemonic(words)) return words;
+      // Try reverse order (handles mirrored/rotated images)
+      final reversed = words.reversed.toList();
+      if (await _validateMnemonic(reversed)) return reversed;
     }
 
     // More than 12 words: try sliding windows of 12 consecutive words
@@ -338,22 +394,44 @@ class _MnemonicScannerState extends State<MnemonicScanner> with WidgetsBindingOb
     return null;
   }
 
-  /// Sort items in reading order: group by rows (similar Y), then left-to-right.
+  /// Sort items in reading order using row clustering.
+  ///
+  /// Two-pass approach to ensure transitive ordering:
+  /// 1. Sort by Y and cluster into discrete rows based on vertical gaps
+  /// 2. Sort each row left-to-right
   void _sortByReadingOrder(List<_OcrTextItem> items) {
-    if (items.isEmpty) return;
+    if (items.length <= 1) return;
 
-    items.sort((a, b) {
-      final rowA = a.boundingBox.center.dy;
-      final rowB = b.boundingBox.center.dy;
-      // Use the average height as threshold for "same row"
-      final avgHeight = (a.boundingBox.height + b.boundingBox.height) / 2;
-      final rowThreshold = avgHeight * 0.7;
+    // Pass 1: Sort by Y center to prepare for clustering
+    items.sort((a, b) => a.boundingBox.center.dy.compareTo(b.boundingBox.center.dy));
 
-      if ((rowA - rowB).abs() > rowThreshold) {
-        return rowA.compareTo(rowB);
+    // Pass 2: Cluster into rows based on Y gaps
+    final rows = <List<_OcrTextItem>>[
+      [items.first],
+    ];
+    for (int i = 1; i < items.length; i++) {
+      final prev = rows.last.last;
+      final curr = items[i];
+      final avgHeight = (prev.boundingBox.height + curr.boundingBox.height) / 2;
+      final gap = curr.boundingBox.center.dy - prev.boundingBox.center.dy;
+
+      if (gap > avgHeight * 0.7) {
+        rows.add([curr]);
+      } else {
+        rows.last.add(curr);
       }
-      return a.boundingBox.left.compareTo(b.boundingBox.left);
-    });
+    }
+
+    // Pass 3: Sort each row left-to-right
+    for (final row in rows) {
+      row.sort((a, b) => a.boundingBox.left.compareTo(b.boundingBox.left));
+    }
+
+    // Flatten back into original list
+    items.clear();
+    for (final row in rows) {
+      items.addAll(row);
+    }
   }
 
   /// Try to correct an OCR-read word into a valid BIP39 word.

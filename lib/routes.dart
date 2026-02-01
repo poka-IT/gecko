@@ -27,6 +27,7 @@ import 'package:gecko/screens/onBoarding/safe_selection_screen.dart';
 import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
+import 'package:gecko/screens/cesium_profile_view_screen.dart';
 
 /// Base class for route arguments - provides type safety
 abstract class RouteArguments {}
@@ -219,6 +220,7 @@ class RouteNames {
   static const String walletSelection = '/walletSelection';
   static const String safeSelection = '/safeSelection';
   static const String certificationQueue = '/certificationQueue';
+  static const String cesiumProfileView = '/cesiumprofileview';
 
   /// Generate wallet options route with address parameter
   static String walletOptionsWithAddress(String address) => '/walletoptions/$address';
@@ -503,6 +505,10 @@ class AppRoutes {
       RouteNames.certificationQueue: (context) {
         final args = RouteUtils.getArguments<CertificationQueueArguments>(context);
         return CertificationQueueScreen(issuerAddress: args.issuerAddress);
+      },
+      RouteNames.cesiumProfileView: (context) {
+        final address = ModalRoute.of(context)?.settings.arguments as String;
+        return CesiumProfileViewScreen(address: address);
       },
     };
   }

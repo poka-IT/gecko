@@ -17,7 +17,6 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
-import 'package:gecko/widgets/cesium_profile_card.dart';
 import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
@@ -153,22 +152,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
                     ),
                   ],
                 ),
-                // Flexible middle: profile card scrolls with bottom fade
-                Expanded(
-                  child: ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.white, Colors.white, Colors.white, Colors.transparent],
-                      stops: const [0.0, 0.85, 0.92, 1.0],
-                    ).createShader(bounds),
-                    blendMode: BlendMode.dstIn,
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.only(top: scaleSize(16), bottom: scaleSize(16)),
-                      child: CesiumProfileCard(address: address),
-                    ),
-                  ),
-                ),
+                const Spacer(),
                 // Fixed bottom: transfer button
                 Column(
                   children: [

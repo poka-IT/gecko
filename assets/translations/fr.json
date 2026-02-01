@@ -766,5 +766,8 @@
     "undefinedName": "Nom indéfini",
     "commitSingleIdentity": "Je m'engage à n'avoir qu'une seule identité membre",
     "viewProfile": "Voir le profil",
-    "noProfileAvailable": "Aucun profil disponible"
+    "noProfileAvailable": "Aucun profil disponible",
+    "externalLinkTitle": "Lien externe",
+    "externalLinkWarning": "Vous allez quitter l'application pour ouvrir un lien externe. Soyez vigilant et assurez-vous que ce lien est fiable avant de continuer.",
+    "openLink": "Ouvrir le lien"
 }

@@ -25,6 +25,8 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/commons/storage_builder.dart';
+import 'package:gecko/screens/cesium_profile_view_screen.dart';
+import 'package:gecko/providers/cesium_profile_provider.dart';
 
 class WalletHeader extends ConsumerWidget {
   const WalletHeader({super.key, required this.address, this.customImagePath, this.defaultImagePath});
@@ -116,7 +118,7 @@ class WalletHeaderContent extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              WalletHeaderAvatar(
+              _AvatarWithProfileLink(
                 address: address,
                 isOwner: isOwner,
                 customImagePath: customImagePath,
@@ -517,6 +519,89 @@ class WalletHeaderLoading extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Avatar column with conditional "View profile" link.
+/// Uses [cesiumProfileExistsProvider] (HEAD request) to check existence asynchronously.
+/// The avatar itself and the text link both navigate to [CesiumProfileViewScreen].
+class _AvatarWithProfileLink extends ConsumerWidget {
+  const _AvatarWithProfileLink({
+    required this.address,
+    required this.isOwner,
+    this.customImagePath,
+    this.defaultImagePath,
+    this.identityName,
+  });
+
+  final String address;
+  final bool isOwner;
+  final String? customImagePath;
+  final String? defaultImagePath;
+  final String? identityName;
+
+  void _openProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => CesiumProfileViewScreen(address: address),
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileExists = ref.watch(cesiumProfileExistsProvider(address));
+
+    // Fixed-height link area so avatar doesn't shift when the link appears.
+    final linkAreaHeight = scaleSize(4 + 4 + 4 + 11); // gap + padding top + padding bottom + fontSize
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: profileExists ? () => _openProfile(context) : null,
+          child: WalletHeaderAvatar(
+            address: address,
+            isOwner: isOwner,
+            customImagePath: customImagePath,
+            defaultImagePath: defaultImagePath,
+            identityName: identityName,
+          ),
+        ),
+        SizedBox(
+          height: linkAreaHeight,
+          child: profileExists
+              ? GestureDetector(
+                  key: keyViewProfile,
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _openProfile(context),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: scaleSize(4),
+                      left: scaleSize(8),
+                      right: scaleSize(8),
+                      bottom: scaleSize(4),
+                    ),
+                    child: Text(
+                      'viewProfile'.tr(),
+                      style: scaledTextStyle(fontSize: 11, color: context.colorScheme.primary.withValues(alpha: 0.7)),
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }

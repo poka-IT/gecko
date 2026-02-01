@@ -121,3 +121,6 @@ const keyMnemonicChallengeInput = Key('keyMnemonicChallengeInput');
 const keyMnemonicChallengeConfirm = Key('keyMnemonicChallengeConfirm');
 const keyMnemonicChallengeClose = Key('keyMnemonicChallengeClose');
 Key keyMnemonicChallengeChip(int wordNumber) => ValueKey('keyMnemonicChallengeChip$wordNumber');
+
+// Cesium profile view
+const keyViewProfile = Key('keyViewProfile');

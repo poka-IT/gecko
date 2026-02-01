@@ -728,5 +728,8 @@
     "undefinedName": "Nome indefinito",
     "commitSingleIdentity": "Mi impegno ad avere una sola identità membro",
     "viewProfile": "Vedi profilo",
-    "noProfileAvailable": "Nessun profilo disponibile"
+    "noProfileAvailable": "Nessun profilo disponibile",
+    "externalLinkTitle": "Link esterno",
+    "externalLinkWarning": "Stai per uscire dall'app per aprire un link esterno. Fai attenzione e assicurati che il link sia affidabile prima di continuare.",
+    "openLink": "Apri link"
 }

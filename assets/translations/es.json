@@ -728,5 +728,8 @@
     "undefinedName": "Nombre indefinido",
     "commitSingleIdentity": "Me comprometo a tener solo una identidad de miembro",
     "viewProfile": "Ver perfil",
-    "noProfileAvailable": "No hay perfil disponible"
+    "noProfileAvailable": "No hay perfil disponible",
+    "externalLinkTitle": "Enlace externo",
+    "externalLinkWarning": "Está a punto de salir de la aplicación para abrir un enlace externo. Tenga cuidado y asegúrese de que el enlace sea de confianza antes de continuar.",
+    "openLink": "Abrir enlace"
 }

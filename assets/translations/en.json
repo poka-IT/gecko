@@ -761,5 +761,8 @@
     "undefinedName": "Undefined name",
     "commitSingleIdentity": "I commit to having only one member identity",
     "viewProfile": "View profile",
-    "noProfileAvailable": "No profile available"
+    "noProfileAvailable": "No profile available",
+    "externalLinkTitle": "External link",
+    "externalLinkWarning": "You are about to leave the app to open an external link. Be careful and make sure you trust this link before proceeding.",
+    "openLink": "Open link"
 }

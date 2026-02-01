@@ -155,5 +155,8 @@
     "generatingKeypairs": "Schlüsselpaare werden generiert",
     "commitSingleIdentity": "Ich verpflichte mich, nur eine Mitgliedsidentität zu haben",
     "viewProfile": "Profil ansehen",
-    "noProfileAvailable": "Kein Profil verfügbar"
+    "noProfileAvailable": "Kein Profil verfügbar",
+    "externalLinkTitle": "Externer Link",
+    "externalLinkWarning": "Sie verlassen die App, um einen externen Link zu öffnen. Seien Sie vorsichtig und stellen Sie sicher, dass der Link vertrauenswürdig ist, bevor Sie fortfahren.",
+    "openLink": "Link öffnen"
 }

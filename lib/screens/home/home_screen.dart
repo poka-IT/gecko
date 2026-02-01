@@ -24,6 +24,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isEasterEggActive = false;
+  bool _splashRemoved = false;
 
   @override
   void initState() {
@@ -32,6 +33,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Remove native splash only after Flutter has drawn its first frame
       FlutterNativeSplash.remove();
+      // Trigger the fade transition now that the native splash is gone
+      if (mounted) setState(() => _splashRemoved = true);
       await ref.read(appInitProvider.notifier).initApp(context: context, widgetRef: ref);
       _showCesiumImportInfoDialogIfNeeded();
       _checkForAppUpdate();
@@ -100,9 +103,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final viewSize = View.of(context).physicalSize / View.of(context).devicePixelRatio;
     isTall = (viewSize.height / viewSize.width) > 1.75;
 
-    // While wallets are loading, show a splash-like screen to avoid flashing WelcomeHome
+    // Show splash until native splash is removed AND wallets are loaded.
+    // This ensures the fade animation is visible (not hidden behind the native splash).
     final Widget child;
-    if (isLoading) {
+    if (!_splashRemoved || isLoading) {
       child = const _SplashPlaceholder(key: ValueKey('splash'));
     } else if (isWalletsExists) {
       child = GeckoHomeWidget(
@@ -119,7 +123,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       drawer: MainDrawer(isWalletsExists: isWalletsExists),
       backgroundColor: context.colorScheme.secondary,
       body: SizedBox.expand(
-        child: AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: child),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeIn,
+          switchOutCurve: Curves.easeOut,
+          child: child,
+        ),
       ),
     );
   }

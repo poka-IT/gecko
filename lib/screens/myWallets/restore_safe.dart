@@ -261,7 +261,12 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                                 MaterialPageRoute(
                                   builder: (context) => MnemonicScanner(
                                     onMnemonicDetected: (List<String> words) async {
-                                      // Fill the mnemonic input with scanned words
+                                      // Update controllers first so the UI shows the scanned words
+                                      final ctrls = ref.read(mnemonicControllersProvider);
+                                      for (int i = 0; i < words.length && i < 12; i++) {
+                                        ctrls[i].text = words[i];
+                                      }
+                                      // Then update the provider state for validation
                                       await ref.read(mnemonicInputProvider.notifier).fillWords(words);
                                     },
                                   ),

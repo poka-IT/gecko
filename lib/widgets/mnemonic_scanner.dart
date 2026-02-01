@@ -3,9 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:durt2/durt2.dart' show BidouilleLang, Durt;
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/services/mnemonic_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/services/sentry_service.dart';
@@ -44,18 +44,16 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
 
     // Ensure camera is properly disposed
     _cameraController?.dispose().catchError((e) {
-      // Log camera disposal errors but don't crash
       if (kDebugMode) {
-        debugPrint('🚨 MnemonicScanner: Camera disposal error: $e');
+        debugPrint('MnemonicScanner: Camera disposal error: $e');
       }
     });
     _cameraController = null;
 
     // Ensure ML Kit recognizer is properly closed
     _textRecognizer.close().catchError((e) {
-      // Log ML Kit disposal errors but don't crash
       if (kDebugMode) {
-        debugPrint('🚨 MnemonicScanner: ML Kit disposal error: $e');
+        debugPrint('MnemonicScanner: ML Kit disposal error: $e');
       }
     });
 
@@ -108,15 +106,38 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
       final inputImage = InputImage.fromFilePath(imageFile.path);
       final recognizedText = await _textRecognizer.processImage(inputImage);
 
+      if (_isDisposed) return;
+
       if (recognizedText.blocks.isNotEmpty) {
-        final textWithPositions = _extractTextWithPositions(recognizedText.blocks);
-        await _handleDetectedText(textWithPositions);
+        final words = await _parseMnemonicFromBlocks(recognizedText.blocks);
+        if (words != null && words.length == 12) {
+          widget.onMnemonicDetected(words);
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+          return;
+        }
+
+        // Update status with partial results
+        if (mounted && !_isDisposed) {
+          final allItems = _extractAllTextElements(recognizedText.blocks);
+          final validCount = await _countValidBip39Words(allItems);
+          setState(() {
+            _statusMessage = validCount > 0 ? 'Found $validCount/12 words' : 'mnemonicNotFoundInImage'.tr();
+          });
+        }
+      } else {
+        if (mounted && !_isDisposed) {
+          setState(() {
+            _statusMessage = 'mnemonicNotFoundInImage'.tr();
+          });
+        }
       }
     } on CameraException catch (e) {
       // Camera closed during capture (race condition on dispose) — ignore
       if (e.description?.contains('Camera is closed') == true) return;
       if (kDebugMode) {
-        debugPrint('🚨 MnemonicScanner: Camera error: $e');
+        debugPrint('MnemonicScanner: Camera error: $e');
       }
       SentryService.captureException(
         e,
@@ -129,7 +150,7 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
       );
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('🚨 MnemonicScanner: Camera/ML Kit error: $e');
+        debugPrint('MnemonicScanner: Camera/ML Kit error: $e');
       }
       SentryService.captureException(
         e,
@@ -149,172 +170,231 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
     }
   }
 
-  Map<String, Rect> _extractTextWithPositions(List<TextBlock> blocks) {
-    final textPositions = <String, Rect>{};
+  // --- OCR Parsing Logic ---
 
-    // Sort blocks spatially (top to bottom, left to right)
-    final sortedBlocks = List<TextBlock>.from(blocks);
-    sortedBlocks.sort((a, b) {
-      final yDiff = a.boundingBox.top.compareTo(b.boundingBox.top);
-      if (yDiff.abs() > 50) return yDiff;
-      return a.boundingBox.left.compareTo(b.boundingBox.left);
-    });
+  /// Extract all individual text elements with their bounding boxes from ML Kit blocks.
+  List<_OcrTextItem> _extractAllTextElements(List<TextBlock> blocks) {
+    final items = <_OcrTextItem>[];
+    for (final block in blocks) {
+      for (final line in block.lines) {
+        for (final element in line.elements) {
+          items.add(_OcrTextItem(text: element.text, boundingBox: element.boundingBox));
+        }
+      }
+    }
+    return items;
+  }
 
-    for (final block in sortedBlocks) {
-      // Filter: exclude UI text but keep mnemonic area
-      if (block.boundingBox.top < 480 || block.boundingBox.bottom > 800) {
+  /// Main entry point: try multiple extraction strategies and return the first
+  /// result that passes BIP39 checksum validation.
+  Future<List<String>?> _parseMnemonicFromBlocks(List<TextBlock> blocks) async {
+    final items = _extractAllTextElements(blocks);
+    if (items.isEmpty) return null;
+
+    // Pre-classify all elements: numbers (1-12) and valid BIP39 words
+    final numberItems = <int, _OcrTextItem>{};
+    final bip39Items = <_OcrTextItem>[];
+
+    for (final item in items) {
+      final num = _parseGridNumber(item.text);
+      if (num != null) {
+        numberItems[num] = item;
         continue;
       }
-      final lines = block.text.split('\n');
-      if (lines.length > 1) {
-        // Handle multi-line blocks
-        for (int i = 0; i < lines.length; i++) {
-          final processedLine = _processText(lines[i]);
-          if (processedLine.isNotEmpty) {
-            final adjustedRect = Rect.fromLTRB(
-              block.boundingBox.left,
-              block.boundingBox.top + (i * 20),
-              block.boundingBox.right,
-              block.boundingBox.top + (i * 20) + 20,
-            );
-            textPositions[processedLine] = adjustedRect;
-          }
-        }
-      } else {
-        final processedText = _processText(block.text);
-        if (processedText.isNotEmpty) {
-          textPositions[processedText] = block.boundingBox;
-        }
+      final corrected = await _tryCorrectWord(item.text);
+      if (corrected != null) {
+        bip39Items.add(_OcrTextItem(text: corrected, boundingBox: item.boundingBox));
       }
     }
 
-    return textPositions;
+    // Strategy 1: Numbered grid (if any numbers 1-12 detected)
+    if (numberItems.isNotEmpty) {
+      final result = await _parseNumberedGrid(bip39Items, numberItems);
+      if (result != null) return result;
+    }
+
+    // Strategy 2: Spatial reading order (works for both grid and inline)
+    final result = await _parseSpatialOrder(bip39Items);
+    if (result != null) return result;
+
+    return null;
   }
 
-  String _processText(String text) {
-    return text
-        .trim()
-        .replaceAll('0', 'o') // Fix common OCR errors
-        .toLowerCase();
+  /// Parse an integer in the 1-12 range from text, or null if not a grid number.
+  int? _parseGridNumber(String text) {
+    final cleaned = text.trim();
+    final n = int.tryParse(cleaned);
+    if (n != null && n >= 1 && n <= 12) return n;
+    return null;
   }
 
-  Future<void> _handleDetectedText(Map<String, Rect> textPositions) async {
-    if (!mounted) return;
+  /// Numbered grid mode with partial gap-filling.
+  ///
+  /// Uses detected numbers as position anchors, then fills missing positions
+  /// from remaining unassigned BIP39 words sorted spatially.
+  Future<List<String>?> _parseNumberedGrid(List<_OcrTextItem> bip39Items, Map<int, _OcrTextItem> numberItems) async {
+    final result = List<String?>.filled(12, null);
+    final assignedWords = <_OcrTextItem>{};
 
-    setState(() {
-      _statusMessage = 'ocrScanInProgress'.tr();
+    // Phase 1: For each detected number, find the closest BIP39 word below it
+    for (final entry in numberItems.entries) {
+      final num = entry.key; // 1-12
+      final numBox = entry.value.boundingBox;
+
+      _OcrTextItem? bestMatch;
+      double bestDistance = double.infinity;
+
+      for (final word in bip39Items) {
+        // The word must be below or at the same level as the number
+        if (word.boundingBox.top < numBox.top - numBox.height) continue;
+
+        // Vertical distance: how far below the number
+        final vertDist = (word.boundingBox.top - numBox.bottom).abs();
+        // Horizontal distance: prefer words horizontally aligned with the number
+        final horizDist = (word.boundingBox.center.dx - numBox.center.dx).abs();
+        final distance = vertDist + horizDist * 0.5;
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestMatch = word;
+        }
+      }
+
+      if (bestMatch != null) {
+        result[num - 1] = bestMatch.text;
+        assignedWords.add(bestMatch);
+      }
+    }
+
+    // Phase 2: Fill gaps from remaining unassigned words sorted spatially
+    final unassigned = bip39Items.where((w) => !assignedWords.contains(w)).toList();
+    _sortByReadingOrder(unassigned);
+
+    final gaps = <int>[];
+    for (int i = 0; i < 12; i++) {
+      if (result[i] == null) gaps.add(i);
+    }
+
+    if (gaps.length <= unassigned.length) {
+      for (int g = 0; g < gaps.length && g < unassigned.length; g++) {
+        result[gaps[g]] = unassigned[g].text;
+      }
+    }
+
+    // Check we have all 12 words
+    final words = <String>[];
+    for (final w in result) {
+      if (w == null) return null;
+      words.add(w);
+    }
+
+    if (await _validateMnemonic(words)) {
+      return words;
+    }
+    return null;
+  }
+
+  /// Spatial reading order mode — sort all valid BIP39 words by position
+  /// and validate as a 12-word mnemonic.
+  ///
+  /// Works for grid layouts (3×4), inline phrases (1-3 lines), or any spatial
+  /// arrangement. Handles noise (extra non-BIP39 context) since only valid
+  /// BIP39 words are in the list.
+  Future<List<String>?> _parseSpatialOrder(List<_OcrTextItem> bip39Items) async {
+    final sorted = List<_OcrTextItem>.from(bip39Items);
+    _sortByReadingOrder(sorted);
+
+    final words = sorted.map((e) => e.text).toList();
+
+    // Exact match: exactly 12 valid words
+    if (words.length == 12) {
+      if (await _validateMnemonic(words)) return words;
+    }
+
+    // More than 12 words: try sliding windows of 12 consecutive words
+    // This handles extra context text that happens to be valid BIP39 words
+    if (words.length > 12 && words.length <= 24) {
+      for (int start = 0; start <= words.length - 12; start++) {
+        final window = words.sublist(start, start + 12);
+        if (await _validateMnemonic(window)) return window;
+      }
+    }
+
+    return null;
+  }
+
+  /// Sort items in reading order: group by rows (similar Y), then left-to-right.
+  void _sortByReadingOrder(List<_OcrTextItem> items) {
+    if (items.isEmpty) return;
+
+    items.sort((a, b) {
+      final rowA = a.boundingBox.center.dy;
+      final rowB = b.boundingBox.center.dy;
+      // Use the average height as threshold for "same row"
+      final avgHeight = (a.boundingBox.height + b.boundingBox.height) / 2;
+      final rowThreshold = avgHeight * 0.7;
+
+      if ((rowA - rowB).abs() > rowThreshold) {
+        return rowA.compareTo(rowB);
+      }
+      return a.boundingBox.left.compareTo(b.boundingBox.left);
     });
+  }
 
-    final mnemonicWords = await _extractMnemonicWords(textPositions);
+  /// Try to correct an OCR-read word into a valid BIP39 word.
+  ///
+  /// Returns the corrected word, or null if no valid correction found.
+  Future<String?> _tryCorrectWord(String raw) async {
+    final cleaned = raw.trim().toLowerCase();
+    if (cleaned.isEmpty || cleaned.length < 3) return null;
 
-    if (mnemonicWords.length == 12) {
-      final isValid = await _validateMnemonic(mnemonicWords);
-      if (isValid) {
-        widget.onMnemonicDetected(mnemonicWords);
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-        return;
+    // 1. Try the raw text first
+    if (await _isValidBip39Word(cleaned)) return cleaned;
+
+    // 2. Apply common OCR corrections and test each
+    final corrections = <String>[
+      cleaned.replaceAll('0', 'o'),
+      cleaned.replaceAll('1', 'l'),
+      cleaned.replaceAll('1', 'i'),
+      cleaned.replaceAll('rn', 'm'),
+      cleaned.replaceAll('l', 'i'),
+      cleaned.replaceAll('vv', 'w'),
+      cleaned.replaceAll('ii', 'u'),
+      // Combined corrections
+      cleaned.replaceAll('0', 'o').replaceAll('rn', 'm'),
+      cleaned.replaceAll('0', 'o').replaceAll('1', 'l'),
+    ];
+
+    for (final attempt in corrections) {
+      if (attempt != cleaned && await _isValidBip39Word(attempt)) {
+        return attempt;
       }
     }
 
-    // Update status
-    if (mounted) {
-      setState(() {
-        _statusMessage = mnemonicWords.isNotEmpty
-            ? 'Found ${mnemonicWords.length}/12 words'
-            : 'mnemonicNotFoundInImage'.tr();
-      });
-
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _statusMessage = '';
-          });
-        }
-      });
-    }
+    return null;
   }
 
-  Future<List<String>> _extractMnemonicWords(Map<String, Rect> textPositions) async {
-    // Simplified: arrange words by their physical grid position (3 rows x 4 cols)
-    final validWords = <MapEntry<String, Rect>>[];
-
-    // Filter and split combined words
-    for (final entry in textPositions.entries) {
-      final words = entry.key.split(' '); // Split combined words
-      for (final word in words) {
-        if (word.trim().isNotEmpty && await _isValidBip39Word(word.trim())) {
-          // Create a new entry for each valid word, keeping original position
-          validWords.add(MapEntry(word.trim(), entry.value));
-        }
-      }
-    }
-
-    // Sort by 3x4 grid: group by rows, then sort each row by X
-    const rowHeight = 100.0; // Approximate height between rows
-    final rows = <int, List<MapEntry<String, Rect>>>{};
-
-    // Group words by row
-    for (final word in validWords) {
-      final rowIndex = (word.value.top / rowHeight).floor();
-      rows.putIfAbsent(rowIndex, () => []).add(word);
-    }
-
-    // Sort each row by X coordinate
-    final sortedWords = <MapEntry<String, Rect>>[];
-    for (final rowIndex in rows.keys.toList()..sort()) {
-      final rowWords = rows[rowIndex]!;
-      rowWords.sort((a, b) => a.value.left.compareTo(b.value.left));
-      sortedWords.addAll(rowWords);
-    }
-
-    validWords.clear();
-    validWords.addAll(sortedWords);
-
-    final orderedWords = validWords.map((e) => e.key).toList();
-
-    return orderedWords.take(12).toList();
-  }
-
+  /// Check if a word is a valid BIP39 word using MnemonicService.
   Future<bool> _isValidBip39Word(String word) async {
-    if (word.length < 3) return false; // Too short to be a BIP39 word
-
-    try {
-      final multilangService = Durt.i.wallets.multilangService;
-      final detectedLanguage = await multilangService.detectMnemonicLanguageFromWords([word]);
-      return detectedLanguage != null;
-    } catch (e) {
-      return false;
-    }
+    return await MnemonicService.isValidBip39Word(word);
   }
 
+  /// Validate a complete 12-word mnemonic (BIP39 checksum).
   Future<bool> _validateMnemonic(List<String> words) async {
-    if (words.length != 12 || words.any((word) => word.isEmpty)) {
-      return false;
+    if (words.length != 12 || words.any((w) => w.isEmpty)) return false;
+    final result = await MnemonicService.validateAndProcessMnemonic(words.join(' '));
+    return result != null;
+  }
+
+  /// Count valid BIP39 words in the extracted items (for status display).
+  Future<int> _countValidBip39Words(List<_OcrTextItem> items) async {
+    int count = 0;
+    for (final item in items) {
+      if (int.tryParse(item.text.trim()) != null) continue;
+      final corrected = await _tryCorrectWord(item.text);
+      if (corrected != null) count++;
     }
-
-    try {
-      final mnemonic = words.join(' ');
-
-      final multilangService = Durt.i.wallets.multilangService;
-      final detectedLanguage = await multilangService.detectMnemonicLanguageFromWords(words);
-
-      if (detectedLanguage == null) {
-        return false;
-      }
-
-      if (detectedLanguage == BidouilleLang.english) {
-        final isValid = Durt.i.wallets.isMnemonicValid(mnemonic);
-        return isValid;
-      } else {
-        final englishMnemonic = await multilangService.convertToEnglish(mnemonic, sourceLanguage: detectedLanguage);
-        final isValid = Durt.i.wallets.isMnemonicValid(englishMnemonic);
-        return isValid;
-      }
-    } catch (e) {
-      return false;
-    }
+    return count;
   }
 
   @override
@@ -399,16 +479,13 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
 
             SizedBox(height: scaleSize(16)),
 
-            // Simplified camera view for mnemonic scanning
+            // Camera view
             Container(
-              height: scaleSize(150), // Reduced height for mnemonic focus
+              height: scaleSize(150),
               margin: EdgeInsets.symmetric(horizontal: scaleSize(32)),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: context.colorScheme.primary,
-                  width: 3,
-                ), // Use theme primary color instead of red
+                border: Border.all(color: context.colorScheme.primary, width: 3),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(9),
@@ -427,7 +504,7 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
 
             SizedBox(height: scaleSize(16)),
 
-            // Cancel button with theme consistency
+            // Cancel button
             Padding(
               padding: EdgeInsets.all(scaleSize(16)),
               child: PrimaryButton(
@@ -442,4 +519,12 @@ class _MnemonicScannerState extends State<MnemonicScanner> {
       ),
     );
   }
+}
+
+/// A text element extracted from OCR with its bounding box position.
+class _OcrTextItem {
+  final String text;
+  final Rect boundingBox;
+
+  const _OcrTextItem({required this.text, required this.boundingBox});
 }

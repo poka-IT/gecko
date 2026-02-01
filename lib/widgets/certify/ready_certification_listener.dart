@@ -48,12 +48,16 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     await _waitForOnlineMode();
     if (!mounted) return;
 
-    // Get all identity wallets and setup listeners
+    // Get all identity wallets and setup listeners only for members
     final identityWallets = await ref.read(identityWalletsAsyncProvider.future);
     if (!mounted) return;
 
+    final storageService = ref.read(storageServiceProvider);
     for (final wallet in identityWallets) {
       if (!mounted) return;
+      // Only setup cert queue for member wallets (local cache, no network)
+      final status = await storageService.getIdtyStatus(wallet.address);
+      if (status != d.IdtyStatus.validated) continue;
       await _setupListenerForWallet(wallet.address);
     }
   }
@@ -208,8 +212,11 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
   Widget build(BuildContext context) {
     // Re-setup listeners when identity wallets change
     ref.listen(identityWalletsAsyncProvider, (previous, next) {
-      next.whenData((wallets) {
+      next.whenData((wallets) async {
+        final storageService = ref.read(storageServiceProvider);
         for (final wallet in wallets) {
+          final status = await storageService.getIdtyStatus(wallet.address);
+          if (status != d.IdtyStatus.validated) continue;
           _setupListenerForWallet(wallet.address);
         }
       });

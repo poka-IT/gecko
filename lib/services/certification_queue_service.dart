@@ -11,9 +11,7 @@ class CertificationQueueService {
   /// Initialize the service
   static Future<void> init() async {
     if (_box == null || !_box!.isOpen) {
-      log.d('📦 [CertQueueService] Opening Hive box: $_boxName');
       _box = await Hive.openBox<String>(_boxName);
-      log.d('📦 [CertQueueService] Box opened, keys: ${_box!.keys.toList()}');
     }
   }
 
@@ -27,67 +25,44 @@ class CertificationQueueService {
 
   /// Load the certification queue for an issuer from local storage
   static Future<d.CertificationQueueState?> loadQueue(String issuerAddress) async {
-    log.d('📖 [CertQueueService] Loading queue for $issuerAddress');
     final box = await _getBox();
     final jsonString = box.get(issuerAddress);
-
-    if (jsonString == null) {
-      log.d('📖 [CertQueueService] No local queue found for $issuerAddress');
-      return null;
-    }
+    if (jsonString == null) return null;
 
     try {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
-      final queue = d.CertificationQueueState.fromJson(json);
-      log.d(
-        '📖 [CertQueueService] Loaded queue with ${queue.queueLength} items, '
-        'lastUpdated: ${queue.lastUpdated}, isSynced: ${queue.isSynced}',
-      );
-      return queue;
+      return d.CertificationQueueState.fromJson(json);
     } catch (e) {
-      log.e('📖 [CertQueueService] Error parsing queue: $e');
+      log.e('[CertQueueService] Error parsing queue for $issuerAddress: $e');
       return null;
     }
   }
 
   /// Save a certification queue to local storage
   static Future<void> saveQueue(d.CertificationQueueState queue) async {
-    log.d(
-      '💾 [CertQueueService] Saving queue for ${queue.issuerAddress}, '
-      '${queue.queueLength} items, isSynced: ${queue.isSynced}',
-    );
     final box = await _getBox();
     final jsonString = jsonEncode(queue.toJson());
     await box.put(queue.issuerAddress, jsonString);
-    log.d('💾 [CertQueueService] Queue saved successfully');
   }
 
   /// Delete a certification queue from local storage
   static Future<void> deleteQueue(String issuerAddress) async {
-    log.d('🗑️ [CertQueueService] Deleting queue for $issuerAddress');
     final box = await _getBox();
     await box.delete(issuerAddress);
-    log.d('🗑️ [CertQueueService] Queue deleted');
   }
 
   /// Delete all certification queues for a list of issuer addresses
   static Future<void> deleteQueuesForAddresses(List<String> addresses) async {
-    log.d('🗑️ [CertQueueService] Deleting queues for ${addresses.length} addresses');
     final box = await _getBox();
     for (final address in addresses) {
       await box.delete(address);
-      log.d('🗑️ [CertQueueService] Deleted queue for $address');
     }
   }
 
   /// Clear ALL local queues (use with caution)
   static Future<void> clearAllQueues() async {
-    log.w('🗑️ [CertQueueService] CLEARING ALL QUEUES');
     final box = await _getBox();
-    final keys = box.keys.toList();
-    log.d('🗑️ [CertQueueService] Will delete ${keys.length} queues');
     await box.clear();
-    log.d('🗑️ [CertQueueService] All queues cleared');
   }
 
   /// Get all issuer addresses that have queues

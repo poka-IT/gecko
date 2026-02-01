@@ -201,7 +201,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     });
 
     // Sync with CesiumPlus in background (don't block UI)
-    _syncWithCesiumPlus();
+    _syncWithCesiumPlus(queue);
 
     return queue;
   }
@@ -284,11 +284,12 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
   /// Sync with CesiumPlus - at startup, remote is the source of truth.
   /// If the local queue is empty, only attempt sync when connections are
   /// already active (no waiting) to avoid blocking startup for nothing.
-  Future<void> _syncWithCesiumPlus() async {
+  /// [loadedQueue] is the queue loaded in build(), since state.value isn't
+  /// set yet when this is called from build().
+  Future<void> _syncWithCesiumPlus(d.CertificationQueueState loadedQueue) async {
     try {
       final durt = ref.read(durtProvider);
-      final localQueue = state.value;
-      final hasLocalItems = localQueue != null && !localQueue.isEmpty;
+      final hasLocalItems = !loadedQueue.isEmpty;
 
       if (hasLocalItems) {
         // We have local items - worth waiting for connections
@@ -340,7 +341,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         finalQueue = await _updateQueueDates(remoteQueue);
         finalQueue = finalQueue.copyWith(isSynced: true);
       } else if (hasLocalItems) {
-        finalQueue = localQueue.copyWith(isSynced: false);
+        finalQueue = loadedQueue.copyWith(isSynced: false);
       } else {
         return;
       }

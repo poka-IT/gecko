@@ -401,7 +401,80 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      ScaledSizedBox(height: isTall ? 24 : 12),
+                      ScaledSizedBox(height: isTall ? 16 : 8),
+                      // Remember PIN toggle card
+                      if (canUnlock)
+                        StatefulBuilder(
+                          builder: (context, setState) {
+                            final pinCacheState = PinCodeService.isEnabled;
+                            return GestureDetector(
+                              key: keyCachePassword,
+                              onTap: () {
+                                setState(() {
+                                  PinCodeService.toggle();
+                                });
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
+                                decoration: BoxDecoration(
+                                  color: pinCacheState
+                                      ? context.colorScheme.primaryContainer.withValues(alpha: 0.5)
+                                      : context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: pinCacheState
+                                        ? context.colorScheme.primary.withValues(alpha: 0.3)
+                                        : context.colorScheme.outline.withValues(alpha: 0.15),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      pinCacheState ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                                      color: pinCacheState
+                                          ? context.colorScheme.primary
+                                          : context.colorScheme.onSurfaceVariant,
+                                      size: scaleSize(16),
+                                    ),
+                                    ScaledSizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'rememberPassword'.tr(),
+                                        style: scaledTextStyle(
+                                          fontSize: 11,
+                                          color: pinCacheState
+                                              ? context.colorScheme.primary
+                                              : context.colorScheme.onSurfaceVariant,
+                                          fontWeight: pinCacheState ? FontWeight.w600 : FontWeight.w400,
+                                        ),
+                                      ),
+                                    ),
+                                    ScaledSizedBox(width: 6),
+                                    SizedBox(
+                                      height: scaleSize(20),
+                                      width: scaleSize(34),
+                                      child: FittedBox(
+                                        fit: BoxFit.contain,
+                                        child: Switch.adaptive(
+                                          value: pinCacheState,
+                                          onChanged: (_) {
+                                            setState(() {
+                                              PinCodeService.toggle();
+                                            });
+                                          },
+                                          activeTrackColor: context.colorScheme.primary,
+                                          activeThumbColor: context.colorScheme.onPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ScaledSizedBox(height: isTall ? 16 : 8),
                       // Security messages and PIN error display
                       Consumer(
                         builder: (context, ref, child) {
@@ -587,44 +660,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                               },
                               tooltip: 'useBiometricAuthentication'.tr(),
                               size: 50.0,
-                            );
-                          },
-                        ),
-
-                      ScaledSizedBox(height: isTall ? 12 : 8),
-                      if (canUnlock)
-                        StatefulBuilder(
-                          builder: (context, setState) {
-                            final pinCacheState = PinCodeService.isEnabled;
-                            return InkWell(
-                              key: keyCachePassword,
-                              onTap: () {
-                                setState(() {
-                                  PinCodeService.toggle();
-                                });
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
-                                    color: context.colorScheme.primary,
-                                    size: scaleSize(20),
-                                  ),
-                                  ScaledSizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      'rememberPassword'.tr(),
-                                      style: scaledTextStyle(
-                                        fontSize: 12,
-                                        color: homeContext.colorScheme.onSurfaceVariant,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             );
                           },
                         ),

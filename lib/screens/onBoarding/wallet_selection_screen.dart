@@ -1,4 +1,5 @@
 import 'package:durt2/durt2.dart' show WalletEntity, IdtyStatus, SafeType;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,8 +41,10 @@ class _WalletSelectionScreenState extends ConsumerState<WalletSelectionScreen> {
       if (widget.migrationData.targetSafeNumber != null) {
         // Load wallets from the specified safe
         final walletService = ref.read(walletServiceProvider);
-        final targetSafe = walletService.getSafeBox(widget.migrationData.targetSafeNumber!);
-        allWallets = targetSafe.wallets.toList();
+        final targetSafeNumber = widget.migrationData.targetSafeNumber!;
+        final query = walletService.walletBox.query()
+          ..link(WalletEntity_.safe, SafeEntity_.number.equals(targetSafeNumber));
+        allWallets = query.build().find();
       } else {
         // Load wallets from the current safe using Riverpod provider
         allWallets = ref.read(walletsListProvider).wallets;

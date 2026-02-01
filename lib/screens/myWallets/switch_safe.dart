@@ -5,7 +5,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
@@ -14,7 +13,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
-import 'package:gecko/screens/myWallets/wallets_home.dart';
 
 class SwitchSafe extends ConsumerStatefulWidget {
   const SwitchSafe({super.key});
@@ -143,7 +141,12 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                     await ref.read(biometricProvider.notifier).refresh();
                     if (!await PinCodeService.askPinCode(canSwitch: true)) return;
 
-                    await _performSmoothTransition(context);
+                    // Pop back to the existing WalletsHome which has already rebuilt
+                    // with new safe data via switchSafe(). The fade animation in
+                    // _WalletsHomeContent handles the visual transition.
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   },
                   child: Text(
                     'openThisSafe'.tr(),
@@ -156,76 +159,5 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
         ),
       ),
     );
-  }
-
-  /// Performs a smooth transition to myWallets screen with overlay to hide intermediate navigation
-  Future<void> _performSmoothTransition(BuildContext context) async {
-    // Check if context is still valid before proceeding
-    if (!context.mounted) return;
-
-    // Create an animated overlay with fade transition
-    late OverlayEntry overlayEntry;
-
-    // Animation controller for the overlay
-    bool showOverlay = false;
-
-    overlayEntry = OverlayEntry(
-      builder: (context) => AnimatedOpacity(
-        opacity: showOverlay ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 100),
-        child: Container(color: context.colorScheme.surface),
-      ),
-    );
-
-    // Insert overlay - check context validity first
-    final overlay = Overlay.of(context);
-    if (!context.mounted) return;
-
-    overlay.insert(overlayEntry);
-
-    // Fade in the overlay
-    showOverlay = true;
-    overlayEntry.markNeedsBuild();
-
-    // Wait for fade in to complete
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    // Clear GlobalKey state to avoid conflicts when rebuilding with new safe
-    try {
-      if (context.mounted) {
-        // Clean dismount of current route before navigation
-        await Future.delayed(const Duration(milliseconds: 50));
-      }
-    } catch (e) {
-      // Handle any errors during cleanup
-      log.w('Error during state cleanup: $e');
-    }
-
-    // Check context validity before navigation
-    if (!context.mounted) {
-      // Clean up overlay if context is no longer valid
-      overlayEntry.remove();
-      return;
-    }
-
-    // Replace with a new WalletsHome that has a unique key based on the safe's fingerprint
-    // This ensures each safe gets its own widget instance, preventing GlobalKey conflicts
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Consumer(builder: (context, ref, child) => WalletsHome.fromCurrentSafe(ref)),
-      ),
-    );
-
-    // Wait a bit then fade out the overlay
-    Future.delayed(const Duration(milliseconds: 50), () {
-      showOverlay = false;
-      overlayEntry.markNeedsBuild();
-
-      // Remove overlay after fade out
-      Future.delayed(const Duration(milliseconds: 100), () {
-        overlayEntry.remove();
-      });
-    });
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
+import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/migration_data.dart';
@@ -251,7 +252,11 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
       orElse: () => allSafes.first, // Fallback to first safe if default not found
     );
 
-    final wallets = defaultSafe.wallets.toList();
+    // Use direct query instead of defaultSafe.wallets.toList() to avoid
+    // ObjectBox ToMany backlink cache returning stale data.
+    final query = walletService.walletBox.query()
+      ..link(WalletEntity_.safe, SafeEntity_.number.equals(defaultSafe.number));
+    final wallets = query.build().find();
     if (wallets.isEmpty) {
       _cachedResult = null;
       _cachedWalletAddresses = [];
@@ -462,7 +467,11 @@ final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) 
     orElse: () => allSafes.first, // Fallback to first safe if default not found
   );
 
-  final wallets = defaultSafe.wallets.toList();
+  // Use direct query instead of defaultSafe.wallets.toList() to avoid
+  // ObjectBox ToMany backlink cache returning stale data.
+  final query = walletService.walletBox.query()
+    ..link(WalletEntity_.safe, SafeEntity_.number.equals(defaultSafe.number));
+  final wallets = query.build().find();
   if (wallets.isEmpty) return [];
 
   final identityWalletsWithStatus = <({d.WalletEntity wallet, d.IdtyStatus status})>[];

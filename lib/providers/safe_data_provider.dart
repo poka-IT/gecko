@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
+import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
@@ -87,10 +88,11 @@ class SafeOnChainDataNotifier extends AsyncNotifier<SafeOnChainData> {
       return SafeOnChainData.empty();
     }
 
-    // Get wallets for this safe
+    // Get wallets for this safe using direct query to avoid ObjectBox
+    // ToMany backlink cache returning stale data.
     final walletService = ref.watch(walletServiceProvider);
-    final safe = walletService.getSafeBox(safeNumber);
-    final addresses = safe.wallets.map((w) => w.address).toList();
+    final query = walletService.walletBox.query()..link(WalletEntity_.safe, SafeEntity_.number.equals(safeNumber));
+    final addresses = query.build().find().map((w) => w.address).toList();
 
     if (addresses.isEmpty) {
       return SafeOnChainData.empty();

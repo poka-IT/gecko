@@ -162,7 +162,10 @@ class WalletsListNotifier extends Notifier<WalletsListState> {
         await widgetRef.read(idtyWalletAsyncProvider.future);
       }
 
-      final wallets = safe.wallets.toList()..sort((a, b) => a.number.compareTo(b.number));
+      // Use a direct query instead of safe.wallets.toList() to avoid ObjectBox
+      // ToMany backlink cache returning stale data after wallet creation/deletion.
+      final query = _walletService.walletBox.query()..link(WalletEntity_.safe, SafeEntity_.number.equals(safe.number));
+      final wallets = query.build().find()..sort((a, b) => a.number.compareTo(b.number));
 
       state = state.copyWith(wallets: wallets, isLoading: false, currentSafeNumber: safe.number);
     } catch (e) {

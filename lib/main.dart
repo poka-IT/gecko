@@ -86,8 +86,6 @@ Future<void> main() async {
   await appInfoService.init();
   appVersion = appInfoService.appVersion;
 
-  FlutterNativeSplash.remove();
-
   if (kReleaseMode && enableSentry) {
     await SentryService.init(
       dsn: 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110',

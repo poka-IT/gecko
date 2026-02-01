@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
@@ -27,6 +28,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Remove native splash only after Flutter has drawn its first frame
+      FlutterNativeSplash.remove();
       await ref.read(appInitProvider.notifier).initApp(context: context, widgetRef: ref);
       _showCesiumImportInfoDialogIfNeeded();
       // Note: Ready certification notifications are handled globally by ReadyCertificationListener in main.dart
@@ -103,7 +106,7 @@ class _SplashPlaceholder extends StatelessWidget {
     return Container(
       color: const Color(0xFFFFD68E),
       alignment: Alignment.center,
-      child: Image.asset('assets/icon/gecko_final.png', width: 180, height: 180),
+      child: Image.asset('assets/icon/gecko_final_padded.png', width: 240, height: 240),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/currency_provider.dart';
+import 'package:gecko/screens/license_page.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class CurrencyPage extends ConsumerStatefulWidget {
@@ -62,6 +63,8 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildCurrencyDescription(context, currencyData.currencyParams),
+                  ScaledSizedBox(height: 16),
+                  _buildLicenseLink(context),
                   ScaledSizedBox(height: 24),
                   _buildCurrencySection(context, currencyData.currencyParams),
                   ScaledSizedBox(height: 24),
@@ -128,6 +131,37 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLicenseLink(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonetaryLicensePage())),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: context.colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.2)),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(14)),
+          child: Row(
+            children: [
+              Icon(Icons.article_outlined, color: context.colorScheme.primary, size: scaleSize(22)),
+              ScaledSizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'readMonetaryLicense'.tr(),
+                  style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: context.colorScheme.primary),
+                ),
+              ),
+              Icon(Icons.chevron_right, color: context.colorScheme.primary, size: scaleSize(22)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

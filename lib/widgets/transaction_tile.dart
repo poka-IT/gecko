@@ -18,12 +18,14 @@ class TransactionTile extends StatelessWidget {
     required this.avatarSize,
     required this.transaction,
     required this.context,
+    this.viewingAddress,
   });
 
   final int keyID;
   final double avatarSize;
   final TransactionDisplayItem transaction;
   final BuildContext context;
+  final String? viewingAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +65,8 @@ class TransactionTile extends StatelessWidget {
             Navigator.push(
               context,
               PageNoTransit(
-                builder: (context) => ProfileViewScreen(address: transaction.address, username: username),
+                builder: (context) =>
+                    ProfileViewScreen(address: transaction.address, username: username, fromAddress: viewingAddress),
               ),
             );
           },
@@ -290,7 +293,11 @@ class TransactionTile extends StatelessWidget {
             Navigator.push(
               context,
               PageNoTransit(
-                builder: (context) => ProfileViewScreen(address: transaction.address, username: transaction.username),
+                builder: (context) => ProfileViewScreen(
+                  address: transaction.address,
+                  username: transaction.username,
+                  fromAddress: viewingAddress,
+                ),
               ),
             );
           },
@@ -390,7 +397,11 @@ class TransactionTile extends StatelessWidget {
             Navigator.push(
               context,
               PageNoTransit(
-                builder: (context) => ProfileViewScreen(address: transaction.address, username: transaction.username),
+                builder: (context) => ProfileViewScreen(
+                  address: transaction.address,
+                  username: transaction.username,
+                  fromAddress: viewingAddress,
+                ),
               ),
             );
           },

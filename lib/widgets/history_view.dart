@@ -126,7 +126,15 @@ class HistoryView extends StatelessWidget {
         );
       }
 
-      items.add(TransactionTile(keyID: keyID, avatarSize: avatarSize, transaction: transaction, context: context));
+      items.add(
+        TransactionTile(
+          keyID: keyID,
+          avatarSize: avatarSize,
+          transaction: transaction,
+          context: context,
+          viewingAddress: address,
+        ),
+      );
     }
 
     // Append loading indicator or end indicator

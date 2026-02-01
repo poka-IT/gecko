@@ -29,9 +29,10 @@ const double buttonSize = 75;
 const double buttonFontSize = 13;
 
 class ProfileViewScreen extends ConsumerStatefulWidget {
-  const ProfileViewScreen({required this.address, required this.username, super.key});
+  const ProfileViewScreen({required this.address, required this.username, this.fromAddress, super.key});
   final String address;
   final String? username;
+  final String? fromAddress;
 
   @override
   ConsumerState<ProfileViewScreen> createState() => _ProfileViewScreenState();
@@ -377,6 +378,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   Future<void> _handleTransfer(WidgetRef ref) async {
     if (!await PinCodeService.askPinCode()) return;
 
-    paymentPopup(toAddress: address, username: username);
+    final fromWallet = widget.fromAddress != null ? ref.read(walletByAddressProvider(widget.fromAddress!)) : null;
+    paymentPopup(toAddress: address, username: username, fromWallet: fromWallet);
   }
 }

@@ -144,8 +144,9 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     final confirmed = await showConfirmationDialog(
       context: navContext,
       title: 'certification'.tr(),
-      message: '${'areYouSureYouWantToCertify1'.tr()}\n\n**$displayName**',
+      message: '${'confirmCertification'.tr()}\n\n**$displayName**\n\n${getShortPubkey(pendingCert.receiverAddress)}',
       type: ConfirmationDialogType.question,
+      checkboxLabel: 'certifyUniqueIdentity'.tr(),
     );
 
     if (!confirmed || !mounted) return;

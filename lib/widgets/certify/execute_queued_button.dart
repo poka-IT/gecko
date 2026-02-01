@@ -67,14 +67,14 @@ class ExecuteQueuedButton extends ConsumerWidget {
     final walletName = pendingCert.receiverName ?? pendingCert.receiverUid;
     final displayName = walletName ?? getShortPubkey(address);
 
-    final message =
-        '${'areYouSureYouWantToCertify1'.tr()}\n\n**$displayName**\n\n${'areYouSureYouWantToCertify2'.tr()}\n\n**${getShortPubkey(address)}**';
+    final message = '${'confirmCertification'.tr()}\n\n**$displayName**\n\n${getShortPubkey(address)}';
 
     final result = await showConfirmationDialog(
       context: context,
       title: 'certification'.tr(),
       message: message,
       type: ConfirmationDialogType.question,
+      checkboxLabel: 'certifyUniqueIdentity'.tr(),
     );
 
     if (!result) return;

@@ -46,14 +46,15 @@ class CertifyButton extends ConsumerWidget {
   Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     final walletName = ref.read(squidServiceProvider).walletNameIndexer[address];
     final message = walletName != null
-        ? '${'areYouSureYouWantToCertify1'.tr()}\n\n**$walletName**\n\n${'areYouSureYouWantToCertify2'.tr()}\n\n**${getShortPubkey(address)}**'
-        : '${'areYouSureCreateIdentityOnAddress'.tr()}\n\n**${getShortPubkey(address)}**';
+        ? '${'confirmCertification'.tr()}\n\n**$walletName**\n\n${getShortPubkey(address)}'
+        : '${'confirmCreateIdentity'.tr()}\n\n**${getShortPubkey(address)}**';
 
     final result = await showConfirmationDialog(
       context: context,
       title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
       message: message,
       type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
+      checkboxLabel: 'certifyUniqueIdentity'.tr(),
     );
 
     if (!result) return;

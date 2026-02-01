@@ -36,6 +36,7 @@ import 'package:gecko/services/storage_init_service.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:gecko/services/log_collection_service.dart';
+import 'package:gecko/services/g1_genesis_service.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -62,10 +63,19 @@ Future<void> main() async {
   // Initialize log collection service
   LogCollectionService.instance.initialize();
 
-  // Always start on the default network (Ğ1), except if the user previously
-  // selected the local network — in that case, persist that choice across restarts.
+  // Check G1 genesis hash (blocking on first run, cached after)
+  final g1Available = await G1GenesisService.initializeAtStartup(configBox);
+
+  // Network selection: local override preserved, then g1 if available, else default (gtest)
   final savedNetwork = configBox.get('selectedNetwork');
-  final selectedNetwork = savedNetwork == Networks.local.name ? Networks.local : Networks.defaultNetwork;
+  final Networks selectedNetwork;
+  if (savedNetwork == Networks.local.name) {
+    selectedNetwork = Networks.local;
+  } else if (g1Available) {
+    selectedNetwork = Networks.g1;
+  } else {
+    selectedNetwork = Networks.defaultNetwork;
+  }
 
   // Sync the saved network so the rest of the app is consistent
   configBox.put('selectedNetwork', selectedNetwork.name);

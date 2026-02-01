@@ -172,5 +172,7 @@
     "updateAvailableTitle": "Update verfügbar",
     "updateAvailableMessage": "Eine neue Version von Ğecko (**{}**) ist verfügbar.\nSie verwenden derzeit Version {}.",
     "updateNow": "Aktualisieren",
-    "updateLater": "Später"
+    "updateLater": "Später",
+    "g1GenesisHashChangedTitle": "Netzwerk-Update",
+    "g1GenesisHashChangedMessage": "Die Konfiguration des Ğ1-Netzwerks wurde aktualisiert. Bitte starten Sie die Anwendung neu, um die Änderungen zu übernehmen."
 }

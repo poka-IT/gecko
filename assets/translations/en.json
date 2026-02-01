@@ -777,5 +777,7 @@
     "updateAvailableTitle": "Update Available",
     "updateAvailableMessage": "A new version of Ğecko (**{}**) is available.\nYou are currently on version {}.",
     "updateNow": "Update",
-    "updateLater": "Later"
+    "updateLater": "Later",
+    "g1GenesisHashChangedTitle": "Network Update",
+    "g1GenesisHashChangedMessage": "The Ğ1 network configuration has been updated. Please restart the application to apply the changes."
 }

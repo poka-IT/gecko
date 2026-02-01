@@ -7,10 +7,13 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/app_update_provider.dart';
+import 'package:gecko/providers/g1_genesis_poll_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
 import 'package:gecko/screens/home/welcome_home_widget.dart';
+import 'package:gecko/services/g1_genesis_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -38,6 +41,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await ref.read(appInitProvider.notifier).initApp(context: context, widgetRef: ref);
       _showCesiumImportInfoDialogIfNeeded();
       _checkForAppUpdate();
+      _checkG1GenesisHashInBackground();
+      _startG1GenesisPollingIfNeeded();
       // Note: Ready certification notifications are handled globally by ReadyCertificationListener in main.dart
     });
   }
@@ -84,6 +89,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     } catch (e) {
       log.d('App update check error: $e');
+    }
+  }
+
+  void _startG1GenesisPollingIfNeeded() {
+    final durt = ref.read(durtProvider);
+    if (durt.network.name == 'gtest') {
+      ref.read(g1GenesisPollProvider.notifier).startPolling();
+    }
+  }
+
+  Future<void> _checkG1GenesisHashInBackground() async {
+    // Only check if we already have a cached hash (not on first launch)
+    final cachedHash = configBox.get('g1GenesisHash');
+    if (cachedHash == null) return;
+
+    final changed = await G1GenesisService.backgroundCheck(configBox);
+    if (changed && mounted) {
+      showConfirmationDialog(
+        context: context,
+        title: 'g1GenesisHashChangedTitle'.tr(),
+        message: 'g1GenesisHashChangedMessage'.tr(),
+        confirmText: 'confirm'.tr(),
+        barrierDismissible: false,
+        hideCancelButton: true,
+      );
     }
   }
 

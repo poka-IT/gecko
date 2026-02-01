@@ -93,7 +93,10 @@ class ConnectionStatusNotifier extends Notifier<d.ConnectionStatus> {
         final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
         switch (status) {
           case d.ConnectionStatus.connected:
-            // homeMessageNotifier.changeMessage("nodeAndIndexerSynced".tr(), true);
+            // Clear any previous Squid error message
+            if (_duniterStatus == d.ConnectionStatus.connected) {
+              homeMessageNotifier.changeMessage("connected".tr(args: [durt.network.displayName]), true);
+            }
             break;
           case d.ConnectionStatus.disconnected:
             homeMessageNotifier.changeMessage("noValidIndexerFound".tr());

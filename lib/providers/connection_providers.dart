@@ -56,6 +56,9 @@ class ConnectionStatusNotifier extends Notifier<d.ConnectionStatus> {
         if (previousStatus != d.ConnectionStatus.connected && status == d.ConnectionStatus.connected) {
           ref.invalidate(persistentBalanceStreamProvider);
           ref.invalidate(persistentIdtyStatusStreamProvider);
+          ref.invalidate(persistentCertificationStreamProvider);
+          ref.invalidate(hybridIdtyStatusProvider);
+          ref.invalidate(hybridCertificationProvider);
 
           // Invalidate genesisTimeProvider to force recalculation after reconnection
           // This ensures genesisTime is recalculated with the current network connection

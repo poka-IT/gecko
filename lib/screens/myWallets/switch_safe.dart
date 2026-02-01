@@ -9,7 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers/identity_providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
@@ -138,10 +138,7 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                 child: PrimaryButton(
                   label: 'openThisSafe'.tr(),
                   onPressed: () async {
-                    ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafe);
-                    // Invalidate identity providers to ensure they use the new safe
-                    ref.invalidate(idtyWalletAsyncProvider);
-                    ref.invalidate(identityWalletsAsyncProvider);
+                    await ref.read(walletActionsProvider.notifier).switchSafe(currentSafe);
                     PinCodeService.pinCode = '';
                     await ref.read(biometricProvider.notifier).refresh();
                     if (!await PinCodeService.askPinCode(canSwitch: true)) return;

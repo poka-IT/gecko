@@ -151,6 +151,7 @@ class _WalletNameEditDialogState extends ConsumerState<_WalletNameEditDialog> {
                               await WalletManagementService.renameWallet(
                                 widget.wallet,
                                 widget.walletNameController.text,
+                                ref: ref,
                               );
                               if (context.mounted) {
                                 Navigator.pop(context, widget.walletNameController.text);

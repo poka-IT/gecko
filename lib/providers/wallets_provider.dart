@@ -397,26 +397,55 @@ class WalletActionsNotifier extends Notifier<void> {
     }
   }
 
-  /// Invalidate all family providers after wallet changes
+  /// Invalidate all safe-dependent providers after wallet/safe changes
   void invalidateProviders() {
     try {
+      // Stream providers
       ref.invalidate(smartBalanceStreamProvider);
       ref.invalidate(balanceStreamProvider);
       ref.invalidate(persistentBalanceStreamProvider);
       ref.invalidate(idtyStatusStreamProvider);
+      ref.invalidate(persistentIdtyStatusStreamProvider);
       ref.invalidate(smartCertificationStreamProvider);
       ref.invalidate(certificationStreamProvider);
       ref.invalidate(persistentCertificationStreamProvider);
+      // Hybrid providers
+      ref.invalidate(hybridIdentityNameProvider);
+      ref.invalidate(hybridIdtyStatusProvider);
+      ref.invalidate(hybridCertificationProvider);
+      ref.invalidate(smartAccountConsumersProvider);
+      // Identity & certification providers
+      ref.invalidate(effectiveCertificationWalletProvider);
+      ref.invalidate(selectedCertificationWalletProvider);
+      ref.invalidate(certStateProvider);
+      ref.invalidate(certificationExistsProvider);
+      ref.invalidate(defaultWalletProvider);
+      // History & data providers
       ref.invalidate(transfersOnlyHistoryProvider);
       ref.invalidate(combinedHistoryProvider);
       ref.invalidate(transactionHistoryProvider);
       ref.invalidate(certificationListProvider);
       ref.invalidate(safeOnChainDataProvider);
 
-      log.i('Invalidated all family providers after safe operation');
+      log.i('Invalidated all safe-dependent providers after safe operation');
     } catch (e) {
       log.e('Error invalidating providers: $e');
     }
+  }
+
+  /// Centralized safe switch: updates safe number, clears caches, invalidates all providers, reloads wallets.
+  /// This is the single entry point for changing the active safe.
+  Future<void> switchSafe(int newSafeNumber) async {
+    // 1. Update safe number
+    ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(newSafeNumber);
+    // 2. Force-refresh notifiers with instance caches
+    try {
+      ref.read(idtyWalletAsyncProvider.notifier).forceRefresh();
+    } catch (_) {}
+    // 3. Invalidate ALL safe-dependent providers
+    invalidateProviders();
+    // 4. Reload wallets for the new safe
+    await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: newSafeNumber);
   }
 }
 
@@ -449,8 +478,13 @@ final isOwnerProvider = Provider.family<bool, String>((ref, address) {
   return wallets.any((wallet) => wallet.address == address);
 });
 
-/// Get wallet by address
+/// Get wallet by address - searches current safe first, then falls back to global lookup
 final walletByAddressProvider = Provider.family<d.WalletEntity?, String>((ref, address) {
+  final walletsState = ref.watch(walletsListProvider);
+  // Current safe first
+  final currentSafeWallet = walletsState.wallets.where((w) => w.address == address).firstOrNull;
+  if (currentSafeWallet != null) return currentSafeWallet;
+  // Fallback: global lookup for external views
   final walletService = ref.read(walletServiceProvider);
   return walletService.walletBox.query(WalletEntity_.address.equals(address)).build().findFirst();
 });

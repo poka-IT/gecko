@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -111,17 +110,12 @@ class SafeManager {
     }
 
     final newDefaultSafe = remainingSafes.first.number;
-    _ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(newDefaultSafe);
-    // Invalidate identity providers to ensure they use the new safe
-    _ref.invalidate(idtyWalletAsyncProvider);
-    _ref.invalidate(identityWalletsAsyncProvider);
-
-    // Reload wallets for the new default safe
+    // Use centralized switchSafe for proper invalidation of all safe-dependent providers
     try {
-      await _ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: newDefaultSafe);
+      await _ref.read(walletActionsProvider.notifier).switchSafe(newDefaultSafe);
     } catch (e) {
-      log.e('Failed to reload wallets for safe $newDefaultSafe: $e');
-      // If we can't reload wallets, at least clear the list to prevent stale data
+      log.e('Failed to switch to safe $newDefaultSafe: $e');
+      // If we can't switch, at least clear the list to prevent stale data
       _ref.read(walletsListProvider.notifier).clear();
     }
 

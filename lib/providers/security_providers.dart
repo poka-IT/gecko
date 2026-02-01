@@ -17,9 +17,9 @@ final seedDisplayProvider = FutureProvider.family.autoDispose<SeedDisplayData, (
     throw Exception('Failed to retrieve seed');
   }
 
-  // Get safe box number for the address
+  // Get safe box number for the address (reactive to safe changes)
   final allSafes = walletService.safeBox.getAll();
-  final defaultSafeNumber = walletService.defaultSafeBoxNumber;
+  final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
   final defaultSafe = allSafes.firstWhere((safe) => safe.number == defaultSafeNumber, orElse: () => allSafes.first);
 
   final wallet = defaultSafe.wallets.where((w) => w.address == params.address).firstOrNull;

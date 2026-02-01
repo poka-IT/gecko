@@ -24,13 +24,12 @@ class WalletDeletionService {
   /// - 0: Success
   /// - 1: Transaction failed (wallet not deleted)
   /// - 2: User cancelled
-  static Future<int> deleteWallet(BuildContext context, WalletEntity wallet) async {
-    // Get required providers
-    final container = riverpod.ProviderContainer();
-    final defaultWallet = container.read(defaultWalletProvider);
+  /// Requires a [ref] to access providers from the widget tree.
+  static Future<int> deleteWallet(BuildContext context, WalletEntity wallet, {required riverpod.WidgetRef ref}) async {
+    final defaultWallet = ref.read(defaultWalletProvider);
 
     try {
-      final walletBalance = await container.read(storageServiceProvider).getBalance(wallet.address);
+      final walletBalance = await ref.read(storageServiceProvider).getBalance(wallet.address);
 
       // Show confirmation dialog with transfer details
       String confirmationMessage;
@@ -54,45 +53,40 @@ class WalletDeletionService {
       );
 
       if (!answer) {
-        container.dispose();
         return 2; // User cancelled
       }
 
       // If wallet has balance, transfer funds first
       if (walletBalance.transferableBalance > BigInt.zero) {
         if (!await PinCodeService.askPinCode()) {
-          container.dispose();
           return 2; // PIN cancelled
         }
 
         final transferResult = await _transferWalletBalance(
           // ignore: use_build_context_synchronously
           context,
-          container,
+          ref,
           wallet,
           defaultWallet,
           PinCodeService.pinCode,
         );
 
         if (transferResult != 0) {
-          container.dispose();
           return transferResult;
         }
       }
 
       // Delete wallet files and data
       await _cleanupWalletFiles(wallet);
-      await container.read(walletServiceProvider).deleteWallet(wallet.address);
+      await ref.read(walletServiceProvider).deleteWallet(wallet.address);
 
       // Navigate back
       if (context.mounted) {
         Navigator.pop(context);
       }
 
-      container.dispose();
       return 0; // Success
     } catch (e) {
-      container.dispose();
       rethrow;
     }
   }
@@ -100,7 +94,7 @@ class WalletDeletionService {
   /// Transfer wallet balance to default wallet
   static Future<int> _transferWalletBalance(
     BuildContext context,
-    riverpod.ProviderContainer container,
+    riverpod.WidgetRef ref,
     WalletEntity wallet,
     WalletEntity defaultWallet,
     String pinCode,
@@ -117,23 +111,21 @@ class WalletDeletionService {
     );
 
     try {
-      final keypair = await container
+      final keypair = await ref
           .read(walletServiceProvider)
           .getKeyPairFromAddress(address: wallet.address, pinCode: pinCode);
 
       // Get display mode for transaction
-      final displayContainer = riverpod.ProviderContainer();
-      final displayMode = displayContainer.read(currencyDisplayModeProvider);
+      final displayMode = ref.read(currencyDisplayModeProvider);
       final isUdUnit = displayMode == CurrencyDisplayMode.du;
-      displayContainer.dispose();
 
-      final transactionStatus = container
+      final transactionStatus = ref
           .read(duniterServiceProvider)
           .pay(
             keypair: keypair,
             destAddress: defaultWallet.address,
             amount: -1, // Send all balance
-            comment: 'ĞECKO:DELETEWALLET',
+            comment: 'GECKO:DELETEWALLET',
             isUd: isUdUnit,
           );
 

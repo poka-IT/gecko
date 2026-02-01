@@ -174,6 +174,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   final newPath = await WalletManagementService.changeAvatar(
                     widget.wallet.address,
                     pinCode: PinCodeService.pinCode,
+                    ref: ref,
                   );
                   if (newPath.isNotEmpty) {
                     setState(() {
@@ -277,7 +278,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               key: keyDeleteWallet,
               onTap: canDelete
                   ? () async {
-                      final result = await WalletDeletionService.deleteWallet(context, widget.wallet);
+                      final result = await WalletDeletionService.deleteWallet(context, widget.wallet, ref: ref);
                       if (result == 0) {
                         // Success - wallet was deleted, navigation handled by service
                         WidgetsBinding.instance.addPostFrameCallback((_) async {

@@ -77,7 +77,7 @@ final genesisTimeProvider = FutureProvider<DateTime?>((ref) async {
 /// This provider watches for changes to the default wallet and rebuilds dependents automatically.
 final defaultWalletProvider = Provider<d.WalletEntity>((ref) {
   final walletService = ref.watch(walletServiceProvider);
-  // defaultWallet now always returns a valid wallet or throws a meaningful exception
+  ref.watch(defaultSafeBoxNumberProvider); // Force rebuild on safe switch
   return walletService.defaultWallet;
 });
 

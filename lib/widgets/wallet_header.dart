@@ -373,6 +373,7 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                         final newPath = await WalletManagementService.changeAvatar(
                           widget.address,
                           pinCode: PinCodeService.pinCode,
+                          ref: ref,
                         );
                         setState(() {
                           // Only update if newPath is not empty (not cancelled)

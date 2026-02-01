@@ -5,6 +5,7 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 
@@ -116,13 +117,11 @@ final persistentBalanceStreamProvider = StreamProvider.family<d.WalletBalance, S
 /// For owned wallets: uses persistent subscription (stays active)
 /// For other wallets: uses auto-dispose subscription (cleans up when widget disappears)
 final smartBalanceStreamProvider = Provider.family.autoDispose<AsyncValue<d.WalletBalance>, String>((ref, address) {
-  final walletService = ref.watch(walletServiceProvider);
+  final walletsState = ref.watch(walletsListProvider);
+  final isCurrentSafeWallet = walletsState.wallets.any((w) => w.address == address);
 
-  // Check if this address belongs to the user using the new utility method
-  final isOwnedWallet = walletService.isOwnedWallet(address);
-
-  // Use appropriate provider based on ownership
-  if (isOwnedWallet) {
+  // Use appropriate provider based on ownership in current safe
+  if (isCurrentSafeWallet) {
     return ref.watch(persistentBalanceStreamProvider(address));
   } else {
     return ref.watch(balanceStreamProvider(address));
@@ -241,13 +240,11 @@ final smartCertificationStreamProvider = Provider.family.autoDispose<AsyncValue<
   ref,
   address,
 ) {
-  final walletService = ref.watch(walletServiceProvider);
+  final walletsState = ref.watch(walletsListProvider);
+  final isCurrentSafeWallet = walletsState.wallets.any((w) => w.address == address);
 
-  // Check if this address belongs to the user using the new utility method
-  final isOwnedWallet = walletService.isOwnedWallet(address);
-
-  // Use appropriate provider based on ownership
-  if (isOwnedWallet) {
+  // Use appropriate provider based on ownership in current safe
+  if (isCurrentSafeWallet) {
     return ref.watch(persistentCertificationStreamProvider(address));
   } else {
     return ref.watch(certificationStreamProvider(address));
@@ -363,17 +360,13 @@ final persistentIdtyStatusStreamProvider = StreamProvider.family<d.IdtyStatus, S
 /// For owned wallets: uses persistent subscription (stays active)
 /// For other wallets: uses auto-dispose subscription (cleans up when widget disappears)
 final smartIdtyStatusStreamProvider = Provider.family.autoDispose<AsyncValue<d.IdtyStatus>, String>((ref, address) {
-  final walletService = ref.watch(walletServiceProvider);
+  final walletsState = ref.watch(walletsListProvider);
+  final isCurrentSafeWallet = walletsState.wallets.any((w) => w.address == address);
 
-  // Check if this address belongs to the user using the new utility method
-  final isOwnedWallet = walletService.isOwnedWallet(address);
-
-  // Use appropriate provider based on ownership
-  if (isOwnedWallet) {
-    // For owned wallets: use persistent stream to keep status up-to-date
+  // Use appropriate provider based on ownership in current safe
+  if (isCurrentSafeWallet) {
     return ref.watch(persistentIdtyStatusStreamProvider(address));
   } else {
-    // For other wallets: use auto-dispose stream
     return ref.watch(idtyStatusStreamProvider(address));
   }
 });

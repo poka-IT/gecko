@@ -214,9 +214,21 @@ final certificationExistsProvider = FutureProvider.family<bool, String>((ref, ta
 class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
   d.WalletEntity? _cachedResult;
   List<String> _cachedWalletAddresses = [];
+  int? _lastSafeNumber;
 
   @override
   Future<d.WalletEntity?> build() async {
+    // Watch the default safe number BEFORE storage state check
+    // to clear cache on safe change even during brief notInitialized states
+    final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
+
+    // Clear cache on safe change
+    if (_lastSafeNumber != null && _lastSafeNumber != defaultSafeNumber) {
+      _cachedResult = null;
+      _cachedWalletAddresses = [];
+    }
+    _lastSafeNumber = defaultSafeNumber;
+
     // Check if storage is initialized FIRST before accessing any providers
     final storageState = ref.watch(storageStateProvider);
     if (storageState == StorageState.notInitialized) {
@@ -226,9 +238,6 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
     // Now safe to watch other providers
     final walletService = ref.watch(walletServiceProvider);
     final storageService = ref.watch(storageServiceProvider);
-
-    // Watch the default safe number provider to react to safe changes
-    final defaultSafeNumber = ref.watch(defaultSafeBoxNumberProvider);
 
     final allSafes = walletService.safeBox.getAll();
     if (allSafes.isEmpty) {
@@ -330,6 +339,7 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
   void forceRefresh() {
     _cachedResult = null;
     _cachedWalletAddresses = [];
+    _lastSafeNumber = null;
     ref.invalidateSelf();
   }
 }

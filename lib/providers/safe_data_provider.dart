@@ -245,8 +245,8 @@ final safeWalletBalanceProvider = Provider.family<d.WalletBalance?, String>((ref
 
 /// Check if a wallet belongs to the current safe
 final isWalletInCurrentSafeProvider = Provider.family<bool, String>((ref, address) {
-  final walletService = ref.watch(walletServiceProvider);
-  return walletService.isOwnedWallet(address);
+  final walletsState = ref.watch(walletsListProvider);
+  return walletsState.wallets.any((w) => w.address == address);
 });
 
 /// Certification data for a specific wallet address from the current safe's batch-loaded data.

@@ -104,14 +104,16 @@ class MnemonicDisplayWidget extends StatelessWidget {
           children: <Widget>[
             Text(index.toString(), style: scaledTextStyle(fontSize: 10, color: const Color(0xff6b6b52))),
             ScaledSizedBox(height: 2),
-            Text(
-              dataWord,
-              key: useWordAsKey ? keyMnemonicWord(dataWord) : keyMnemonicWord(index.toString()),
-              style: scaledTextStyle(fontSize: 15, color: context.colorScheme.onSurface),
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.visible, // Allow text to be fully visible
-              softWrap: true, // Allow text to wrap if absolutely necessary
-              maxLines: 2, // Allow up to 2 lines for very long words
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                dataWord,
+                key: useWordAsKey ? keyMnemonicWord(dataWord) : keyMnemonicWord(index.toString()),
+                style: scaledTextStyle(fontSize: 15, color: context.colorScheme.onSurface),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                softWrap: false,
+              ),
             ),
           ],
         ),

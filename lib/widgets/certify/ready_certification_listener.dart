@@ -52,14 +52,10 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     final identityWallets = await ref.read(identityWalletsAsyncProvider.future);
     if (!mounted) return;
 
-    log.d('🔔 [GlobalCertListener] Found ${identityWallets.length} identity wallet(s), setting up listeners...');
-
     for (final wallet in identityWallets) {
       if (!mounted) return;
       await _setupListenerForWallet(wallet.address);
     }
-
-    log.d('🔔 [GlobalCertListener] Setup complete for ${identityWallets.length} identity wallet(s)');
   }
 
   Future<void> _waitForOnlineMode() async {
@@ -77,12 +73,9 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     if (_listeningAddresses.contains(issuerAddress)) return;
     _listeningAddresses.add(issuerAddress);
 
-    log.d('🔔 [GlobalCertListener] Setting up listener for ${issuerAddress.substring(0, 8)}...');
-
     // Setup listener for future notifications
     ref.listenManual(readyCertificationNotifierProvider(issuerAddress), (previous, next) {
       if (next != null && mounted && !_isShowingModal) {
-        log.d('🔔 [GlobalCertListener] Certification ready notification for $issuerAddress');
         _showReadyCertificationModal(next, issuerAddress);
       }
     });
@@ -94,7 +87,6 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     // Check current state immediately after sync is complete
     final readyCert = ref.read(readyCertificationNotifierProvider(issuerAddress));
     if (readyCert != null && mounted && !_isShowingModal) {
-      log.d('🔔 [GlobalCertListener] Found ready certification for ${issuerAddress.substring(0, 8)}');
       _showReadyCertificationModal(readyCert, issuerAddress);
     }
   }
@@ -103,17 +95,11 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     if (_isShowingModal) return;
 
     // Check if this certification was already snoozed in this session
-    if (_snoozedCertificationIds.contains(pendingCert.id)) {
-      log.d('🔔 [GlobalCertListener] Certification ${pendingCert.id} was snoozed, skipping modal');
-      return;
-    }
+    if (_snoozedCertificationIds.contains(pendingCert.id)) return;
 
     // Use global navigator context since we're inside MaterialApp.builder
     final navContext = Gecko.navigatorContext;
-    if (navContext == null) {
-      log.w('🔔 [GlobalCertListener] Navigator context not available yet, will retry later');
-      return;
-    }
+    if (navContext == null) return;
 
     _isShowingModal = true;
 
@@ -125,7 +111,6 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
       onViewQueue: () {
         // Snooze this certification so it doesn't show again this session
         _snoozedCertificationIds.add(pendingCert.id);
-        log.d('🔔 [GlobalCertListener] Certification ${pendingCert.id} snoozed (view queue)');
 
         final ctx = Gecko.navigatorContext;
         if (ctx != null) {
@@ -138,7 +123,6 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
       onDismiss: () {
         // Snooze this certification so it doesn't show again this session
         _snoozedCertificationIds.add(pendingCert.id);
-        log.d('🔔 [GlobalCertListener] Certification ${pendingCert.id} snoozed (remind later)');
       },
     ).then((_) {
       _isShowingModal = false;
@@ -192,7 +176,7 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
       );
     } catch (e) {
       if (!mounted) return;
-      log.e('❌ [GlobalCertListener] Certification failed: $e');
+      log.e('[GlobalCertListener] Certification failed: $e');
       final errorCtx = Gecko.navigatorContext;
       if (errorCtx != null) {
         showConfirmationDialog(context: errorCtx, type: ConfirmationDialogType.error, message: e.toString());
@@ -212,10 +196,9 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
         pinCode: PinCodeService.pinCode,
       );
 
-      log.d('🔄 [GlobalCertListener] Syncing queue to CesiumPlus...');
       return await queueNotifier.pushToRemote(keyPair.sign);
     } catch (e) {
-      log.e('🔄 [GlobalCertListener] Sync failed: $e');
+      log.e('[GlobalCertListener] Sync failed: $e');
       return false;
     }
   }

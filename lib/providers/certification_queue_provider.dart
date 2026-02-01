@@ -52,7 +52,6 @@ class RecentCertificationsNotifier extends Notifier<Map<String, RecentCertData>>
   void markInProgress(String issuerAddress, String targetAddress) {
     final key = '$issuerAddress:$targetAddress';
     state = {...state, key: RecentCertData(timestamp: DateTime.now(), certState: RecentCertState.inProgress)};
-    log.d('🔒 [RecentCerts] In progress: $key');
   }
 
   /// Mark that a certification transaction completed successfully
@@ -61,11 +60,9 @@ class RecentCertificationsNotifier extends Notifier<Map<String, RecentCertData>>
     final existing = state[key];
     if (existing != null) {
       state = {...state, key: existing.copyWith(certState: RecentCertState.completed)};
-      log.d('🔒 [RecentCerts] Completed: $key');
     } else {
       // If not in state (edge case), add as completed
       state = {...state, key: RecentCertData(timestamp: DateTime.now(), certState: RecentCertState.completed)};
-      log.d('🔒 [RecentCerts] Added as completed: $key');
     }
 
     // Cancel existing timer if any and start new auto-cleanup timer
@@ -98,11 +95,7 @@ class RecentCertificationsNotifier extends Notifier<Map<String, RecentCertData>>
     // Only count as "recently certified" if completed (not in progress)
     if (data.certState != RecentCertState.completed) return false;
 
-    final isRecent = DateTime.now().difference(data.timestamp).inMinutes < 10;
-    if (isRecent) {
-      log.d('🔒 [RecentCerts] Found recent certification: $key');
-    }
-    return isRecent;
+    return DateTime.now().difference(data.timestamp).inMinutes < 10;
   }
 
   /// Remove a certification from cache (e.g., when transaction fails)
@@ -112,7 +105,6 @@ class RecentCertificationsNotifier extends Notifier<Map<String, RecentCertData>>
       final newState = Map<String, RecentCertData>.from(state);
       newState.remove(key);
       state = newState;
-      log.d('🔒 [RecentCerts] Removed (tx failed): $key');
     }
   }
 
@@ -121,7 +113,6 @@ class RecentCertificationsNotifier extends Notifier<Map<String, RecentCertData>>
       final newState = Map<String, RecentCertData>.from(state);
       newState.remove(key);
       state = newState;
-      log.d('🔒 [RecentCerts] Cleaned up: $key');
     }
   }
 }
@@ -176,24 +167,17 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
   @override
   FutureOr<d.CertificationQueueState?> build() async {
-    log.d('🔧 [CertQueueProvider] Building for issuer: $issuerAddress');
-
     // Check storage state first
     final storageState = ref.watch(storageStateProvider);
     if (storageState == StorageState.notInitialized) {
-      log.d('🔧 [CertQueueProvider] Storage not initialized, returning null');
       return null;
     }
 
     // Load from local storage first
-    log.d('🔧 [CertQueueProvider] Loading from local storage...');
     var queue = await CertificationQueueService.loadQueue(issuerAddress);
 
     // If no local queue, create an empty one
-    if (queue == null) {
-      log.d('🔧 [CertQueueProvider] No local queue, creating empty queue');
-      queue = d.CertificationQueueState.empty(issuerAddress);
-    }
+    queue ??= d.CertificationQueueState.empty(issuerAddress);
 
     // Update expected dates based on current blockchain state
     queue = await _updateQueueDates(queue);
@@ -217,7 +201,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     });
 
     // Sync with CesiumPlus in background (don't block UI)
-    log.d('🔧 [CertQueueProvider] Starting background CesiumPlus sync...');
     _syncWithCesiumPlus();
 
     return queue;
@@ -256,7 +239,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         genesisTime: genesisTime,
       );
     } catch (e) {
-      log.e('🔧 [CertQueueProvider] Error updating queue dates: $e');
+      log.e('[CertQueueProvider] Error updating queue dates: $e');
       return queue;
     }
   }
@@ -272,7 +255,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     if (updatedQueue.hasReadyCertification) {
       final readyCert = updatedQueue.nextReadyCertification;
       if (readyCert != null) {
-        log.d('🔔 [CertQueueProvider] Certification ready for ${readyCert.receiverAddress}');
         ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).notify(readyCert);
       }
     }
@@ -299,136 +281,97 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     return false;
   }
 
-  /// Sync with CesiumPlus - at startup, remote is the source of truth
+  /// Sync with CesiumPlus - at startup, remote is the source of truth.
+  /// If the local queue is empty, only attempt sync when connections are
+  /// already active (no waiting) to avoid blocking startup for nothing.
   Future<void> _syncWithCesiumPlus() async {
-    log.d('🔄 [CertQueueSync] ====== STARTING SYNC for $issuerAddress ======');
-
     try {
       final durt = ref.read(durtProvider);
+      final localQueue = state.value;
+      final hasLocalItems = localQueue != null && !localQueue.isEmpty;
 
-      // Wait for Duniter to be connected (up to 10 seconds)
-      if (!durt.isConnected) {
-        log.d('🔄 [CertQueueSync] Waiting for Duniter connection...');
-        try {
-          await durt.duniterConnectionStatusStream
-              .firstWhere((status) => status == d.ConnectionStatus.connected)
-              .timeout(const Duration(seconds: 10));
-          log.d('🔄 [CertQueueSync] Duniter connected');
-        } on TimeoutException {
-          log.w('🔄 [CertQueueSync] Duniter not connected after 10s, skipping sync');
-          return;
+      if (hasLocalItems) {
+        // We have local items - worth waiting for connections
+        if (!durt.isConnected) {
+          try {
+            await durt.duniterConnectionStatusStream
+                .firstWhere((status) => status == d.ConnectionStatus.connected)
+                .timeout(const Duration(seconds: 10));
+          } on TimeoutException {
+            log.w('[CertQueueSync] Duniter not connected after 10s, skipping sync');
+            return;
+          }
         }
-      }
 
-      // Wait for CesiumPlus (datapod) to be initialized (up to 15 seconds)
-      if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
-        log.d('🔄 [CertQueueSync] Waiting for CesiumPlus initialization...');
-        int attempts = 0;
-        while (durt.datapodConnectionStatus != d.ConnectionStatus.connected && attempts < 15) {
-          await Future.delayed(const Duration(seconds: 1));
-          attempts++;
-        }
         if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
-          log.w('🔄 [CertQueueSync] CesiumPlus not initialized after 15s, skipping sync');
+          int attempts = 0;
+          while (durt.datapodConnectionStatus != d.ConnectionStatus.connected && attempts < 15) {
+            await Future.delayed(const Duration(seconds: 1));
+            attempts++;
+          }
+          if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
+            log.w('[CertQueueSync] CesiumPlus not connected after 15s, skipping sync');
+            return;
+          }
+        }
+      } else {
+        // No local items - only sync if connections are already active
+        if (!durt.isConnected || durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
           return;
         }
-        log.d('🔄 [CertQueueSync] CesiumPlus initialized after ${attempts}s');
       }
 
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
 
-      // 1. PULL: Fetch remote queue from CesiumPlus
-      log.d('🔄 [CertQueueSync] Step 1: Fetching remote queue from CesiumPlus...');
+      // Fetch remote queue from CesiumPlus
       d.CertificationQueueState? remoteQueue;
-
       try {
         remoteQueue = await cesiumPlus.getCertificationQueue(issuerAddress);
-        if (remoteQueue != null) {
-          log.d(
-            '🔄 [CertQueueSync] Remote queue found: ${remoteQueue.queueLength} items, '
-            'lastUpdated: ${remoteQueue.lastUpdated}',
-          );
-        } else {
-          log.d('🔄 [CertQueueSync] No remote queue exists on CesiumPlus');
-        }
       } catch (e) {
-        log.e('🔄 [CertQueueSync] Error fetching remote queue: $e');
-        // Continue with local-only mode
+        log.e('[CertQueueSync] Error fetching remote queue: $e');
+        return;
       }
 
-      // 2. Determine the final queue state
-      // At startup, remote is the source of truth - always use remote if it exists
+      // Determine the final queue state
       d.CertificationQueueState? finalQueue;
 
       if (remoteQueue != null) {
-        // Remote exists - use it as the source of truth
-        log.d('🔄 [CertQueueSync] Using remote queue as source of truth');
+        log.d('[CertQueueSync] Remote queue found for $issuerAddress: ${remoteQueue.queueLength} items');
         finalQueue = await _updateQueueDates(remoteQueue);
         finalQueue = finalQueue.copyWith(isSynced: true);
+      } else if (hasLocalItems) {
+        finalQueue = localQueue.copyWith(isSynced: false);
       } else {
-        // No remote - keep local if it exists
-        final localQueue = state.value;
-        if (localQueue != null && !localQueue.isEmpty) {
-          log.d('🔄 [CertQueueSync] No remote queue, keeping local (needs push)');
-          finalQueue = localQueue.copyWith(isSynced: false);
-        } else {
-          log.d('🔄 [CertQueueSync] No remote or local queue, nothing to sync');
-          return;
-        }
+        return;
       }
 
-      // 3. Update state and save locally
       state = AsyncValue.data(finalQueue);
       await CertificationQueueService.saveQueue(finalQueue);
-      log.d(
-        '🔄 [CertQueueSync] Sync complete. Final state: ${finalQueue.queueLength} items, '
-        'isSynced: ${finalQueue.isSynced}',
-      );
 
-      // 4. Check and notify if any certification is ready immediately after sync
+      // Notify if any certification is ready immediately after sync
       if (finalQueue.hasReadyCertification) {
         final readyCert = finalQueue.nextReadyCertification;
         if (readyCert != null) {
-          log.d('🔔 [CertQueueSync] Certification ready after sync for ${readyCert.receiverAddress}');
           ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).notify(readyCert);
         }
       }
-
-      log.d('🔄 [CertQueueSync] ====== SYNC COMPLETE ======');
     } catch (e, stack) {
-      log.e('🔄 [CertQueueSync] ====== SYNC FAILED ======');
-      log.e('🔄 [CertQueueSync] Error: $e');
-      log.e('🔄 [CertQueueSync] Stack: $stack');
+      log.e('[CertQueueSync] Sync failed for $issuerAddress: $e\n$stack');
     }
   }
 
   /// Push queue to CesiumPlus (requires sign function from PIN validation)
   /// Note: saveCertificationQueue automatically creates a minimal profile if none exists
   Future<bool> pushToRemote(Uint8List Function(Uint8List) signFunction) async {
-    log.d('⬆️ [CertQueuePush] ====== PUSHING TO REMOTE ======');
-
     final currentQueue = state.value;
     if (currentQueue == null) {
-      log.w('⬆️ [CertQueuePush] No queue to push');
+      log.w('[CertQueuePush] No queue to push');
       return false;
     }
-
-    log.d(
-      '⬆️ [CertQueuePush] Pushing queue: ${currentQueue.queueLength} items, '
-      'lastUpdated: ${currentQueue.lastUpdated}',
-    );
 
     try {
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
 
-      // Check if profile exists (for logging purposes)
-      log.d('⬆️ [CertQueuePush] Checking if CesiumPlus profile exists...');
-      final hasProfile = await cesiumPlus.hasProfile(issuerAddress);
-      log.d('⬆️ [CertQueuePush] Profile exists: $hasProfile');
-
-      // Save the queue to CesiumPlus
-      // Note: saveCertificationQueue automatically creates a minimal profile if none exists
-      log.d('⬆️ [CertQueuePush] Saving queue to CesiumPlus...');
       final success = await cesiumPlus.saveCertificationQueue(
         address: issuerAddress,
         signFunction: signFunction,
@@ -436,20 +379,16 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       );
 
       if (success) {
-        log.d('⬆️ [CertQueuePush] ✅ Queue pushed successfully');
         final syncedQueue = currentQueue.copyWith(isSynced: true);
         state = AsyncValue.data(syncedQueue);
         await CertificationQueueService.saveQueue(syncedQueue);
       } else {
-        log.e('⬆️ [CertQueuePush] ❌ Failed to push queue');
+        log.e('[CertQueuePush] Failed to push queue for $issuerAddress');
       }
 
-      log.d('⬆️ [CertQueuePush] ====== PUSH COMPLETE ======');
       return success;
     } catch (e, stack) {
-      log.e('⬆️ [CertQueuePush] ====== PUSH FAILED ======');
-      log.e('⬆️ [CertQueuePush] Error: $e');
-      log.e('⬆️ [CertQueuePush] Stack: $stack');
+      log.e('[CertQueuePush] Push failed for $issuerAddress: $e\n$stack');
       return false;
     }
   }
@@ -462,17 +401,14 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     String? receiverUid,
     String? receiverName,
   }) async {
-    log.d('➕ [CertQueueAdd] Adding $receiverAddress to queue');
-
     final currentQueue = state.value;
     if (currentQueue == null) {
-      log.e('➕ [CertQueueAdd] No queue available');
+      log.e('[CertQueueAdd] No queue available');
       return false;
     }
 
     // Check if already in queue
     if (currentQueue.containsAddress(receiverAddress)) {
-      log.w('➕ [CertQueueAdd] Address already in queue');
       return false;
     }
 
@@ -518,16 +454,11 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     state = AsyncValue.data(newQueue);
     await CertificationQueueService.saveQueue(newQueue);
 
-    log.d('➕ [CertQueueAdd] Added successfully. Queue now has ${newQueue.queueLength} items');
-    log.d('➕ [CertQueueAdd] Queue marked as NOT SYNCED - needs push to remote');
-
     return true;
   }
 
   /// Remove a certification from the queue
   Future<void> removeFromQueue(String certificationId) async {
-    log.d('➖ [CertQueueRemove] Removing certification $certificationId');
-
     final currentQueue = state.value;
     if (currentQueue == null) return;
 
@@ -549,16 +480,12 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
     state = AsyncValue.data(newQueue);
     await CertificationQueueService.saveQueue(newQueue);
-
-    log.d('➖ [CertQueueRemove] Removed. Queue now has ${newQueue.queueLength} items');
   }
 
   /// Remove a certification that was just executed.
   /// Optimistically updates nextIssuableOn so remaining items get correct future dates
   /// and the next cert is NOT falsely marked as "ready".
   Future<void> removeExecutedCertification(String certificationId) async {
-    log.d('✅ [CertQueueExecuted] Removing executed certification $certificationId');
-
     final currentQueue = state.value;
     if (currentQueue == null) return;
 
@@ -576,11 +503,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       final currentBlock = await storageService.getCurrentBlockHeight();
       final certPeriodBlocks = storageService.getCertPeriodBlocks();
       final optimisticNextIssuable = currentBlock + certPeriodBlocks;
-
-      log.d(
-        '✅ [CertQueueExecuted] Optimistic nextIssuableOn: $optimisticNextIssuable '
-        '(current: $currentBlock + period: $certPeriodBlocks)',
-      );
 
       var newQueue = currentQueue.copyWith(
         pendingCertifications: newCertifications,
@@ -603,10 +525,8 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
       state = AsyncValue.data(newQueue);
       await CertificationQueueService.saveQueue(newQueue);
-
-      log.d('✅ [CertQueueExecuted] Removed. Queue now has ${newQueue.queueLength} items');
     } catch (e) {
-      log.e('✅ [CertQueueExecuted] Error computing optimistic dates, falling back to removeFromQueue: $e');
+      log.e('[CertQueueExecuted] Error computing optimistic dates: $e');
       await removeFromQueue(certificationId);
     }
   }
@@ -624,8 +544,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
   /// Reorder certifications in the queue
   Future<void> reorder(int oldIndex, int newIndex) async {
-    log.d('🔀 [CertQueueReorder] Reordering from $oldIndex to $newIndex');
-
     final currentQueue = state.value;
     if (currentQueue == null) return;
 
@@ -654,72 +572,52 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
     state = AsyncValue.data(newQueue);
     await CertificationQueueService.saveQueue(newQueue);
-
-    log.d('🔀 [CertQueueReorder] Reorder complete');
   }
 
   /// Pull the remote queue from CesiumPlus and update local state if remote is newer.
   /// This is a read-only operation (no PIN required).
   /// Returns true if the local state was updated from remote.
   Future<bool> pullFromRemote() async {
-    log.d('⬇️ [CertQueuePull] Pulling remote queue for $issuerAddress');
-
     try {
       final durt = ref.read(durtProvider);
 
       // Skip if CesiumPlus is not ready (don't block, just skip)
       if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
-        log.d('⬇️ [CertQueuePull] CesiumPlus not connected, skipping pull');
         return false;
       }
 
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
       final remoteQueue = await cesiumPlus.getCertificationQueue(issuerAddress);
 
-      if (remoteQueue == null) {
-        log.d('⬇️ [CertQueuePull] No remote queue found');
-        return false;
-      }
+      if (remoteQueue == null) return false;
 
       // Compare lastUpdated timestamps to decide if update is needed
       final localQueue = state.value;
       if (localQueue != null && !localQueue.lastUpdated.isBefore(remoteQueue.lastUpdated)) {
-        log.d(
-          '⬇️ [CertQueuePull] Local is up-to-date '
-          '(local: ${localQueue.lastUpdated}, remote: ${remoteQueue.lastUpdated})',
-        );
         return false;
       }
 
-      log.d(
-        '⬇️ [CertQueuePull] Remote is newer '
-        '(local: ${localQueue?.lastUpdated}, remote: ${remoteQueue.lastUpdated}), updating...',
-      );
-
-      // Remote is newer — use it
+      // Remote is newer - use it
       var finalQueue = await _updateQueueDates(remoteQueue);
       finalQueue = finalQueue.copyWith(isSynced: true);
 
       state = AsyncValue.data(finalQueue);
       await CertificationQueueService.saveQueue(finalQueue);
 
-      log.d('⬇️ [CertQueuePull] Updated from remote: ${finalQueue.queueLength} items');
       return true;
     } catch (e) {
-      log.e('⬇️ [CertQueuePull] Error: $e');
+      log.e('[CertQueuePull] Error: $e');
       return false;
     }
   }
 
   /// Force refresh the queue (re-sync from remote)
   Future<void> refresh() async {
-    log.d('🔃 [CertQueueProvider] Force refresh requested');
     ref.invalidateSelf();
   }
 
   /// Clear local queue data (use when deleting safe)
   Future<void> clearLocalData() async {
-    log.d('🗑️ [CertQueueProvider] Clearing local data for $issuerAddress');
     await CertificationQueueService.deleteQueue(issuerAddress);
     state = AsyncValue.data(d.CertificationQueueState.empty(issuerAddress));
   }
@@ -785,7 +683,6 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
   // This shows "Certification en cours" instead of "Vous devez attendre..."
   final isInProgressNow = recentCertsNotifier.isInProgress(issuerAddress, targetAddress);
   if (isInProgressNow) {
-    log.d('🔄 [CertButtonState] Certification in progress for $targetAddress');
     return const CertButtonState(action: CertButtonAction.inProgress);
   }
 
@@ -807,8 +704,6 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
   // If we recently certified this person, always show disabled state
   // This is the MOST RELIABLE check as it doesn't depend on blockchain propagation
   if (wasCertifiedRecently) {
-    log.d('🔒 [CertButtonState] Recently certified $targetAddress, forcing disabled state');
-
     // Get the cert period duration from storage to calculate estimated wait time
     final storageService = ref.read(storageServiceProvider);
     final certPeriodDuration = storageService.getCertPeriodDuration();

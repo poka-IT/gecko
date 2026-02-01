@@ -78,7 +78,16 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   BigInt? toAddressBalance;
   bool balancesLoaded = false;
 
-  WalletEntity get fromWallet => _fromWallet ?? ref.read(firstWalletProvider);
+  WalletEntity get fromWallet {
+    if (_fromWallet != null) return _fromWallet!;
+    final lastAddress = ref.read(lastPaymentWalletAddressProvider);
+    if (lastAddress != null) {
+      final wallets = ref.read(walletsListProvider).wallets;
+      final match = wallets.where((w) => w.address == lastAddress).firstOrNull;
+      if (match != null) return match;
+    }
+    return ref.read(firstWalletProvider);
+  }
 
   set fromWallet(WalletEntity value) => _fromWallet = value;
 
@@ -261,6 +270,9 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     // Capture fromWallet first, before any async operations that might dispose the widget
     // This avoids accessing ref after the widget is unmounted
     final capturedFromWallet = fromWallet;
+
+    // Remember this wallet for next payment in this session
+    ref.read(lastPaymentWalletAddressProvider.notifier).set(capturedFromWallet.address);
 
     // Capture all required data before any async operations that might dispose the widget
     final payAmount = ref.read(profileViewProvider(widget.toAddress)).payAmount;

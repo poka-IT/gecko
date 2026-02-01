@@ -81,6 +81,20 @@ final firstWalletProvider = Provider<d.WalletEntity>((ref) {
   return walletsList.first;
 });
 
+/// Notifier for the last wallet address used as payment source (session-only, not persisted).
+class LastPaymentWalletAddressNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String address) => state = address;
+}
+
+/// Stores the last wallet address used as payment source.
+/// Falls back to null, meaning firstWalletProvider will be used.
+final lastPaymentWalletAddressProvider = NotifierProvider<LastPaymentWalletAddressNotifier, String?>(
+  LastPaymentWalletAddressNotifier.new,
+);
+
 /// Notifier for pending legacy migration data
 class PendingLegacyMigrationNotifier extends Notifier<LegacyMigrationData?> {
   @override

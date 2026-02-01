@@ -81,7 +81,7 @@ class _CustomDerivationState extends ConsumerState<CustomDerivation> {
                         child: Row(
                           children: [
                             const Spacer(),
-                            Text(value, style: scaledTextStyle(fontSize: 16, color: Colors.black)),
+                            Text(value, style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface)),
                             const Spacer(),
                           ],
                         ),

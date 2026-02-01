@@ -18,10 +18,10 @@ PODS:
   - mobile_scanner (7.0.0):
     - Flutter
     - FlutterMacOS
-  - ObjectBox (5.1.1)
+  - ObjectBox (5.2.0)
   - objectbox_flutter_libs (0.0.1):
     - FlutterMacOS
-    - ObjectBox (= 5.1.1)
+    - ObjectBox (= 5.2.0)
   - package_info_plus (0.0.1):
     - FlutterMacOS
   - printing (1.0.0):
@@ -102,8 +102,8 @@ SPEC CHECKSUMS:
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
-  ObjectBox: 26871f7cce80a8bd2e610bf944aeaded730f6925
-  objectbox_flutter_libs: 5aac4de1c44d8b95362cb46f2d2acfe4da7c5d63
+  ObjectBox: 946c1e8586aaa61e21b6661bab4948d06fdd51c4
+  objectbox_flutter_libs: 52ffb4ad42870c47886c2c6a7528e76b770af6d9
   package_info_plus: f0052d280d17aa382b932f399edf32507174e870
   printing: c4cf83c78fd684f9bc318e6aadc18972aa48f617
   screen_brightness_macos: 2a3ee243f8051c340381e8e51bcedced8360f421

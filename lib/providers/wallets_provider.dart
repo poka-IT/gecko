@@ -295,8 +295,8 @@ class WalletActionsNotifier extends Notifier<void> {
         final newWalletNbr = wallets.isEmpty ? 0 : wallets.last.number + 1;
 
         // Get the mnemonic from the safe
-        final defaultWallet = ref.read(defaultWalletProvider);
-        final mnemonic = await _walletService.getSeed(address: defaultWallet.address, pin: PinCodeService.pinCode);
+        final firstWallet = ref.read(firstWalletProvider);
+        final mnemonic = await _walletService.getSeed(address: firstWallet.address, pin: PinCodeService.pinCode);
 
         // Generate keypair with the custom derivation
         final keypair = await _walletService.getKeyPairFromMnemonic(
@@ -348,9 +348,9 @@ class WalletActionsNotifier extends Notifier<void> {
       final wallets = ref.read(walletsListProvider).wallets;
       final newWalletNbr = wallets.isEmpty ? 0 : wallets.last.number + 1;
 
-      final defaultWallet = ref.read(defaultWalletProvider);
+      final firstWallet = ref.read(firstWalletProvider);
       final walletData = await _walletService.generateRootKeypair(
-        fromAddress: defaultWallet.address,
+        fromAddress: firstWallet.address,
         pinCode: PinCodeService.pinCode,
       );
 
@@ -419,7 +419,6 @@ class WalletActionsNotifier extends Notifier<void> {
       ref.invalidate(selectedCertificationWalletProvider);
       ref.invalidate(certStateProvider);
       ref.invalidate(certificationExistsProvider);
-      ref.invalidate(defaultWalletProvider);
       // History & data providers
       ref.invalidate(transfersOnlyHistoryProvider);
       ref.invalidate(combinedHistoryProvider);

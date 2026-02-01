@@ -58,7 +58,6 @@ class CertifyButton extends ConsumerWidget {
     );
 
     if (!result) return;
-    await ref.read(walletServiceProvider).setDefaultAddress(address);
 
     if (!await PinCodeService.askPinCode()) return;
     final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);

@@ -78,7 +78,6 @@ class ExecuteQueuedButton extends ConsumerWidget {
     );
 
     if (!result) return;
-    await walletService.setDefaultAddress(address);
 
     if (!await PinCodeService.askPinCode()) return;
     if (!context.mounted) return;

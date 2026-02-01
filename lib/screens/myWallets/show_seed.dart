@@ -26,7 +26,7 @@ class ShowSeed extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    WalletEntity defaultWallet = ref.watch(defaultWalletProvider);
+    WalletEntity firstWallet = ref.watch(firstWalletProvider);
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
@@ -39,7 +39,7 @@ class ShowSeed extends ConsumerWidget {
               children: <Widget>[
                 // Use combined provider to load everything at once - no more double loading
                 ref
-                    .watch(seedDisplayProvider((address: defaultWallet.address, pin: PinCodeService.pinCode)))
+                    .watch(seedDisplayProvider((address: firstWallet.address, pin: PinCodeService.pinCode)))
                     .when(
                       loading: () => Center(
                         child: Column(
@@ -98,7 +98,7 @@ class ShowSeed extends ConsumerWidget {
                         }
 
                         // Check if the safe language is not English to show export button
-                        final safeLanguage = Durt.i.wallets.getSafeMnemonicLanguage(defaultWallet.safe.target?.number);
+                        final safeLanguage = Durt.i.wallets.getSafeMnemonicLanguage(firstWallet.safe.target?.number);
                         final isEnglish = safeLanguage == BidouilleLang.english;
 
                         return Column(

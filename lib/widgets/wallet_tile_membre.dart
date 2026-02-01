@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -23,8 +22,7 @@ class WalletTileMembre extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final freshWallet = ref.watch(walletByAddressProvider(wallet.address)) ?? wallet;
     final currentSafe = ref.watch(currentSafeNumberProvider);
-    final defaultWallet = ref.watch(defaultWalletProvider);
-    final isDefault = freshWallet.address == defaultWallet.address;
+    const isHighlighted = true;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
@@ -94,7 +92,7 @@ class WalletTileMembre extends ConsumerWidget {
                   Container(
                     height: scaleSize(72), // Fixed height to prevent layout shift
                     decoration: BoxDecoration(
-                      color: isDefault
+                      color: isHighlighted
                           ? context.colorScheme.primary.withValues(alpha: 0.9)
                           : context.colorScheme.secondary.withValues(alpha: 0.9),
                       borderRadius: const BorderRadius.only(
@@ -112,20 +110,20 @@ class WalletTileMembre extends ConsumerWidget {
                             NameByAddress(
                               wallet: freshWallet,
                               size: 16,
-                              color: isDefault ? Colors.white : context.colorScheme.onSurface,
+                              color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
                             ScaledSizedBox(height: 4),
                             Balance(
                               address: freshWallet.address,
                               size: 14,
-                              color: isDefault ? Colors.white : context.colorScheme.onSurface,
+                              color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
                             ),
                           ],
                         ),
                         Certifications(
                           address: freshWallet.address,
-                          color: isDefault ? Colors.white : context.colorScheme.onSurface,
+                          color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
                           size: 15,
                         ),
                       ],

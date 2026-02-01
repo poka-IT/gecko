@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
@@ -26,7 +27,9 @@ class WalletDeletionService {
   /// - 2: User cancelled
   /// Requires a [ref] to access providers from the widget tree.
   static Future<int> deleteWallet(BuildContext context, WalletEntity wallet, {required riverpod.WidgetRef ref}) async {
-    final defaultWallet = ref.read(defaultWalletProvider);
+    // Find destination wallet: first wallet that isn't the one being deleted
+    final wallets = ref.read(walletsListProvider).wallets;
+    final destinationWallet = wallets.firstWhere((w) => w.address != wallet.address);
 
     try {
       final walletBalance = await ref.read(storageServiceProvider).getBalance(wallet.address);
@@ -38,7 +41,7 @@ class WalletDeletionService {
           args: [
             wallet.name!,
             '${(walletBalance.transferableBalance.toDouble() / 100).toStringAsFixed(2)} ${Durt.i.network.symbol}',
-            defaultWallet.name ?? 'defaultWallet'.tr(),
+            destinationWallet.name ?? 'wallet'.tr(),
           ],
         );
       } else {
@@ -67,7 +70,7 @@ class WalletDeletionService {
           context,
           ref,
           wallet,
-          defaultWallet,
+          destinationWallet,
           PinCodeService.pinCode,
         );
 
@@ -91,18 +94,18 @@ class WalletDeletionService {
     }
   }
 
-  /// Transfer wallet balance to default wallet
+  /// Transfer wallet balance to destination wallet
   static Future<int> _transferWalletBalance(
     BuildContext context,
     riverpod.WidgetRef ref,
     WalletEntity wallet,
-    WalletEntity defaultWallet,
+    WalletEntity destinationWallet,
     String pinCode,
   ) async {
     // Show loading dialog while transaction is processing
     showConfirmationDialog(
       context: context,
-      message: 'transferringFundsToDefaultWallet'.tr(args: [defaultWallet.name ?? 'defaultWallet'.tr()]),
+      message: 'transferringFundsToWallet'.tr(args: [destinationWallet.name ?? 'wallet'.tr()]),
       type: ConfirmationDialogType.info,
       customIcon: const CircularProgressIndicator(),
       barrierDismissible: false,
@@ -123,7 +126,7 @@ class WalletDeletionService {
           .read(duniterServiceProvider)
           .pay(
             keypair: keypair,
-            destAddress: defaultWallet.address,
+            destAddress: destinationWallet.address,
             amount: -1, // Send all balance
             comment: 'GECKO:DELETEWALLET',
             isUd: isUdUnit,

@@ -130,7 +130,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       // --- Step 6: Final reload and navigate to congratulations ---
       final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafeNumber);
-      ref.invalidate(defaultWalletProvider);
 
       if (context.mounted) {
         await AppNavigator.pushWithFader(

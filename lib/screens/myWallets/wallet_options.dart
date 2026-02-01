@@ -63,8 +63,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
     final isAlone = walletsState.wallets.length == 1;
 
-    final defaultWallet = ref.watch(defaultWalletProvider);
-
     return PopScope(
       onPopInvokedWithResult: (_, _) {
         // Reload wallets from database to catch avatar updates
@@ -120,7 +118,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                           ],
                         ),
                       ),
-                    _buildWalletOptionsContent(context, ref, isAlone, currentSafe, defaultWallet),
+                    _buildWalletOptionsContent(context, ref, isAlone, currentSafe),
                   ],
                 ),
               ),
@@ -240,19 +238,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     );
   }
 
-  Future setDefaultWallet(BuildContext context, WidgetRef ref, int currentSafe) async {
-    await ref.read(walletServiceProvider).setDefaultAddress(widget.wallet.address);
-    await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
-
-    // Invalidate the default wallet provider to trigger reactive updates
-    ref.invalidate(defaultWalletProvider);
-  }
-
   Widget deleteWallet(BuildContext context, WidgetRef ref, int currentSafe) {
-    // Use the reactive provider for consistency
-    final defaultWallet = ref.watch(defaultWalletProvider);
-    final bool isDefaultWallet = defaultWallet.address == widget.wallet.address;
-
     // Watch providers for account consumers and balance
     final accountConsumersAsync = ref.watch(smartAccountConsumersProvider(widget.wallet.address));
     final balanceAsync = ref.watch(smartBalanceStreamProvider(widget.wallet.address));
@@ -269,7 +255,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             final BigInt balance = walletBalance.transferableBalance;
 
             final bool canDelete =
-                !isDefaultWallet &&
                 !hasConsumers &&
                 (balance > BigInt.from(2) || balance == BigInt.zero) &&
                 !IdentityUtils.hasIdentity(ref, widget.wallet.address);
@@ -321,55 +306,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     return activityWidget(context);
   }
 
-  Widget buildDefaultWalletSection(BuildContext context, WidgetRef ref, int currentSafe, WalletEntity defaultWallet) {
-    return InkWell(
-      key: keySetDefaultWallet,
-      onTap: defaultWallet.address != widget.wallet.address
-          ? () async {
-              await setDefaultWallet(context, ref, currentSafe);
-            }
-          : null,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.check_circle_outline,
-              size: scaleSize(24),
-              color: defaultWallet.address == widget.wallet.address
-                  ? Colors.grey[400]
-                  : greenColor.withValues(alpha: 0.8),
-            ),
-            ScaledSizedBox(width: 16),
-            Expanded(
-              child: Text(
-                defaultWallet.address == widget.wallet.address
-                    ? 'thisWalletIsDefault'.tr()
-                    : 'defineWalletAsDefault'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 16,
-                  color: defaultWallet.address == widget.wallet.address
-                      ? Colors.grey[500]
-                      : context.colorScheme.onSurface,
-                ),
-                softWrap: true,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// Build the wallet options content with reactive identity checks
-  Widget _buildWalletOptionsContent(
-    BuildContext context,
-    WidgetRef ref,
-    bool isAlone,
-    int currentSafe,
-    WalletEntity defaultWallet,
-  ) {
+  Widget _buildWalletOptionsContent(BuildContext context, WidgetRef ref, bool isAlone, int currentSafe) {
     // Watch the identity status to rebuild when it changes
     final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(widget.wallet.address));
 
@@ -383,7 +321,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           children: [
             buildConfirmIdentitySection(context, ref),
             buildOptionsSection(context),
-            if (!isAlone) buildDefaultWalletSection(context, ref, currentSafe, defaultWallet),
             if (!hasIdentity)
               InkWell(
                 key: keyRenameWallet,
@@ -452,8 +389,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 ),
               ),
             ),
-            if (defaultWallet.address != widget.wallet.address && !hasIdentity && !isAlone)
-              deleteWallet(context, ref, currentSafe),
+            if (!hasIdentity && !isAlone) deleteWallet(context, ref, currentSafe),
             if (hasIdentity) ManageMembershipButton(address: widget.wallet.address),
             if (hasIdentity) _buildCertificationQueueButton(context, ref),
             if (isAlone)
@@ -470,7 +406,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         children: [
           buildConfirmIdentitySection(context, ref),
           buildOptionsSection(context),
-          if (!isAlone) buildDefaultWalletSection(context, ref, currentSafe, defaultWallet),
           // Show Cesium+ Profile button while loading
           InkWell(
             onTap: () {
@@ -511,7 +446,6 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         children: [
           buildConfirmIdentitySection(context, ref),
           buildOptionsSection(context),
-          if (!isAlone) buildDefaultWalletSection(context, ref, currentSafe, defaultWallet),
           // Show Cesium+ Profile button on error
           InkWell(
             onTap: () {

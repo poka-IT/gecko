@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -34,9 +33,13 @@ class WalletTile extends ConsumerWidget {
     // Create stable key once
     final gestureKey = ValueKey('wallet_${repository.address}_safe${currentSafe}_$uniqueId');
 
-    // Check if this wallet is the default wallet
-    final defaultWallet = ref.watch(defaultWalletProvider);
-    final isDefault = defaultWallet.address == freshWallet.address;
+    // Highlight root wallet (no derivation) or first wallet if no root exists
+    final wallets = ref.watch(walletsListProvider).wallets;
+    final isHighlighted =
+        freshWallet.derivation == null ||
+        (wallets.isNotEmpty &&
+            wallets.first.address == freshWallet.address &&
+            !wallets.any((w) => w.derivation == null));
 
     return Padding(
       padding: padding,
@@ -93,7 +96,7 @@ class WalletTile extends ConsumerWidget {
                 Container(
                   height: scaleSize(60), // Fixed height to prevent layout shift
                   decoration: BoxDecoration(
-                    color: isDefault
+                    color: isHighlighted
                         ? context.colorScheme.primary.withValues(alpha: 0.9)
                         : context.colorScheme.secondary.withValues(alpha: 0.9),
                     borderRadius: const BorderRadius.only(
@@ -110,14 +113,14 @@ class WalletTile extends ConsumerWidget {
                           NameByAddress(
                             wallet: freshWallet,
                             size: 16,
-                            color: isDefault ? Colors.white : context.colorScheme.onSurface,
+                            color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                           ScaledSizedBox(height: 4),
                           Balance(
                             address: freshWallet.address,
                             size: 14,
-                            color: isDefault ? Colors.white : context.colorScheme.onSurface,
+                            color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
                           ),
                         ],
                       ),

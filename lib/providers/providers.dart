@@ -4,6 +4,7 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart' show Box;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 
 /// Provides the global, initialized instance of [d.Durt].
@@ -73,12 +74,11 @@ final genesisTimeProvider = FutureProvider<DateTime?>((ref) async {
   return await storageService.getGenesisBlockchainTime();
 });
 
-/// Provides the current default wallet for reactive UI updates.
-/// This provider watches for changes to the default wallet and rebuilds dependents automatically.
-final defaultWalletProvider = Provider<d.WalletEntity>((ref) {
-  final walletService = ref.watch(walletServiceProvider);
-  ref.watch(defaultSafeBoxNumberProvider); // Force rebuild on safe switch
-  return walletService.defaultWallet;
+/// Provides the first wallet of the active safe for reactive UI updates.
+/// This provider watches the wallets list and returns the first wallet (sorted by number).
+final firstWalletProvider = Provider<d.WalletEntity>((ref) {
+  final walletsList = ref.watch(walletsListProvider).wallets;
+  return walletsList.first;
 });
 
 /// Notifier for pending legacy migration data

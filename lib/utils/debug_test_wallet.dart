@@ -112,9 +112,6 @@ class DebugTestWalletService {
       await container.read(walletsListProvider.notifier).loadWallets();
       container.read(walletsListProvider.notifier).refresh();
 
-      // 7. Invalidate dependent providers to force UI refresh
-      container.invalidate(defaultWalletProvider);
-
       // Close loading dialog
       Navigator.pop(context);
 

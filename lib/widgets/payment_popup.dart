@@ -78,7 +78,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   BigInt? toAddressBalance;
   bool balancesLoaded = false;
 
-  WalletEntity get fromWallet => _fromWallet ?? ref.read(defaultWalletProvider);
+  WalletEntity get fromWallet => _fromWallet ?? ref.read(firstWalletProvider);
 
   set fromWallet(WalletEntity value) => _fromWallet = value;
 
@@ -537,7 +537,6 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                 });
 
                                 // Execute your original logic.
-                                await ref.read(walletServiceProvider).setDefaultAddress(newSelectedWallet.address);
                                 amountFocus.requestFocus();
                               },
                               // This builds the list of choices the user sees when the dropdown is open.

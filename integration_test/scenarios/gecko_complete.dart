@@ -89,13 +89,8 @@ Future certifyTest5() async {
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityConfirmed'.tr());
   humanRead(2);
-  // Set wallet 2 as default wallet
-  await goBack();
-  await tapKey(keyOpenWallet(test2.address));
-  await tapKey(keySetDefaultWallet);
-  await waitFor('thisWalletIsDefault'.tr());
-
   // Search Wallet 5 again
+  await goBack();
   await tapKey(keyAppBarHome);
   final addressToSearch = await clipPaste();
   final endAddress = addressToSearch.substring(addressToSearch.length - 6);

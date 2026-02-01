@@ -31,7 +31,6 @@ const keyCopyAddress = Key('keyCopyAddress');
 const keyCopyPubkey = Key('keyCopyPubkey');
 const keyOpenActivity = Key('keyOpenActivity');
 const keyManageMembership = Key('keyManageMembership');
-const keySetDefaultWallet = Key('keySetDefaultWallet');
 const keyDeleteWallet = Key('keyDeleteWallet');
 const keyWalletName = Key('keyWalletName');
 const keyRenameWallet = Key('keyRenameWallet');

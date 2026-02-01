@@ -904,9 +904,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       // Force refresh of wallet list and invalidate providers
       ref.read(walletsListProvider.notifier).refresh();
 
-      // Also invalidate default wallet provider
-      ref.invalidate(defaultWalletProvider);
-
       log.i('Home state refreshed - should switch to welcome mode');
     } catch (e) {
       log.e('Error refreshing home state: $e');

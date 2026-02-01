@@ -10,7 +10,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/biometric_provider.dart';
-import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -477,9 +476,6 @@ Widget finishButton(BuildContext context, [bool isLegacyMode = false]) {
       ),
       onPressed: () {
         // Force refresh of wallet providers before navigation to ensure correct safe is loaded
-        final container = ProviderScope.containerOf(context);
-        container.invalidate(defaultWalletProvider);
-
         Navigator.pushNamedAndRemoveUntil(context, RouteNames.myWallets, ModalRoute.withName(RouteNames.home));
       },
       child: Text(

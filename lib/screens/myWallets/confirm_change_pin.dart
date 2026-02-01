@@ -107,11 +107,11 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
                 return;
               }
 
-              final defaultWallet = ref.read(defaultWalletProvider);
+              final firstWallet = ref.read(firstWalletProvider);
 
               await ref
                   .read(walletServiceProvider)
-                  .changePin(address: defaultWallet.address, oldPin: PinCodeService.pinCode, newPin: pin);
+                  .changePin(address: firstWallet.address, oldPin: PinCodeService.pinCode, newPin: pin);
 
               // Mettre à jour le PIN dans le provider
               PinCodeService.pinCode = pin;

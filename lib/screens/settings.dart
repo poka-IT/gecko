@@ -2030,9 +2030,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 builder: (context) {
                   // Create dynamic segments list
                   final List<ButtonSegment<String>> segments = [
-                    ButtonSegment(value: 'gdev', label: Text('gdev'), icon: const Icon(Icons.bug_report_rounded)),
-                    ButtonSegment(value: 'gtest', label: Text('gtest'), icon: const Icon(Icons.bug_report_rounded)),
                     ButtonSegment(value: 'g1', label: Text('g1'), icon: const Icon(Icons.account_balance_rounded)),
+                    ButtonSegment(value: 'gtest', label: Text('gtest'), icon: const Icon(Icons.bug_report_rounded)),
+                    ButtonSegment(value: 'gdev', label: Text('gdev'), icon: const Icon(Icons.bug_report_rounded)),
                   ];
 
                   // Add local network in debug mode or if already selected
@@ -2061,6 +2061,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ? null
                         : (Set<String> newSelection) async {
                             final selectedNetworkName = newSelection.first;
+
+                            // Warn when switching away from g1
+                            if (selectedNetworkName != 'g1') {
+                              final confirmed = await showConfirmationDialog(
+                                context: context,
+                                title: 'switchToTestNetworkTitle'.tr(),
+                                message: 'switchToTestNetworkMessage'.tr(args: [selectedNetworkName.toUpperCase()]),
+                                confirmText: 'confirm'.tr(),
+                                type: ConfirmationDialogType.warning,
+                              );
+                              if (!confirmed) return;
+                            }
 
                             if (selectedNetworkName == 'local') {
                               // Switch to local network - treat it like any other network

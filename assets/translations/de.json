@@ -174,5 +174,7 @@
     "updateNow": "Aktualisieren",
     "updateLater": "Später",
     "g1GenesisHashChangedTitle": "Netzwerk-Update",
-    "g1GenesisHashChangedMessage": "Die Konfiguration des Ğ1-Netzwerks wurde aktualisiert. Bitte starten Sie die Anwendung neu, um die Änderungen zu übernehmen."
+    "g1GenesisHashChangedMessage": "Die Konfiguration des Ğ1-Netzwerks wurde aktualisiert. Bitte starten Sie die Anwendung neu, um die Änderungen zu übernehmen.",
+    "switchToTestNetworkTitle": "Testnetzwerk",
+    "switchToTestNetworkMessage": "Sie sind dabei, sich mit dem {}-Netzwerk zu verbinden, das ein Testnetzwerk und nicht das Ğ1-Produktionsnetzwerk ist.\n\nSind Sie sicher, dass Sie fortfahren möchten?"
 }

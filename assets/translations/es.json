@@ -746,5 +746,7 @@
     "updateNow": "Actualizar",
     "updateLater": "Más tarde",
     "g1GenesisHashChangedTitle": "Actualización de red",
-    "g1GenesisHashChangedMessage": "La configuración de la red Ğ1 ha sido actualizada. Por favor, reinicie la aplicación para aplicar los cambios."
+    "g1GenesisHashChangedMessage": "La configuración de la red Ğ1 ha sido actualizada. Por favor, reinicie la aplicación para aplicar los cambios.",
+    "switchToTestNetworkTitle": "Red de prueba",
+    "switchToTestNetworkMessage": "Está a punto de conectarse a la red {}, que es una red de prueba y no la red de producción Ğ1.\n\n¿Está seguro de que desea continuar?"
 }

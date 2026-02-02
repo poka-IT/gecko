@@ -779,5 +779,7 @@
     "updateNow": "Update",
     "updateLater": "Later",
     "g1GenesisHashChangedTitle": "Network Update",
-    "g1GenesisHashChangedMessage": "The Ğ1 network configuration has been updated. Please restart the application to apply the changes."
+    "g1GenesisHashChangedMessage": "The Ğ1 network configuration has been updated. Please restart the application to apply the changes.",
+    "switchToTestNetworkTitle": "Test Network",
+    "switchToTestNetworkMessage": "You are about to connect to the {} network, which is a test network and not the Ğ1 production network.\n\nAre you sure you want to continue?"
 }

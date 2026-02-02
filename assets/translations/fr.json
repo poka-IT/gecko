@@ -784,5 +784,7 @@
     "updateNow": "Mettre à jour",
     "updateLater": "Plus tard",
     "g1GenesisHashChangedTitle": "Mise à jour réseau",
-    "g1GenesisHashChangedMessage": "La configuration du réseau Ğ1 a été mise à jour. Veuillez redémarrer l'application pour appliquer les changements."
+    "g1GenesisHashChangedMessage": "La configuration du réseau Ğ1 a été mise à jour. Veuillez redémarrer l'application pour appliquer les changements.",
+    "switchToTestNetworkTitle": "Réseau de test",
+    "switchToTestNetworkMessage": "Vous êtes sur le point de vous connecter au réseau {}, qui est un réseau de test et non le réseau de production Ğ1.\n\nÊtes-vous sûr de vouloir continuer ?"
 }

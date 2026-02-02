@@ -85,7 +85,7 @@ class AppUpdateService {
       if (releases.isEmpty) return null;
 
       final latestRelease = releases[0] as Map<String, dynamic>;
-      final tagName = latestRelease['tag'] as String?;
+      final tagName = latestRelease['tag_name'] as String?;
       if (tagName == null) return null;
 
       // Parse tag like "v0.5.7+162" or "0.5.7+162"
@@ -154,9 +154,9 @@ class AppUpdateService {
           if (archSuffix == null) continue;
 
           for (final link in links) {
-            final url = link['directAssetUrl'] as String? ?? link['url'] as String? ?? '';
-            final name = (link['name'] as String? ?? '').toLowerCase();
-            if (name.contains('.apk') && name.contains(archSuffix)) {
+            final url = link['direct_asset_url'] as String? ?? link['url'] as String? ?? '';
+            final urlLower = url.toLowerCase();
+            if (urlLower.contains('.apk') && urlLower.contains(archSuffix)) {
               return url;
             }
           }
@@ -164,9 +164,8 @@ class AppUpdateService {
 
         // Fallback: try to find any APK
         for (final link in links) {
-          final url = link['directAssetUrl'] as String? ?? link['url'] as String? ?? '';
-          final name = (link['name'] as String? ?? '').toLowerCase();
-          if (name.contains('.apk')) {
+          final url = link['direct_asset_url'] as String? ?? link['url'] as String? ?? '';
+          if (url.toLowerCase().contains('.apk')) {
             return url;
           }
         }
@@ -179,11 +178,11 @@ class AppUpdateService {
     return _getReleasePageUrl(release);
   }
 
-  /// Map Android ABI to common filename suffixes
+  /// Map Android ABI to filename suffixes used in GitLab release assets
   String? _abiToSuffix(String abi) {
     return switch (abi) {
-      'arm64-v8a' => 'arm64',
-      'armeabi-v7a' => 'armeabi',
+      'arm64-v8a' => 'v8a',
+      'armeabi-v7a' => 'v7a',
       'x86_64' => 'x86_64',
       'x86' => 'x86',
       _ => null,

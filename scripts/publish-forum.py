@@ -112,7 +112,7 @@ This is a **BETA** release for ĞTest network.
 
 • **[Linux Desktop (tar.gz)]({linux_base_url}/gecko-{version}-linux.tar.gz)** (x64)
 
-• **[macOS Desktop (zip)]({macos_base_url}/gecko-{version}-macos-arm64.zip)** (Apple Silicon)
+• **[macOS Desktop (dmg)]({macos_base_url}/gecko-{version}-macos-arm64.zip)** (Apple Silicon)
 
 **Changelog:**
 {changelog}"""

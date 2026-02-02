@@ -219,6 +219,7 @@
     "contactsManagementWithNbr": "My contacts ({})",
     "contactsManagement": "My contacts",
     "noContacts": "You don't have any contact",
+    "noContactsHint": "To add a contact, open any profile and tap the {} icon at the top of the screen.",
     "addContact": "Add\nto contacts",
     "removeContact": "Remove this contact",
     "scanRootDerivationInProgress": "Scan root address",

@@ -218,6 +218,7 @@
     "contactsManagementWithNbr": "Mes contacts ({})",
     "contactsManagement": "Mes contacts",
     "noContacts": "Vous n'avez aucun contact",
+    "noContactsHint": "Pour ajouter un contact, ouvrez un profil et appuyez sur l'icône {} en haut de l'écran.",
     "addContact": "Ajouter\naux contacts",
     "removeContact": "Supprimer ce contact",
     "scanRootDerivationInProgress": "Scan de l'adresse racine",

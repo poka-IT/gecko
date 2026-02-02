@@ -57,6 +57,22 @@ class ContactsList extends ConsumerWidget {
     );
   }
 
+  List<InlineSpan> _buildHintSpans(BuildContext context) {
+    final hint = 'noContactsHint'.tr();
+    final parts = hint.split('{}');
+    return [
+      TextSpan(text: parts[0]),
+      WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Icon(Icons.add_reaction_outlined, size: scaleSize(18), color: Colors.grey[600]),
+        ),
+      ),
+      if (parts.length > 1) TextSpan(text: parts[1]),
+    ];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
@@ -66,7 +82,31 @@ class ContactsList extends ConsumerWidget {
         children: <Widget>[
           ScaledSizedBox(height: 10, width: double.infinity),
           if (myContacts.isEmpty)
-            Text('noContacts'.tr())
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.people_outline, size: scaleSize(48), color: Colors.grey[400]),
+                      ScaledSizedBox(height: 16),
+                      Text(
+                        'noContacts'.tr(),
+                        style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
+                      ),
+                      ScaledSizedBox(height: 12),
+                      Text.rich(
+                        TextSpan(children: _buildHintSpans(context)),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(fontSize: 13, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
           else
             Expanded(
               child: ListView(

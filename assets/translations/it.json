@@ -213,6 +213,7 @@
     "contactsManagementWithNbr": "I miei contatti ({})",
     "contactsManagement": "I miei contatti",
     "noContacts": "Non ci sono contatti salvati",
+    "noContactsHint": "Per aggiungere un contatto, apri un profilo e tocca l'icona {} nella parte superiore dello schermo.",
     "addContact": "Aggiungi\nai contatti",
     "removeContact": "Eliminare questo contatto",
     "generatingKeypairs": "Generazione delle chiavi",

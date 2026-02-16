@@ -3,15 +3,24 @@ import 'package:flutter/material.dart';
 /// Parses a blockchain timestamp string to local DateTime.
 /// Handles timestamps with or without timezone info (appends 'Z' if missing).
 extension BlockTimestampParsing on String {
+  /// Check if this ISO 8601 string already contains timezone info.
+  /// Avoids false positives from date separators (e.g. "2024-02-16").
+  bool get _hasTimezoneInfo {
+    if (endsWith('Z')) return true;
+    // Look for +/- timezone offset only AFTER the 'T' separator
+    final tIndex = indexOf('T');
+    if (tIndex == -1) return false;
+    final timePart = substring(tIndex + 1);
+    return timePart.contains('+') || timePart.contains('-');
+  }
+
   DateTime parseBlockTimestamp() {
-    final hasTimezone = endsWith('Z') || contains('+') || contains('-');
-    return DateTime.parse(hasTimezone ? this : '${this}Z').toLocal();
+    return DateTime.parse(_hasTimezoneInfo ? this : '${this}Z').toLocal();
   }
 
   /// Returns the raw UTC string, ensuring timezone marker is present.
   String ensureUtcTimestamp() {
-    final hasTimezone = endsWith('Z') || contains('+') || contains('-');
-    return hasTimezone ? this : '${this}Z';
+    return _hasTimezoneInfo ? this : '${this}Z';
   }
 }
 

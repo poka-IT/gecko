@@ -185,7 +185,7 @@
     "youHaveToFeedThisAccountBeforeUsing": "You have to feed this account\nbefore using it.",
     "execTimeoutOver": "Execution timeout is over",
     "seeAWallet": "See a wallet",
-    "mustWaitXBeforeCertify": "You have to wait {} before certifying again",
+    "mustWaitXBeforeCertify": "You must wait {} between each certification",
     "mustConfirmHisIdentity": "This person must confirm his identity before can be certified",
     "canRenewCertInX": "You can renew this certification in {}",
     "executeATransfer": "Execute a transfer",

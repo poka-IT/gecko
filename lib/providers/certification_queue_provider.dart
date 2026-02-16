@@ -717,7 +717,7 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
     return CertButtonState(
       action: CertButtonAction.disabled,
       certState: effectiveCertState,
-      disabledReason: 'mustWaitXBeforeCertify',
+      disabledReason: 'justCertified',
     );
   }
 

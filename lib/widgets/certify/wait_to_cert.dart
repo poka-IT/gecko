@@ -6,8 +6,15 @@ class WaitToCertWidget extends StatelessWidget {
   final String label;
   final String duration;
   final bool showSpinner;
+  final bool isSuccess;
 
-  const WaitToCertWidget({super.key, required this.label, required this.duration, this.showSpinner = false});
+  const WaitToCertWidget({
+    super.key,
+    required this.label,
+    required this.duration,
+    this.showSpinner = false,
+    this.isSuccess = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +26,11 @@ class WaitToCertWidget extends StatelessWidget {
           height: scaleSize(buttonSize),
           width: scaleSize(buttonSize),
           decoration: BoxDecoration(
-            color: showSpinner ? Colors.blue.withValues(alpha: 0.2) : const Color(0xffFFD58D).withValues(alpha: 0.5),
+            color: showSpinner
+                ? Colors.blue.withValues(alpha: 0.2)
+                : isSuccess
+                ? Colors.green.withValues(alpha: 0.15)
+                : const Color(0xffFFD58D).withValues(alpha: 0.5),
             shape: BoxShape.circle,
           ),
           child: ClipOval(
@@ -30,6 +41,10 @@ class WaitToCertWidget extends StatelessWidget {
                       height: scaleSize(buttonSize * 0.5),
                       child: CircularProgressIndicator(strokeWidth: scaleSize(3), color: Colors.blue),
                     ),
+                  )
+                : isSuccess
+                ? Center(
+                    child: Icon(Icons.check_circle, size: scaleSize(buttonSize * 0.6), color: Colors.green),
                   )
                 : Stack(
                     children: [
@@ -54,7 +69,11 @@ class WaitToCertWidget extends StatelessWidget {
           style: scaledTextStyle(
             fontSize: buttonFontSize - 4,
             fontWeight: FontWeight.w400,
-            color: showSpinner ? Colors.blue : Colors.grey[600],
+            color: showSpinner
+                ? Colors.blue
+                : isSuccess
+                ? Colors.green[700]
+                : Colors.grey[600],
           ),
         ),
       ],

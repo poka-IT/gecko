@@ -184,7 +184,7 @@
     "youHaveToFeedThisAccountBeforeUsing": "Vous devez alimenter ce compte avant\nde pouvoir l'utiliser",
     "execTimeoutOver": "Le délais d'éxecution est dépassé",
     "seeAWallet": "Voir un portefeuille",
-    "mustWaitXBeforeCertify": "Vous devez attendre {} avant de pouvoir certifier",
+    "mustWaitXBeforeCertify": "Vous devez attendre {} entre chaque certification",
     "mustConfirmHisIdentity": "Cette personne doit confirmer son identité avant de pouvoir être certifié",
     "canRenewCertInX": "Vous pourrez renouveler cette certification dans {}",
     "executeATransfer": "Effectuer un virement",

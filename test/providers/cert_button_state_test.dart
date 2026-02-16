@@ -116,7 +116,7 @@ void main() {
       container.dispose();
     });
 
-    test('wasCertifiedRecently (completed) → disabled (mustWaitXBeforeCertify)', () async {
+    test('wasCertifiedRecently (completed) → disabled (justCertified)', () async {
       final container = await createContainer(
         certState: d.CertState(status: d.CertStatus.canCert),
         recentCertifications: {
@@ -130,7 +130,7 @@ void main() {
         certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
       );
       expect(result.action, CertButtonAction.disabled);
-      expect(result.disabledReason, 'mustWaitXBeforeCertify');
+      expect(result.disabledReason, 'justCertified');
       container.dispose();
     });
 
@@ -430,6 +430,30 @@ void main() {
       container.dispose();
     });
 
+    test('Bug: canRenewIn + wasCertifiedRecently doit donner justCertified', () async {
+      // Après avoir certifié quelqu'un, si la blockchain retourne canRenewIn (22 mois),
+      // le disabledReason doit être 'justCertified' et non 'mustWaitXBeforeCertify'
+      final container = await createContainer(
+        certState: d.CertState(status: d.CertStatus.canRenewIn, duration: const Duration(days: 660)),
+        recentCertifications: {
+          '$issuerAddress:$targetAddress': RecentCertData(
+            timestamp: DateTime.now(),
+            certState: RecentCertState.completed,
+          ),
+        },
+      );
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
+      expect(result.action, CertButtonAction.disabled);
+      expect(
+        result.disabledReason,
+        'justCertified',
+        reason: 'Devrait afficher "Certification effectuée" et non "Vous devez attendre 22 mois"',
+      );
+      container.dispose();
+    });
+
     test('Bug: certification réussie doit passer de inProgress à disabled', () async {
       // Vérifie que quand une certification réussit, le bouton passe de "en cours" à "disabled"
 
@@ -471,7 +495,7 @@ void main() {
         certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
       );
       expect(result.action, CertButtonAction.disabled, reason: 'Devrait être disabled après certification réussie');
-      expect(result.disabledReason, 'mustWaitXBeforeCertify');
+      expect(result.disabledReason, 'justCertified');
 
       container.dispose();
     });

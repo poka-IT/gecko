@@ -180,7 +180,7 @@
     "ownerKeyUsedAsValidator": "Questa identità è attualmente utilizzata come validatore e non può essere migrata",
     "execTimeoutOver": "Tempo di esecuzione terminato",
     "seeAWallet": "Vedi un portafoglio",
-    "mustWaitXBeforeCertify": "Devi aspettare {} prima di certificare di nuovo",
+    "mustWaitXBeforeCertify": "Devi aspettare {} tra ogni certificazione",
     "mustConfirmHisIdentity": "Questa persona deve confermare la sua identità prima di essere certificata",
     "canRenewCertInX": "Potrai rinnovare la certificazione fra {}",
     "executeATransfer": "Esegui una transazione",
@@ -750,5 +750,6 @@
     "g1GenesisHashChangedTitle": "Aggiornamento rete",
     "g1GenesisHashChangedMessage": "La configurazione della rete Ğ1 è stata aggiornata. Si prega di riavviare l'applicazione per applicare le modifiche.",
     "switchToTestNetworkTitle": "Rete di test",
-    "switchToTestNetworkMessage": "Stai per connetterti alla rete {}, che è una rete di test e non la rete di produzione Ğ1.\n\nSei sicuro di voler continuare?"
+    "switchToTestNetworkMessage": "Stai per connetterti alla rete {}, che è una rete di test e non la rete di produzione Ğ1.\n\nSei sicuro di voler continuare?",
+    "justCertified": "Certificazione effettuata"
 }

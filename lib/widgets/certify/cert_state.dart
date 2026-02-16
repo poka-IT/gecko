@@ -84,7 +84,11 @@ class CertStateWidget extends ConsumerWidget {
       'justCertified' => 'justCertified'.tr(),
       _ => _getLabelFromStatus(state),
     };
-    return WaitToCertWidget(label: label, duration: formatDuration(state.duration ?? Duration.zero));
+    return WaitToCertWidget(
+      label: label,
+      duration: formatDuration(state.duration ?? Duration.zero),
+      isSuccess: reason == 'justCertified',
+    );
   }
 
   String _getLabelFromStatus(CertState state) {

@@ -182,7 +182,7 @@
     "youHaveToFeedThisAccountBeforeUsing": "Tienes que depositar fondos en esta cuenta antes\nde poderla usar",
     "execTimeoutOver": "Se ha agotado el tiempo de ejecución",
     "seeAWallet": "Ver un monedero",
-    "mustWaitXBeforeCertify": "Tienes que esperar {} antes de poder certificar",
+    "mustWaitXBeforeCertify": "Debes esperar {} entre cada certificación",
     "mustConfirmHisIdentity": "Esta persona debe confirmar su identidad antes de poder ser certificada",
     "canRenewCertInX": "Podrás renovar esta certificación en {}",
     "executeATransfer": "Hacer una transferencia",
@@ -750,5 +750,6 @@
     "g1GenesisHashChangedTitle": "Actualización de red",
     "g1GenesisHashChangedMessage": "La configuración de la red Ğ1 ha sido actualizada. Por favor, reinicie la aplicación para aplicar los cambios.",
     "switchToTestNetworkTitle": "Red de prueba",
-    "switchToTestNetworkMessage": "Está a punto de conectarse a la red {}, que es una red de prueba y no la red de producción Ğ1.\n\n¿Está seguro de que desea continuar?"
+    "switchToTestNetworkMessage": "Está a punto de conectarse a la red {}, que es una red de prueba y no la red de producción Ğ1.\n\n¿Está seguro de que desea continuar?",
+    "justCertified": "Certificación realizada"
 }

@@ -4,8 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/utils.dart';
 
 class CertificationDisplayItem {
   final String id;
@@ -70,7 +70,7 @@ class CertificationDisplayItem {
     // Convert expiration block number to proper date
     final DateTime expireDate = Durt.i.storage.blocNumberToDate(node.expireOn, genesisTime);
 
-    final String dateDelimiter = _calculateDateDelimiter(finalDisplayTime);
+    final String dateDelimiter = calculateDateDelimiter(finalDisplayTime);
 
     return CertificationDisplayItem(
       id: node.id,
@@ -121,7 +121,7 @@ class CertificationDisplayItem {
     // Convert expiration block number to proper date
     final DateTime expireDate = Durt.i.storage.blocNumberToDate(node.expireOn, genesisTime);
 
-    final String dateDelimiter = _calculateDateDelimiter(finalDisplayTime);
+    final String dateDelimiter = calculateDateDelimiter(finalDisplayTime);
 
     return CertificationDisplayItem(
       id: node.id,
@@ -138,35 +138,6 @@ class CertificationDisplayItem {
       createdBlockHeight: node.createdIn?.block?.height,
       updatedBlockHeight: node.updatedIn?.block?.height,
     );
-  }
-
-  static String _calculateDateDelimiter(DateTime timestamp) {
-    final now = DateTime.now();
-
-    // Compare calendar dates, not 24-hour periods
-    final nowDate = DateTime(now.year, now.month, now.day);
-    final timestampDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
-    final daysDifference = nowDate.difference(timestampDate).inDays;
-
-    if (daysDifference == 0) {
-      return "today".tr();
-    } else if (daysDifference == 1) {
-      return "yesterday".tr();
-    } else if (daysDifference < 7) {
-      return "daysAgo".tr(args: [daysDifference.toString()]);
-    } else {
-      final locale = Localizations.localeOf(homeContext).languageCode;
-      // Format verbose: "mardi 23 mars" ou "Tuesday 23 March"
-      final formatPattern = timestamp.year == now.year
-          ? 'EEEE d MMMM' // if same year, use "EEEE d MMMM"
-          : 'EEEE d MMMM y'; // if different year, use "EEEE d MMMM y"
-      final formatted = DateFormat(formatPattern, locale).format(timestamp);
-      // Capitalize the first letter of each word (day and month)
-      return formatted
-          .split(' ')
-          .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : word)
-          .join(' ');
-    }
   }
 
   /// Get a display-friendly status name

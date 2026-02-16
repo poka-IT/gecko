@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/globals.dart';
 import 'package:truncate/truncate.dart';
 
 String getShortPubkey(String pubkey) {
@@ -78,5 +79,30 @@ String? formatRemainingTime(DateTime date, {String? readyLabel}) {
     return 'minutes'.tr(args: [difference.inMinutes.toString()]);
   } else {
     return null;
+  }
+}
+
+/// Formats a timestamp into a human-readable date delimiter.
+/// Returns "today", "yesterday", "X days ago", or a verbose date like "Mardi 23 Mars".
+String calculateDateDelimiter(DateTime timestamp) {
+  final now = DateTime.now();
+  final nowDate = DateTime(now.year, now.month, now.day);
+  final timestampDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+  final daysDifference = nowDate.difference(timestampDate).inDays;
+
+  if (daysDifference == 0) {
+    return "today".tr();
+  } else if (daysDifference == 1) {
+    return "yesterday".tr();
+  } else if (daysDifference < 7) {
+    return "daysAgo".tr(args: [daysDifference.toString()]);
+  } else {
+    final locale = Localizations.localeOf(homeContext).languageCode;
+    final formatPattern = timestamp.year == now.year ? 'EEEE d MMMM' : 'EEEE d MMMM y';
+    final formatted = DateFormat(formatPattern, locale).format(timestamp);
+    return formatted
+        .split(' ')
+        .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : word)
+        .join(' ');
   }
 }

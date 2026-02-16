@@ -3,7 +3,7 @@ import 'package:durt2/durt2.dart'
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/utils.dart';
 
 class IdentityDisplayItem {
   final String name;
@@ -36,7 +36,7 @@ class IdentityDisplayItem {
         : null;
 
     final DateTime displayTime = blockTime ?? creationTime;
-    final String dateDelimiter = _calculateDateDelimiter(displayTime);
+    final String dateDelimiter = calculateDateDelimiter(displayTime);
 
     return IdentityDisplayItem(
       name: node.name,
@@ -62,7 +62,7 @@ class IdentityDisplayItem {
         : null;
 
     final DateTime displayTime = blockTime ?? creationTime;
-    final String dateDelimiter = _calculateDateDelimiter(displayTime);
+    final String dateDelimiter = calculateDateDelimiter(displayTime);
 
     return IdentityDisplayItem(
       name: node.name,
@@ -74,35 +74,6 @@ class IdentityDisplayItem {
       blockHeight: node.createdIn?.block?.height,
       blockTimestamp: blockTime,
     );
-  }
-
-  static String _calculateDateDelimiter(DateTime timestamp) {
-    final now = DateTime.now();
-
-    // Compare calendar dates, not 24-hour periods
-    final nowDate = DateTime(now.year, now.month, now.day);
-    final timestampDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
-    final daysDifference = nowDate.difference(timestampDate).inDays;
-
-    if (daysDifference == 0) {
-      return "today".tr();
-    } else if (daysDifference == 1) {
-      return "yesterday".tr();
-    } else if (daysDifference < 7) {
-      return "daysAgo".tr(args: [daysDifference.toString()]);
-    } else {
-      final locale = Localizations.localeOf(homeContext).languageCode;
-      // Format verbose: "mardi 23 mars" ou "Tuesday 23 March"
-      final formatPattern = timestamp.year == now.year
-          ? 'EEEE d MMMM' // if same year, use "EEEE d MMMM"
-          : 'EEEE d MMMM y'; // if different year, use "EEEE d MMMM y"
-      final formatted = DateFormat(formatPattern, locale).format(timestamp);
-      // Capitalize the first letter of each word (day and month)
-      return formatted
-          .split(' ')
-          .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : word)
-          .join(' ');
-    }
   }
 
   /// Get display text for status

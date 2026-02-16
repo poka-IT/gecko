@@ -85,17 +85,9 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
           targetAddress: widget.address,
         );
       } catch (e) {
-        if (!context.mounted) {
-          log.w('Context not mounted when error occurred: $e');
-          return;
-        }
-
-        if (e is NotMemberException || e is CantBeCertException) {
-          showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
-        } else {
-          log.e(e);
-          showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
-        }
+        if (e is! NotMemberException && e is! CantBeCertException) log.e(e);
+        if (!context.mounted) return;
+        showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
       }
     } finally {
       if (mounted) {

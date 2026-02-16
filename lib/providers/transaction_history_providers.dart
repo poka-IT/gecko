@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +8,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/server_filtered_history_provider.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/providers/squid_cache_buster.dart';
 
 /// State class for transaction history
@@ -101,7 +100,7 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
           .listen(
             (transactionId) {
               if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                print('New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
+                log.d('🔔 New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
                 _lastSeenTransactionId = transactionId;
                 _onAccountActivity();
               } else if (transactionId != null) {
@@ -141,7 +140,7 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
         return; // Storage not ready yet
       }
 
-      print('🔄 Fetching fresh transfers-only data for $_address');
+      log.d('🔄 Fetching fresh transfers-only data for $_address');
 
       // Fetch only transfers (simple pagination)
       final result = await d.SquidService.client.getAccountHistory(_address, number: 20, cursor: null);
@@ -336,7 +335,7 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
           .listen(
             (transactionId) {
               if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                print('New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
+                log.d('🔔 New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
                 _lastSeenTransactionId = transactionId;
                 _onAccountActivity();
               } else if (transactionId != null) {
@@ -376,7 +375,7 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
         return; // Storage not ready yet
       }
 
-      print('Fetching fresh combined data for $_address');
+      log.d('🔄 Fetching fresh combined data for $_address');
 
       // Fetch both transfers and UDs combined
       final result = await d.SquidService.client.getCombinedAccountHistory(
@@ -521,9 +520,7 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
       DateTime? beforeTimestamp;
       if (state.cursor != null) {
         try {
-          beforeTimestamp = state.cursor!.endsWith('Z') || state.cursor!.contains('+') || state.cursor!.contains('-')
-              ? DateTime.parse(state.cursor!)
-              : DateTime.parse('${state.cursor!}Z');
+          beforeTimestamp = DateTime.parse(state.cursor!.ensureUtcTimestamp());
         } catch (e) {
           log.e('Error parsing cursor timestamp: ${state.cursor}');
         }

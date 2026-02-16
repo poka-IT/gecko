@@ -3,6 +3,7 @@ import 'package:durt2/durt2.dart'
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 
@@ -56,19 +57,11 @@ class CertificationDisplayItem {
 
     // Parse block timestamps if available (these are actual timestamps)
     final DateTime? createdBlockTime = node.createdIn?.block?.timestamp != null
-        ? (node.createdIn!.block!.timestamp.endsWith('Z') ||
-                  node.createdIn!.block!.timestamp.contains('+') ||
-                  node.createdIn!.block!.timestamp.contains('-')
-              ? DateTime.parse(node.createdIn!.block!.timestamp).toLocal()
-              : DateTime.parse('${node.createdIn!.block!.timestamp}Z').toLocal())
+        ? node.createdIn!.block!.timestamp.parseBlockTimestamp()
         : null;
 
     final DateTime? updatedBlockTime = node.updatedIn?.block?.timestamp != null
-        ? (node.updatedIn!.block!.timestamp.endsWith('Z') ||
-                  node.updatedIn!.block!.timestamp.contains('+') ||
-                  node.updatedIn!.block!.timestamp.contains('-')
-              ? DateTime.parse(node.updatedIn!.block!.timestamp).toLocal()
-              : DateTime.parse('${node.updatedIn!.block!.timestamp}Z').toLocal())
+        ? node.updatedIn!.block!.timestamp.parseBlockTimestamp()
         : null;
 
     // Use block timestamp if available, otherwise fall back to converted block number timestamp
@@ -115,19 +108,11 @@ class CertificationDisplayItem {
 
     // Parse block timestamps if available (these are actual timestamps)
     final DateTime? createdBlockTime = node.createdIn?.block?.timestamp != null
-        ? (node.createdIn!.block!.timestamp.endsWith('Z') ||
-                  node.createdIn!.block!.timestamp.contains('+') ||
-                  node.createdIn!.block!.timestamp.contains('-')
-              ? DateTime.parse(node.createdIn!.block!.timestamp).toLocal()
-              : DateTime.parse('${node.createdIn!.block!.timestamp}Z').toLocal())
+        ? node.createdIn!.block!.timestamp.parseBlockTimestamp()
         : null;
 
     final DateTime? updatedBlockTime = node.updatedIn?.block?.timestamp != null
-        ? (node.updatedIn!.block!.timestamp.endsWith('Z') ||
-                  node.updatedIn!.block!.timestamp.contains('+') ||
-                  node.updatedIn!.block!.timestamp.contains('-')
-              ? DateTime.parse(node.updatedIn!.block!.timestamp).toLocal()
-              : DateTime.parse('${node.updatedIn!.block!.timestamp}Z').toLocal())
+        ? node.updatedIn!.block!.timestamp.parseBlockTimestamp()
         : null;
 
     // Use block timestamp if available, otherwise fall back to converted block number timestamp

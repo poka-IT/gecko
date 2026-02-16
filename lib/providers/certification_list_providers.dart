@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -75,8 +76,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
           .listen(
             (certId) {
               if (certId != null && certId != _lastSeenCertId) {
-                // ignore: avoid_print
-                print('New cert activity detected for $address: $certId (previous: $_lastSeenCertId)');
+                log.d('🔔 New cert activity detected for $address: $certId (previous: $_lastSeenCertId)');
                 _lastSeenCertId = certId;
                 _onCertActivity();
               } else if (certId != null) {
@@ -208,11 +208,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
           if (timestampString != null && personAddress != null) {
             // Parse the timestamp as UTC and convert to local time
-            final timestamp =
-                timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
-                ? DateTime.parse(timestampString)
-                      .toLocal() // Already has timezone info
-                : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
+            final timestamp = timestampString.parseBlockTimestamp();
 
             // Convert expiration block number to date
             final expireDate = d.Durt.i.storage.blocNumberToDate(cert.expireOn, genesisTime);
@@ -243,11 +239,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
           if (personAddress != null && timestampString != null) {
             // Parse the timestamp as UTC and convert to local time
-            final timestamp =
-                timestampString.endsWith('Z') || timestampString.contains('+') || timestampString.contains('-')
-                ? DateTime.parse(timestampString)
-                      .toLocal() // Already has timezone info
-                : DateTime.parse('${timestampString}Z').toLocal(); // Assume UTC if no timezone info
+            final timestamp = timestampString.parseBlockTimestamp();
 
             // Convert expiration block number to date
             final expireDate = d.Durt.i.storage.blocNumberToDate(cert.expireOn, genesisTime);

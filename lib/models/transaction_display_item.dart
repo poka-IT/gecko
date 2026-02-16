@@ -6,6 +6,7 @@ import 'package:durt2/durt2.dart'
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/migration_data.dart';
 
 enum TransactionType { transfer, universalDividend, identityMigrationFrom, identityMigrationTo }
@@ -55,11 +56,7 @@ class TransactionDisplayItem {
     final String? otherUsername = isReceived ? node.from?.identity?.name : node.to?.identity?.name;
     final BigInt amount = BigInt.parse(node.amount);
     // Parse the timestamp as UTC and convert to local time
-    final DateTime transactionTime =
-        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
-        ? DateTime.parse(node.timestamp)
-              .toLocal() // Already has timezone info
-        : DateTime.parse('${node.timestamp}Z').toLocal(); // Assume UTC if no timezone info
+    final DateTime transactionTime = node.timestamp.parseBlockTimestamp();
 
     // Calculate date delimiter for grouping
     final String dateDelimiter = _calculateDateDelimiter(transactionTime);
@@ -104,10 +101,7 @@ class TransactionDisplayItem {
     final String otherAddress = isReceived ? (node.fromId ?? '') : (node.toId ?? '');
     final String? otherUsername = isReceived ? node.from?.identity?.name : node.to?.identity?.name;
     final BigInt amount = BigInt.parse(node.amount);
-    final DateTime transactionTime =
-        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
-        ? DateTime.parse(node.timestamp).toLocal()
-        : DateTime.parse('${node.timestamp}Z').toLocal();
+    final DateTime transactionTime = node.timestamp.parseBlockTimestamp();
 
     final String dateDelimiter = _calculateDateDelimiter(transactionTime);
     final bool isMigrationTime = transactionTime.isBefore(genesisTime);
@@ -143,10 +137,7 @@ class TransactionDisplayItem {
     final BigInt amount = BigInt.parse(node.amount);
 
     // Parse the timestamp as UTC and convert to local time
-    final DateTime transactionTime =
-        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
-        ? DateTime.parse(node.timestamp).toLocal()
-        : DateTime.parse('${node.timestamp}Z').toLocal();
+    final DateTime transactionTime = node.timestamp.parseBlockTimestamp();
 
     // Calculate date delimiter for grouping
     final String dateDelimiter = _calculateDateDelimiter(transactionTime);
@@ -190,11 +181,7 @@ class TransactionDisplayItem {
   ) {
     final BigInt amount = BigInt.parse(node.amount);
     // Parse the timestamp as UTC and convert to local time
-    final DateTime transactionTime =
-        node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
-        ? DateTime.parse(node.timestamp)
-              .toLocal() // Already has timezone info
-        : DateTime.parse('${node.timestamp}Z').toLocal(); // Assume UTC if no timezone info
+    final DateTime transactionTime = node.timestamp.parseBlockTimestamp();
 
     // Calculate date delimiter for grouping
     final String dateDelimiter = _calculateDateDelimiter(transactionTime);

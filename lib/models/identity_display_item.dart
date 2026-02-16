@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart'
     show Query$GetNetworkIdentities$identities$edges$node, Query$GetNetworkIdentitiesFiltered$identities$edges$node;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 
 class IdentityDisplayItem {
@@ -31,11 +32,7 @@ class IdentityDisplayItem {
 
     // Use block timestamp if available, otherwise fall back to creation time
     final DateTime? blockTime = node.createdIn?.block?.timestamp != null
-        ? (node.createdIn!.block!.timestamp.endsWith('Z') ||
-                  node.createdIn!.block!.timestamp.contains('+') ||
-                  node.createdIn!.block!.timestamp.contains('-')
-              ? DateTime.parse(node.createdIn!.block!.timestamp).toLocal()
-              : DateTime.parse('${node.createdIn!.block!.timestamp}Z').toLocal())
+        ? node.createdIn!.block!.timestamp.parseBlockTimestamp()
         : null;
 
     final DateTime displayTime = blockTime ?? creationTime;
@@ -61,11 +58,7 @@ class IdentityDisplayItem {
 
     // Use block timestamp if available, otherwise fall back to creation time
     final DateTime? blockTime = node.createdIn?.block?.timestamp != null
-        ? (node.createdIn!.block!.timestamp.endsWith('Z') ||
-                  node.createdIn!.block!.timestamp.contains('+') ||
-                  node.createdIn!.block!.timestamp.contains('-')
-              ? DateTime.parse(node.createdIn!.block!.timestamp).toLocal()
-              : DateTime.parse('${node.createdIn!.block!.timestamp}Z').toLocal())
+        ? node.createdIn!.block!.timestamp.parseBlockTimestamp()
         : null;
 
     final DateTime displayTime = blockTime ?? creationTime;

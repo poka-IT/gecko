@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +8,7 @@ import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/models/transaction_filters.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/providers/squid_cache_buster.dart';
 
 /// State for network activity history
@@ -100,7 +99,7 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
       _networkActivitySubscription = d.SquidService.client.subscribeNetworkActivity().listen(
         (transactionId) {
           if (transactionId != null && transactionId != _lastSeenTransactionId) {
-            print('New network activity detected: $transactionId (previous: $_lastSeenTransactionId)');
+            log.d('🔔 New network activity detected: $transactionId (previous: $_lastSeenTransactionId)');
             _lastSeenTransactionId = transactionId;
             _onNetworkActivity();
           } else if (transactionId != null) {
@@ -231,7 +230,7 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
       allTransactions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       if (transferResult == null) {
-        print('🔴 Network activity result is null');
+        log.e('🔴 Network activity result is null');
         state = state.copyWith(transactions: [], isLoading: false, hasNextPage: false, cursor: null);
         return;
       }
@@ -263,11 +262,7 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
 
       return result.edges.map((edge) {
         final node = edge.node;
-        final timestamp = DateTime.parse(
-          node.timestamp.endsWith('Z') || node.timestamp.contains('+') || node.timestamp.contains('-')
-              ? node.timestamp
-              : '${node.timestamp}Z',
-        );
+        final timestamp = DateTime.parse(node.timestamp.ensureUtcTimestamp());
 
         return TransactionDisplayItem(
           address: '', // Network view, no specific address
@@ -422,7 +417,7 @@ class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityStat
   Future<void> _loadNetworkActivityWithFilters() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      print('❌ [NETWORK DEBUG] No network connection');
+      log.e('❌ [NETWORK DEBUG] No network connection');
       state = state.copyWith(isLoading: false, error: 'No network connection');
       return;
     }
@@ -544,8 +539,7 @@ class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityStat
         );
       }
     } catch (e) {
-      print('❌ [NETWORK DEBUG] Error in loadMore: $e');
-      log.e('Error loading more network activity: $e');
+      log.e('❌ Error loading more network activity: $e');
       state = state.copyWith(isLoading: false);
     }
   }

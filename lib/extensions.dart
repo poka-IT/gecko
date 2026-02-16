@@ -1,5 +1,20 @@
 import 'package:flutter/material.dart';
 
+/// Parses a blockchain timestamp string to local DateTime.
+/// Handles timestamps with or without timezone info (appends 'Z' if missing).
+extension BlockTimestampParsing on String {
+  DateTime parseBlockTimestamp() {
+    final hasTimezone = endsWith('Z') || contains('+') || contains('-');
+    return DateTime.parse(hasTimezone ? this : '${this}Z').toLocal();
+  }
+
+  /// Returns the raw UTC string, ensuring timezone marker is present.
+  String ensureUtcTimestamp() {
+    final hasTimezone = endsWith('Z') || contains('+') || contains('-');
+    return hasTimezone ? this : '${this}Z';
+  }
+}
+
 extension IterableExtension<T> on Iterable<T> {
   /// The first element satisfying [test], or `null` if there are none.
   T? firstWhereOrNull(bool Function(T element) test) {

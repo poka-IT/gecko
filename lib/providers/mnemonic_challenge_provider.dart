@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/providers/security_providers.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/sentry_service.dart';
 
 /// Data for a single word challenge
 class MnemonicChallengeWord {
@@ -72,11 +74,52 @@ class MnemonicChallengeNotifier extends Notifier<MnemonicChallengeState> {
 
     try {
       final pin = PinCodeService.pinCode;
-      final seedData = await ref.read(seedDisplayProvider((address: address, pin: pin)).future);
-      final words = seedData.displayMnemonic.split(' ');
+      if (pin.isEmpty) {
+        const errorDetail = 'PIN code is empty when initializing mnemonic challenge';
+        log.e(errorDetail);
+        SentryService.captureException(Exception(errorDetail), tag: 'mnemonic_challenge', extra: {'address': address});
+        state = state.copyWith(isLoading: false, error: errorDetail);
+        return;
+      }
+
+      // Call wallet service directly instead of using autoDispose seedDisplayProvider,
+      // which gets disposed before the future resolves when used with ref.read()
+      final walletService = ref.read(walletServiceProvider);
+      final englishMnemonic = await walletService.getSeed(address: address, pin: pin);
+
+      if (englishMnemonic.isEmpty) {
+        final errorDetail = 'getSeed returned empty mnemonic for address $address';
+        log.e(errorDetail);
+        SentryService.captureException(Exception(errorDetail), tag: 'mnemonic_challenge', extra: {'address': address});
+        state = state.copyWith(isLoading: false, error: errorDetail);
+        return;
+      }
+
+      // Convert to display language
+      final allSafes = walletService.safeBox.getAll();
+      final wallet = allSafes.expand((safe) => safe.wallets).where((w) => w.address == address).firstOrNull;
+      final safeBoxNumber = wallet?.safe.target?.number;
+
+      String displayMnemonic;
+      try {
+        displayMnemonic = await walletService.convertEnglishToSafeLanguage(englishMnemonic, safeBoxNumber);
+      } catch (e) {
+        displayMnemonic = englishMnemonic;
+      }
+
+      final words = displayMnemonic.split(' ');
 
       if (words.length != 12) {
-        state = state.copyWith(isLoading: false, error: 'mnemonicVerificationFailed');
+        final errorDetail =
+            'Mnemonic has ${words.length} words instead of 12 for address $address. '
+            'displayMnemonic starts with: "${displayMnemonic.substring(0, (displayMnemonic.length > 30 ? 30 : displayMnemonic.length))}..."';
+        log.e(errorDetail);
+        SentryService.captureException(
+          Exception(errorDetail),
+          tag: 'mnemonic_challenge',
+          extra: {'address': address, 'wordCount': words.length.toString()},
+        );
+        state = state.copyWith(isLoading: false, error: errorDetail);
         return;
       }
 
@@ -92,8 +135,11 @@ class MnemonicChallengeNotifier extends Notifier<MnemonicChallengeState> {
       ];
 
       state = MnemonicChallengeState(challenges: challenges, activeIndex: 0);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'mnemonicVerificationFailed');
+    } catch (e, stackTrace) {
+      final errorDetail = 'Mnemonic challenge initialization failed for address $address: $e';
+      log.e(errorDetail);
+      SentryService.captureException(e, stackTrace: stackTrace, tag: 'mnemonic_challenge', extra: {'address': address});
+      state = state.copyWith(isLoading: false, error: errorDetail);
     }
   }
 

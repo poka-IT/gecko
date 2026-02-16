@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/mnemonic_challenge_provider.dart';
@@ -18,8 +20,12 @@ Future<bool> showMnemonicChallenge({
 
   final challengeState = ref.read(mnemonicChallengeProvider);
   if (challengeState.error != null) {
+    log.e('Mnemonic challenge failed for address $address: ${challengeState.error}');
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('mnemonicVerificationFailed'.tr())));
+      final snackMessage = kDebugMode ? '${challengeState.error}' : 'mnemonicVerificationFailed'.tr();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(snackMessage), duration: const Duration(seconds: 6)));
     }
     ref.read(mnemonicChallengeProvider.notifier).reset();
     return false;

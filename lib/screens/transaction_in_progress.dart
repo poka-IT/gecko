@@ -347,7 +347,7 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
       if (widget.transType == 'renewMembership') {
         resultText = 'membershipRenewalConfirmed'.tr();
       } else {
-        resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
+        resultText = 'extrinsicFinalized'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
       }
       statusColor = Colors.green;
     } else if (txStatus.state == TransactionState.error) {
@@ -357,7 +357,7 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
       statusColor = Colors.red;
     } else if (txStatus.state == TransactionState.inBlock) {
       resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
-      statusColor = Colors.green;
+      statusColor = Colors.orange;
     } else {
       resultText = _getStatusMessage(txStatus.state);
       statusColor = context.colorScheme.primary;

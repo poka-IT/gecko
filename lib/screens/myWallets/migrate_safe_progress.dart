@@ -218,13 +218,18 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
 
         // Wait for transaction confirmation
         await for (final status in transactionStatus) {
-          if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
+          if (status.state == TransactionState.finalized) {
             if (!mounted) return;
             setState(() {
               task.status = MigrationStatus.success;
               task.details = status.hash ?? "identityMigrationSuccess".tr();
             });
             return;
+          } else if (status.state == TransactionState.inBlock) {
+            if (!mounted) return;
+            setState(() {
+              task.details = 'extrinsicValidated'.tr(args: ['identityMigration'.tr()]);
+            });
           } else if (status.state == TransactionState.error) {
             throw Exception("Migration failed: ${status.errorMessage}");
           }
@@ -237,13 +242,18 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
 
         // Wait for transaction confirmation
         await for (final status in transactionStatus) {
-          if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
+          if (status.state == TransactionState.finalized) {
             if (!mounted) return;
             setState(() {
               task.status = MigrationStatus.success;
               task.details = status.hash ?? "balanceTransferSuccess".tr();
             });
             return;
+          } else if (status.state == TransactionState.inBlock) {
+            if (!mounted) return;
+            setState(() {
+              task.details = 'extrinsicValidated'.tr(args: ['transaction'.tr()]);
+            });
           } else if (status.state == TransactionState.error) {
             throw Exception("Transfer failed: ${status.errorMessage}");
           }

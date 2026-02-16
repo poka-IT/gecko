@@ -17,7 +17,7 @@ import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/profile_action_button.dart';
 
-class AddToQueueButton extends ConsumerWidget {
+class AddToQueueButton extends ConsumerStatefulWidget {
   const AddToQueueButton({super.key, required this.address, required this.certState, required this.issuerAddress});
 
   final String address;
@@ -25,33 +25,40 @@ class AddToQueueButton extends ConsumerWidget {
   final String issuerAddress;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AddToQueueButton> createState() => _AddToQueueButtonState();
+}
+
+class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
+  bool _isProcessing = false;
+
+  @override
+  Widget build(BuildContext context) {
     // Watch target identity status to determine certification type and trigger rebuilds
     // CRITICAL: Use 'unknown' as fallback, NOT 'none'!
     // 'none' means "no identity exists" which would show wrong label
     // 'unknown' means "loading/error" and should show generic certification label
-    final targetIdtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
+    final targetIdtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(widget.address));
     final targetIdtyStatus = targetIdtyStatusAsync.value ?? d.IdtyStatus.unknown;
 
     // Watch certification exists to check if it's a renewal
-    final certExistsAsync = ref.watch(certificationExistsProvider(address));
+    final certExistsAsync = ref.watch(certificationExistsProvider(widget.address));
     final certificationExists = certExistsAsync.value ?? false;
 
     // Determine the certification type and label
     final (label, certType) = _getLabelAndType(targetIdtyStatus, certificationExists);
 
     // Get current queue to calculate real estimated date based on position
-    final queueAsync = ref.watch(certificationQueueProvider(issuerAddress));
+    final queueAsync = ref.watch(certificationQueueProvider(widget.issuerAddress));
     final currentQueueLength = queueAsync.value?.queueLength ?? 0;
     final futurePosition = currentQueueLength + 1;
 
     // Calculate estimated date based on future position in queue
-    final estimatedDate = _calculateEstimatedDate(ref, futurePosition);
+    final estimatedDate = _calculateEstimatedDate(futurePosition);
     final formattedDate = estimatedDate != null ? _formatEstimatedDate(estimatedDate) : null;
 
     return ProfileActionButton(
       buttonKey: keyAddToQueue,
-      onTap: () => _showAddToQueueDialog(context, ref, estimatedDate, certType),
+      onTap: () => _showAddToQueueDialog(context, estimatedDate, certType),
       backgroundColor: const Color(0xffFFD58D),
       label: label,
       sublabel: formattedDate,
@@ -87,7 +94,7 @@ class AddToQueueButton extends ConsumerWidget {
     if (targetIdtyStatus == d.IdtyStatus.none) {
       // Target has no identity - this will be an invitation
       return ('scheduleInvitation'.tr(), d.CertificationType.invitation);
-    } else if (certificationExists || certState.status == d.CertStatus.canRenewIn) {
+    } else if (certificationExists || widget.certState.status == d.CertStatus.canRenewIn) {
       // Certification already exists - this is a renewal
       return ('scheduleRenewal'.tr(), d.CertificationType.renewal);
     } else {
@@ -106,7 +113,7 @@ class AddToQueueButton extends ConsumerWidget {
   /// The final date is the MAX of:
   /// - The constraint date (when this specific certification becomes possible)
   /// - The queue position date (based on certPeriod * position)
-  DateTime? _calculateEstimatedDate(WidgetRef ref, int futurePosition) {
+  DateTime? _calculateEstimatedDate(int futurePosition) {
     try {
       final storageService = ref.read(storageServiceProvider);
       final certPeriod = storageService.getCertPeriodDuration();
@@ -115,12 +122,16 @@ class AddToQueueButton extends ConsumerWidget {
       // Determine the constraint date based on cert status
       DateTime constraintDate;
 
-      if (certState.nextIssuableDate != null) {
-        // Case: mustWaitBeforeCert - issuer's global cooldown
-        constraintDate = certState.nextIssuableDate!;
-      } else if (certState.duration != null) {
+      if (widget.certState.status == d.CertStatus.canRenewIn && widget.certState.duration != null) {
         // Case: canRenewIn - renewal not yet possible for this specific pair
-        constraintDate = now.add(certState.duration!);
+        // Prioritize the specific renewal duration over the issuer's global cooldown
+        constraintDate = now.add(widget.certState.duration!);
+      } else if (widget.certState.nextIssuableDate != null) {
+        // Case: mustWaitBeforeCert - issuer's global cooldown
+        constraintDate = widget.certState.nextIssuableDate!;
+      } else if (widget.certState.duration != null) {
+        // Fallback: use duration
+        constraintDate = now.add(widget.certState.duration!);
       } else {
         // Can certify now
         constraintDate = now;
@@ -132,7 +143,7 @@ class AddToQueueButton extends ConsumerWidget {
       //
       // We need to get the issuer's next issuable date for queue calculation
       // If we don't have it (canRenewIn case), assume the issuer can certify now
-      final issuerBaseDate = certState.nextIssuableDate ?? now;
+      final issuerBaseDate = widget.certState.nextIssuableDate ?? now;
       final queuePositionDate = issuerBaseDate.add(certPeriod * (futurePosition - 1));
 
       // Return the later of the two dates
@@ -143,8 +154,8 @@ class AddToQueueButton extends ConsumerWidget {
     } catch (e) {
       log.e('Error calculating estimated date: $e');
       // Fallback: return the constraint date if available
-      if (certState.nextIssuableDate != null) return certState.nextIssuableDate;
-      if (certState.duration != null) return DateTime.now().add(certState.duration!);
+      if (widget.certState.nextIssuableDate != null) return widget.certState.nextIssuableDate;
+      if (widget.certState.duration != null) return DateTime.now().add(widget.certState.duration!);
       return null;
     }
   }
@@ -170,82 +181,90 @@ class AddToQueueButton extends ConsumerWidget {
 
   Future<void> _showAddToQueueDialog(
     BuildContext context,
-    WidgetRef ref,
     DateTime? estimatedDate,
     d.CertificationType certType,
   ) async {
-    // IMPORTANT: Capture all provider references BEFORE any async operation
-    // to avoid "ref used after widget unmounted" errors
-    final walletService = ref.read(walletServiceProvider);
-    final queueNotifier = ref.read(certificationQueueProvider(issuerAddress).notifier);
-    final walletName = ref.read(squidServiceProvider).walletNameIndexer[address];
+    if (_isProcessing) return;
 
-    final displayName = walletName ?? address.substring(0, 8);
-
-    // Use appropriate confirmation message based on certification type
-    final confirmKey = switch (certType) {
-      d.CertificationType.invitation => 'confirmAddInvitationToQueue',
-      d.CertificationType.renewal => 'confirmAddRenewalToQueue',
-      d.CertificationType.certification => 'confirmAddToQueue',
-    };
-
-    String message = confirmKey.tr(args: [displayName]);
-    if (estimatedDate != null) {
-      final formattedDate = DateFormat.yMMMd().add_Hm().format(estimatedDate);
-      message += '\n\n${'estimatedProcessingDate'.tr(args: [formattedDate])}';
-    }
-
-    final result = await showConfirmationDialog(
-      context: context,
-      title: 'addToQueue'.tr(),
-      message: message,
-      type: ConfirmationDialogType.question,
-    );
-
-    if (!result) return;
-    if (!context.mounted) return;
-
-    // Ask for PIN to sign the sync request
-    if (!await PinCodeService.askPinCode()) return;
-
-    // Add to local queue
-    final success = await queueNotifier.addToQueue(
-      receiverAddress: address,
-      certType: certType,
-      receiverUid: walletName,
-      receiverName: walletName,
-    );
-
-    if (!context.mounted) return;
-
-    if (!success) {
-      SnackbarService.showWarning(context, message: 'alreadyInQueue'.tr());
-      return;
-    }
-
-    // Sync with CesiumPlus
+    setState(() => _isProcessing = true);
     try {
-      final keyPair = await walletService.getKeyPairFromAddress(
-        address: issuerAddress,
-        pinCode: PinCodeService.pinCode,
+      // IMPORTANT: Capture all provider references BEFORE any async operation
+      // to avoid "ref used after widget unmounted" errors
+      final walletService = ref.read(walletServiceProvider);
+      final queueNotifier = ref.read(certificationQueueProvider(widget.issuerAddress).notifier);
+      final walletName = ref.read(squidServiceProvider).walletNameIndexer[widget.address];
+
+      final displayName = walletName ?? widget.address.substring(0, 8);
+
+      // Use appropriate confirmation message based on certification type
+      final confirmKey = switch (certType) {
+        d.CertificationType.invitation => 'confirmAddInvitationToQueue',
+        d.CertificationType.renewal => 'confirmAddRenewalToQueue',
+        d.CertificationType.certification => 'confirmAddToQueue',
+      };
+
+      String message = confirmKey.tr(args: [displayName]);
+      if (estimatedDate != null) {
+        final formattedDate = DateFormat.yMMMd().add_Hm().format(estimatedDate);
+        message += '\n\n${'estimatedProcessingDate'.tr(args: [formattedDate])}';
+      }
+
+      final result = await showConfirmationDialog(
+        context: context,
+        title: 'addToQueue'.tr(),
+        message: message,
+        type: ConfirmationDialogType.question,
       );
 
-      log.d('🔄 [AddToQueue] Syncing queue to CesiumPlus...');
-      final syncSuccess = await queueNotifier.pushToRemote(keyPair.sign);
+      if (!result) return;
+      if (!context.mounted) return;
+
+      // Ask for PIN to sign the sync request
+      if (!await PinCodeService.askPinCode()) return;
+
+      // Add to local queue
+      final success = await queueNotifier.addToQueue(
+        receiverAddress: widget.address,
+        certType: certType,
+        receiverUid: walletName,
+        receiverName: walletName,
+      );
 
       if (!context.mounted) return;
 
-      if (syncSuccess) {
-        SnackbarService.showSuccess(context, message: 'addedToQueue'.tr(args: [displayName]));
-      } else {
-        // Added locally but sync failed - show warning
+      if (!success) {
+        SnackbarService.showWarning(context, message: 'alreadyInQueue'.tr());
+        return;
+      }
+
+      // Sync with CesiumPlus
+      try {
+        final keyPair = await walletService.getKeyPairFromAddress(
+          address: widget.issuerAddress,
+          pinCode: PinCodeService.pinCode,
+        );
+
+        log.d('🔄 [AddToQueue] Syncing queue to CesiumPlus...');
+        final syncSuccess = await queueNotifier.pushToRemote(keyPair.sign);
+
+        if (!context.mounted) return;
+
+        if (syncSuccess) {
+          SnackbarService.showSuccess(context, message: 'addedToQueue'.tr(args: [displayName]));
+        } else {
+          // Added locally but sync failed - show warning
+          SnackbarService.showWarning(context, message: 'addedToQueueSyncFailed'.tr(args: [displayName]));
+        }
+      } catch (e) {
+        log.e('🔄 [AddToQueue] Sync failed: $e');
+        if (!context.mounted) return;
+        // Added locally but sync failed
         SnackbarService.showWarning(context, message: 'addedToQueueSyncFailed'.tr(args: [displayName]));
       }
-    } catch (e) {
-      log.e('🔄 [AddToQueue] Sync failed: $e');
-      if (!context.mounted) return;
-      // Added locally but sync failed
-      SnackbarService.showWarning(context, message: 'addedToQueueSyncFailed'.tr(args: [displayName]));
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 }

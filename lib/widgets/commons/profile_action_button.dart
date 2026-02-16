@@ -46,7 +46,6 @@ class ProfileActionButton extends StatelessWidget {
     final defaultLabelStyle = Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500);
 
     return GestureDetector(
-      onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Column(
         mainAxisSize: MainAxisSize.min,

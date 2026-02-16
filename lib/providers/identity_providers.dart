@@ -23,45 +23,40 @@ final ignoreMigrationWarningProvider = NotifierProvider.family<IgnoreMigrationWa
   (_) => IgnoreMigrationWarningNotifier(),
 );
 
-/// Provides migration data for identities that migrated FROM this address using Squid
-final migrationFromDataProvider = FutureProvider.family<MigrationData?, String>((ref, address) async {
+enum MigrationDirection { from, to }
+
+/// Provides migration data for a given direction (from/to) and address.
+final migrationDataProvider = FutureProvider.family<MigrationData?, ({MigrationDirection direction, String address})>((
+  ref,
+  params,
+) async {
   try {
     final squidService = d.SquidService.client;
-    final migrations = await squidService.getIdentityMigrations(address);
+    final migrations = await squidService.getIdentityMigrations(params.address);
 
-    if (migrations?.migrationFrom == null) {
-      return null;
-    }
+    final node = params.direction == MigrationDirection.from ? migrations?.migrationFrom : migrations?.migrationTo;
+    if (node == null) return null;
 
     final genesisTime = await ref.watch(genesisTimeProvider.future);
-    if (genesisTime == null) {
-      return null; // Storage not ready yet
-    }
-    return await MigrationData.fromSquidMigrationFromNode(migrations!.migrationFrom!, genesisTime);
+    if (genesisTime == null) return null;
+
+    return params.direction == MigrationDirection.from
+        ? await MigrationData.fromSquidMigrationFromNode(node, genesisTime)
+        : await MigrationData.fromSquidMigrationToNode(node, genesisTime);
   } catch (e) {
     return null;
   }
 });
 
-/// Provides migration data for identities that migrated TO this address using Squid
-final migrationToDataProvider = FutureProvider.family<MigrationData?, String>((ref, address) async {
-  try {
-    final squidService = d.SquidService.client;
-    final migrations = await squidService.getIdentityMigrations(address);
+/// Shorthand for migration FROM data.
+final migrationFromDataProvider = FutureProvider.family<MigrationData?, String>(
+  (ref, address) => ref.watch(migrationDataProvider((direction: MigrationDirection.from, address: address)).future),
+);
 
-    if (migrations?.migrationTo == null) {
-      return null;
-    }
-
-    final genesisTime = await ref.watch(genesisTimeProvider.future);
-    if (genesisTime == null) {
-      return null; // Storage not ready yet
-    }
-    return await MigrationData.fromSquidMigrationToNode(migrations!.migrationTo!, genesisTime);
-  } catch (e) {
-    return null;
-  }
-});
+/// Shorthand for migration TO data.
+final migrationToDataProvider = FutureProvider.family<MigrationData?, String>(
+  (ref, address) => ref.watch(migrationDataProvider((direction: MigrationDirection.to, address: address)).future),
+);
 
 /// Provides the name of an identity by address.
 /// Returns null if the address has no identity or if network is unavailable.

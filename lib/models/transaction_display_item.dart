@@ -63,12 +63,6 @@ class TransactionDisplayItem {
     // Check if this is migration time
     final bool isMigrationTime = transactionTime.isBefore(genesisTime);
 
-    // final String comment = switch (node.comment?.type) {
-    //   Enum$CommentTypeEnum.ASCII => node.comment?.remark ?? '',
-    //   Enum$CommentTypeEnum.RAW => _decodeHexString(node.comment?.remarkBytes),
-    //   _ => node.comment?.remark ?? '',
-    // };
-
     final comment = _decodeHexString(node.comment?.remarkBytes);
 
     return TransactionDisplayItem(

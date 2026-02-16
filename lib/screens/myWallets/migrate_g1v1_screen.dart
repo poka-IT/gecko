@@ -2,7 +2,15 @@
 
 import 'dart:async';
 import 'package:durt2/durt2.dart'
-    show IdtyStatus, WalletEntity, MigrateWalletChecks, TransactionStatus, TransactionState, Durt;
+    show
+        IdtyStatus,
+        WalletEntity,
+        MigrateWalletChecks,
+        TransactionStatus,
+        TransactionState,
+        Durt,
+        WalletService,
+        DuniterService;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -26,9 +34,6 @@ import 'package:gecko/widgets/idty_status.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
-// Helper pour accéder aux services Riverpod depuis ce fichier
-final _container = ProviderContainer();
-
 class MigrateG1v1 extends ConsumerStatefulWidget {
   const MigrateG1v1({super.key});
   static const int debouneTime = 600;
@@ -42,25 +47,22 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
   bool _keyboardDismissed = false;
   WalletEntity? _selectedWallet;
 
-  /// Effectue la migration G1v1 vers v2 avec affichage immédiat de l'écran de transaction
-  Stream<TransactionStatus> _performG1v1Migration({
+  /// Effectue la migration G1v1 vers v2 avec affichage immédiat de l'écran de transaction.
+  /// Les services sont passés en paramètres car le stream peut être consommé après la disposal du widget.
+  static Stream<TransactionStatus> _performG1v1Migration({
     required String salt,
     required String password,
     required String toAddress,
     required String pinCode,
+    required WalletService walletService,
+    required DuniterService duniterService,
   }) async* {
     try {
-      // Émettre immédiatement un état pending pour afficher l'écran
       yield TransactionStatus(hash: '', state: TransactionState.pending);
 
-      final toKeypair = await _container
-          .read(walletServiceProvider)
-          .getKeyPairFromAddress(address: toAddress, pinCode: pinCode);
+      final toKeypair = await walletService.getKeyPairFromAddress(address: toAddress, pinCode: pinCode);
 
-      // Continuer avec la migration normale
-      yield* _container
-          .read(duniterServiceProvider)
-          .migrateCsToV2(salt: salt, password: password, toKeypair: toKeypair, withBalance: true);
+      yield* duniterService.migrateCsToV2(salt: salt, password: password, toKeypair: toKeypair, withBalance: true);
     } catch (e) {
       log.e('G1v1 migration error: $e');
       yield TransactionStatus(
@@ -96,7 +98,7 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
               final passwordController = ref.watch(csPasswordControllerProvider);
 
               return FutureBuilder(
-                future: _container
+                future: ref
                     .read(storageServiceProvider)
                     .getMigrateWalletChecks(fromAddress: convertedAddress, toAddress: selectedWallet.address),
                 builder: (BuildContext context, AsyncSnapshot<MigrateWalletChecks> migrationChecks) {
@@ -547,11 +549,17 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                                           return;
                                         }
 
+                                        // Capture services before navigation (ref won't be valid after pop)
+                                        final walletService = ref.read(walletServiceProvider);
+                                        final duniterService = ref.read(duniterServiceProvider);
+
                                         final transactionStream = _performG1v1Migration(
                                           salt: saltController.text,
                                           password: passwordController.text,
                                           toAddress: selectedWallet.address,
                                           pinCode: PinCodeService.pinCode,
+                                          walletService: walletService,
+                                          duniterService: duniterService,
                                         );
 
                                         Navigator.pop(context);
@@ -568,7 +576,6 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
                                             },
                                           ),
                                         );
-                                        resetScreen();
                                       }
                                     : null,
                                 child: Text(
@@ -605,9 +612,9 @@ class _MigrateG1v1State extends ConsumerState<MigrateG1v1> {
   }
 
   void resetScreen() {
-    _container.read(csSaltControllerProvider).clear();
-    _container.read(csPasswordControllerProvider).clear();
-    _container.read(g1v1MigrationUiProvider.notifier).reset();
-    _container.invalidate(csToV2AddressProvider);
+    ref.read(csSaltControllerProvider).clear();
+    ref.read(csPasswordControllerProvider).clear();
+    ref.read(g1v1MigrationUiProvider.notifier).reset();
+    ref.invalidate(csToV2AddressProvider);
   }
 }

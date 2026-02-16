@@ -1,7 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:durt2/durt2.dart'
-    show MigrateWalletChecks, MigrateWalletValidationError, Durt, TransactionStatus, TransactionState, DurtKeyPair;
+    show
+        MigrateWalletChecks,
+        MigrateWalletValidationError,
+        Durt,
+        TransactionStatus,
+        TransactionState,
+        DurtKeyPair,
+        WalletService,
+        DuniterService;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
@@ -17,9 +25,6 @@ import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-
-// Helper pour accéder aux services Riverpod depuis ce fichier
-final _container = ProviderContainer();
 
 String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
   if (errors.isEmpty) {
@@ -67,25 +72,21 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
     super.dispose();
   }
 
-  /// Effectue la migration d'identité avec gestion d'erreur
-  Stream<TransactionStatus> _performMigration({
+  /// Effectue la migration d'identité avec gestion d'erreur.
+  /// Les services sont passés en paramètres car le stream peut être consommé après la disposal du widget.
+  static Stream<TransactionStatus> _performMigration({
     required String fromAddress,
     required String pinCode,
     required DurtKeyPair toKeypair,
+    required WalletService walletService,
+    required DuniterService duniterService,
   }) async* {
     try {
-      // Étape 1: Importer le nouveau wallet temporairement
       yield TransactionStatus(hash: '', state: TransactionState.pending);
 
-      // Étape 2: Récupérer les keypairs
-      final fromKeypair = await _container
-          .read(walletServiceProvider)
-          .getKeyPairFromAddress(address: fromAddress, pinCode: pinCode);
+      final fromKeypair = await walletService.getKeyPairFromAddress(address: fromAddress, pinCode: pinCode);
 
-      // Étape 4: Lancer la transaction de migration
-      yield* _container
-          .read(duniterServiceProvider)
-          .migrateIdentity(fromKeypair: fromKeypair, toKeypair: toKeypair, withBalance: true);
+      yield* duniterService.migrateIdentity(fromKeypair: fromKeypair, toKeypair: toKeypair, withBalance: true);
     } on InvalidCipherTextException catch (e) {
       log.e('Invalid cipher text: $e');
       yield TransactionStatus(hash: '', state: TransactionState.error, errorMessage: 'incorrectPinCode'.tr());
@@ -106,8 +107,8 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
     bool isSmall = !isTall;
 
     Future scanDerivations() async {
-      if (!_container.read(utilsProvider).isAddressValid(newWalletAddress.text) ||
-          !_container.read(walletServiceProvider).isMnemonicValid(newMnemonicSentence.text) ||
+      if (!ref.read(utilsProvider).isAddressValid(newWalletAddress.text) ||
+          !ref.read(walletServiceProvider).isMnemonicValid(newMnemonicSentence.text) ||
           !migrationChecks.canMigrate) {
         setState(() {
           mnemonicIsValid = false;
@@ -119,7 +120,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
       log.d('Scan derivations to find a match');
 
       //Scan root wallet
-      final keypair = await _container
+      final keypair = await ref
           .read(walletServiceProvider)
           .getKeyPairFromMnemonic(newMnemonicSentence.text, keyPairType: Durt.defaultKeyPairType);
 
@@ -136,7 +137,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
       //Scan derivations
       for (int derivationNbr in [for (var i = 0; i < 30; i += 1) i]) {
         // Use default scan number
-        final keypair = await _container
+        final keypair = await ref
             .read(walletServiceProvider)
             .getKeyPairFromMnemonic(
               newMnemonicSentence.text,
@@ -351,8 +352,8 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 ),
                               ),
                               onChanged: (newAddress) async {
-                                if (_container.read(utilsProvider).isAddressValid(newAddress)) {
-                                  final checks = await _container
+                                if (ref.read(utilsProvider).isAddressValid(newAddress)) {
+                                  final checks = await ref
                                       .read(storageServiceProvider)
                                       .getMigrateWalletChecks(fromAddress: fromAddress, toAddress: newAddress);
                                   setState(() {
@@ -426,10 +427,16 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 // Demander le code PIN d'abord
                                 if (!await PinCodeService.askPinCode()) return;
 
+                                // Capture services before navigation (ref won't be valid after pop)
+                                final walletService = ref.read(walletServiceProvider);
+                                final duniterService = ref.read(duniterServiceProvider);
+
                                 final transactionStream = _performMigration(
                                   fromAddress: fromAddress,
                                   pinCode: PinCodeService.pinCode,
                                   toKeypair: toKeypair!,
+                                  walletService: walletService,
+                                  duniterService: duniterService,
                                 );
 
                                 // Convert to broadcast stream to allow multiple listeners

@@ -170,7 +170,7 @@ class TransactionDisplayItem {
       username: displayUsername,
       amount: amount,
       comment: comment,
-      isReceived: false, // In network view, we show as "sent" for consistency
+      isReceived: true, // In network view, amounts are displayed as positive
       timestamp: transactionTime,
       transactionTime: transactionTime,
       dateDelimiter: dateDelimiter,

@@ -27,6 +27,14 @@ class SentryService {
     return String.fromCharCodes(Iterable.generate(6, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
   }
 
+  /// Sanitize PII from Sentry tags. Truncates values that look like wallet addresses.
+  static String _sanitizePii(String key, String value) {
+    if (key.toLowerCase().contains('address') && value.length > 12) {
+      return '${value.substring(0, 8)}...';
+    }
+    return value;
+  }
+
   /// Recursively flatten diagnostic data and add ALL fields as Sentry tags
   /// This ensures that ANY field added to the diagnostic report will automatically
   /// be included in Sentry reports without modifying this service
@@ -155,7 +163,7 @@ class SentryService {
         }
         if (extra != null) {
           extra.forEach((key, value) {
-            scope.setTag('capture_$key', value.toString());
+            scope.setTag('capture_$key', _sanitizePii(key, value.toString()));
           });
         }
 

@@ -23,7 +23,11 @@ class PinCodeService {
   }
 
   static int lockPin = 0;
-  static Future debounceResetPinCode([int minutes = 15]) async {
+
+  /// Clears the cached PIN after a delay.
+  /// When cache is enabled: clears after [minutes] (default 5 min).
+  /// When cache is disabled: clears after 1 second.
+  static Future debounceResetPinCode([int minutes = 5]) async {
     lockPin++;
     final actualLock = lockPin;
     final pinCacheState = isEnabled;

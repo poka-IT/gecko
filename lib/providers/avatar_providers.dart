@@ -57,8 +57,11 @@ class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
         // Store in memory cache for faster access
         state = {...state, address: cachedBytes};
 
-        // Refresh avatar in background (non-blocking)
-        _refreshAvatarInBackground(address);
+        // Refresh avatar in background only if disk cache is older than 24h
+        final lastModified = await cacheFile.lastModified();
+        if (DateTime.now().difference(lastModified).inHours >= 24) {
+          _refreshAvatarInBackground(address);
+        }
 
         return cachedBytes;
       }

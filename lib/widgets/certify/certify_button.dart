@@ -16,18 +16,25 @@ import 'package:gecko/widgets/certify/certification_transaction_helper.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/profile_action_button.dart';
 
-class CertifyButton extends ConsumerWidget {
+class CertifyButton extends ConsumerStatefulWidget {
   const CertifyButton(this.address, {super.key, this.isRenewal = false, this.idtyStatus = IdtyStatus.unknown});
   final String address;
   final bool isRenewal;
   final IdtyStatus idtyStatus;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CertifyButton> createState() => _CertifyButtonState();
+}
+
+class _CertifyButtonState extends ConsumerState<CertifyButton> {
+  bool _isProcessing = false;
+
+  @override
+  Widget build(BuildContext context) {
     String getButtonText() {
-      if (idtyStatus == IdtyStatus.none) {
+      if (widget.idtyStatus == IdtyStatus.none) {
         return "createThisIdentity".tr();
-      } else if (isRenewal) {
+      } else if (widget.isRenewal) {
         return "renewCertification".tr();
       } else {
         return "certify".tr();
@@ -36,54 +43,63 @@ class CertifyButton extends ConsumerWidget {
 
     return ProfileActionButton(
       buttonKey: keyCertify,
-      onTap: () => _onTap(context, ref),
+      onTap: () => _onTap(context),
       backgroundColor: const Color(0xffFFD58D),
       label: getButtonText(),
       child: Padding(padding: EdgeInsets.all(scaleSize(4)), child: Image.asset('assets/gecko_certify.png')),
     );
   }
 
-  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
-    final walletName = ref.read(squidServiceProvider).walletNameIndexer[address];
-    final message = walletName != null
-        ? '${'confirmCertification'.tr()}\n\n**$walletName**\n\n${getShortPubkey(address)}'
-        : '${'confirmCreateIdentity'.tr()}\n\n**${getShortPubkey(address)}**';
+  Future<void> _onTap(BuildContext context) async {
+    if (_isProcessing) return;
 
-    final result = await showConfirmationDialog(
-      context: context,
-      title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
-      message: message,
-      type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
-      checkboxLabel: 'certifyUniqueIdentity'.tr(),
-    );
-
-    if (!result) return;
-
-    if (!await PinCodeService.askPinCode()) return;
-    final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
-
-    if (identityWallet == null) {
-      throw Exception('Identity wallet not found');
-    }
-
+    setState(() => _isProcessing = true);
     try {
-      await CertificationTransactionHelper.executeCertification(
+      final walletName = ref.read(squidServiceProvider).walletNameIndexer[widget.address];
+      final message = walletName != null
+          ? '${'confirmCertification'.tr()}\n\n**$walletName**\n\n${getShortPubkey(widget.address)}'
+          : '${'confirmCreateIdentity'.tr()}\n\n**${getShortPubkey(widget.address)}**';
+
+      final result = await showConfirmationDialog(
         context: context,
-        ref: ref,
-        issuerAddress: identityWallet.address,
-        targetAddress: address,
+        title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
+        message: message,
+        type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
+        checkboxLabel: 'certifyUniqueIdentity'.tr(),
       );
-    } catch (e) {
-      if (!context.mounted) {
-        log.w('Context not mounted when error occurred: $e');
-        return;
+
+      if (!result) return;
+
+      if (!await PinCodeService.askPinCode()) return;
+      final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
+
+      if (identityWallet == null) {
+        throw Exception('Identity wallet not found');
       }
 
-      if (e is NotMemberException || e is CantBeCertException) {
-        showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
-      } else {
-        log.e(e);
-        showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+      try {
+        await CertificationTransactionHelper.executeCertification(
+          context: context,
+          ref: ref,
+          issuerAddress: identityWallet.address,
+          targetAddress: widget.address,
+        );
+      } catch (e) {
+        if (!context.mounted) {
+          log.w('Context not mounted when error occurred: $e');
+          return;
+        }
+
+        if (e is NotMemberException || e is CantBeCertException) {
+          showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+        } else {
+          log.e(e);
+          showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
       }
     }
   }

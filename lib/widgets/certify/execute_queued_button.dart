@@ -16,7 +16,7 @@ import 'package:gecko/widgets/certify/certification_transaction_helper.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/profile_action_button.dart';
 
-class ExecuteQueuedButton extends ConsumerWidget {
+class ExecuteQueuedButton extends ConsumerStatefulWidget {
   const ExecuteQueuedButton({super.key, required this.address, required this.pendingCert, required this.issuerAddress});
 
   final String address;
@@ -24,10 +24,17 @@ class ExecuteQueuedButton extends ConsumerWidget {
   final String issuerAddress;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ExecuteQueuedButton> createState() => _ExecuteQueuedButtonState();
+}
+
+class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
+  bool _isProcessing = false;
+
+  @override
+  Widget build(BuildContext context) {
     return ProfileActionButton(
       buttonKey: keyExecuteQueued,
-      onTap: () => _executeCertification(context, ref),
+      onTap: () => _executeCertification(context),
       backgroundColor: Colors.green.shade300,
       label: 'executeNow'.tr(),
       labelStyle: Theme.of(
@@ -59,54 +66,63 @@ class ExecuteQueuedButton extends ConsumerWidget {
     );
   }
 
-  Future<void> _executeCertification(BuildContext context, WidgetRef ref) async {
-    // Capture provider references BEFORE async operations
-    final walletService = ref.read(walletServiceProvider);
-    final queueNotifier = ref.read(certificationQueueProvider(issuerAddress).notifier);
+  Future<void> _executeCertification(BuildContext context) async {
+    if (_isProcessing) return;
 
-    final walletName = pendingCert.receiverName ?? pendingCert.receiverUid;
-    final displayName = walletName ?? getShortPubkey(address);
-
-    final message = '${'confirmCertification'.tr()}\n\n**$displayName**\n\n${getShortPubkey(address)}';
-
-    final result = await showConfirmationDialog(
-      context: context,
-      title: 'certification'.tr(),
-      message: message,
-      type: ConfirmationDialogType.question,
-      checkboxLabel: 'certifyUniqueIdentity'.tr(),
-    );
-
-    if (!result) return;
-
-    if (!await PinCodeService.askPinCode()) return;
-    if (!context.mounted) return;
-
+    setState(() => _isProcessing = true);
     try {
-      // Use issuerAddress directly - it's the identity wallet address passed to this widget
-      await CertificationTransactionHelper.executeCertification(
-        context: context,
-        ref: ref,
-        issuerAddress: issuerAddress,
-        targetAddress: address,
-        onBeforeNavigate: () async {
-          // Remove from queue with optimistic cooldown update
-          await queueNotifier.removeExecutedCertification(pendingCert.id);
-          // Sync to CesiumPlus (we already have the PIN)
-          await _syncToRemote(walletService, queueNotifier);
-        },
-      );
-    } catch (e) {
-      if (!context.mounted) {
-        log.w('Context not mounted when error occurred: $e');
-        return;
-      }
+      // Capture provider references BEFORE async operations
+      final walletService = ref.read(walletServiceProvider);
+      final queueNotifier = ref.read(certificationQueueProvider(widget.issuerAddress).notifier);
 
-      if (e is NotMemberException || e is CantBeCertException) {
-        showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
-      } else {
-        log.e(e);
-        showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+      final walletName = widget.pendingCert.receiverName ?? widget.pendingCert.receiverUid;
+      final displayName = walletName ?? getShortPubkey(widget.address);
+
+      final message = '${'confirmCertification'.tr()}\n\n**$displayName**\n\n${getShortPubkey(widget.address)}';
+
+      final result = await showConfirmationDialog(
+        context: context,
+        title: 'certification'.tr(),
+        message: message,
+        type: ConfirmationDialogType.question,
+        checkboxLabel: 'certifyUniqueIdentity'.tr(),
+      );
+
+      if (!result) return;
+
+      if (!await PinCodeService.askPinCode()) return;
+      if (!context.mounted) return;
+
+      try {
+        // Use issuerAddress directly - it's the identity wallet address passed to this widget
+        await CertificationTransactionHelper.executeCertification(
+          context: context,
+          ref: ref,
+          issuerAddress: widget.issuerAddress,
+          targetAddress: widget.address,
+          onBeforeNavigate: () async {
+            // Remove from queue with optimistic cooldown update
+            await queueNotifier.removeExecutedCertification(widget.pendingCert.id);
+            // Sync to CesiumPlus (we already have the PIN)
+            await _syncToRemote(walletService, queueNotifier);
+          },
+        );
+      } catch (e) {
+        if (!context.mounted) {
+          log.w('Context not mounted when error occurred: $e');
+          return;
+        }
+
+        if (e is NotMemberException || e is CantBeCertException) {
+          showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+        } else {
+          log.e(e);
+          showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
       }
     }
   }
@@ -115,7 +131,7 @@ class ExecuteQueuedButton extends ConsumerWidget {
   Future<bool> _syncToRemote(dynamic walletService, CertificationQueueNotifier queueNotifier) async {
     try {
       final keyPair = await walletService.getKeyPairFromAddress(
-        address: issuerAddress,
+        address: widget.issuerAddress,
         pinCode: PinCodeService.pinCode,
       );
 

@@ -153,7 +153,10 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
       return constraintDate.isAfter(queuePositionDate) ? constraintDate : queuePositionDate;
     } catch (e) {
       log.e('Error calculating estimated date: $e');
-      // Fallback: return the constraint date if available
+      // Fallback: prioritize duration for canRenewIn, then nextIssuableDate
+      if (widget.certState.status == d.CertStatus.canRenewIn && widget.certState.duration != null) {
+        return DateTime.now().add(widget.certState.duration!);
+      }
       if (widget.certState.nextIssuableDate != null) return widget.certState.nextIssuableDate;
       if (widget.certState.duration != null) return DateTime.now().add(widget.certState.duration!);
       return null;

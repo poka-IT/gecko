@@ -180,6 +180,7 @@
     "canNotCertifySelf": "You can not certify yourself",
     "nameAlreadyExist": "This name is already taken",
     "ownerKeyInBound": "This key is still in bond period and cannot be changed yet",
+    "ownerKeyUsedAsValidator": "This identity is currently used as a validator and cannot be migrated",
     "2GDtoKeepAlive": "You have to keep at least 2{} to keep your account alive",
     "youHaveToFeedThisAccountBeforeUsing": "You have to feed this account\nbefore using it.",
     "execTimeoutOver": "Execution timeout is over",

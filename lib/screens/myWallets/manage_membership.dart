@@ -41,71 +41,7 @@ class ManageMembership extends ConsumerWidget {
                     return const SizedBox.shrink();
                   },
                 ),
-                FutureBuilder(
-                  future: ref.read(storageServiceProvider).isSmith(address),
-                  builder: (BuildContext context, AsyncSnapshot<bool> isSmith) {
-                    if (isSmith.data ?? false) {
-                      return Column(
-                        children: [
-                          Container(
-                            margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.change_circle_outlined, size: scaleSize(24), color: Colors.grey[400]),
-                                  ScaledSizedBox(width: 16),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Migrer mon identité',
-                                        style: scaledTextStyle(fontSize: 16, color: Colors.grey[500]),
-                                      ),
-                                      Text(
-                                        "youCannotMigrateThisIdentity".tr(),
-                                        style: scaledTextStyle(fontSize: 12, color: Colors.grey[500]),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Container(
-                            height: scaleSize(64),
-                            padding: EdgeInsets.symmetric(horizontal: scaleSize(18)),
-                            child: Row(
-                              children: [
-                                Image.asset('assets/skull_Icon.png', height: scaleSize(24), color: Colors.grey[400]),
-                                ScaledSizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'revokeMyIdentity'.tr(),
-                                        style: scaledTextStyle(fontSize: 16, color: Colors.grey[500]),
-                                      ),
-                                      Text(
-                                        "youCannotRevokeThisIdentity".tr(),
-                                        style: scaledTextStyle(fontSize: 12, color: Colors.grey[500]),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    } else {
-                      return Column(children: [migrateIdentity(context), revokeMyIdentity(context, ref)]);
-                    }
-                  },
-                ),
+                Column(children: [migrateIdentity(context), revokeMyIdentity(context, ref)]),
                 ScaledSizedBox(height: 20),
               ],
             ),

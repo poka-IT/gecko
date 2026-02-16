@@ -177,6 +177,7 @@
     "2GDtoKeepAlive": "Devi mantenere almeno 2{} sul tuo conto per mantenerlo attivo",
     "youHaveToFeedThisAccountBeforeUsing": "Devi incrementare il saldo di questo conto \nper poterlo usare",
     "ownerKeyInBound": "Questa chiave è ancora nel periodo di cauzione e non può essere cambiata ancora",
+    "ownerKeyUsedAsValidator": "Questa identità è attualmente utilizzata come validatore e non può essere migrata",
     "execTimeoutOver": "Tempo di esecuzione terminato",
     "seeAWallet": "Vedi un portafoglio",
     "mustWaitXBeforeCertify": "Devi aspettare {} prima di certificare di nuovo",

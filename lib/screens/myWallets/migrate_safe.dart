@@ -116,9 +116,16 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
           final checks = await ref
               .read(storageServiceProvider)
               .getMigrateWalletChecks(fromAddress: wallet.address, toAddress: destAddresses.first);
-          if (!checks.canMigrate) {
+          if (checks.errors.contains(MigrateWalletValidationError.sourceAccountIsEmpty)) {
             setState(() {
-              _validationMessage = 'cannotMigrateSmith'.tr(args: [wallet.name ?? wallet.address]);
+              _validationMessage = 'thisAccountIsEmpty'.tr();
+              _isLoading = false;
+            });
+            return;
+          }
+          if (checks.errors.contains(MigrateWalletValidationError.cannotMigrateIdentityToIdentity)) {
+            setState(() {
+              _validationMessage = 'youCannotMigrateIdentityToExistingIdentity'.tr();
               _isLoading = false;
             });
             return;

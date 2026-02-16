@@ -177,6 +177,7 @@
     "canNotCertifySelf": "No puedes certificarte\na ti mismo...",
     "nameAlreadyExist": "Este nombre ya está ocupado",
     "ownerKeyInBound": "Esta clave todavía está en período de garantía y no se puede cambiar aún",
+    "ownerKeyUsedAsValidator": "Esta identidad se está utilizando actualmente como validador y no se puede migrar",
     "2GDtoKeepAlive": "Tienes que conservar al menos 2{} en tu cuenta para mantenerla activa",
     "youHaveToFeedThisAccountBeforeUsing": "Tienes que depositar fondos en esta cuenta antes\nde poderla usar",
     "execTimeoutOver": "Se ha agotado el tiempo de ejecución",

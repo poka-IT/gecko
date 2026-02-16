@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -35,6 +38,22 @@ class SnackbarService {
   }
 
   /// Shows a snackbar for mnemonic copied to clipboard.
+  /// Copies a mnemonic to the clipboard and shows a snackbar.
+  /// Auto-clears the clipboard after 30 seconds for security.
+  static void copyMnemonicToClipboard(BuildContext context, String mnemonic) {
+    Clipboard.setData(ClipboardData(text: mnemonic));
+    Timer(const Duration(seconds: 30), () => Clipboard.setData(const ClipboardData(text: '')));
+    _showSnackBar(
+      context,
+      message: "thisMnemonicHasBeenCopiedToClipboard".tr(),
+      duration: 4,
+      backgroundColor: context.colorScheme.onSurface,
+      textColor: context.colorScheme.surfaceContainer,
+      fontSize: 13,
+    );
+  }
+
+  @Deprecated('Use copyMnemonicToClipboard instead for auto-clear security')
   static void showMnemonicCopied(BuildContext context) {
     _showSnackBar(
       context,

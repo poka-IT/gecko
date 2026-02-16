@@ -263,10 +263,10 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
                                 ? () {
                                     final mnemonicState = ref.read(mnemonicStateProvider);
                                     if (mnemonicState.mnemonicResult != null) {
-                                      Clipboard.setData(
-                                        ClipboardData(text: mnemonicState.mnemonicResult!.displayMnemonic),
+                                      SnackbarService.copyMnemonicToClipboard(
+                                        context,
+                                        mnemonicState.mnemonicResult!.displayMnemonic,
                                       );
-                                      SnackbarService.showMnemonicCopied(context);
                                     }
                                   }
                                 : null,

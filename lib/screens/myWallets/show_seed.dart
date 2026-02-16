@@ -127,8 +127,7 @@ class ShowSeed extends ConsumerWidget {
                                       elevation: 1,
                                     ),
                                     onPressed: () {
-                                      Clipboard.setData(ClipboardData(text: displayMnemonic));
-                                      SnackbarService.showMnemonicCopied(context);
+                                      SnackbarService.copyMnemonicToClipboard(context, displayMnemonic);
                                     },
                                     child: Row(
                                       children: <Widget>[
@@ -169,24 +168,7 @@ class ShowSeed extends ConsumerWidget {
                                     elevation: 1,
                                   ),
                                   onPressed: () {
-                                    Clipboard.setData(ClipboardData(text: englishMnemonic));
-
-                                    // Calculate bottom margin based on bottom app bar visibility
-                                    final container = ProviderScope.containerOf(context);
-                                    final bottomBarState = container.read(bottomAppBarProvider);
-                                    final isBottomBarVisible = bottomBarState.isBottomBarActuallyVisible;
-                                    final bottomMargin = isBottomBarVisible
-                                        ? scaleSize(67) + 16.0
-                                        : 16.0; // Bottom bar height + standard margin
-
-                                    context.showDismissibleSnackBar(
-                                      SnackBar(
-                                        content: Text('englishMnemonicCopied'.tr()),
-                                        duration: const Duration(seconds: 2),
-                                        behavior: SnackBarBehavior.floating,
-                                        margin: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: bottomMargin),
-                                      ),
-                                    );
+                                    SnackbarService.copyMnemonicToClipboard(context, englishMnemonic);
                                   },
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,

@@ -26,9 +26,6 @@ import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
-// Helper pour accéder aux services Riverpod depuis ce fichier
-final _container = ProviderContainer();
-
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -148,9 +145,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _cleanupDuniterSubscriptions() async {
     try {
       // 1. Unsubscribe from Duniter subscriptions
-      if (_container.read(durtProvider).isConnected) {
-        await _container.read(storageServiceProvider).unsubscribeFromCurrentBlockNumber();
-        await _container.read(storageServiceProvider).unsubscribeFromUniversalDividend();
+      if (ref.read(durtProvider).isConnected) {
+        await ref.read(storageServiceProvider).unsubscribeFromCurrentBlockNumber();
+        await ref.read(storageServiceProvider).unsubscribeFromUniversalDividend();
       }
 
       // 2. Clear wallet header data cache (contains balance and identity info)
@@ -168,7 +165,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   /// Switch to a different network
   Future<void> _switchToNetwork(Networks newNetwork) async {
-    if (_container.read(durtProvider).network == newNetwork) {
+    if (ref.read(durtProvider).network == newNetwork) {
       return; // Already on this network
     }
 
@@ -189,13 +186,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       configBox.put('autoEndpoint', true);
 
       // 3. Switch network in durt2
-      await _container.read(durtProvider).switchNetwork(newNetwork);
+      await ref.read(durtProvider).switchNetwork(newNetwork);
 
       // 4. Save selected network in config
       configBox.put('selectedNetwork', newNetwork.name);
 
       // 5. Reconnect to the new network
-      await _container.read(durtProvider).connect(verbose: true);
+      await ref.read(durtProvider).connect(verbose: true);
 
       // 6. Refresh controllers and UI
       _syncDuniterEndpointController();
@@ -235,7 +232,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Refresh BlockHeightProvider after successful node change
   void _refreshBlockHeightProvider() {
     try {
-      _container.invalidate(blockHeightProvider);
+      ref.invalidate(blockHeightProvider);
       // ignore: avoid_print
       print('🔔 BlockHeightProvider refreshed after node change');
     } catch (e) {
@@ -247,7 +244,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Returns only working endpoints for UI display
   Future<List<String>> _getAvailableDuniterEndpoints() async {
     try {
-      final durt = _container.read(durtProvider);
+      final durt = ref.read(durtProvider);
 
       // Get only working endpoints for UI display
       final workingEndpoints = await durt.getWorkingDuniterEndpoints();
@@ -277,7 +274,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Get available and working Squid endpoints
   Future<List<String>> _getAvailableSquidEndpoints() async {
     try {
-      final durt = _container.read(durtProvider);
+      final durt = ref.read(durtProvider);
 
       // Get only working endpoints for UI display
       final workingEndpoints = await durt.getWorkingSquidEndpoints();
@@ -311,7 +308,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       configBox.put('customIndexer', fullEndpoint);
 
       // Force reconnection with the new endpoint
-      await _container.read(durtProvider).setFixedSquidEndpoint(fullEndpoint);
+      await ref.read(durtProvider).setFixedSquidEndpoint(fullEndpoint);
 
       log.i('✅ Successfully applied custom Squid endpoint');
       return true;
@@ -335,7 +332,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       configBox.put('autoEndpoint', false);
 
       // Force reconnection with the new endpoint
-      await _container.read(durtProvider).setFixedEndpoint(endpoint);
+      await ref.read(durtProvider).setFixedEndpoint(endpoint);
 
       // Refresh UI providers
       _syncDuniterEndpointController();
@@ -890,7 +887,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       log.i('🔍 Testing selected Duniter endpoint: $result');
 
       // First test if the endpoint is valid
-      final isWorking = await _container.read(durtProvider).testDuniterEndpoint(result);
+      final isWorking = await ref.read(durtProvider).testDuniterEndpoint(result);
 
       if (isWorking) {
         log.i('✅ Duniter endpoint test passed');
@@ -1114,7 +1111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         configBox.delete('customEndpoint');
                         configBox.put('autoEndpoint', true);
 
-                        await _container.read(durtProvider).connect(verbose: true);
+                        await ref.read(durtProvider).connect(verbose: true);
                         _syncDuniterEndpointController(); // Synchronize controller
                         _refreshBlockHeightProvider(); // Refresh block height provider
                       } catch (e) {
@@ -1222,7 +1219,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     log.i('🔍 Testing Duniter endpoint: $value');
 
                     // Test if the endpoint is valid
-                    final isWorking = await _container.read(durtProvider).testDuniterEndpoint(value);
+                    final isWorking = await ref.read(durtProvider).testDuniterEndpoint(value);
 
                     if (isWorking) {
                       log.i('✅ Duniter endpoint test passed');
@@ -1623,7 +1620,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                           // Clear fixed Squid endpoint and return to auto discovery mode
                           try {
-                            await _container.read(durtProvider).clearFixedSquidEndpoint();
+                            await ref.read(durtProvider).clearFixedSquidEndpoint();
                           } catch (e) {
                             log.w('Error clearing fixed Squid endpoint: $e');
                             if (mounted) {
@@ -1999,7 +1996,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget networkSelection(BuildContext context) {
-    final Networks currentNetwork = _container.read(durtProvider).network;
+    final Networks currentNetwork = ref.read(durtProvider).network;
     final bool isLocalNetwork = _isOnLocalNetwork();
 
     return Column(

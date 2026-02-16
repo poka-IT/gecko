@@ -264,7 +264,9 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
 
   /// Build the certification section with optional developer dropdown
   Widget _buildCertificationSection(WidgetRef ref) {
-    final isUsingTestSafe = kDebugMode ? DebugTestWalletService.isUsingTestSafe(ProviderContainer()) : false;
+    final isUsingTestSafe = kDebugMode
+        ? DebugTestWalletService.isUsingTestSafe(ref.read(walletServiceProvider))
+        : false;
     final certStateAsync = ref.watch(certStateProvider(address));
 
     return certStateAsync.when(

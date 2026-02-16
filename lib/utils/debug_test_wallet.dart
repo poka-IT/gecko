@@ -25,10 +25,8 @@ class DebugTestWalletService {
 
   /// Check if the current app is using the test/development safe
   /// Returns true if the first wallet address is the known development address
-  static bool isUsingTestSafe(ProviderContainer container) {
+  static bool isUsingTestSafe(WalletService walletService) {
     try {
-      final walletService = container.read(walletServiceProvider);
-
       // Check if any wallets exist
       if (walletService.walletBox.isEmpty()) {
         return false;

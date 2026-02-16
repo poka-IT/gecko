@@ -6,6 +6,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
 import 'package:gecko/screens/profile_view.dart' show buttonFontSize;
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/profile_action_button.dart';
 
 class InQueueButton extends ConsumerWidget {
@@ -59,22 +60,5 @@ class InQueueButton extends ConsumerWidget {
     );
   }
 
-  String? _formatEstimatedDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = date.difference(now);
-
-    if (difference.isNegative) {
-      return 'readyToCertify'.tr();
-    } else if (difference.inDays > 30) {
-      return DateFormat.MMMd().format(date);
-    } else if (difference.inDays > 0) {
-      return 'days'.tr(args: [difference.inDays.toString()]);
-    } else if (difference.inHours > 0) {
-      return 'hours'.tr(args: [difference.inHours.toString(), '']);
-    } else if (difference.inMinutes > 0) {
-      return 'minutes'.tr(args: [difference.inMinutes.toString()]);
-    } else {
-      return null;
-    }
-  }
+  String? _formatEstimatedDate(DateTime date) => formatRemainingTime(date, readyLabel: 'readyToCertify'.tr());
 }

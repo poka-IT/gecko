@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:truncate/truncate.dart';
 
@@ -57,4 +58,25 @@ Widget buildSmartAddressText({required String address, required double maxWidth,
   }
 
   return Text(bestText, style: style, maxLines: 1, overflow: TextOverflow.clip);
+}
+
+/// Formats a future date as a human-readable remaining time string.
+/// Returns null if the date is in the past (unless [readyLabel] is provided).
+String? formatRemainingTime(DateTime date, {String? readyLabel}) {
+  final now = DateTime.now();
+  final difference = date.difference(now);
+
+  if (difference.isNegative) {
+    return readyLabel;
+  } else if (difference.inDays > 30) {
+    return DateFormat.MMMd().format(date);
+  } else if (difference.inDays > 0) {
+    return 'days'.tr(args: [difference.inDays.toString()]);
+  } else if (difference.inHours > 0) {
+    return 'hours'.tr(args: [difference.inHours.toString(), '']);
+  } else if (difference.inMinutes > 0) {
+    return 'minutes'.tr(args: [difference.inMinutes.toString()]);
+  } else {
+    return null;
+  }
 }

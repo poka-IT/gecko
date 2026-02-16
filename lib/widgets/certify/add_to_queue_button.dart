@@ -12,6 +12,7 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/screens/profile_view.dart' show buttonFontSize;
+import 'package:gecko/utils.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -163,24 +164,7 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
     }
   }
 
-  String? _formatEstimatedDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = date.difference(now);
-
-    if (difference.isNegative) {
-      return null;
-    } else if (difference.inDays > 30) {
-      return DateFormat.MMMd().format(date);
-    } else if (difference.inDays > 0) {
-      return 'days'.tr(args: [difference.inDays.toString()]);
-    } else if (difference.inHours > 0) {
-      return 'hours'.tr(args: [difference.inHours.toString(), '']);
-    } else if (difference.inMinutes > 0) {
-      return 'minutes'.tr(args: [difference.inMinutes.toString()]);
-    } else {
-      return null;
-    }
-  }
+  String? _formatEstimatedDate(DateTime date) => formatRemainingTime(date);
 
   Future<void> _showAddToQueueDialog(
     BuildContext context,

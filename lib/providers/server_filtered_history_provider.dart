@@ -109,8 +109,7 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
   Future<void> _loadTransactionsWithFilters() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      // ignore: avoid_print
-      print('❌ [GECKO DEBUG] No network connection');
+      log.e('❌ [GECKO DEBUG] No network connection');
       state = state.copyWith(error: 'No network connection');
       return;
     }

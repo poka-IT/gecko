@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
@@ -139,8 +140,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
       }
     } catch (e) {
       // Log error but don't block the migration completion
-      // ignore: avoid_print
-      print('🚨 Error recreating wallets in existing safe: $e');
+      log.e('🚨 Error recreating wallets in existing safe: $e');
     }
   }
 

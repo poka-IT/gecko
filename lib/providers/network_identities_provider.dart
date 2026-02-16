@@ -281,8 +281,7 @@ class ServerFilteredNetworkIdentitiesNotifier extends Notifier<NetworkIdentities
   Future<void> _loadNetworkIdentitiesWithFilters() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      // ignore: avoid_print
-      print('❌ [IDENTITY DEBUG] No network connection');
+      log.e('❌ [IDENTITY DEBUG] No network connection');
       state = state.copyWith(error: 'No network connection');
       return;
     }
@@ -392,9 +391,7 @@ class ServerFilteredNetworkIdentitiesNotifier extends Notifier<NetworkIdentities
         );
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ [IDENTITY DEBUG] Error in loadMore: $e');
-      log.e('Error loading more network identities: $e');
+      log.e('❌ Error loading more network identities: $e');
       state = state.copyWith(isLoading: false);
     }
   }

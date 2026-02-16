@@ -156,8 +156,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // 3. Clear G1WalletsList cache (search results)
       await g1WalletsBox.clear();
 
-      // ignore: avoid_print
-      print('🔔 Cleaned up Duniter subscriptions and caches');
+      log.d('🔔 Cleaned up Duniter subscriptions and caches');
     } catch (e) {
       log.w('Error during subscription cleanup: $e');
     }
@@ -233,8 +232,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _refreshBlockHeightProvider() {
     try {
       ref.invalidate(blockHeightProvider);
-      // ignore: avoid_print
-      print('🔔 BlockHeightProvider refreshed after node change');
+      log.d('🔔 BlockHeightProvider refreshed after node change');
     } catch (e) {
       log.w('Error refreshing BlockHeightProvider: $e');
     }

@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,7 +43,7 @@ final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance,
     },
     onCancel: () async {
       // When no one is listening anymore, clean up the subscription
-      print('🗑️ Balance stream cancelled for $address');
+      log.d('🗑️ Balance stream cancelled');
       await subscription?.cancel();
       subscription = null;
     },
@@ -96,7 +94,7 @@ final persistentBalanceStreamProvider = StreamProvider.family<d.WalletBalance, S
     },
     onCancel: () async {
       // When no one is listening anymore, clean up the subscription
-      print('🗑️ Persistent balance stream cancelled for $address');
+      log.d('🗑️ Persistent balance stream cancelled');
       await subscription?.cancel();
       subscription = null;
     },
@@ -104,7 +102,7 @@ final persistentBalanceStreamProvider = StreamProvider.family<d.WalletBalance, S
 
   // Clean up when the provider is disposed (only when app closes)
   ref.onDispose(() async {
-    print('🗑️ Persistent balance stream disposed for $address');
+    log.d('🗑️ Persistent balance stream disposed');
     await subscription?.cancel();
     await controller.close();
   });
@@ -164,7 +162,7 @@ final certificationStreamProvider = StreamProvider.family.autoDispose<d.Certific
     },
     onCancel: () async {
       // When no one is listening anymore, clean up the subscription
-      print('🗑️ Certification stream cancelled for $address');
+      log.d('🗑️ Certification stream cancelled');
       await subscription?.cancel();
       subscription = null;
     },
@@ -172,7 +170,7 @@ final certificationStreamProvider = StreamProvider.family.autoDispose<d.Certific
 
   // Clean up when the provider is disposed
   ref.onDispose(() async {
-    print('🗑️ Certification stream disposed for $address');
+    log.d('🗑️ Certification stream disposed');
     await subscription?.cancel();
     await controller.close();
   });
@@ -216,7 +214,7 @@ final persistentCertificationStreamProvider = StreamProvider.family<d.Certificat
     },
     onCancel: () async {
       // When no one is listening anymore, clean up the subscription
-      print('🗑️ Persistent certification stream cancelled for $address');
+      log.d('🗑️ Persistent certification stream cancelled');
       await subscription?.cancel();
       subscription = null;
     },
@@ -224,7 +222,7 @@ final persistentCertificationStreamProvider = StreamProvider.family<d.Certificat
 
   // Clean up when the provider is disposed (only when app closes)
   ref.onDispose(() async {
-    print('🗑️ Persistent certification stream disposed for $address');
+    log.d('🗑️ Persistent certification stream disposed');
     await subscription?.cancel();
     await controller.close();
   });
@@ -287,7 +285,7 @@ final idtyStatusStreamProvider = StreamProvider.family.autoDispose<d.IdtyStatus,
     },
     onCancel: () async {
       // When no one is listening anymore, clean up the subscription
-      print('🗑️ Identity status stream cancelled for $address');
+      log.d('🗑️ Identity status stream cancelled');
       await subscription?.cancel();
       subscription = null;
     },
@@ -295,7 +293,7 @@ final idtyStatusStreamProvider = StreamProvider.family.autoDispose<d.IdtyStatus,
 
   // Clean up when the provider is disposed
   ref.onDispose(() async {
-    print('🗑️ Identity status stream disposed for $address');
+    log.d('🗑️ Identity status stream disposed');
     await subscription?.cancel();
     await controller.close();
   });
@@ -339,7 +337,7 @@ final persistentIdtyStatusStreamProvider = StreamProvider.family<d.IdtyStatus, S
     },
     onCancel: () async {
       // When no one is listening anymore, clean up the subscription
-      print('🗑️ Persistent identity status stream cancelled for $address');
+      log.d('🗑️ Persistent identity status stream cancelled');
       await subscription?.cancel();
       subscription = null;
     },
@@ -347,7 +345,7 @@ final persistentIdtyStatusStreamProvider = StreamProvider.family<d.IdtyStatus, S
 
   // Clean up when the provider is disposed (only when app closes)
   ref.onDispose(() async {
-    print('🗑️ Persistent identity status stream disposed for $address');
+    log.d('🗑️ Persistent identity status stream disposed');
     await subscription?.cancel();
     await controller.close();
   });

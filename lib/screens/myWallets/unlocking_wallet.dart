@@ -260,8 +260,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       }
 
       // Log error for debugging
-      // ignore: avoid_print
-      print('🔴 Unlock error: $errorMessage');
+      log.e('🔴 Unlock error: $errorMessage');
 
       // For invalid PIN, just trigger the existing UI feedback
       if (isInvalidPin) {
@@ -302,8 +301,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           final _ = ref.read(durtProvider).storage;
           isStorageReady = true;
         } catch (e) {
-          // ignore: avoid_print
-          print('🔴 Storage service not ready yet: $e');
+          log.e('🔴 Storage service not ready yet: $e');
         }
       }
 
@@ -316,8 +314,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     }
 
     if (!isDurtConnected || !isStorageReady) {
-      // ignore: avoid_print
-      print(
+      log.e(
         '🔴 System not fully ready after 2 seconds, continuing anyway (Durt: $isDurtConnected, Storage: $isStorageReady)',
       );
     }

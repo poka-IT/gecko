@@ -142,8 +142,7 @@ class TrmDataNotifier extends Notifier<AsyncValue<TrmData>> {
 
       state = AsyncValue.data(trmData);
 
-      // ignore: avoid_print
-      print(
+      log.d(
         'TRM data loaded: M=${(moneySupply.toDouble() / 100).toStringAsFixed(0)} G1 ($moneySupply centimes), N=$membersCount, M/N=${trmData.moneyOverMembersRatio.toStringAsFixed(2)} G1/member',
       );
     } catch (error, stackTrace) {

@@ -297,8 +297,7 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
   Future<void> _loadNetworkCertificationsWithFilters() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      // ignore: avoid_print
-      print('❌ [CERTIFICATION DEBUG] No network connection');
+      log.e('❌ [CERTIFICATION DEBUG] No network connection');
       state = state.copyWith(error: 'No network connection');
       return;
     }
@@ -410,9 +409,7 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
         );
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('❌ [CERTIFICATION DEBUG] Error in loadMore: $e');
-      log.e('Error loading more network certifications: $e');
+      log.e('❌ Error loading more network certifications: $e');
       state = state.copyWith(isLoading: false);
     }
   }

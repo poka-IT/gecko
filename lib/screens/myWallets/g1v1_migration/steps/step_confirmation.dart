@@ -306,8 +306,9 @@ class StepConfirmation extends ConsumerWidget {
       targetWallet.imagePath = 'assets/avatars/${targetWallet.number % 4}.png';
       await walletService.walletBox.putAsync(targetWallet);
 
-      // Reload wallets
+      // Reload wallets and invalidate safe data to include the new wallet
       await ref.read(walletsListProvider.notifier).loadWallets();
+      ref.read(walletActionsProvider.notifier).invalidateProviders();
 
       targetAddress = targetWallet.address;
     } else {

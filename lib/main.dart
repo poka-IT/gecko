@@ -102,6 +102,10 @@ Future<void> main() async {
   await appInfoService.init();
   appVersion = appInfoService.appVersion;
 
+  // Read user's language preference
+  final savedLocale = configBox.get('localeOverride');
+  final startLocale = savedLocale != null ? Locale(savedLocale) : null;
+
   if (kReleaseMode && enableSentry) {
     await SentryService.init(
       dsn: 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110',
@@ -111,6 +115,7 @@ Future<void> main() async {
             supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
             path: 'assets/translations',
             fallbackLocale: const Locale('en'),
+            startLocale: startLocale,
             child: const Gecko(),
           ),
         );
@@ -122,10 +127,10 @@ Future<void> main() async {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
       runApp(
         EasyLocalization(
-          // test, force locale :: startLocale: Locale.fromSubtags(languageCode: 'it'),
           supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
           path: 'assets/translations',
           fallbackLocale: const Locale('en'),
+          startLocale: startLocale,
           child: const Gecko(),
         ),
       );

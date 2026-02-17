@@ -22,7 +22,6 @@ class WalletTileMembre extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final freshWallet = ref.watch(walletByAddressProvider(wallet.address)) ?? wallet;
     final currentSafe = ref.watch(currentSafeNumberProvider);
-    const isHighlighted = true;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(52), vertical: scaleSize(15)),
@@ -92,9 +91,7 @@ class WalletTileMembre extends ConsumerWidget {
                   Container(
                     height: scaleSize(72), // Fixed height to prevent layout shift
                     decoration: BoxDecoration(
-                      color: isHighlighted
-                          ? context.colorScheme.primary.withValues(alpha: 0.9)
-                          : context.colorScheme.secondary.withValues(alpha: 0.9),
+                      color: context.colorScheme.primary.withValues(alpha: 0.9),
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(12),
                         bottomRight: Radius.circular(12),
@@ -110,22 +107,14 @@ class WalletTileMembre extends ConsumerWidget {
                             NameByAddress(
                               wallet: freshWallet,
                               size: 16,
-                              color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
+                              color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
                             ScaledSizedBox(height: 4),
-                            Balance(
-                              address: freshWallet.address,
-                              size: 14,
-                              color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
-                            ),
+                            Balance(address: freshWallet.address, size: 14, color: Colors.white),
                           ],
                         ),
-                        Certifications(
-                          address: freshWallet.address,
-                          color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
-                          size: 15,
-                        ),
+                        Certifications(address: freshWallet.address, color: Colors.white, size: 15),
                       ],
                     ),
                   ),

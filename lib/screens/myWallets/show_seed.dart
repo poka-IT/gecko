@@ -7,7 +7,6 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/security_providers.dart';
-import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';

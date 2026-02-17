@@ -426,6 +426,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
+                // Language setting
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                    child: chooseLanguage(context),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
                 // Text size setting
                 Container(
                   decoration: BoxDecoration(
@@ -1810,6 +1831,82 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
           ),
+      ],
+    );
+  }
+
+  Widget chooseLanguage(BuildContext context) {
+    final currentLocale = context.locale;
+    final isSystemLocale = configBox.get('localeOverride') == null;
+
+    final languages = <String?, (String, String)>{
+      null: ('systemLanguage'.tr(), '🌐'),
+      'en': ('English', '🇬🇧'),
+      'fr': ('Français', '🇫🇷'),
+      'es': ('Español', '🇪🇸'),
+      'it': ('Italiano', '🇮🇹'),
+    };
+
+    final currentKey = isSystemLocale ? null : currentLocale.languageCode;
+    final currentLabel = languages[currentKey]?.$1 ?? languages[null]!.$1;
+    final currentFlag = languages[currentKey]?.$2 ?? languages[null]!.$2;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'language'.tr(),
+          style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+        ),
+        ScaledSizedBox(height: 8),
+        PopupMenuButton<String?>(
+          onSelected: (String? langCode) {
+            if (langCode == null) {
+              configBox.delete('localeOverride');
+              context.resetLocale();
+            } else {
+              configBox.put('localeOverride', langCode);
+              context.setLocale(Locale(langCode));
+            }
+            setState(() {});
+          },
+          itemBuilder: (BuildContext ctx) {
+            return languages.entries.map((entry) {
+              final langCode = entry.key;
+              final label = entry.value.$1;
+              final flag = entry.value.$2;
+              final isSelected = langCode == currentKey;
+              return PopupMenuItem<String?>(
+                value: langCode,
+                child: Row(
+                  children: [
+                    Text(flag, style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(label)),
+                    if (isSelected) Icon(Icons.check, color: context.colorScheme.primary, size: 20),
+                  ],
+                ),
+              );
+            }).toList();
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(10)),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.language, color: context.colorScheme.primary, size: scaleSize(20)),
+                SizedBox(width: scaleSize(8)),
+                Text('$currentFlag $currentLabel', style: scaledTextStyle(fontSize: 14)),
+                SizedBox(width: scaleSize(4)),
+                Icon(Icons.arrow_drop_down, color: Theme.of(context).textTheme.bodyMedium?.color),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

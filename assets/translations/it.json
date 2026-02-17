@@ -780,5 +780,7 @@
     "migration_confirm_balance_label": "Saldo",
     "migration_confirm_identity_label": "Identità",
     "migration_confirm_warning": "Questa operazione è irreversibile. Le tue vecchie credenziali Cesium smetteranno di funzionare dopo la migrazione.",
-    "migration_confirm_button": "Conferma migrazione"
+    "migration_confirm_button": "Conferma migrazione",
+    "language": "Lingua",
+    "systemLanguage": "Sistema (auto)"
 }

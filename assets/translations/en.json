@@ -812,5 +812,7 @@
     "migration_confirm_balance_label": "Balance",
     "migration_confirm_identity_label": "Identity",
     "migration_confirm_warning": "This operation is irreversible. Your old Cesium credentials will stop working after migration.",
-    "migration_confirm_button": "Confirm migration"
+    "migration_confirm_button": "Confirm migration",
+    "language": "Language",
+    "systemLanguage": "System (auto)"
 }

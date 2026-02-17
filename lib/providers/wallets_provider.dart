@@ -418,6 +418,7 @@ class WalletActionsNotifier extends Notifier<void> {
       ref.invalidate(hybridCertificationProvider);
       ref.invalidate(smartAccountConsumersProvider);
       // Identity & certification providers
+      ref.invalidate(idtyWalletAsyncProvider);
       ref.invalidate(effectiveCertificationWalletProvider);
       ref.invalidate(selectedCertificationWalletProvider);
       ref.invalidate(certStateProvider);

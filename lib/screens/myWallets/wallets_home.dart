@@ -207,11 +207,19 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
         // Data is ready, render the UI with correct wallet separation
         // Balance/Certification widgets will show shimmer while their data loads
         final allWallets = walletsState.wallets;
-        final walletsWithoutIdty = idtyWallet != null
-            ? allWallets.where((w) => w.address != idtyWallet.address).toList()
+
+        // Validate that the identity wallet belongs to the current safe.
+        // During safe switches, a stale cached value from the previous safe
+        // can briefly be returned before the provider rebuilds.
+        final validIdtyWallet = (idtyWallet != null && allWallets.any((w) => w.address == idtyWallet.address))
+            ? idtyWallet
+            : null;
+
+        final walletsWithoutIdty = validIdtyWallet != null
+            ? allWallets.where((w) => w.address != validIdtyWallet.address).toList()
             : allWallets;
 
-        return _buildWalletsContent(context, ref, currentSafe, allWallets, idtyWallet, walletsWithoutIdty, nTule);
+        return _buildWalletsContent(context, ref, currentSafe, allWallets, validIdtyWallet, walletsWithoutIdty, nTule);
       },
       loading: () {
         // Show wallets immediately with shimmer placeholders for balances

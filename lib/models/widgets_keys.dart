@@ -121,5 +121,12 @@ const keyMnemonicChallengeConfirm = Key('keyMnemonicChallengeConfirm');
 const keyMnemonicChallengeClose = Key('keyMnemonicChallengeClose');
 Key keyMnemonicChallengeChip(int wordNumber) => ValueKey('keyMnemonicChallengeChip$wordNumber');
 
+// G1v1 Migration flow
+const keyMigrationIntroContinue = Key('keyMigrationIntroContinue');
+const keyMigrationCredentialsContinue = Key('keyMigrationCredentialsContinue');
+const keyMigrationDestinationContinue = Key('keyMigrationDestinationContinue');
+const keyMigrationConfirmButton = Key('keyMigrationConfirmButton');
+const keyMigrationCreateNewWallet = Key('keyMigrationCreateNewWallet');
+
 // Cesium profile view
 const keyViewProfile = Key('keyViewProfile');

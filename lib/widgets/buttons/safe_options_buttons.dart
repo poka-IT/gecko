@@ -5,7 +5,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
-import 'package:gecko/screens/myWallets/migrate_g1v1_screen.dart';
+import 'package:gecko/screens/myWallets/g1v1_migration/g1v1_migration_flow.dart';
 
 class SafeOptionsButtons extends StatelessWidget {
   const SafeOptionsButtons({super.key});
@@ -59,7 +59,7 @@ class SafeOptionsButtons extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) {
-                    return const MigrateG1v1();
+                    return const G1v1MigrationFlow();
                   },
                 ),
               );

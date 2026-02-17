@@ -5,7 +5,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
-import 'package:gecko/screens/myWallets/migrate_g1v1_screen.dart';
+import 'package:gecko/screens/myWallets/g1v1_migration/g1v1_migration_flow.dart';
 
 /// Shows a bottom sheet with safe management options
 void showSafeOptionsMenu(BuildContext context) {
@@ -54,7 +54,7 @@ void showSafeOptionsMenu(BuildContext context) {
               ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const MigrateG1v1()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const G1v1MigrationFlow()));
               },
             ),
             SizedBox(height: 24 + bottomPadding),

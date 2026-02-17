@@ -44,6 +44,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   bool canUnlock = true;
   late final TextEditingController enterPin;
   late final FocusNode pinFocus;
+  late final PinInputController _pinController;
   final CarouselSliderController carouselController = CarouselSliderController();
 
   // Biometric state tracking
@@ -60,6 +61,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNode');
     enterPin = TextEditingController();
+    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
     _initializeSafes();
 
     // Initialize security state and trigger automatic biometric authentication after widget build
@@ -910,6 +912,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   @override
   void dispose() {
     _securityCountdownTimer?.cancel();
+    _pinController.dispose();
     super.dispose();
   }
 
@@ -926,47 +929,34 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     return Form(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: scaleSize(3), horizontal: scaleSize(isTall ? 30 : 20)),
-        child: PinCodeTextField(
+        child: MaterialPinField(
           key: keyPinForm,
           textCapitalization: TextCapitalization.characters,
-          focusNode: pinFocus,
+          pinController: _pinController,
           autoFocus: shouldAutoFocus,
           enabled: isFieldEnabled,
-          appContext: context,
-          pastedTextStyle: scaledTextStyle(color: Colors.green.shade600, fontWeight: FontWeight.bold),
           length: pinLenght,
           obscureText: true,
-          obscuringCharacter: '●',
-          animationType: AnimationType.fade,
-          animationDuration: const Duration(milliseconds: 150),
-          useHapticFeedback: true,
-          validator: (v) {
-            if (v!.length < pinLenght) {
-              return "yourPasswordLengthIsX".tr(args: [pinLenght.toString()]);
-            } else {
-              return null;
-            }
-          },
-          pinTheme: PinTheme(
-            shape: PinCodeFieldShape.box,
+          enableHapticFeedback: true,
+          theme: MaterialPinTheme(
+            shape: MaterialPinShape.outlined,
             borderRadius: BorderRadius.circular(12),
-            fieldHeight: scaleSize(50),
-            fieldWidth: scaleSize(50),
-            activeFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
-            selectedFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
-            inactiveFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
-            activeColor: isFieldEnabled ? pinColor : Colors.grey,
-            selectedColor: isFieldEnabled ? context.colorScheme.primary : Colors.grey,
-            inactiveColor: Colors.grey[300],
+            cellSize: Size(scaleSize(50), scaleSize(50)),
+            filledFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
+            focusedFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
+            fillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
+            filledBorderColor: isFieldEnabled ? pinColor : Colors.grey,
+            focusedBorderColor: isFieldEnabled ? context.colorScheme.primary : Colors.grey,
+            borderColor: Colors.grey[300],
             borderWidth: 1.5,
+            entryAnimation: MaterialPinAnimation.fade,
+            animationDuration: const Duration(milliseconds: 150),
+            obscuringCharacter: '●',
+            showCursor: !kDebugMode,
+            cursorColor: context.colorScheme.primary,
+            cursorHeight: 25,
+            textStyle: scaledTextStyle(fontSize: 24, height: 1.6, fontWeight: FontWeight.w600),
           ),
-          enableActiveFill: true,
-          showCursor: !kDebugMode,
-          cursorColor: context.colorScheme.primary,
-          cursorHeight: 25,
-          textStyle: scaledTextStyle(fontSize: 24, height: 1.6, fontWeight: FontWeight.w600),
-          backgroundColor: Colors.transparent,
-          controller: enterPin,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onCompleted: (pin) => _handlePinCompletion(pin),

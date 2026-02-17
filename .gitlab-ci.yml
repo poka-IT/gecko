@@ -20,7 +20,7 @@ default:
   interruptible: true
 
 variables:
-  FLUTTER_VERSION: "3.38.9"
+  FLUTTER_VERSION: "3.41.1"
 
 # Base job for Flutter environment (optimized with pre-installed dependencies)
 .flutter_env:

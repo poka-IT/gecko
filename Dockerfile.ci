@@ -2,10 +2,10 @@
 # Pre-installs all dependencies to speed up CI builds
 # Based on analysis of .gitlab-ci.yml jobs
 
-FROM ghcr.io/cirruslabs/flutter:3.38.9
+FROM ghcr.io/cirruslabs/flutter:3.41.1
 
 # Set environment variables
-ENV FLUTTER_VERSION=3.38.9
+ENV FLUTTER_VERSION=3.41.1
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update package lists

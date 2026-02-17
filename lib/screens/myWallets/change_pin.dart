@@ -24,6 +24,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   final formKey = GlobalKey<FormState>();
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
+  late final PinInputController _pinController;
   Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
 
@@ -32,6 +33,13 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNodeChange');
     enterPin = TextEditingController();
+    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
+  }
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
   }
 
   @override
@@ -70,35 +78,25 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
         child: Column(
           children: [
-            PinCodeTextField(
-              focusNode: pinFocus,
+            MaterialPinField(
+              pinController: _pinController,
               autoFocus: true,
-              appContext: context,
               length: pinLength,
               obscureText: true,
-              obscuringCharacter: '*',
-              animationType: AnimationType.fade,
-              validator: (v) {
-                if (v!.isEmpty || v.length == pinLength) {
-                  if (!isPinComplex(v)) {
-                    return "passwordTooSimple".tr();
-                  }
-                }
-                return null;
-              },
-              pinTheme: PinTheme(
-                shape: PinCodeFieldShape.box,
+              theme: MaterialPinTheme(
+                shape: MaterialPinShape.outlined,
                 borderRadius: BorderRadius.circular(5),
-                fieldHeight: 47,
-                fieldWidth: 47,
-                activeColor: pinColor,
+                cellSize: const Size(47, 47),
+                focusedBorderColor: pinColor,
+                filledBorderColor: pinColor,
                 errorBorderColor: Colors.red,
                 borderWidth: 4,
+                entryAnimation: MaterialPinAnimation.fade,
+                obscuringCharacter: '*',
+                cursorColor: Colors.black,
               ),
-              cursorColor: Colors.black,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              controller: enterPin,
               onCompleted: (pin) async {
                 if (isPinComplex(pin)) {
                   Navigator.push(
@@ -118,12 +116,10 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                 }
               },
               onChanged: (value) {
-                if (formKey.currentState!.validate()) {
-                  setState(() {
-                    hasError = false;
-                    pinColor = const Color(0xFFA4B600);
-                  });
-                }
+                setState(() {
+                  hasError = false;
+                  pinColor = const Color(0xFFA4B600);
+                });
               },
             ),
             if (hasError) ...[

@@ -26,6 +26,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
   final formKey = GlobalKey<FormState>();
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
+  late final PinInputController _pinController;
   Color? pinColor = const Color(0xFFA4B600);
   bool hasError = false;
   bool isPinLoading = false;
@@ -35,6 +36,13 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNodeConfirm');
     enterPin = TextEditingController();
+    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
+  }
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
   }
 
   @override
@@ -74,26 +82,24 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
       key: formKey,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
-        child: PinCodeTextField(
-          focusNode: pinFocus,
+        child: MaterialPinField(
+          pinController: _pinController,
           autoFocus: true,
-          appContext: context,
           length: pinLength,
           obscureText: true,
-          obscuringCharacter: '*',
-          animationType: AnimationType.fade,
-          pinTheme: PinTheme(
-            shape: PinCodeFieldShape.box,
+          theme: MaterialPinTheme(
+            shape: MaterialPinShape.outlined,
             borderRadius: BorderRadius.circular(5),
-            fieldHeight: 47,
-            fieldWidth: 47,
-            activeColor: pinColor,
+            cellSize: const Size(47, 47),
+            focusedBorderColor: pinColor,
+            filledBorderColor: pinColor,
             borderWidth: 4,
+            entryAnimation: MaterialPinAnimation.fade,
+            obscuringCharacter: '*',
+            cursorColor: Colors.black,
           ),
-          cursorColor: Colors.black,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          controller: enterPin,
           onCompleted: (pin) async {
             if (pin == widget.newPinCode) {
               setState(() {

@@ -54,6 +54,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   bool hasError = false;
   late final FocusNode pinFocus;
   late final TextEditingController enterPin;
+  late final PinInputController _pinController;
 
   /// Blocks back navigation while safe creation/scan is in progress.
   bool _isProcessing = false;
@@ -70,9 +71,16 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     super.initState();
     pinFocus = FocusNode(debugLabel: 'pinFocusNode10');
     enterPin = TextEditingController();
+    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(resetScanProvider)();
     });
+  }
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
   }
 
   // ---------------------------------------------------------------------------
@@ -480,47 +488,31 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       key: formKey,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
-        child: PinCodeTextField(
+        child: MaterialPinField(
           key: keyPinForm,
           textCapitalization: TextCapitalization.characters,
-          focusNode: pinFocus,
+          pinController: _pinController,
           autoFocus: true,
-          appContext: context,
-          pastedTextStyle: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.bold),
           length: pinLenght,
           obscureText: true,
-          obscuringCharacter: '*',
-          useHapticFeedback: true,
-          animationType: AnimationType.slide,
-          animationDuration: const Duration(milliseconds: 40),
-          validator: (v) {
-            if (v!.length < pinLenght) {
-              return "yourPasswordLengthIsX".tr(args: [pinLenght.toString()]);
-            } else {
-              return null;
-            }
-          },
-          pinTheme: PinTheme(
-            activeColor: pinColor,
+          enableHapticFeedback: true,
+          theme: MaterialPinTheme(
+            focusedBorderColor: pinColor,
+            filledBorderColor: pinColor,
             borderWidth: 4,
-            shape: PinCodeFieldShape.box,
+            shape: MaterialPinShape.outlined,
             borderRadius: BorderRadius.circular(5),
-            fieldHeight: scaleSize(47),
-            fieldWidth: scaleSize(47),
-            activeFillColor: Colors.black,
+            cellSize: Size(scaleSize(47), scaleSize(47)),
+            entryAnimation: MaterialPinAnimation.slide,
+            animationDuration: const Duration(milliseconds: 40),
+            obscuringCharacter: '*',
+            showCursor: !kDebugMode,
+            cursorColor: Colors.black,
+            textStyle: const TextStyle(fontSize: 24, height: 1.6),
+            boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
           ),
-          showCursor: !kDebugMode,
-          cursorColor: Colors.black,
-          textStyle: const TextStyle(fontSize: 24, height: 1.6),
-          backgroundColor: homeContext.colorScheme.surface,
-          enableActiveFill: false,
-          controller: enterPin,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          beforeTextPaste: (text) {
-            return text != null && text.contains(RegExp(r'^[0-9]+$'));
-          },
-          boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
           onCompleted: (pin) async {
             PinCodeService.pinCode = pin.toUpperCase();
             ref.read(pinStateProvider.notifier).setPinLength(pinLenght);

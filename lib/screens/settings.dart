@@ -1835,21 +1835,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  static const _systemLocaleKey = 'system';
+
   Widget chooseLanguage(BuildContext context) {
     final currentLocale = context.locale;
     final isSystemLocale = configBox.get('localeOverride') == null;
 
-    final languages = <String?, (String, String)>{
-      null: ('systemLanguage'.tr(), '🌐'),
+    final languages = <String, (String, String)>{
+      _systemLocaleKey: ('systemLanguage'.tr(), '🌐'),
       'en': ('English', '🇬🇧'),
       'fr': ('Français', '🇫🇷'),
       'es': ('Español', '🇪🇸'),
       'it': ('Italiano', '🇮🇹'),
     };
 
-    final currentKey = isSystemLocale ? null : currentLocale.languageCode;
-    final currentLabel = languages[currentKey]?.$1 ?? languages[null]!.$1;
-    final currentFlag = languages[currentKey]?.$2 ?? languages[null]!.$2;
+    final currentKey = isSystemLocale ? _systemLocaleKey : currentLocale.languageCode;
+    final currentLabel = languages[currentKey]?.$1 ?? languages[_systemLocaleKey]!.$1;
+    final currentFlag = languages[currentKey]?.$2 ?? languages[_systemLocaleKey]!.$2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1859,9 +1861,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
         ),
         ScaledSizedBox(height: 8),
-        PopupMenuButton<String?>(
-          onSelected: (String? langCode) {
-            if (langCode == null) {
+        PopupMenuButton<String>(
+          onSelected: (String langCode) {
+            if (langCode == _systemLocaleKey) {
               configBox.delete('localeOverride');
               context.resetLocale();
             } else {
@@ -1876,7 +1878,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final label = entry.value.$1;
               final flag = entry.value.$2;
               final isSelected = langCode == currentKey;
-              return PopupMenuItem<String?>(
+              return PopupMenuItem<String>(
                 value: langCode,
                 child: Row(
                   children: [

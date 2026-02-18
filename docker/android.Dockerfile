@@ -19,8 +19,8 @@ RUN git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION --depth
     flutter config --no-analytics && \
     flutter precache --android
 
-# Android SDK: only the components needed by build.gradle
-# ndkVersion "28.2.13676358", compileSdk=flutter.compileSdkVersion, build-tools 34
+# Android SDK: cmdline-tools + platforms + build-tools
+# NDK is auto-downloaded by AGP during first build (version from build.gradle)
 RUN mkdir -p $ANDROID_SDK_ROOT/cmdline-tools && \
     wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip && \
     unzip -q /tmp/cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools && \
@@ -28,7 +28,6 @@ RUN mkdir -p $ANDROID_SDK_ROOT/cmdline-tools && \
     rm /tmp/cmdline-tools.zip && \
     yes | sdkmanager --licenses && \
     sdkmanager \
-        "ndk;28.2.13676358" \
         "platforms;android-35" \
         "build-tools;35.0.0" && \
     rm -rf $ANDROID_SDK_ROOT/.temp

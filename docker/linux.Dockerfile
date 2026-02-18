@@ -19,7 +19,7 @@ RUN FLUTTER_VERSION=$(cat /tmp/.fvmrc | grep -o '"flutter": "[^"]*"' | cut -d'"'
   && echo "Installing Flutter version: $FLUTTER_VERSION" \
   && git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION --depth 1 /opt/flutter \
   && flutter config --no-analytics \
-  && flutter precache --linux-desktop \
+  && flutter precache --linux \
   && rm /tmp/.fvmrc
 
 WORKDIR /workspace

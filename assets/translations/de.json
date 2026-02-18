@@ -818,5 +818,6 @@
     "anAutoNodeChoosed": "",
     "rootWallet": "",
     "youCannotMigrateThisIdentity": "",
-    "showUdAmounts": ""
+    "showUdAmounts": "",
+    "indexer": ""
 }

@@ -78,6 +78,20 @@ Then, check this script and launch it:
 
 You can contribute to translation of the app via our weblate: https://translate.nikoserveur.com/projects/gecko/
 
+#### Integrating Weblate translations
+
+Weblate pushes translations to the `weblate` branch. To integrate them into `master`:
+
+```bash
+# 1. Create a PR branch, merge weblate into it, and push
+./scripts/integrate-weblate.sh
+
+# 2. Review and merge the PR into master
+
+# 3. After merge: delete the remote weblate branch so Weblate recreates it from updated master
+./scripts/integrate-weblate.sh --cleanup
+```
+
 ### Unit tests
 
 Run unit tests with:

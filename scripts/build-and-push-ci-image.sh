@@ -23,7 +23,11 @@ build_and_push() {
     fi
 
     echo "Building ${image}..."
-    docker build --provenance=false -f "$dockerfile" -t "${image}:latest" .
+    local provenance_flag=""
+    if docker buildx version &>/dev/null; then
+        provenance_flag="--provenance=false"
+    fi
+    docker build $provenance_flag -f "$dockerfile" -t "${image}:latest" .
     docker push "${image}:latest"
     echo "Pushed ${image}:latest"
     echo ""

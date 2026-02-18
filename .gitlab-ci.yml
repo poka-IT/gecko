@@ -323,7 +323,8 @@ build:linux:
     - flutter build linux --release --build-name=$VERSION --build-number=$BUILD --verbose
     # Package artifacts
     - mkdir -p artifacts/linux
-    - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux.tar.gz" -C build/linux/x64/release/bundle .
+    - ARCH=$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')
+    - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux.tar.gz" -C build/linux/$ARCH/release/bundle .
 
     # Store job ID for forum publishing
     - echo "$CI_JOB_ID" > artifacts/linux_job_id.txt

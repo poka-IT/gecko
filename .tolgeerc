@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.tolgee.io/cli-schema.json",
+  "apiUrl": "https://translate.axiom-team.fr",
+  "projectId": 35,
+  "push": {
+    "files": [
+      { "path": "./assets/translations/fr.json", "language": "fr" },
+      { "path": "./assets/translations/en.json", "language": "en" },
+      { "path": "./assets/translations/es.json", "language": "es" },
+      { "path": "./assets/translations/de.json", "language": "de" },
+      { "path": "./assets/translations/it.json", "language": "it" }
+    ],
+    "forceMode": "KEEP",
+    "convertPlaceholdersToIcu": false
+  },
+  "format": "JSON_ICU",
+  "pull": {
+    "path": "./assets/translations",
+    "delimiter": "",
+    "fileStructureTemplate": "{snakeLanguageTag}.json"
+  }
+}

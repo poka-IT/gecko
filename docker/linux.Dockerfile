@@ -7,7 +7,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/flutter/bin:${PATH}"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git unzip xz-utils zip libglu1-mesa clang lld cmake ninja-build pkg-config \
+    curl git unzip xz-utils zip libglu1-mesa clang llvm lld cmake ninja-build pkg-config \
     libgtk-3-dev liblzma-dev libstdc++-9-dev libasound2-dev libpulse-dev \
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev \
     libgstreamer-plugins-bad1.0-dev libsecret-1-dev libcurl4-openssl-dev openjdk-11-jdk \

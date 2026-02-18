@@ -10,14 +10,14 @@ ENV PATH="/opt/flutter/bin:${PATH}"
 # llvm/lld: needed by Flutter's native assets system
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl git unzip xz-utils zip libglu1-mesa gnupg ca-certificates \
-    llvm lld cmake ninja-build pkg-config \
+    cmake ninja-build pkg-config \
     libgtk-3-dev liblzma-dev libstdc++-12-dev libasound2-dev libpulse-dev \
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev \
     libgstreamer-plugins-bad1.0-dev libsecret-1-dev libcurl4-openssl-dev openjdk-11-jdk \
   && curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm.gpg \
   && echo "deb [signed-by=/usr/share/keyrings/llvm.gpg] http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" \
      > /etc/apt/sources.list.d/llvm-17.list \
-  && apt-get update && apt-get install -y --no-install-recommends clang-17 \
+  && apt-get update && apt-get install -y --no-install-recommends clang-17 lld-17 llvm-17 \
   && ln -sf /usr/bin/clang-17 /usr/bin/clang \
   && ln -sf /usr/bin/clang++-17 /usr/bin/clang++ \
   && rm -rf /var/lib/apt/lists/* \

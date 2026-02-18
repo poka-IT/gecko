@@ -1,9 +1,11 @@
 # Gecko CI/CD Pipeline
 # Build and release for Android, iOS, and Linux Desktop
 #
-# OPTIMIZED VERSION: Uses custom Docker image from Docker Hub with pre-installed dependencies
-# To build and push: ./scripts/build-and-push-ci-image.sh <version>
-# Docker Hub: https://hub.docker.com/r/poka/gecko-ci
+# Specialized Docker images (build with: ./scripts/build-and-push-ci-image.sh)
+#   gecko-ci-format  (~300MB)  - Dart SDK only
+#   gecko-ci-android (~5GB)    - Flutter + Java 17 + Android SDK/NDK
+#   gecko-ci-deploy  (~400MB)  - Ruby + fastlane
+#   gecko-ci-publish (~150MB)  - Python + pydiscourse + git
 
 stages:
   - format
@@ -19,27 +21,10 @@ workflow:
 default:
   interruptible: true
 
-variables:
-  FLUTTER_VERSION: "3.41.1"
-
-# Base job for Flutter environment (optimized with pre-installed dependencies)
-.flutter_env:
-  image: poka/gecko-ci:latest # Custom image with all dependencies pre-installed
-  before_script:
-    - echo "Using optimized Flutter environment..."
-    - flutter --version
-    - ./scripts/setup-ci-dependencies.sh
-  tags:
-    - docker
-
-# Android-specific environment (optimized with pre-installed Java 17)
+# Android build environment
 .android_env:
-  image: poka/gecko-ci:latest # Custom image with Java 17 and Android tools pre-installed
-  variables:
-    JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+  image: poka/gecko-ci-android:latest
   before_script:
-    - echo "Using optimized Android build environment..."
-    - export PATH=$JAVA_HOME/bin:$PATH
     - java -version
     - flutter --version
     - ./scripts/setup-ci-dependencies.sh
@@ -49,13 +34,15 @@ variables:
 
 # Format check job
 format:
-  extends: .flutter_env
+  image: poka/gecko-ci-format:latest
   stage: format
   interruptible: false
   rules:
     - when: always
   script:
     - dart format --set-exit-if-changed lib
+  tags:
+    - docker
 
 # Build Android APKs (split by architecture) - Direct downloads
 build:android:apk:
@@ -88,7 +75,7 @@ build:android:apk:
     expire_in: 1 month
 
 publish:forum:apk:
-  image: poka/gecko-ci:latest
+  image: poka/gecko-ci-publish:latest
   stage: publish
   dependencies:
     - build:android:apk
@@ -105,9 +92,11 @@ publish:forum:apk:
     - git fetch --tags --unshallow || git fetch --tags
     - echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
     - python3 scripts/publish-forum.py
+  tags:
+    - docker
 
 publish:forum:complete:
-  image: poka/gecko-ci:latest
+  image: poka/gecko-ci-publish:latest
   stage: publish
   dependencies:
     - build:android:apk
@@ -135,6 +124,8 @@ publish:forum:complete:
     - git fetch --tags --unshallow || git fetch --tags
     - echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
     - python3 scripts/publish-forum.py
+  tags:
+    - docker
 
 # build:ios:
 #   stage: build
@@ -364,9 +355,9 @@ release:complete:
     - echo "Example git tag v0.2.20 && git push origin v0.2.20"
   needs: []
 
-# Deploy to Google Play Store (optimized with pre-installed fastlane)
+# Deploy to Google Play Store
 deploy:android:playstore:
-  extends: .android_env
+  image: poka/gecko-ci-deploy:latest
   stage: deploy
   dependencies:
     - build:android:bundle
@@ -376,10 +367,8 @@ deploy:android:playstore:
     - if: $CI_COMMIT_TAG =~ /^v/
       when: on_success # Automatique si le build Android réussit
     - when: never
-  before_script:
-    - echo "Using optimized deployment environment..."
-    - fastlane --version
   script:
+    - fastlane --version
     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
 
@@ -400,6 +389,8 @@ deploy:android:playstore:
         --skip_upload_changelogs
   after_script:
     - rm -f google-play-key.json
+  tags:
+    - docker
 
 # Deploy to App Store Connect
 # deploy:ios:appstore:

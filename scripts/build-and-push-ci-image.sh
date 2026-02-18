@@ -1,54 +1,40 @@
 #!/bin/bash
 
-# Script to build and push Gecko CI Docker image to Docker Hub
-# Usage: ./scripts/build-and-push-ci-image.sh <version>
-# Example: ./scripts/build-and-push-ci-image.sh 1.0.0
+# Build and push specialized Gecko CI Docker images to Docker Hub
+# Usage: ./scripts/build-and-push-ci-image.sh [image-name]
+# Examples:
+#   ./scripts/build-and-push-ci-image.sh          # Build all images
+#   ./scripts/build-and-push-ci-image.sh android   # Build only android image
+#   ./scripts/build-and-push-ci-image.sh format    # Build only format image
 
 set -e
 
-# Check if version argument is provided
-if [ -z "$1" ]; then
-    echo "❌ Error: Version number is required"
-    echo "Usage: $0 <version>"
-    echo "Example: $0 1.0.0"
-    exit 1
+REPO="poka"
+IMAGES=("format" "android" "deploy" "publish")
+
+build_and_push() {
+    local name="$1"
+    local image="${REPO}/gecko-ci-${name}"
+    local dockerfile="docker/${name}.Dockerfile"
+
+    if [ ! -f "$dockerfile" ]; then
+        echo "Error: $dockerfile not found"
+        exit 1
+    fi
+
+    echo "Building ${image}..."
+    docker build --provenance=false -f "$dockerfile" -t "${image}:latest" .
+    docker push "${image}:latest"
+    echo "Pushed ${image}:latest"
+    echo ""
+}
+
+if [ -n "$1" ]; then
+    build_and_push "$1"
+else
+    for img in "${IMAGES[@]}"; do
+        build_and_push "$img"
+    done
 fi
 
-VERSION="$1"
-IMAGE_NAME="poka/gecko-ci"
-FULL_IMAGE_NAME="${IMAGE_NAME}:${VERSION}"
-LATEST_IMAGE_NAME="${IMAGE_NAME}:latest"
-
-echo "🐳 Building Gecko CI Docker image..."
-echo "📦 Image: ${FULL_IMAGE_NAME}"
-echo "📦 Latest: ${LATEST_IMAGE_NAME}"
-
-# Build the Docker image using buildx for multi-platform support
-echo "🔨 Building Docker image..."
-docker buildx build \
-    --platform linux/amd64,linux/arm64 \
-    -f Dockerfile.ci \
-    -t "${FULL_IMAGE_NAME}" \
-    -t "${LATEST_IMAGE_NAME}" \
-    --push \
-    .
-
-echo "✅ Docker image built and pushed successfully!"
-echo "🚀 Image available at: https://hub.docker.com/r/${IMAGE_NAME}"
-echo ""
-echo "📋 To use this image in CI, update your .gitlab-ci.yml with:"
-echo "   image: ${FULL_IMAGE_NAME}"
-echo "   or"
-echo "   image: ${LATEST_IMAGE_NAME}"
-echo ""
-
-# Update the GitLab CI configuration
-echo "🔧 Updating .gitlab-ci.yml to use the new image..."
-
-# Replace gecko-ci:latest with the Docker Hub image
-sed -i.backup "s|gecko-ci:latest|${LATEST_IMAGE_NAME}|g" .gitlab-ci.yml
-
-echo "✅ GitLab CI configuration updated!"
-echo "📝 Backup saved as .gitlab-ci.yml.backup"
-echo ""
-echo "🎉 All done! Your CI will now use the optimized Docker image from Docker Hub."
+echo "Done!"

@@ -1,11 +1,11 @@
+# Gecko CI - Linux desktop builder
+# Used by: build:linux
+# Reads Flutter version from .fvmrc automatically
 FROM buildpack-deps:focal
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG TZ=Europe/Paris
-ENV TZ=${TZ}
 ENV PATH="/opt/flutter/bin:${PATH}"
 
-# paquets natifs (ceux de ton job)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl git unzip xz-utils zip libglu1-mesa clang cmake ninja-build pkg-config \
     libgtk-3-dev liblzma-dev libstdc++-9-dev libasound2-dev libpulse-dev \
@@ -13,14 +13,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgstreamer-plugins-bad1.0-dev libsecret-1-dev libcurl4-openssl-dev openjdk-11-jdk \
   && rm -rf /var/lib/apt/lists/*
 
-# Copier la config FVM pour récupérer la version Flutter
 COPY .fvmrc /tmp/.fvmrc
 
-# Installer la version Flutter spécifiée dans .fvmrc
 RUN FLUTTER_VERSION=$(cat /tmp/.fvmrc | grep -o '"flutter": "[^"]*"' | cut -d'"' -f4) \
   && echo "Installing Flutter version: $FLUTTER_VERSION" \
-  && git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION /opt/flutter \
-  && /opt/flutter/bin/flutter --version \
+  && git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION --depth 1 /opt/flutter \
+  && flutter config --no-analytics \
+  && flutter precache --linux-desktop \
   && rm /tmp/.fvmrc
 
 WORKDIR /workspace

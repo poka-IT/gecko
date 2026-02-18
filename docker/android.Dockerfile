@@ -17,8 +17,7 @@ RUN apt-get update -y && \
 # Flutter SDK
 RUN git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION --depth 1 /opt/flutter && \
     flutter config --no-analytics && \
-    flutter precache --android && \
-    rm -rf /opt/flutter/.git
+    flutter precache --android
 
 # Android SDK: only the components needed by build.gradle
 # ndkVersion "28.2.13676358", compileSdk=flutter.compileSdkVersion, build-tools 34

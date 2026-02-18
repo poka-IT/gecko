@@ -10,7 +10,7 @@
 set -e
 
 REPO="poka"
-IMAGES=("format" "android" "deploy" "publish")
+IMAGES=("format" "android" "linux" "deploy" "publish")
 
 build_and_push() {
     local name="$1"

@@ -40,7 +40,7 @@ format:
   rules:
     - when: always
   script:
-    - dart format --set-exit-if-changed lib
+    - dart format --line-length=120 --set-exit-if-changed lib
   tags:
     - docker
 

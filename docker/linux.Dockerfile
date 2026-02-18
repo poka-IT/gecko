@@ -1,14 +1,16 @@
 # Gecko CI - Linux desktop builder
 # Used by: build:linux
 # Reads Flutter version from .fvmrc automatically
-# Jammy (22.04) provides clang 14 which is needed for ARM64 crashpad/sentry-native compilation
 FROM buildpack-deps:jammy
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/flutter/bin:${PATH}"
 
+# clang/llvm/lld are needed by Flutter's native assets system
+# gcc/g++ are used for the main CMake build (clang segfaults on ARM64 with crashpad)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git unzip xz-utils zip libglu1-mesa clang llvm lld cmake ninja-build pkg-config \
+    curl git unzip xz-utils zip libglu1-mesa \
+    clang llvm lld gcc g++ cmake ninja-build pkg-config \
     libgtk-3-dev liblzma-dev libstdc++-12-dev libasound2-dev libpulse-dev \
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev \
     libgstreamer-plugins-bad1.0-dev libsecret-1-dev libcurl4-openssl-dev openjdk-11-jdk \
@@ -17,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && ln -sfn "$JAVA_DIR" /usr/lib/jvm/java-11-openjdk
 
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
+# Force GCC for CMake builds - clang 14 segfaults on ARM64 when compiling crashpad/sentry-native
+ENV CC=gcc CXX=g++
 
 COPY .fvmrc /tmp/.fvmrc
 

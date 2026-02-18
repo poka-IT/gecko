@@ -1,6 +1,7 @@
 # Gecko CI - Android builder (~5GB)
 # Used by: build:android:apk, build:android:bundle
-FROM eclipse-temurin:17-jdk-jammy
+# Force amd64: Flutter does not ship gen_snapshot for linux-arm64 Android targets
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV FLUTTER_VERSION=3.41.1

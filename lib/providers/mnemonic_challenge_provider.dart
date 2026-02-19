@@ -68,12 +68,14 @@ class MnemonicChallengeNotifier extends Notifier<MnemonicChallengeState> {
     return const MnemonicChallengeState();
   }
 
-  /// Initialize the challenge by loading the mnemonic and selecting 2 random word indices
-  Future<void> initialize(String address) async {
+  /// Initialize the challenge by loading the mnemonic and selecting 2 random word indices.
+  /// [pinCode] can be passed explicitly to avoid reading from PinCodeService which may
+  /// have been cleared by debounceResetPinCode when PIN cache is disabled.
+  Future<void> initialize(String address, {String? pinCode}) async {
     state = const MnemonicChallengeState(isLoading: true);
 
     try {
-      final pin = PinCodeService.pinCode;
+      final pin = pinCode ?? PinCodeService.pinCode;
       if (pin.isEmpty) {
         const errorDetail = 'PIN code is empty when initializing mnemonic challenge';
         log.e(errorDetail);

@@ -10,7 +10,9 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -292,6 +294,14 @@ class StepConfirmation extends ConsumerWidget {
     // 1. Always force-ask PIN for this irreversible operation
     if (!await PinCodeService.askPinCode(force: true)) return;
 
+    // Capture PIN immediately after successful askPinCode, before any async operation
+    // that could trigger debounceResetPinCode clearing it (1 second when cache is disabled)
+    final pinCode = PinCodeService.pinCode;
+    if (pinCode.isEmpty) {
+      log.e('Migration aborted: PIN was empty immediately after askPinCode');
+      return;
+    }
+
     // 2. Determine target wallet address
     String targetAddress;
     WalletEntity? targetWallet;
@@ -300,7 +310,7 @@ class StepConfirmation extends ConsumerWidget {
       // Create a new derivation
       final walletService = ref.read(walletServiceProvider);
       targetWallet = await walletService.generateNextDerivation(
-        pinCode: PinCodeService.pinCode,
+        pinCode: pinCode,
         safeBoxNumber: walletService.defaultSafeBoxNumber,
       );
       targetWallet.imagePath = 'assets/avatars/${targetWallet.number % 4}.png';
@@ -315,8 +325,8 @@ class StepConfirmation extends ConsumerWidget {
       targetAddress = flowState.selectedTargetWallet!.address;
     }
 
-    // 3. Mnemonic challenge on target wallet
-    if (!await showMnemonicChallenge(context: context, ref: ref, address: targetAddress)) {
+    // 3. Mnemonic challenge on target wallet (pass pinCode explicitly to avoid race condition)
+    if (!await showMnemonicChallenge(context: context, ref: ref, address: targetAddress, pinCode: pinCode)) {
       return;
     }
 
@@ -325,7 +335,6 @@ class StepConfirmation extends ConsumerWidget {
     final duniterService = ref.read(duniterServiceProvider);
     final salt = ref.read(csSaltControllerProvider).text;
     final password = ref.read(csPasswordControllerProvider).text;
-    final pinCode = PinCodeService.pinCode;
     final hasIdentity = flowState.hasIdentity;
     final fromAddress = flowState.v2Address;
 
@@ -353,12 +362,30 @@ class StepConfirmation extends ConsumerWidget {
       duniterService: duniterService,
     );
 
-    // 8. Replace migration flow with transaction screen
+    // Convert to broadcast stream to allow multiple listeners
+    final broadcastStream = transactionStream.asBroadcastStream();
+
+    // 8. Listen to invalidate identity/certification providers on success
+    // Capture container before navigation since ConsumerWidget has no mounted check
+    final container = ProviderScope.containerOf(context);
+    broadcastStream.listen((status) {
+      if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
+        container.invalidate(persistentIdtyStatusStreamProvider(targetAddress));
+        container.invalidate(persistentCertificationStreamProvider(targetAddress));
+        container.invalidate(hybridIdtyStatusProvider(targetAddress));
+        container.invalidate(hybridCertificationProvider(targetAddress));
+        container.invalidate(hybridIdentityNameProvider(targetAddress));
+        container.invalidate(idtyWalletAsyncProvider);
+        container.invalidate(identityWalletsAsyncProvider);
+      }
+    });
+
+    // 9. Replace migration flow with transaction screen
     await navigator.pushReplacement(
       MaterialPageRoute(
         builder: (context) {
           return TransactionInProgressScreen(
-            transactionStatus: transactionStream,
+            transactionStatus: broadcastStream,
             transType: hasIdentity ? 'identityMigration' : 'accountMigration',
             fromAddress: fromAddress,
             toAddress: targetAddress,

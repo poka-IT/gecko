@@ -8,6 +8,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallet_name_validation_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/wallet_management_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 
 /// Service for showing wallet name editing dialogs
 ///
@@ -46,6 +47,13 @@ class _WalletNameEditDialog extends ConsumerStatefulWidget {
 }
 
 class _WalletNameEditDialogState extends ConsumerState<_WalletNameEditDialog> {
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill with the display name so the user sees "Portefeuille principal" not "#main"
+    widget.walletNameController.text = WalletNameService.displayName(widget.wallet.name);
+  }
+
   @override
   Widget build(BuildContext context) {
     final validationState = ref.watch(walletNameValidationProvider(widget.wallet));

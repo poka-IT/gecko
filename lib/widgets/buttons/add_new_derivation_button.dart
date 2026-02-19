@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -8,6 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 
 class AddNewDerivationButton extends ConsumerWidget {
   const AddNewDerivationButton({super.key});
@@ -18,7 +18,7 @@ class AddNewDerivationButton extends ConsumerWidget {
     final derivationState = ref.watch(derivationStateProvider);
 
     final lastWalletNumber = walletsState.wallets.isNotEmpty ? walletsState.wallets.last.number : -1;
-    String newDerivationName = '${'wallet'.tr()} ${lastWalletNumber + 2}';
+    String newDerivationName = WalletNameService.defaultN(lastWalletNumber + 2);
 
     return Padding(
       padding: EdgeInsets.all(scaleSize(11)),

@@ -38,6 +38,7 @@ import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:gecko/services/log_collection_service.dart';
 import 'package:gecko/services/g1_genesis_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -96,6 +97,9 @@ Future<void> main() async {
 
   //Init durt2 with selected network and keypair type
   await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519);
+
+  // Migrate old wallet names to new # convention
+  WalletNameService.runMigration();
 
   // Initialize app info service and get version
   final appInfoService = AppInfoService();

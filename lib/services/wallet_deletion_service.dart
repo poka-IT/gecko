@@ -7,6 +7,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 /// Service for handling complex wallet deletion operations
@@ -39,13 +40,13 @@ class WalletDeletionService {
       if (walletBalance.transferableBalance > BigInt.zero) {
         confirmationMessage = 'areYouSureToForgetWalletWithBalance'.tr(
           args: [
-            wallet.name!,
+            WalletNameService.displayName(wallet.name),
             '${(walletBalance.transferableBalance.toDouble() / 100).toStringAsFixed(2)} ${Durt.i.network.symbol}',
-            destinationWallet.name ?? 'wallet'.tr(),
+            WalletNameService.displayName(destinationWallet.name),
           ],
         );
       } else {
-        confirmationMessage = 'areYouSureToForgetWallet'.tr(args: [wallet.name!]);
+        confirmationMessage = 'areYouSureToForgetWallet'.tr(args: [WalletNameService.displayName(wallet.name)]);
       }
 
       final answer = await showConfirmationDialog(

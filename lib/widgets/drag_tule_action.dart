@@ -6,6 +6,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
@@ -51,7 +52,7 @@ class DragTuleAction extends ConsumerWidget {
           final walletData = ref.read(walletByAddressProvider(senderAddress.data));
           paymentPopup(
             toAddress: wallet.address,
-            username: g1WalletsBox.get(wallet.address)?.username ?? wallet.name!,
+            username: g1WalletsBox.get(wallet.address)?.username ?? WalletNameService.displayName(wallet.name),
             fromWallet: walletData,
           );
         },

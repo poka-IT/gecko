@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/avatar_providers.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:uuid/uuid.dart';
@@ -184,7 +185,7 @@ class WalletManagementService {
       final success = await cesiumPlusService.uploadProfile(
         address: walletAddress,
         signFunction: keyPair.sign,
-        title: walletData.name ?? 'Duniter Wallet',
+        title: WalletNameService.isDefault(walletData.name) ? 'Duniter Wallet' : (walletData.name ?? 'Duniter Wallet'),
         avatarBytes: avatarBytes,
         avatarContentType: contentType,
       );
@@ -211,6 +212,9 @@ class WalletManagementService {
     bool isNameValid = name.length >= 2 && !name.contains(':') && name.length <= 39;
 
     if (!isNameValid) return false;
+
+    // Block reserved '#' prefix
+    if (WalletNameService.isReservedPrefix(name)) return false;
 
     // Check uniqueness
     for (var wallet in existingWallets) {

@@ -9,6 +9,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart' show mapValidationErrors;
 
 class StepDestination extends ConsumerStatefulWidget {
@@ -158,7 +159,7 @@ class _StepDestinationState extends ConsumerState<StepDestination> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      wallet.name ?? 'Wallet ${wallet.number}',
+                      WalletNameService.displayName(wallet.name),
                       style: scaledTextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

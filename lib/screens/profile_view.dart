@@ -23,6 +23,7 @@ import 'package:gecko/widgets/payment_popup.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/utils/debug_test_wallet.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/utils.dart';
 
 const double buttonSize = 75;
@@ -357,7 +358,9 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
                   return DropdownMenuItem<String>(
                     value: wallet.address,
                     child: Text(
-                      wallet.name ?? getShortPubkey(wallet.address),
+                      WalletNameService.isDefault(wallet.name)
+                          ? getShortPubkey(wallet.address)
+                          : (wallet.name ?? getShortPubkey(wallet.address)),
                       style: scaledTextStyle(fontSize: 10, color: Colors.orange),
                     ),
                   );

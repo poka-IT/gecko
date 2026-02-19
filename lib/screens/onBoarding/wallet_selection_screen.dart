@@ -9,6 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
@@ -189,7 +190,7 @@ class _WalletSelectionScreenState extends ConsumerState<WalletSelectionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      wallet.name ?? 'Wallet ${wallet.number}',
+                      WalletNameService.displayName(wallet.name),
                       style: scaledTextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

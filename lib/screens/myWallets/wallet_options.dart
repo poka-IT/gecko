@@ -13,6 +13,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/services/wallet_deletion_service.dart';
@@ -52,7 +53,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   @override
   void initState() {
     super.initState();
-    currentWalletName = widget.wallet.name ?? '';
+    currentWalletName = WalletNameService.displayName(widget.wallet.name);
   }
 
   @override
@@ -653,7 +654,9 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     // Navigate to change PIN screen
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChangePinScreen(walletName: widget.wallet.name ?? 'legacyWallet'.tr())),
+      MaterialPageRoute(
+        builder: (context) => ChangePinScreen(walletName: WalletNameService.displayName(widget.wallet.name)),
+      ),
     );
   }
 

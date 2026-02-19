@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -410,7 +411,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(task.wallet.name ?? 'Wallet'),
+            Text(WalletNameService.displayName(task.wallet.name)),
             Text(
               '${task.wallet.address.substring(0, 8)}...${task.wallet.address.substring(task.wallet.address.length - 8)}',
               style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace'),

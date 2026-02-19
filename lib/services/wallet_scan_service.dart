@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:durt2/durt2.dart' show WalletBalance, WalletEntity, Durt, Address, Keyring, KeyPairType;
 import 'package:durt2/objectbox.g.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/services/mnemonic_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 
 /// Arguments for keypair generation in an isolate.
 class _KeypairGenerationArgs {
@@ -160,7 +160,7 @@ class WalletScanService {
 
       if (balance.free > BigInt.zero) {
         // Import root wallet
-        final walletName = 'myRootWallet'.tr();
+        final walletName = WalletNameService.defaultMain();
         final actualSafeNumber = _ref.read(walletServiceProvider).defaultSafeBoxNumber;
         final safe = _ref.read(walletServiceProvider).getSafeBox(actualSafeNumber);
 
@@ -257,7 +257,9 @@ class WalletScanService {
     for (int i = 0; i < sortedWallets.length; i++) {
       final walletAddress = sortedWallets[i].key;
       final walletIndex = currentWalletCount + i;
-      final walletName = walletIndex == 0 ? 'currentWallet'.tr() : '${'wallet'.tr()} ${walletIndex + 1}';
+      final walletName = walletIndex == 0
+          ? WalletNameService.defaultMain()
+          : WalletNameService.defaultN(walletIndex + 1);
 
       final wallet = WalletEntity.create(
         address: walletAddress,

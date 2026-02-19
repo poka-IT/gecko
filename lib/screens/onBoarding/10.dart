@@ -17,6 +17,7 @@ import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -192,7 +193,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               salt: widget.legacySalt!,
               password: widget.legacyPassword!,
               pinCode: widget.pinCode,
-              name: 'legacyWallet'.tr(),
+              name: WalletNameService.defaultLegacy(),
             );
         return true;
       } catch (e) {

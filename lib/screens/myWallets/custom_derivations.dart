@@ -9,6 +9,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class CustomDerivation extends ConsumerStatefulWidget {
@@ -105,9 +106,11 @@ class _CustomDerivationState extends ConsumerState<CustomDerivation> {
                   ),
                   onPressed: () async {
                     if (!await PinCodeService.askPinCode()) return;
-                    String newDerivationName = '${'wallet'.tr()} ${walletsList.last.number + 2}';
+                    String newDerivationName = WalletNameService.defaultN(walletsList.last.number + 2);
                     if (dropdownValue == 'root') {
-                      await ref.read(walletActionsProvider.notifier).generateRootWallet('rootWallet'.tr());
+                      await ref
+                          .read(walletActionsProvider.notifier)
+                          .generateRootWallet(WalletNameService.defaultMain());
                     } else {
                       await ref
                           .read(walletActionsProvider.notifier)

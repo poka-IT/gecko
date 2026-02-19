@@ -1,6 +1,8 @@
 import 'package:durt2/durt2.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/services/wallet_management_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 
 /// State for wallet name validation
 class WalletNameValidationState {
@@ -47,6 +49,15 @@ class WalletNameValidationNotifier extends Notifier<WalletNameValidationState> {
     final isValid = WalletManagementService.isWalletNameValid(name, existingWallets, excludeWallet: _editingWallet);
 
     if (isValid) {
+      // Also check that the display name doesn't collide with an existing default name's display
+      final displayName = name;
+      for (final wallet in existingWallets) {
+        if (_editingWallet != null && wallet.address == _editingWallet.address) continue;
+        if (WalletNameService.isDefault(wallet.name) && WalletNameService.displayName(wallet.name) == displayName) {
+          state = WalletNameValidationState.invalid('nameAlreadyExist'.tr());
+          return;
+        }
+      }
       state = const WalletNameValidationState.valid();
     } else {
       String errorMessage;
@@ -56,8 +67,10 @@ class WalletNameValidationNotifier extends Notifier<WalletNameValidationState> {
         errorMessage = 'Wallet name must be 39 characters or less';
       } else if (name.contains(':')) {
         errorMessage = 'Wallet name cannot contain ":"';
+      } else if (WalletNameService.isReservedPrefix(name)) {
+        errorMessage = 'walletNameReservedPrefix'.tr();
       } else {
-        errorMessage = 'Wallet name already exists';
+        errorMessage = 'nameAlreadyExist'.tr();
       }
       state = WalletNameValidationState.invalid(errorMessage);
     }

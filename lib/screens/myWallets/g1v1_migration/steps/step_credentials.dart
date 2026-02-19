@@ -55,11 +55,7 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
   @override
   Widget build(BuildContext context) {
     ref.listen<G1v1MigrationFlowState>(g1v1MigrationFlowProvider, (previous, next) {
-      if (previous != null &&
-          previous.isConverting &&
-          !next.isConverting &&
-          next.hasValidCredentials &&
-          !_keyboardDismissed) {
+      if (!next.isConverting && next.hasBalance && !_keyboardDismissed) {
         _keyboardDismissed = true;
         FocusScope.of(context).unfocus();
       }

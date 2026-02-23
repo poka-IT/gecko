@@ -578,7 +578,7 @@
     "ownerKeyInBound": "This key is still in bond period and cannot be changed yet",
     "ownerKeyUsedAsValidator": "This identity is currently used as a validator and cannot be migrated",
     "parameters": "Parameters",
-    "passwordTooSimple": "Your password is to simple",
+    "passwordTooSimple": "Your password is too simple",
     "pastReevals": "Past Reevaluations",
     "pasteAddress": "Paste address from\nclipboard",
     "pasteFromClipboard": "Paste from\nclipboard",

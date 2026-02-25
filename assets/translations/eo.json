@@ -752,5 +752,10 @@
     "syncStatus": "Statuso de la sinkronigo",
     "notSynced": "Ne sinkronigita",
     "syncNow": "Sinkronigi nun",
-    "queueNotSyncedInfo": "La vico ne sinkroniĝis kun la servilo. Ĝi estos sinkronigita okaze de la venonta konektiĝo."
+    "queueNotSyncedInfo": "La vico ne sinkroniĝis kun la servilo. Ĝi estos sinkronigita okaze de la venonta konektiĝo.",
+    "queueNotSyncedConfirm": "La vico ne estas sinkronigita kun la servilo.\n\nĈu vi volas sinkronigi nun?",
+    "queueSynced": "Vico sinkronigita sukcese",
+    "syncFailed": "Sinkronigo malsukcesa",
+    "noIdentityWallet": "Neniu membro-monujo trovita",
+    "identityMigratedWarningMessage": "Via identeco **{}** estis migrigita al alia monujo (**{}**) per alia aplikaĵo."
 }

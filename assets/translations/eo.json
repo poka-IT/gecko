@@ -181,7 +181,7 @@
     "connected": "Konektita al la {}",
     "24hbetweenCerts": "Vi devas atendi 24h inter ĉiu atesto",
     "canNotCertifySelf": "Vi ne povas atesti\nvin mem...",
-    "nameAlreadyExist": "Tiu ĉu nomo jam estas uzata",
+    "nameAlreadyExist": "Tiu ĉi nomo jam estas uzata",
     "ownerKeyInBound": "Tiu ĉi ŝlosilo daŭre estas en singarda periodo kaj ankoraŭ ne povas esti ŝanĝita",
     "ownerKeyUsedAsValidator": "Tiu ĉi identeco estas nun uzata kiel validiganto kaj ne povas esti migrigita",
     "2GDtoKeepAlive": "Vi devas konservi almenaŭ 2{} en via konto por konservi ĝin aktiva",

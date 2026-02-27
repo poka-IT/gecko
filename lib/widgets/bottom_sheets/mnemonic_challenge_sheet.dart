@@ -248,8 +248,8 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
               color: isCurrentValidated
                   ? Colors.green[600]
                   : hasError
-                      ? Colors.red[600]
-                      : null,
+                  ? Colors.red[600]
+                  : null,
             ),
             decoration: InputDecoration(
               hintText: 'wordNofMnemonic'.tr(),
@@ -282,8 +282,8 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
                       child: Icon(Icons.check_circle, color: Colors.green[600]),
                     )
                   : hasError
-                      ? Icon(Icons.error_outline, color: Colors.red[600])
-                      : null,
+                  ? Icon(Icons.error_outline, color: Colors.red[600])
+                  : null,
             ),
           ),
           SizedBox(height: scaleSize(8)),
@@ -297,12 +297,12 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
                     style: scaledTextStyle(fontSize: 14, color: Colors.green[600], fontWeight: FontWeight.w500),
                   )
                 : hasError
-                    ? Text(
-                        key: const ValueKey('error'),
-                        'incorrectWord'.tr(),
-                        style: scaledTextStyle(fontSize: 14, color: Colors.red[600], fontWeight: FontWeight.w500),
-                      )
-                    : const SizedBox.shrink(key: ValueKey('empty')),
+                ? Text(
+                    key: const ValueKey('error'),
+                    'incorrectWord'.tr(),
+                    style: scaledTextStyle(fontSize: 14, color: Colors.red[600], fontWeight: FontWeight.w500),
+                  )
+                : const SizedBox.shrink(key: ValueKey('empty')),
           ),
           // Check button — visible when not yet validated and user has typed something
           if (!isCurrentValidated) ...[

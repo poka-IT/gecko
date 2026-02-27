@@ -22,7 +22,7 @@ class StepCredentials extends ConsumerStatefulWidget {
 
 class _StepCredentialsState extends ConsumerState<StepCredentials> {
   Timer? _debounce;
-  static const int _debounceTime = 600;
+  static const int _debounceTime = 2000;
   bool _keyboardDismissed = false;
 
   @override

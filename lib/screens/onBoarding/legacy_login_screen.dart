@@ -21,7 +21,7 @@ import 'package:gecko/widgets/certifications.dart';
 class LegacyLoginScreen extends ConsumerStatefulWidget {
   const LegacyLoginScreen({super.key});
 
-  static const int debounceTime = 600;
+  static const int debounceTime = 2000;
 
   @override
   ConsumerState<LegacyLoginScreen> createState() => _LegacyLoginScreenState();

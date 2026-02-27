@@ -2,13 +2,13 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/screens/myWallets/confirm_change_pin.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ChangePinScreen extends StatefulWidget {
@@ -72,67 +72,46 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   }
 
   Widget pinForm(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
-        child: Column(
-          children: [
-            MaterialPinField(
-              pinController: _pinController,
-              autoFocus: true,
-              length: pinLength,
-              obscureText: true,
-              theme: MaterialPinTheme(
-                shape: MaterialPinShape.outlined,
-                borderRadius: BorderRadius.circular(5),
-                cellSize: const Size(47, 47),
-                focusedBorderColor: pinColor,
-                filledBorderColor: pinColor,
-                errorBorderColor: Colors.red,
-                borderWidth: 4,
-                entryAnimation: MaterialPinAnimation.fade,
-                obscuringCharacter: '*',
-                cursorColor: Colors.black,
-              ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onCompleted: (pin) async {
-                if (isPinComplex(pin)) {
-                  Navigator.push(
-                    context,
-                    FaderTransition(
-                      page: ConfirmChangePinScreen(walletName: widget.walletName, newPinCode: pin),
-                      isFast: false,
-                    ),
-                  );
-                } else {
-                  setState(() {
-                    hasError = true;
-                    pinColor = Colors.red[600];
-                    enterPin.text = '';
-                    pinFocus.requestFocus();
-                  });
-                }
-              },
-              onChanged: (value) {
-                setState(() {
-                  hasError = false;
-                  pinColor = const Color(0xFFA4B600);
-                });
-              },
-            ),
-            if (hasError) ...[
-              const SizedBox(height: 20),
-              Text(
-                "passwordTooSimple".tr(),
-                style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ],
+    return Column(
+      children: [
+        GeckoPinField(
+          pinController: _pinController,
+          pinColor: pinColor,
+          length: pinLength,
+          onCompleted: (pin) async {
+            if (isPinComplex(pin)) {
+              Navigator.push(
+                context,
+                FaderTransition(
+                  page: ConfirmChangePinScreen(walletName: widget.walletName, newPinCode: pin),
+                  isFast: false,
+                ),
+              );
+            } else {
+              setState(() {
+                hasError = true;
+                pinColor = Colors.red[600];
+                enterPin.text = '';
+                pinFocus.requestFocus();
+              });
+            }
+          },
+          onChanged: (value) {
+            setState(() {
+              hasError = false;
+              pinColor = const Color(0xFFA4B600);
+            });
+          },
         ),
-      ),
+        if (hasError) ...[
+          const SizedBox(height: 20),
+          Text(
+            "passwordTooSimple".tr(),
+            style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
     );
   }
 }

@@ -2,7 +2,6 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -10,6 +9,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ConfirmChangePinScreen extends ConsumerStatefulWidget {
@@ -78,77 +78,57 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
   }
 
   Widget pinForm(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
-        child: MaterialPinField(
-          pinController: _pinController,
-          autoFocus: true,
-          length: pinLength,
-          obscureText: true,
-          theme: MaterialPinTheme(
-            shape: MaterialPinShape.outlined,
-            borderRadius: BorderRadius.circular(5),
-            cellSize: const Size(47, 47),
-            focusedBorderColor: pinColor,
-            filledBorderColor: pinColor,
-            borderWidth: 4,
-            entryAnimation: MaterialPinAnimation.fade,
-            obscuringCharacter: '*',
-            cursorColor: Colors.black,
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onCompleted: (pin) async {
-            if (pin == widget.newPinCode) {
-              setState(() {
-                isPinLoading = true;
-                hasError = false;
-              });
+    return GeckoPinField(
+      pinController: _pinController,
+      pinColor: pinColor,
+      length: pinLength,
+      onCompleted: (pin) async {
+        if (pin == widget.newPinCode) {
+          setState(() {
+            isPinLoading = true;
+            hasError = false;
+          });
 
-              // Demander l'ancien PIN pour confirmation
-              if (!await PinCodeService.askPinCode()) {
-                setState(() => isPinLoading = false);
-                return;
-              }
+          // Demander l'ancien PIN pour confirmation
+          if (!await PinCodeService.askPinCode()) {
+            setState(() => isPinLoading = false);
+            return;
+          }
 
-              final firstWallet = ref.read(firstWalletProvider);
+          final firstWallet = ref.read(firstWalletProvider);
 
-              await ref
-                  .read(walletServiceProvider)
-                  .changePin(address: firstWallet.address, oldPin: PinCodeService.pinCode, newPin: pin);
+          await ref
+              .read(walletServiceProvider)
+              .changePin(address: firstWallet.address, oldPin: PinCodeService.pinCode, newPin: pin);
 
-              // Mettre à jour le PIN dans le provider
-              PinCodeService.pinCode = pin;
+          // Mettre à jour le PIN dans le provider
+          PinCodeService.pinCode = pin;
 
-              // Recharger les wallets avec le nouveau PIN
-              final currentSafe = ref.read(currentSafeNumberProvider);
-              await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
+          // Recharger les wallets avec le nouveau PIN
+          final currentSafe = ref.read(currentSafeNumberProvider);
+          await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
-              Navigator.of(context)
-                ..pop() // Ferme l'écran de confirmation
-                ..pop(); // Ferme l'écran de changement de PIN
-            } else {
-              setState(() {
-                hasError = true;
-                isPinLoading = false;
-                pinColor = Colors.red[600];
-                enterPin.text = '';
-              });
-              pinFocus.requestFocus();
-            }
-          },
-          onChanged: (value) {
-            setState(() {
-              if (enterPin.text.isNotEmpty) {
-                hasError = false;
-              }
-              pinColor = const Color(0xFFA4B600);
-            });
-          },
-        ),
-      ),
+          Navigator.of(context)
+            ..pop() // Ferme l'écran de confirmation
+            ..pop(); // Ferme l'écran de changement de PIN
+        } else {
+          setState(() {
+            hasError = true;
+            isPinLoading = false;
+            pinColor = Colors.red[600];
+            enterPin.text = '';
+          });
+          pinFocus.requestFocus();
+        }
+      },
+      onChanged: (value) {
+        setState(() {
+          if (enterPin.text.isNotEmpty) {
+            hasError = false;
+          }
+          pinColor = const Color(0xFFA4B600);
+        });
+      },
     );
   }
 }

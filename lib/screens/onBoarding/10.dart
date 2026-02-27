@@ -2,9 +2,7 @@
 
 import 'package:durt2/durt2.dart' show WalletEntity, TransactionState, WalletService;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -23,6 +21,7 @@ import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -512,64 +511,38 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   }
 
   Widget pinForm(BuildContext context, int pinLenght, int walletNbr, int derivation) {
-    return Form(
-      key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
-        child: MaterialPinField(
-          key: keyPinForm,
-          textCapitalization: TextCapitalization.characters,
-          pinController: _pinController,
-          autoFocus: true,
-          length: pinLenght,
-          obscureText: true,
-          enableHapticFeedback: true,
-          theme: MaterialPinTheme(
-            focusedBorderColor: pinColor,
-            filledBorderColor: pinColor,
-            borderWidth: 4,
-            shape: MaterialPinShape.outlined,
-            borderRadius: BorderRadius.circular(5),
-            cellSize: Size(scaleSize(47), scaleSize(47)),
-            entryAnimation: MaterialPinAnimation.slide,
-            animationDuration: const Duration(milliseconds: 40),
-            obscuringCharacter: '*',
-            showCursor: !kDebugMode,
-            cursorColor: Colors.black,
-            textStyle: const TextStyle(fontSize: 24, height: 1.6),
-            boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onCompleted: (pin) async {
-            PinCodeService.pinCode = pin.toUpperCase();
-            ref.read(pinStateProvider.notifier).setPinLength(pinLenght);
+    return GeckoPinField(
+      key: keyPinForm,
+      pinController: _pinController,
+      pinColor: pinColor,
+      length: pinLenght,
+      onCompleted: (pin) async {
+        PinCodeService.pinCode = pin.toUpperCase();
+        ref.read(pinStateProvider.notifier).setPinLength(pinLenght);
 
-            if (pin.toUpperCase() == widget.pinCode) {
-              pinColor = Colors.green[500];
-              ref.read(pinStateProvider.notifier).setLoading(false);
-              ref.read(pinStateProvider.notifier).setValid(true);
-              await _handlePinConfirmed();
-            } else {
-              hasError = true;
-              ref.read(pinStateProvider.notifier).setLoading(false);
-              ref.read(pinStateProvider.notifier).setValid(false);
-              pinColor = Colors.red[600];
-              enterPin.text = '';
-              pinFocus.requestFocus();
-            }
-          },
-          onChanged: (value) {
-            if (enterPin.text != '') {
-              ref.read(pinStateProvider.notifier).setLoading(true);
-            }
-            if (pinColor != const Color(0xFFA4B600)) {
-              pinColor = const Color(0xFFA4B600);
-            }
-            setState(() {});
-          },
-        ),
-      ),
+        if (pin.toUpperCase() == widget.pinCode) {
+          pinColor = Colors.green[500];
+          ref.read(pinStateProvider.notifier).setLoading(false);
+          ref.read(pinStateProvider.notifier).setValid(true);
+          await _handlePinConfirmed();
+        } else {
+          hasError = true;
+          ref.read(pinStateProvider.notifier).setLoading(false);
+          ref.read(pinStateProvider.notifier).setValid(false);
+          pinColor = Colors.red[600];
+          enterPin.text = '';
+          pinFocus.requestFocus();
+        }
+      },
+      onChanged: (value) {
+        if (enterPin.text != '') {
+          ref.read(pinStateProvider.notifier).setLoading(true);
+        }
+        if (pinColor != const Color(0xFFA4B600)) {
+          pinColor = const Color(0xFFA4B600);
+        }
+        setState(() {});
+      },
     );
   }
 }

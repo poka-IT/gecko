@@ -4,8 +4,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/extensions.dart';
@@ -25,6 +23,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:gecko/widgets/biometric/biometric_auth_button.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/gecko_pin_field.dart';
 
 class UnlockingWallet extends ConsumerStatefulWidget {
   const UnlockingWallet({required this.wallet, this.canSwitch = false}) : super(key: keyUnlockWallet);
@@ -924,52 +923,24 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     final shouldAutoFocus = (!biometricState.canAuthenticate || _biometricTriggered) && !securityState.isLockedOut;
     final isFieldEnabled = !securityState.isLockedOut;
 
-    return Form(
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: scaleSize(3), horizontal: scaleSize(isTall ? 30 : 20)),
-        child: MaterialPinField(
-          key: keyPinForm,
-          textCapitalization: TextCapitalization.characters,
-          pinController: _pinController,
-          autoFocus: shouldAutoFocus,
-          enabled: isFieldEnabled,
-          length: pinLenght,
-          obscureText: true,
-          enableHapticFeedback: true,
-          theme: MaterialPinTheme(
-            shape: MaterialPinShape.outlined,
-            borderRadius: BorderRadius.circular(12),
-            cellSize: Size(scaleSize(50), scaleSize(50)),
-            filledFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
-            focusedFillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
-            fillColor: isFieldEnabled ? context.colorScheme.surfaceContainer : Colors.grey[100],
-            filledBorderColor: isFieldEnabled ? pinColor : Colors.grey,
-            focusedBorderColor: isFieldEnabled ? context.colorScheme.primary : Colors.grey,
-            borderColor: Colors.grey[300],
-            borderWidth: 1.5,
-            entryAnimation: MaterialPinAnimation.fade,
-            animationDuration: const Duration(milliseconds: 150),
-            obscuringCharacter: '●',
-            showCursor: !kDebugMode,
-            cursorColor: context.colorScheme.primary,
-            cursorHeight: 25,
-            textStyle: scaledTextStyle(fontSize: 24, height: 1.6, fontWeight: FontWeight.w600),
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onCompleted: (pin) => _handlePinCompletion(pin),
-          onChanged: (value) {
-            if (enterPin.text != '') {
-              ref.read(pinStateProvider.notifier).setLoading(true);
-            }
-            if (pinColor != const Color(0xFFA4B600)) {
-              pinColor = const Color(0xFFA4B600);
-            }
-            // Force widget rebuild for PIN color change
-            setState(() {});
-          },
-        ),
-      ),
+    return GeckoPinField(
+      key: keyPinForm,
+      pinController: _pinController,
+      autoFocus: shouldAutoFocus,
+      enabled: isFieldEnabled,
+      pinColor: pinColor,
+      length: pinLenght,
+      onCompleted: (pin) => _handlePinCompletion(pin),
+      onChanged: (value) {
+        if (enterPin.text != '') {
+          ref.read(pinStateProvider.notifier).setLoading(true);
+        }
+        if (pinColor != const Color(0xFFA4B600)) {
+          pinColor = const Color(0xFFA4B600);
+        }
+        // Force widget rebuild for PIN color change
+        setState(() {});
+      },
     );
   }
 }

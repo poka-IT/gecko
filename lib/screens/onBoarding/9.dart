@@ -4,7 +4,6 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -16,6 +15,7 @@ import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OnboardingStepNine extends ConsumerStatefulWidget {
@@ -82,67 +82,37 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
   }
 
   Widget pinForm(BuildContext context, int walletNbr, int derivation) {
-    Color? pinColor = const Color(0xFFA4B600);
+    return GeckoPinField(
+      key: keyPinForm,
+      pinController: _pinController,
+      length: pinLength,
+      onCompleted: (pin) async {
+        if (isPinComplex(pin)) {
+          // Check if we're offline before proceeding
+          final connectionStatus = ref.read(connectionStatusProvider);
+          if (connectionStatus != d.ConnectionStatus.connected) {
+            await _showOfflineDialog(context);
+            return;
+          }
 
-    return Form(
-      key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
-        child: MaterialPinField(
-          key: keyPinForm,
-          textCapitalization: TextCapitalization.characters,
-          pinController: _pinController,
-          autoFocus: true,
-          length: pinLength,
-          obscureText: true,
-          enableHapticFeedback: true,
-          theme: MaterialPinTheme(
-            focusedBorderColor: pinColor,
-            filledBorderColor: pinColor,
-            borderWidth: 4,
-            shape: MaterialPinShape.outlined,
-            borderRadius: BorderRadius.circular(5),
-            cellSize: Size(scaleSize(47), scaleSize(47)),
-            entryAnimation: MaterialPinAnimation.slide,
-            animationDuration: const Duration(milliseconds: 40),
-            obscuringCharacter: '*',
-            showCursor: !kDebugMode,
-            cursorColor: Colors.black,
-            textStyle: const TextStyle(fontSize: 24, height: 1.6),
-            boxShadows: const [BoxShadow(offset: Offset(0, 1), color: Colors.black12, blurRadius: 10)],
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onCompleted: (pin) async {
-            if (isPinComplex(pin)) {
-              // Check if we're offline before proceeding
-              final connectionStatus = ref.read(connectionStatusProvider);
-              if (connectionStatus != d.ConnectionStatus.connected) {
-                await _showOfflineDialog(context);
-                return;
-              }
-
-              AppNavigator.pushWithFader(
-                context,
-                RouteNames.onboardingStepTen,
-                arguments: OnboardingStepTenArguments(
-                  scanDerivation: widget.scanDerivation,
-                  pinCode: enterPin.text,
-                  fromRestore: widget.fromRestore,
-                  legacySalt: widget.legacySalt,
-                  legacyPassword: widget.legacyPassword,
-                  legacyMigrationData: widget.legacyMigrationData,
-                ),
-              );
-            } else {
-              hasError = true;
-              pinColor = Colors.red[600];
-              enterPin.text = '';
-              pinFocus.requestFocus();
-            }
-          },
-        ),
-      ),
+          AppNavigator.pushWithFader(
+            context,
+            RouteNames.onboardingStepTen,
+            arguments: OnboardingStepTenArguments(
+              scanDerivation: widget.scanDerivation,
+              pinCode: enterPin.text,
+              fromRestore: widget.fromRestore,
+              legacySalt: widget.legacySalt,
+              legacyPassword: widget.legacyPassword,
+              legacyMigrationData: widget.legacyMigrationData,
+            ),
+          );
+        } else {
+          hasError = true;
+          enterPin.text = '';
+          pinFocus.requestFocus();
+        }
+      },
     );
   }
 

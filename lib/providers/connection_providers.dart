@@ -55,6 +55,7 @@ class ConnectionStatusNotifier extends Notifier<d.ConnectionStatus> {
         // Invalidate balance providers when going from offline to online
         if (previousStatus != d.ConnectionStatus.connected && status == d.ConnectionStatus.connected) {
           ref.invalidate(persistentBalanceStreamProvider);
+          ref.invalidate(balanceStreamProvider);
           ref.invalidate(persistentIdtyStatusStreamProvider);
           ref.invalidate(persistentCertificationStreamProvider);
           ref.invalidate(hybridIdtyStatusProvider);

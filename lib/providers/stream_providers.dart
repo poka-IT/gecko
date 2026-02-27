@@ -10,8 +10,13 @@ import 'package:gecko/providers/block_height_provider.dart';
 /// Provides real-time wallet balance stream for a given address.
 /// This uses Durt2's subscribeBalance to get live updates when balance changes.
 /// The stream automatically starts when the first listener is added and stops when the last one is removed.
+/// Also re-fetches balance on each new block to catch changes missed by subscriptions
+/// (e.g., account migration where the storage key is removed instead of updated).
 final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance, String>((ref, address) {
   final storageService = ref.watch(storageServiceProvider);
+
+  // Track last known balance to avoid unnecessary stream emissions
+  BigInt? lastTransferableBalance;
 
   // Create a StreamController to manage the balance stream
   late StreamController<d.WalletBalance> controller;
@@ -23,6 +28,7 @@ final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance,
       try {
         // Get initial balance first
         final initialBalance = await storageService.getBalance(address);
+        lastTransferableBalance = initialBalance.transferableBalance;
 
         if (!controller.isClosed) {
           controller.add(initialBalance);
@@ -30,6 +36,7 @@ final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance,
 
         // Then subscribe to real-time updates
         subscription = await storageService.subscribeBalance(address, (newBalance) {
+          lastTransferableBalance = newBalance.transferableBalance;
           if (!controller.isClosed) {
             controller.add(newBalance);
           }
@@ -48,6 +55,20 @@ final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance,
       subscription = null;
     },
   );
+
+  // Re-fetch balance on each new block to catch changes missed by subscriptions
+  ref.listen(blockHeightProvider, (previous, next) async {
+    if (next == 0 || next == previous) return;
+    try {
+      final freshBalance = await storageService.getBalance(address);
+      if (!controller.isClosed && freshBalance.transferableBalance != lastTransferableBalance) {
+        lastTransferableBalance = freshBalance.transferableBalance;
+        controller.add(freshBalance);
+      }
+    } catch (e) {
+      // Silently ignore re-fetch errors
+    }
+  });
 
   // Clean up when the provider is disposed
   ref.onDispose(() async {

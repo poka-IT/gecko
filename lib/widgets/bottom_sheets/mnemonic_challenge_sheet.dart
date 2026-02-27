@@ -63,6 +63,7 @@ class _MnemonicChallengeSheet extends ConsumerStatefulWidget {
 class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
+  bool _isAdvancing = false;
 
   @override
   void initState() {
@@ -100,7 +101,10 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
   }
 
   void _autoAdvance() {
+    if (_isAdvancing) return;
+    _isAdvancing = true;
     Future.delayed(const Duration(milliseconds: 600), () {
+      _isAdvancing = false;
       if (!mounted) return;
       final currentState = ref.read(mnemonicChallengeProvider);
       if (currentState.isComplete) return;

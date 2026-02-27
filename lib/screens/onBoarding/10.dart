@@ -483,22 +483,24 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               ),
             ),
             if (_isProcessing)
-              Container(
-                color: context.colorScheme.surface.withValues(alpha: 0.85),
-                child: SafeArea(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: scaleSize(3)),
-                        ScaledSizedBox(height: 24),
-                        Text('creatingSafe'.tr(), style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                        ScaledSizedBox(height: 8),
-                        Text(
-                          'creatingSafePleaseWait'.tr(),
-                          style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant),
-                        ),
-                      ],
+              AbsorbPointer(
+                child: Container(
+                  color: context.colorScheme.surface.withValues(alpha: 0.85),
+                  child: SafeArea(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: scaleSize(3)),
+                          ScaledSizedBox(height: 24),
+                          Text('creatingSafe'.tr(), style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                          ScaledSizedBox(height: 8),
+                          Text(
+                            'creatingSafePleaseWait'.tr(),
+                            style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

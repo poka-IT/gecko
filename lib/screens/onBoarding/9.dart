@@ -203,9 +203,6 @@ bool isPinComplex(String pin) {
   }
   if (sum < 3) return false;
 
-  // Check for palindromes
-  if (pin == pin.split('').reversed.join()) return false;
-
   // Check if PIN is a recent year
   int pinAsInt = int.parse(pin);
   if (pinAsInt >= 1950 && pinAsInt <= 2030) return false;

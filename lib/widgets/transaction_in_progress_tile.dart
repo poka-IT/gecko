@@ -256,6 +256,40 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
     return const JsonEncoder.withIndent('  ').convert(errorReport);
   }
 
+  void _showCommentDialog(BuildContext context, String comment) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: EdgeInsets.all(scaleSize(20)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.comment_outlined, size: scaleSize(20), color: context.colorScheme.primary),
+                  ScaledSizedBox(width: 8),
+                  Text('comment'.tr(), style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                ],
+              ),
+              ScaledSizedBox(height: 16),
+              SelectableText(
+                comment,
+                style: scaledTextStyle(
+                  fontSize: 15,
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.85),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _copyErrorReport(String? errorMessage, dynamic fromWallet, TransactionInProgressData transactionData) {
     final jsonReport = _generateErrorReport(errorMessage, fromWallet, transactionData);
     Clipboard.setData(ClipboardData(text: jsonReport));
@@ -417,7 +451,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
       // This part is for the text, but the tile will start disappearing.
       humanStatus = 'extrinsicValidated'.tr(args: [actionMap['pay']!]);
     } else if (_status.state == TransactionState.error) {
-      humanStatus = errorTransactionMap[_status.errorMessage] ?? _status.errorMessage!;
+      humanStatus = lookupTransactionError(_status.errorMessage) ?? _status.errorMessage!;
 
       // N'afficher la snackbar qu'une seule fois par erreur
       if (!_errorSnackbarShown) {
@@ -670,30 +704,34 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                 // Comment with arrow - inline after status if comment exists
                                 if (_currentTransactionData.comment.isNotEmpty) ...[
                                   ScaledSizedBox(height: 4),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Direction arrow
-                                      Icon(
-                                        Icons.call_made, // Always outgoing for transaction in progress
-                                        size: scaleSize(14),
-                                        color: Colors.blue,
-                                      ),
-                                      ScaledSizedBox(width: 6),
-                                      // Comment text
-                                      Expanded(
-                                        child: Text(
-                                          _currentTransactionData.comment,
-                                          style: scaledTextStyle(
-                                            fontSize: 13,
-                                            color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => _showCommentDialog(context, _currentTransactionData.comment),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // Direction arrow
+                                        Icon(
+                                          Icons.call_made, // Always outgoing for transaction in progress
+                                          size: scaleSize(14),
+                                          color: Colors.blue,
                                         ),
-                                      ),
-                                    ],
+                                        ScaledSizedBox(width: 6),
+                                        // Comment text
+                                        Expanded(
+                                          child: Text(
+                                            _currentTransactionData.comment,
+                                            style: scaledTextStyle(
+                                              fontSize: 13,
+                                              color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ],

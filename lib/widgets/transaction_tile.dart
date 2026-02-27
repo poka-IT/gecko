@@ -117,30 +117,34 @@ class TransactionTile extends StatelessWidget {
                                 // Comment with arrow - inline after address
                                 if (transaction.comment != null && transaction.comment!.isNotEmpty) ...[
                                   ScaledSizedBox(height: 4),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // Direction arrow
-                                      Icon(
-                                        transaction.isReceived ? Icons.call_received : Icons.call_made,
-                                        size: scaleSize(14),
-                                        color: transaction.isReceived ? context.colorScheme.primary : Colors.blue,
-                                      ),
-                                      ScaledSizedBox(width: 6),
-                                      // Comment text
-                                      Expanded(
-                                        child: Text(
-                                          transaction.comment!,
-                                          style: scaledTextStyle(
-                                            fontSize: 13,
-                                            color: context.colorScheme.onSurface.withValues(alpha: 0.7),
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => _showCommentDialog(context, transaction.comment!),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // Direction arrow
+                                        Icon(
+                                          transaction.isReceived ? Icons.call_received : Icons.call_made,
+                                          size: scaleSize(14),
+                                          color: transaction.isReceived ? context.colorScheme.primary : Colors.blue,
                                         ),
-                                      ),
-                                    ],
+                                        ScaledSizedBox(width: 6),
+                                        // Comment text
+                                        Expanded(
+                                          child: Text(
+                                            transaction.comment!,
+                                            style: scaledTextStyle(
+                                              fontSize: 13,
+                                              color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ],
@@ -191,6 +195,40 @@ class TransactionTile extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCommentDialog(BuildContext context, String comment) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: EdgeInsets.all(scaleSize(20)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.comment_outlined, size: scaleSize(20), color: context.colorScheme.primary),
+                  ScaledSizedBox(width: 8),
+                  Text('comment'.tr(), style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                ],
+              ),
+              ScaledSizedBox(height: 16),
+              SelectableText(
+                comment,
+                style: scaledTextStyle(
+                  fontSize: 15,
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.85),
+                  height: 1.4,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -81,11 +81,11 @@ class PageWithBottomPaddingWrapper extends ConsumerWidget {
       }
 
       // Add bottom padding to prevent content from being hidden behind bottom bar
-      // Use a fixed value since scaleSize depends on homeContext which might not be ready
-      const bottomPadding = 67.0;
+      // Must use scaleSize to match the actual bottom bar height
+      final bottomPadding = scaleSize(67);
 
       return Padding(
-        padding: const EdgeInsets.only(bottom: bottomPadding),
+        padding: EdgeInsets.only(bottom: bottomPadding),
         child: child,
       );
     } catch (e) {

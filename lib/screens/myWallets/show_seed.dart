@@ -154,31 +154,78 @@ class ShowSeed extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                            // Show English export button if safe language is not English
                             if (!isEnglish) ...[
-                              ScaledSizedBox(height: 20),
-                              ScaledSizedBox(
-                                height: 39,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    backgroundColor: context.colorScheme.secondary,
-                                    elevation: 1,
-                                  ),
-                                  onPressed: () {
-                                    SnackbarService.copyMnemonicToClipboard(context, englishMnemonic);
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      Icon(Icons.translate, size: scaleSize(20), color: context.colorScheme.onSurface),
-                                      ScaledSizedBox(width: 7),
-                                      Text(
-                                        'exportInEnglish'.tr(),
-                                        style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
+                              ScaledSizedBox(height: 24),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: context.colorScheme.surfaceContainer,
+                                    borderRadius: BorderRadius.circular(scaleSize(12)),
+                                    border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.1)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.02),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
                                       ),
                                     ],
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: Theme(
+                                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                                    child: ExpansionTile(
+                                      tilePadding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                                      childrenPadding: EdgeInsets.fromLTRB(
+                                        scaleSize(16),
+                                        0,
+                                        scaleSize(16),
+                                        scaleSize(16),
+                                      ),
+                                      leading: Icon(
+                                        Icons.translate,
+                                        size: scaleSize(20),
+                                        color: context.colorScheme.primary,
+                                      ),
+                                      title: Text(
+                                        'compatibility'.tr(),
+                                        style: scaledTextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: context.colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      children: [
+                                        Text(
+                                          'compatibilityExplanation'.tr(),
+                                          style: scaledTextStyle(
+                                            fontSize: 13,
+                                            color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                                          ),
+                                        ),
+                                        ScaledSizedBox(height: 12),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton.icon(
+                                            style: ElevatedButton.styleFrom(
+                                              foregroundColor: context.colorScheme.onSurface,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              backgroundColor: context.colorScheme.secondary,
+                                              elevation: 0,
+                                              padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                                            ),
+                                            onPressed: () {
+                                              SnackbarService.copyMnemonicToClipboard(context, englishMnemonic);
+                                            },
+                                            icon: Icon(Icons.copy, size: scaleSize(18)),
+                                            label: Text(
+                                              'copyEnglishVersion'.tr(),
+                                              style: scaledTextStyle(fontSize: 13),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),

@@ -592,7 +592,7 @@
     "paymentWarningInactiveMessage": "This {} wallet has had no outgoing activity for a long time (last: {}). The owner may no longer have access.",
     "paymentWarningInactiveTitle": "Inactive wallet",
     "paymentWarningNonExistentMessage": "This wallet has never been funded. A {} payment will create the account on the blockchain.",
-    "paymentWarningNonExistentTitle": "Non-existent wallet",
+    "paymentWarningNonExistentTitle": "Never used wallet",
     "pending": "Pending",
     "pinCode": "PIN Code",
     "pinNeeded": "PIN code required",

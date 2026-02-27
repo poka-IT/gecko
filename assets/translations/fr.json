@@ -781,7 +781,7 @@
     "externalLinkTitle": "Lien externe",
     "externalLinkWarning": "Vous allez quitter l'application pour ouvrir un lien externe. Soyez vigilant et assurez-vous que ce lien est fiable avant de continuer.",
     "openLink": "Ouvrir le lien",
-    "paymentWarningNonExistentTitle": "Portefeuille inexistant",
+    "paymentWarningNonExistentTitle": "Portefeuille jamais utilisé",
     "paymentWarningNonExistentMessage": "Ce portefeuille n'a jamais été alimenté. Un paiement en {} va créer le compte sur la blockchain.",
     "paymentWarningEmptiedTitle": "Portefeuille vide",
     "paymentWarningEmptiedMessage": "Ce portefeuille {} a été vidé. Dernière activité : {}. Le propriétaire n'y a peut-être plus accès.",

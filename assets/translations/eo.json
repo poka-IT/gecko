@@ -781,7 +781,7 @@
     "externalLinkTitle": "Ekstera ligilo",
     "externalLinkWarning": "Vi tuj forlasos la aplikaĵon por malfermi eksteran ligilon. Estu atentema kaj certiĝu, ke tiu ligilo estas fidinda antaŭ ol daŭrigi.",
     "openLink": "Malfermi la ligilon",
-    "paymentWarningNonExistentTitle": "Monujo ne ekzistanta",
+    "paymentWarningNonExistentTitle": "Neniam uzita monujo",
     "paymentWarningNonExistentMessage": "Tiu ĉi monujo neniam ricevis monon. Pago en {} tuj kreos la konton en la blokĉeno.",
     "paymentWarningEmptiedTitle": "Monujo malplena",
     "paymentWarningEmptiedMessage": "Tiu ĉi monujo {} estis malplenigita. Lasta operacio: {}. La posedanto eble ne plu povas aliri ĝin.",

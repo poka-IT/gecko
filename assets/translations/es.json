@@ -597,7 +597,7 @@
     "paymentWarningInactiveMessage": "Este monedero {} no ha tenido actividad saliente durante mucho tiempo (última: {}). Es posible que el propietario ya no tenga acceso.",
     "paymentWarningInactiveTitle": "Monedero inactivo",
     "paymentWarningNonExistentMessage": "Este monedero nunca ha sido financiado. Un pago en {} creará la cuenta en la blockchain.",
-    "paymentWarningNonExistentTitle": "Monedero inexistente",
+    "paymentWarningNonExistentTitle": "Monedero nunca utilizado",
     "pending": "En espera",
     "pinCode": "Código PIN",
     "pinNeeded": "Código PIN requerido",

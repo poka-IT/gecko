@@ -4,7 +4,6 @@
 FROM --platform=linux/amd64 eclipse-temurin:17-jdk-jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV FLUTTER_VERSION=3.41.1
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
 ENV ANDROID_HOME=/opt/android-sdk
 ENV PATH=/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
@@ -15,10 +14,14 @@ RUN apt-get update -y && \
         git curl wget unzip xz-utils libglu1-mesa && \
     rm -rf /var/lib/apt/lists/*
 
-# Flutter SDK
-RUN git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION --depth 1 /opt/flutter && \
-    flutter config --no-analytics && \
-    flutter precache --android
+# Flutter SDK (version read from .fvmrc)
+COPY .fvmrc /tmp/.fvmrc
+RUN FLUTTER_VERSION=$(cat /tmp/.fvmrc | grep -o '"flutter": "[^"]*"' | cut -d'"' -f4) \
+    && echo "Installing Flutter version: $FLUTTER_VERSION" \
+    && git clone https://github.com/flutter/flutter.git -b $FLUTTER_VERSION --depth 1 /opt/flutter \
+    && flutter config --no-analytics \
+    && flutter precache --android \
+    && rm /tmp/.fvmrc
 
 # Android SDK: cmdline-tools + platforms + build-tools
 # NDK is auto-downloaded by AGP during first build (version from build.gradle)

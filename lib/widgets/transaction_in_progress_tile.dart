@@ -451,7 +451,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
       // This part is for the text, but the tile will start disappearing.
       humanStatus = 'extrinsicValidated'.tr(args: [actionMap['pay']!]);
     } else if (_status.state == TransactionState.error) {
-      humanStatus = lookupTransactionError(_status.errorMessage) ?? _status.errorMessage!;
+      humanStatus = lookupTransactionError(_status.errorMessage) ?? _status.errorMessage ?? 'unknownError'.tr();
 
       // N'afficher la snackbar qu'une seule fois par erreur
       if (!_errorSnackbarShown) {

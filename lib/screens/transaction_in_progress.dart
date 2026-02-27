@@ -353,7 +353,7 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
     } else if (txStatus.state == TransactionState.error) {
       final errorParts = txStatus.errorMessage?.split('Exception: ');
       final error = errorParts != null && errorParts.length > 1 ? errorParts[1] : txStatus.errorMessage;
-      resultText = errorTransactionMap[error] ?? error ?? 'unknownError'.tr();
+      resultText = lookupTransactionError(error) ?? error ?? 'unknownError'.tr();
       statusColor = Colors.red;
     } else if (txStatus.state == TransactionState.inBlock) {
       resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);

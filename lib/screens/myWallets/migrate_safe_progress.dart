@@ -14,6 +14,7 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
@@ -146,12 +147,10 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
   }
 
   Future<void> _startMigration() async {
-    final migrations = _tasks.map((task) {
-      return _migrateSingleWallet(task);
-    }).toList();
-
     try {
-      await Future.wait(migrations);
+      for (final task in _tasks) {
+        await _migrateSingleWallet(task);
+      }
       if (!mounted) return;
       setState(() {
         _migrationCompleted = true;
@@ -262,10 +261,10 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
       }
     } catch (e) {
       if (!mounted) rethrow;
-
+      final rawError = e.toString().replaceFirst('Exception: ', '');
       setState(() {
         task.status = MigrationStatus.failed;
-        task.details = e.toString();
+        task.details = lookupTransactionError(rawError) ?? rawError;
       });
       rethrow;
     }

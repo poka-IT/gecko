@@ -663,6 +663,8 @@
     "revoked": "",
     "revokedAccountCannotBeCertified": "",
     "rootWallet": "",
+    "creatingSafe": "Tresor wird erstellt...",
+    "creatingSafePleaseWait": "Dies kann einen Moment dauern, bitte warten.",
     "safeAlreadyExist": "",
     "safeBoxName": "",
     "safeName": "",

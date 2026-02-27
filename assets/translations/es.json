@@ -668,6 +668,8 @@
     "revoked": "Revocada",
     "revokedAccountCannotBeCertified": "Una cuenta revocada no puede ser certificada",
     "rootWallet": "Monedero raíz",
+    "creatingSafe": "Creando tu bóveda...",
+    "creatingSafePleaseWait": "Esto puede tardar un momento, por favor espera.",
     "safeAlreadyExist": "Esta bóveda ya existe en tu Ğecko, no puedes importar dos veces la misma bóveda.",
     "safeBoxName": "Bóveda",
     "safeName": "Nombre de la bóveda",

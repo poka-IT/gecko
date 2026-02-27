@@ -413,72 +413,97 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('myPassword'.tr()),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                ScaledSizedBox(height: isTall ? 25 : 5),
-                const BuildProgressBar(pagePosition: 9),
-                ScaledSizedBox(height: isTall ? 25 : 5),
-                BuildText(text: "geckoWillCheckPassword".tr()),
-                ScaledSizedBox(height: isTall ? 25 : 0),
-                const ScanDerivationsInfo(),
-                Consumer(
-                  builder: (context, ref, _) {
-                    final pinState = ref.watch(pinStateProvider);
-                    return Visibility(
-                      visible: !pinState.isValid && !pinState.isLoading,
-                      child: Text(
-                        "thisIsNotAGoodCode".tr(),
-                        style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
-                      ),
-                    );
-                  },
-                ),
-                ScaledSizedBox(height: isTall ? 20 : 0),
-                pinForm(context, pinLenght, 1, 2),
-                Consumer(
-                  builder: (context, ref, _) {
-                    return ref.read(durtProvider).isConnected
-                        ? StatefulBuilder(
-                            builder: (context, setState) {
-                              final pinCacheState = PinCodeService.isEnabled;
-                              return InkWell(
-                                key: keyCachePassword,
-                                onTap: () {
-                                  setState(() {
-                                    PinCodeService.toggle();
-                                  });
+        body: Stack(
+          children: [
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    ScaledSizedBox(height: isTall ? 25 : 5),
+                    const BuildProgressBar(pagePosition: 9),
+                    ScaledSizedBox(height: isTall ? 25 : 5),
+                    BuildText(text: "geckoWillCheckPassword".tr()),
+                    ScaledSizedBox(height: isTall ? 25 : 0),
+                    const ScanDerivationsInfo(),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final pinState = ref.watch(pinStateProvider);
+                        return Visibility(
+                          visible: !pinState.isValid && !pinState.isLoading,
+                          child: Text(
+                            "thisIsNotAGoodCode".tr(),
+                            style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
+                          ),
+                        );
+                      },
+                    ),
+                    ScaledSizedBox(height: isTall ? 20 : 0),
+                    pinForm(context, pinLenght, 1, 2),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        return ref.read(durtProvider).isConnected
+                            ? StatefulBuilder(
+                                builder: (context, setState) {
+                                  final pinCacheState = PinCodeService.isEnabled;
+                                  return InkWell(
+                                    key: keyCachePassword,
+                                    onTap: () {
+                                      setState(() {
+                                        PinCodeService.toggle();
+                                      });
+                                    },
+                                    child: Row(
+                                      children: [
+                                        ScaledSizedBox(height: isTall ? 30 : 0),
+                                        const Spacer(),
+                                        Icon(
+                                          pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
+                                          color: context.colorScheme.primary,
+                                          size: scaleSize(22),
+                                        ),
+                                        ScaledSizedBox(width: 8),
+                                        Text(
+                                          'rememberPassword'.tr(),
+                                          style: scaledTextStyle(
+                                            fontSize: 14,
+                                            color: homeContext.colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                      ],
+                                    ),
+                                  );
                                 },
-                                child: Row(
-                                  children: [
-                                    ScaledSizedBox(height: isTall ? 30 : 0),
-                                    const Spacer(),
-                                    Icon(
-                                      pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
-                                      color: context.colorScheme.primary,
-                                      size: scaleSize(22),
-                                    ),
-                                    ScaledSizedBox(width: 8),
-                                    Text(
-                                      'rememberPassword'.tr(),
-                                      style: scaledTextStyle(
-                                        fontSize: 14,
-                                        color: homeContext.colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : const Text('');
-                  },
+                              )
+                            : const Text('');
+                      },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+            if (_isProcessing)
+              Container(
+                color: context.colorScheme.surface.withValues(alpha: 0.85),
+                child: SafeArea(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: scaleSize(3)),
+                        ScaledSizedBox(height: 24),
+                        Text('creatingSafe'.tr(), style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                        ScaledSizedBox(height: 8),
+                        Text(
+                          'creatingSafePleaseWait'.tr(),
+                          style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

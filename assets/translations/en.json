@@ -663,6 +663,8 @@
     "revoked": "Revoked",
     "revokedAccountCannotBeCertified": "A revoked account cannot be certified",
     "rootWallet": "Root Wallet",
+    "creatingSafe": "Creating your safe...",
+    "creatingSafePleaseWait": "This may take a moment, please wait.",
     "safeAlreadyExist": "This safe already exists in your Ğecko, you cannot import the same safe twice.",
     "safeBoxName": "Safe",
     "safeName": "Safe name",

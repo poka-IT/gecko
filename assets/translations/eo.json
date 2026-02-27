@@ -283,6 +283,8 @@
     "blockN": "Bloko N°{}",
     "thisIsNotAGoodCode": "Tiu kodo malĝustas",
     "thisIdentityAlreadyExist": "Tiu ĉi identeco jam ekzistas",
+    "creatingSafe": "Kreante vian kofron...",
+    "creatingSafePleaseWait": "Tio povas daŭri momenton, bonvolu atendi.",
     "safeAlreadyExist": "Tiu kofro jam ekzistas en via Ğecko, vi ne povas enporti dufoje la saman kofron.",
     "squidUnavailableIdentityValidationLimited": "⚠️ Validigo limigita: reto nedisponebla",
     "removedFromcontacts": "Forigita el la kontaktoj",

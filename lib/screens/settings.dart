@@ -1847,6 +1847,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       'fr': ('Français', '🇫🇷'),
       'es': ('Español', '🇪🇸'),
       'it': ('Italiano', '🇮🇹'),
+      'eo': ('Esperanto', '🟢'),
+      'de': ('Deutsch', '🇩🇪'),
     };
 
     final currentKey = isSystemLocale ? _systemLocaleKey : currentLocale.languageCode;

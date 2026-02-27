@@ -117,7 +117,14 @@ Future<void> main() async {
       appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
         runApp(
           EasyLocalization(
-            supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('fr'),
+              Locale('es'),
+              Locale('it'),
+              Locale('eo'),
+              Locale('de'),
+            ],
             path: 'assets/translations',
             assetLoader: const EmptyStringAssetLoader(),
             fallbackLocale: const Locale('en'),
@@ -133,7 +140,7 @@ Future<void> main() async {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
       runApp(
         EasyLocalization(
-          supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it')],
+          supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'), Locale('eo'), Locale('de')],
           path: 'assets/translations',
           fallbackLocale: const Locale('en'),
           startLocale: startLocale,

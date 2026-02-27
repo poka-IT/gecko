@@ -164,6 +164,8 @@
     "copy": "Copy",
     "copyAddress": "Copy\naddress",
     "correctWord": "Correct!",
+    "incorrectWord": "Incorrect word. Please try again.",
+    "checkWord": "Check",
     "createCustomDerivation": "Create a new custom derivation",
     "createDerivation": "Create a new derivation",
     "createIdentity": "Create identity",

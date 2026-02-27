@@ -85,17 +85,30 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
     final isValid = ref.read(mnemonicChallengeProvider.notifier).checkWord(activeIndex, value);
 
     if (isValid) {
-      // Auto-advance after a short delay
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (!mounted) return;
-        final currentState = ref.read(mnemonicChallengeProvider);
-        if (currentState.isComplete) return;
-
-        // Clear input then advance — the TextField stays in the tree so focus is preserved
-        _controller.clear();
-        ref.read(mnemonicChallengeProvider.notifier).advanceToNext();
-      });
+      _autoAdvance();
     }
+  }
+
+  void _onSubmit() {
+    final state = ref.read(mnemonicChallengeProvider);
+    final activeIndex = state.activeIndex;
+    final isValid = ref.read(mnemonicChallengeProvider.notifier).submitWord(activeIndex);
+
+    if (isValid) {
+      _autoAdvance();
+    }
+  }
+
+  void _autoAdvance() {
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      final currentState = ref.read(mnemonicChallengeProvider);
+      if (currentState.isComplete) return;
+
+      // Clear input then advance — the TextField stays in the tree so focus is preserved
+      _controller.clear();
+      ref.read(mnemonicChallengeProvider.notifier).advanceToNext();
+    });
   }
 
   @override
@@ -204,6 +217,7 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
   Widget _buildWordInput(BuildContext context, MnemonicChallengeState state) {
     final challenge = state.challenges[state.activeIndex];
     final isCurrentValidated = challenge.isValidated;
+    final hasError = challenge.hasError;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
@@ -227,17 +241,37 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
             autocorrect: false,
             enableSuggestions: false,
             onChanged: _onTextChanged,
+            onSubmitted: (_) => _onSubmit(),
             style: scaledTextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: isCurrentValidated ? Colors.green[600] : null,
+              color: isCurrentValidated
+                  ? Colors.green[600]
+                  : hasError
+                      ? Colors.red[600]
+                      : null,
             ),
             decoration: InputDecoration(
               hintText: 'wordNofMnemonic'.tr(),
               hintStyle: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
               filled: true,
               fillColor: context.colorScheme.surfaceContainerHighest,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: hasError ? BorderSide(color: Colors.red[600]!, width: 1.5) : BorderSide.none,
+              ),
+              enabledBorder: hasError
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red[600]!, width: 1.5),
+                    )
+                  : OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              focusedBorder: hasError
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.red[600]!, width: 1.5),
+                    )
+                  : null,
               suffixIcon: isCurrentValidated
                   ? TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0.0, end: 1.0),
@@ -247,18 +281,40 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
                       },
                       child: Icon(Icons.check_circle, color: Colors.green[600]),
                     )
-                  : null,
+                  : hasError
+                      ? Icon(Icons.error_outline, color: Colors.red[600])
+                      : null,
             ),
           ),
           SizedBox(height: scaleSize(8)),
-          AnimatedOpacity(
-            opacity: isCurrentValidated ? 1.0 : 0.0,
+          // Feedback message: correct or incorrect
+          AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: Text(
-              'correctWord'.tr(),
-              style: scaledTextStyle(fontSize: 14, color: Colors.green[600], fontWeight: FontWeight.w500),
-            ),
+            child: isCurrentValidated
+                ? Text(
+                    key: const ValueKey('correct'),
+                    'correctWord'.tr(),
+                    style: scaledTextStyle(fontSize: 14, color: Colors.green[600], fontWeight: FontWeight.w500),
+                  )
+                : hasError
+                    ? Text(
+                        key: const ValueKey('error'),
+                        'incorrectWord'.tr(),
+                        style: scaledTextStyle(fontSize: 14, color: Colors.red[600], fontWeight: FontWeight.w500),
+                      )
+                    : const SizedBox.shrink(key: ValueKey('empty')),
           ),
+          // Check button — visible when not yet validated and user has typed something
+          if (!isCurrentValidated) ...[
+            SizedBox(height: scaleSize(12)),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: challenge.userInput.trim().isNotEmpty ? _onSubmit : null,
+                child: Text('checkWord'.tr()),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -170,6 +170,8 @@
     "copy": "Copiare",
     "copyAddress": "Copiare\nl'indirizzo",
     "correctWord": "Corretto!",
+    "incorrectWord": "Parola errata. Riprova.",
+    "checkWord": "Verifica",
     "createCustomDerivation": "Creare una derivazione personalizzata",
     "createDerivation": "Creare un'altra derivazione",
     "createIdentity": "Creare una nuova \nidentità",

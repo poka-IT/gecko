@@ -766,6 +766,8 @@
     "typeWordNumber": "Tajpu la vorton n°{}",
     "wordNofMnemonic": "Enigu la vorton...",
     "correctWord": "Ĝuste!",
+    "incorrectWord": "Malĝusta vorto. Bonvolu reprovi.",
+    "checkWord": "Kontroli",
     "mnemonicVerificationFailed": "Ne eblis ŝarĝi vian reakiran frazon. Bonvolu reprovi.",
     "showMore": "Vidi pli",
     "showLess": "Vidi malpli",

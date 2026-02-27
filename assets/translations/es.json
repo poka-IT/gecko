@@ -169,6 +169,8 @@
     "copy": "Copiar",
     "copyAddress": "Copiar\nla dirección",
     "correctWord": "¡Correcto!",
+    "incorrectWord": "Palabra incorrecta. Inténtelo de nuevo.",
+    "checkWord": "Comprobar",
     "createCustomDerivation": "Crear una derivación personalizada",
     "createDerivation": "Crear otra derivación",
     "createIdentity": "Crear su nueva\nidentidad",

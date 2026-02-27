@@ -13,20 +13,23 @@ class MnemonicChallengeWord {
   final String expectedWord;
   final String userInput;
   final bool isValidated;
+  final bool hasError;
 
   const MnemonicChallengeWord({
     required this.wordIndex,
     required this.expectedWord,
     this.userInput = '',
     this.isValidated = false,
+    this.hasError = false,
   });
 
-  MnemonicChallengeWord copyWith({String? userInput, bool? isValidated}) {
+  MnemonicChallengeWord copyWith({String? userInput, bool? isValidated, bool? hasError}) {
     return MnemonicChallengeWord(
       wordIndex: wordIndex,
       expectedWord: expectedWord,
       userInput: userInput ?? this.userInput,
       isValidated: isValidated ?? this.isValidated,
+      hasError: hasError ?? this.hasError,
     );
   }
 
@@ -157,7 +160,27 @@ class MnemonicChallengeNotifier extends Notifier<MnemonicChallengeState> {
     final isValid = normalizedInput == normalizedExpected || (kDebugMode && normalizedInput == 'triche');
 
     final updatedChallenges = List<MnemonicChallengeWord>.from(state.challenges);
-    updatedChallenges[challengeIndex] = challenge.copyWith(userInput: input, isValidated: isValid);
+    updatedChallenges[challengeIndex] = challenge.copyWith(userInput: input, isValidated: isValid, hasError: false);
+
+    state = state.copyWith(challenges: updatedChallenges);
+    return isValid;
+  }
+
+  /// Explicitly submit the current word for validation.
+  /// Sets hasError=true if the word is incorrect.
+  bool submitWord(int challengeIndex) {
+    if (challengeIndex < 0 || challengeIndex >= state.challenges.length) return false;
+
+    final challenge = state.challenges[challengeIndex];
+    if (challenge.isValidated) return true;
+
+    final normalizedInput = challenge.userInput.trim().toLowerCase();
+    final normalizedExpected = challenge.expectedWord.trim().toLowerCase();
+
+    final isValid = normalizedInput == normalizedExpected || (kDebugMode && normalizedInput == 'triche');
+
+    final updatedChallenges = List<MnemonicChallengeWord>.from(state.challenges);
+    updatedChallenges[challengeIndex] = challenge.copyWith(isValidated: isValid, hasError: !isValid);
 
     state = state.copyWith(challenges: updatedChallenges);
     return isValid;

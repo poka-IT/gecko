@@ -164,6 +164,8 @@
     "copy": "Kopieren",
     "copyAddress": "Kopieren\nder Adresse",
     "correctWord": "Richtig!",
+    "incorrectWord": "Falsches Wort. Bitte versuchen Sie es erneut.",
+    "checkWord": "Prüfen",
     "createCustomDerivation": "",
     "createDerivation": "",
     "createIdentity": "",

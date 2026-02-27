@@ -766,6 +766,8 @@
     "typeWordNumber": "Tapez le mot n°{}",
     "wordNofMnemonic": "Entrez le mot...",
     "correctWord": "Correct !",
+    "incorrectWord": "Mot incorrect. Veuillez réessayer.",
+    "checkWord": "Vérifier",
     "mnemonicVerificationFailed": "Impossible de charger votre phrase de restauration. Veuillez réessayer.",
     "showMore": "Voir plus",
     "showLess": "Voir moins",

@@ -201,7 +201,7 @@ bool isPinComplex(String pin) {
   for (int i = 0; i < 3; i++) {
     sum += (int.parse(pin[i]) - int.parse(pin[i + 1])).abs();
   }
-  if (sum < 5) return false;
+  if (sum < 3) return false;
 
   // Check for palindromes
   if (pin == pin.split('').reversed.join()) return false;

@@ -40,6 +40,9 @@ const Color _darkDisabledColor = Color.fromRGBO(189, 189, 189, 1);
 const Color _errorColor = Color.fromARGB(255, 232, 211, 211);
 const Color _darkErrorColor = Color.fromARGB(255, 90, 38, 38);
 
+const Color _switchActiveColor = Color(0xff4CAF50);
+const Color _darkSwitchActiveColor = Color(0xff388E3C);
+
 /// Enum representing the available theme mode settings.
 enum ThemeModeSetting { system, light, dark }
 
@@ -148,13 +151,13 @@ final ThemeData lightTheme = ThemeData(
   switchTheme: SwitchThemeData(
     thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
       if (states.contains(WidgetState.selected)) {
-        return _orangeC;
+        return _switchActiveColor;
       }
       return Colors.grey[400];
     }),
     trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
       if (states.contains(WidgetState.selected)) {
-        return _orangeC.withValues(alpha: 0.5);
+        return _switchActiveColor.withValues(alpha: 0.5);
       }
       return Colors.grey[300];
     }),
@@ -201,13 +204,13 @@ final ThemeData darkTheme = ThemeData(
   switchTheme: SwitchThemeData(
     thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
       if (states.contains(WidgetState.selected)) {
-        return _darkOrangeC;
+        return _darkSwitchActiveColor;
       }
       return Colors.grey[600];
     }),
     trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
       if (states.contains(WidgetState.selected)) {
-        return _darkOrangeC.withValues(alpha: 0.5);
+        return _darkSwitchActiveColor.withValues(alpha: 0.5);
       }
       return Colors.grey[800];
     }),

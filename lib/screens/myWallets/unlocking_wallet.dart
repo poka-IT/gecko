@@ -417,12 +417,12 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                                 padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
                                 decoration: BoxDecoration(
                                   color: pinCacheState
-                                      ? context.colorScheme.primaryContainer.withValues(alpha: 0.5)
+                                      ? const Color(0xff4CAF50).withValues(alpha: 0.15)
                                       : context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: pinCacheState
-                                        ? context.colorScheme.primary.withValues(alpha: 0.3)
+                                        ? const Color(0xff4CAF50).withValues(alpha: 0.3)
                                         : context.colorScheme.outline.withValues(alpha: 0.15),
                                   ),
                                 ),
@@ -432,7 +432,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                                     Icon(
                                       pinCacheState ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
                                       color: pinCacheState
-                                          ? context.colorScheme.primary
+                                          ? const Color(0xff4CAF50)
                                           : context.colorScheme.onSurfaceVariant,
                                       size: scaleSize(16),
                                     ),
@@ -443,7 +443,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                                         style: scaledTextStyle(
                                           fontSize: 11,
                                           color: pinCacheState
-                                              ? context.colorScheme.primary
+                                              ? const Color(0xff4CAF50)
                                               : context.colorScheme.onSurfaceVariant,
                                           fontWeight: pinCacheState ? FontWeight.w600 : FontWeight.w400,
                                         ),
@@ -462,8 +462,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                                               PinCodeService.toggle();
                                             });
                                           },
-                                          activeTrackColor: context.colorScheme.primary,
-                                          activeThumbColor: context.colorScheme.onPrimary,
                                         ),
                                       ),
                                     ),

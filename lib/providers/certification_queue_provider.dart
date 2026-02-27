@@ -214,7 +214,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       final storageService = ref.read(storageServiceProvider);
       final certData = await storageService.getCertsCounter(queue.issuerAddress);
       final currentBlock = await storageService.getCurrentBlockHeight();
-      final genesisTime = await storageService.getGenesisBlockchainTime();
       final certPeriodBlocks = storageService.getCertPeriodBlocks();
 
       // Use the greater of blockchain and local optimistic nextIssuableOn.
@@ -236,7 +235,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         certPeriodBlocks: certPeriodBlocks,
         currentBlockNumber: currentBlock,
         nextIssuableBlock: effectiveNext,
-        genesisTime: genesisTime,
       );
     } catch (e) {
       log.e('[CertQueueProvider] Error updating queue dates: $e');
@@ -417,7 +415,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     final storageService = ref.read(storageServiceProvider);
     final certData = await storageService.getCertsCounter(currentQueue.issuerAddress);
     final currentBlock = await storageService.getCurrentBlockHeight();
-    final genesisTime = await storageService.getGenesisBlockchainTime();
     final certPeriodBlocks = storageService.getCertPeriodBlocks();
 
     final position = currentQueue.queueLength + 1;
@@ -427,7 +424,6 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       certPeriodBlocks: certPeriodBlocks,
       currentBlockNumber: currentBlock,
       nextIssuableBlock: certData.nextIssuableOn,
-      genesisTime: genesisTime,
     );
 
     final expectedBlock = (certData.nextIssuableOn ?? currentBlock) + ((position - 1) * certPeriodBlocks);
@@ -513,13 +509,11 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       );
 
       // Recalculate dates using the optimistic nextIssuableOn
-      final genesisTime = await storageService.getGenesisBlockchainTime();
       newQueue = CertificationQueueService.updateExpectedDates(
         queue: newQueue,
         certPeriodBlocks: certPeriodBlocks,
         currentBlockNumber: currentBlock,
         nextIssuableBlock: optimisticNextIssuable,
-        genesisTime: genesisTime,
       );
       // Preserve lastUpdated and isSynced (updateExpectedDates doesn't touch them)
       newQueue = newQueue.copyWith(lastUpdated: DateTime.now(), isSynced: false);

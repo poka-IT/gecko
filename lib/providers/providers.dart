@@ -71,7 +71,11 @@ final genesisTimeProvider = FutureProvider<DateTime?>((ref) async {
   }
 
   final storageService = ref.watch(storageServiceProvider);
-  return await storageService.getGenesisBlockchainTime();
+  try {
+    return await storageService.getGenesisBlockchainTime();
+  } catch (e) {
+    return null; // Genesis time unavailable — node may be pruned or not synced
+  }
 });
 
 /// Provides the first wallet of the active safe for reactive UI updates.

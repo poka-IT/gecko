@@ -77,13 +77,11 @@ class CertificationQueueService {
   /// [certPeriodBlocks] - Number of blocks between certifications
   /// [currentBlockNumber] - Current block number
   /// [nextIssuableBlock] - Block when the issuer can next certify (null if can certify now)
-  /// [genesisTime] - Genesis blockchain time (unused but kept for API compatibility)
   static DateTime calculateExpectedDate({
     required int position,
     required int certPeriodBlocks,
     required int currentBlockNumber,
     required int? nextIssuableBlock,
-    required DateTime genesisTime,
   }) {
     const blockTimeSeconds = 6;
 
@@ -115,7 +113,6 @@ class CertificationQueueService {
     required int certPeriodBlocks,
     required int currentBlockNumber,
     required int? nextIssuableBlock,
-    required DateTime genesisTime,
   }) {
     if (queue.pendingCertifications.isEmpty) return queue;
 
@@ -130,7 +127,6 @@ class CertificationQueueService {
         certPeriodBlocks: certPeriodBlocks,
         currentBlockNumber: currentBlockNumber,
         nextIssuableBlock: nextIssuableBlock,
-        genesisTime: genesisTime,
       );
 
       // Calculate expected block

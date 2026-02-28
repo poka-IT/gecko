@@ -600,6 +600,7 @@
     "paymentWarningNonExistentTitle": "Noch nie benutztes Wallet",
     "pending": "",
     "pinCode": "",
+    "pinExpired": "",
     "pinNeeded": "PIN-Code erforderlich",
     "pinRequiredForBiometric": "",
     "pinSecurityBlockedField": "",

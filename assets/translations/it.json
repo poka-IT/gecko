@@ -606,6 +606,7 @@
     "paymentWarningNonExistentTitle": "Portafoglio mai utilizzato",
     "pending": "In attesa",
     "pinCode": "Codice PIN",
+    "pinExpired": "Codice PIN scaduto, tornare indietro e riprovare",
     "pinNeeded": "Codice PIN richiesto",
     "pinRequiredForBiometric": "PIN richiesto per attivare l'autenticazione biometrica",
     "pinSecurityBlockedField": "Inserimento PIN bloccato",

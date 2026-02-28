@@ -545,6 +545,7 @@
     "biometricSetupFailed": "Échec de la configuration de l'authentification biométrique",
     "enterPinCode": "Entrez le code PIN",
     "pinCode": "Code PIN",
+    "pinExpired": "Code PIN expiré, veuillez revenir en arrière et réessayer",
     "transactions": "Transactions",
     "identities": "Identités",
     "certifications": "Certifications",

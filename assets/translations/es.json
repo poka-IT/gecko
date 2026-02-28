@@ -605,6 +605,7 @@
     "paymentWarningNonExistentTitle": "Monedero nunca utilizado",
     "pending": "En espera",
     "pinCode": "Código PIN",
+    "pinExpired": "Código PIN expirado, vuelva atrás e inténtelo de nuevo",
     "pinNeeded": "Código PIN requerido",
     "pinRequiredForBiometric": "Código PIN requerido para activar la autenticación biométrica",
     "pinSecurityBlockedField": "Introducción del código bloqueada",

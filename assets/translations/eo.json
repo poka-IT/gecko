@@ -545,6 +545,7 @@
     "biometricSetupFailed": "Malsukceso por agordi la biometrian aŭtentiĝon",
     "enterPinCode": "Entajpu la PIN-kodon",
     "pinCode": "PIN-kodo",
+    "pinExpired": "PIN-kodo eksvalidiĝis, bonvolu reiri kaj reprovi",
     "transactions": "Spezoj",
     "identities": "Identecoj",
     "certifications": "Atestaĵoj",

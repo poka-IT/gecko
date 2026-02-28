@@ -1,5 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+
+/// Exception thrown when PIN code has expired or is empty
+class PinExpiredException implements Exception {
+  @override
+  String toString() => 'PIN code expired. Please re-enter your PIN.';
+}
 
 /// Combined seed data for show seed page
 typedef SeedDisplayData = ({String englishMnemonic, String displayMnemonic, int? safeBoxNumber});
@@ -9,6 +16,12 @@ final seedDisplayProvider = FutureProvider.family.autoDispose<SeedDisplayData, (
   ref,
   params,
 ) async {
+  // Check that PIN is not empty before attempting to decrypt
+  if (params.pin.isEmpty) {
+    log.e('PIN code is empty when trying to retrieve seed');
+    throw PinExpiredException();
+  }
+
   final walletService = ref.read(walletServiceProvider);
 
   // Get the English mnemonic first

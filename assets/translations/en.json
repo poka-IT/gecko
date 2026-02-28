@@ -600,6 +600,7 @@
     "paymentWarningNonExistentTitle": "Never used wallet",
     "pending": "Pending",
     "pinCode": "PIN Code",
+    "pinExpired": "PIN code expired, please go back and try again",
     "pinNeeded": "PIN code required",
     "pinRequiredForBiometric": "PIN required to enable biometric authentication",
     "pinSecurityBlockedField": "PIN entry blocked",

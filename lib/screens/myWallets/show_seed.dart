@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/security_providers.dart';
@@ -57,30 +58,47 @@ class ShowSeed extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      error: (error, stack) => Center(
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 173),
-                            Icon(Icons.error_outline, size: 48, color: context.colorScheme.error),
-                            const SizedBox(height: 16),
-                            Text(
-                              'errorRetrievingSeed'.tr(),
-                              style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Possible wrong PIN code',
-                              style: scaledTextStyle(
-                                fontSize: 14,
-                                color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                      error: (error, stack) {
+                        log.e('Seed display error: $error');
+                        final errorMessage = error is PinExpiredException ? 'pinExpired'.tr() : error.toString();
+                        return Center(
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 120),
+                              Icon(Icons.error_outline, size: 48, color: context.colorScheme.error),
+                              const SizedBox(height: 16),
+                              Text(
+                                'errorRetrievingSeed'.tr(),
+                                style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 173),
-                          ],
-                        ),
-                      ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: scaleSize(24)),
+                                child: Text(
+                                  errorMessage,
+                                  style: scaledTextStyle(
+                                    fontSize: 14,
+                                    color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.refresh),
+                                label: Text('retry'.tr()),
+                                onPressed: () {
+                                  ref.invalidate(
+                                    seedDisplayProvider((address: firstWallet.address, pin: PinCodeService.pinCode)),
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 100),
+                            ],
+                          ),
+                        );
+                      },
                       data: (seedData) {
                         final englishMnemonic = seedData.englishMnemonic;
                         final displayMnemonic = seedData.displayMnemonic;

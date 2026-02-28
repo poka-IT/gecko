@@ -94,7 +94,7 @@ class TransactionDisplayItem {
     final String otherAddress = isReceived ? (node.fromId ?? '') : (node.toId ?? '');
     final String? otherUsername = isReceived ? node.from?.identity?.name : node.to?.identity?.name;
     final BigInt amount = BigInt.parse(node.amount);
-    final DateTime transactionTime = node.timestamp.parseBlockTimestamp();
+    final DateTime transactionTime = (node.timestamp as String).parseBlockTimestamp();
 
     final String dateDelimiter = calculateDateDelimiter(transactionTime);
     final bool isMigrationTime = transactionTime.isBefore(genesisTime);
@@ -130,7 +130,7 @@ class TransactionDisplayItem {
     final BigInt amount = BigInt.parse(node.amount);
 
     // Parse the timestamp as UTC and convert to local time
-    final DateTime transactionTime = node.timestamp.parseBlockTimestamp();
+    final DateTime transactionTime = (node.timestamp as String).parseBlockTimestamp();
 
     // Calculate date delimiter for grouping
     final String dateDelimiter = calculateDateDelimiter(transactionTime);

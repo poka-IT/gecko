@@ -73,6 +73,7 @@ dependencies:
   ss58: ^2.0.1
   base_codecs: ^1.0.1
   flutter_native_splash: ^2.4.7
+  in_app_update: ^4.2.5
 
 dependency_overrides:
   intl: ^0.20.0

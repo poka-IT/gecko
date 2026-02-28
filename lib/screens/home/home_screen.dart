@@ -7,6 +7,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/app_update_provider.dart';
+import 'package:gecko/services/app_update_service.dart';
 import 'package:gecko/providers/g1_genesis_poll_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -16,6 +17,7 @@ import 'package:gecko/screens/home/welcome_home_widget.dart';
 import 'package:gecko/services/g1_genesis_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/drawer.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -72,23 +74,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (result == null) return;
       if (!mounted) return;
 
-      final appInfoService = ref.read(appInfoServiceProvider);
-      final confirmed = await showConfirmationDialog(
-        context: context,
-        title: "updateAvailableTitle".tr(),
-        message: "updateAvailableMessage".tr(args: [result.latestVersion, appInfoService.appVersionShort]),
-        confirmText: "updateNow".tr(),
-        cancelText: "updateLater".tr(),
-        customIcon: Icon(Icons.system_update_rounded, color: context.colorScheme.primary, size: 32),
-      );
-
-      if (confirmed && mounted) {
-        await launchUrl(Uri.parse(result.updateUrl), mode: LaunchMode.externalApplication);
-      } else {
-        ref.read(appUpdateServiceProvider).dismissVersion(result.latestBuildNumber);
+      switch (result.actionType) {
+        case UpdateActionType.playStoreFlexible:
+          await _handlePlayStoreFlexibleUpdate();
+        case UpdateActionType.playStoreImmediate:
+          await InAppUpdate.performImmediateUpdate();
+        case UpdateActionType.showDialogWithUrl:
+          await _handleDialogUpdate(result);
       }
     } catch (e) {
       log.d('App update check error: $e');
+    }
+  }
+
+  Future<void> _handlePlayStoreFlexibleUpdate() async {
+    try {
+      await InAppUpdate.startFlexibleUpdate();
+      await InAppUpdate.completeFlexibleUpdate();
+    } catch (e) {
+      log.d('Play Store flexible update failed: $e');
+    }
+  }
+
+  Future<void> _handleDialogUpdate(UpdateCheckResult result) async {
+    final appInfoService = ref.read(appInfoServiceProvider);
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: "updateAvailableTitle".tr(),
+      message: "updateAvailableMessage".tr(args: [result.latestVersion, appInfoService.appVersionShort]),
+      confirmText: "updateNow".tr(),
+      cancelText: "updateLater".tr(),
+      customIcon: Icon(Icons.system_update_rounded, color: context.colorScheme.primary, size: 32),
+    );
+
+    if (confirmed && mounted && result.updateUrl != null) {
+      await launchUrl(Uri.parse(result.updateUrl!), mode: LaunchMode.externalApplication);
+    } else {
+      ref.read(appUpdateServiceProvider).dismissUpdate(result);
     }
   }
 

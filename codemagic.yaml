@@ -1,0 +1,38 @@
+workflows:
+  windows-release:
+    name: Windows Desktop Release
+    instance_type: windows_x2
+    max_build_duration: 60
+
+    # Only triggered via API from GitLab CI
+    triggering:
+      events: []
+
+    environment:
+      flutter: stable
+
+    scripts:
+      - name: Get Flutter dependencies
+        script: flutter pub get
+
+      - name: Build Windows release
+        script: flutter build windows --release
+
+      - name: Package Windows build
+        script: |
+          $VERSION = (Select-String -Path pubspec.yaml -Pattern '^version:\s+(.+)$').Matches.Groups[1].Value
+          $VERSION_NAME = $VERSION.Split('+')[0]
+          $BUILD_NUMBER = $VERSION.Split('+')[1]
+
+          $ARTIFACT_DIR = "artifacts\windows"
+          New-Item -ItemType Directory -Force -Path $ARTIFACT_DIR
+
+          $ZIP_NAME = "gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
+          $BUNDLE_PATH = "build\windows\x64\runner\Release"
+
+          7z a "$ARTIFACT_DIR\$ZIP_NAME" ".\$BUNDLE_PATH\*"
+
+          Write-Host "Packaged: $ARTIFACT_DIR\$ZIP_NAME"
+
+    artifacts:
+      - artifacts/windows/*.zip

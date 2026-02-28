@@ -18,6 +18,7 @@ version_only = version.split('+')[0] if '+' in version else version
 apk_job_id = os.getenv('APK_JOB_ID', '')
 linux_x64_job_id = os.getenv('LINUX_X64_JOB_ID', '')
 linux_arm64_job_id = os.getenv('LINUX_ARM64_JOB_ID', '')
+windows_x64_job_id = os.getenv('WINDOWS_X64_JOB_ID', '')
 macos_job_id = os.getenv('MACOS_JOB_ID', '')
 ci_project_url = os.getenv('CI_PROJECT_URL', '')
 forum_mode = os.getenv('FORUM_MODE', 'complete')
@@ -30,6 +31,7 @@ with open('/tmp/message.txt', 'r') as f:
 apk_base_url = f"{ci_project_url}/-/jobs/{apk_job_id}/artifacts/raw/artifacts/android"
 linux_x64_base_url = f"{ci_project_url}/-/jobs/{linux_x64_job_id}/artifacts/raw/artifacts/linux" if linux_x64_job_id else ""
 linux_arm64_base_url = f"{ci_project_url}/-/jobs/{linux_arm64_job_id}/artifacts/raw/artifacts/linux" if linux_arm64_job_id else ""
+windows_x64_base_url = f"{ci_project_url}/-/jobs/{windows_x64_job_id}/artifacts/raw/artifacts/windows" if windows_x64_job_id else ""
 macos_base_url = f"{ci_project_url}/-/jobs/{macos_job_id}/artifacts/raw/artifacts/macos" if macos_job_id else ""
 
 # Get changelog from git
@@ -115,6 +117,8 @@ This is a **BETA** release for ĞTest network.
 • **[Linux Desktop (tar.gz)]({linux_x64_base_url}/gecko-{version}-linux-x64.tar.gz)** (x64)
 
 • **[Linux Desktop (tar.gz)]({linux_arm64_base_url}/gecko-{version}-linux-arm64.tar.gz)** (ARM64)
+
+• **[Windows Desktop (zip)]({windows_x64_base_url}/gecko-{version}-windows-x64.zip)** (x64)
 
 • **[macOS Desktop (dmg)]({macos_base_url}/gecko-{version}-macos-arm64.zip)** (Apple Silicon)
 

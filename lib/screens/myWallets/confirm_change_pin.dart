@@ -96,6 +96,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
           }
 
           final firstWallet = ref.read(firstWalletProvider);
+          if (firstWallet == null) return;
 
           await ref
               .read(walletServiceProvider)

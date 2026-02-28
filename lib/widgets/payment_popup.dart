@@ -86,7 +86,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       final match = wallets.where((w) => w.address == lastAddress).firstOrNull;
       if (match != null) return match;
     }
-    return ref.read(firstWalletProvider);
+    return ref.read(firstWalletProvider)!;
   }
 
   set fromWallet(WalletEntity value) => _fromWallet = value;

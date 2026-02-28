@@ -299,6 +299,7 @@ class WalletActionsNotifier extends Notifier<void> {
 
         // Get the mnemonic from the safe
         final firstWallet = ref.read(firstWalletProvider);
+        if (firstWallet == null) throw Exception('No wallet available');
         final mnemonic = await _walletService.getSeed(address: firstWallet.address, pin: PinCodeService.pinCode);
 
         // Generate keypair with the custom derivation
@@ -352,6 +353,7 @@ class WalletActionsNotifier extends Notifier<void> {
       final newWalletNbr = wallets.isEmpty ? 0 : wallets.last.number + 1;
 
       final firstWallet = ref.read(firstWalletProvider);
+      if (firstWallet == null) throw Exception('No wallet available');
       final walletData = await _walletService.generateRootKeypair(
         fromAddress: firstWallet.address,
         pinCode: PinCodeService.pinCode,

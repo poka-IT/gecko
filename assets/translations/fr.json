@@ -13,6 +13,7 @@
     "noDuniterEndointAvailable": "Aucun serveur disponible...",
     "connectionPending": "Connexion en cours...",
     "noLizard": "y'a pas de lézard 😉",
+    "noWalletFound": "Aucun portefeuille trouvé",
     "loading": "Chargement en cours...",
     "connectionInProgress": "Connexion en cours...",
     "forgot_password.png": "forgot_password_fr.png",

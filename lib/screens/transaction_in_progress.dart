@@ -53,7 +53,7 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
 
     final firstWallet = ref.read(firstWalletProvider);
 
-    _fromAddress = widget.fromAddress ?? firstWallet.address;
+    _fromAddress = widget.fromAddress ?? firstWallet?.address ?? '';
     _toAddress = widget.toAddress ?? '';
   }
 

@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' show WalletEntity, Durt, BidouilleLang;
+import 'package:durt2/durt2.dart' show Durt, BidouilleLang;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +25,15 @@ class ShowSeed extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    WalletEntity firstWallet = ref.watch(firstWalletProvider);
+    final firstWallet = ref.watch(firstWalletProvider);
+
+    if (firstWallet == null) {
+      return Scaffold(
+        backgroundColor: context.colorScheme.surface,
+        appBar: GeckoAppBar('myMnemonic'.tr()),
+        body: Center(child: Text('noWalletFound'.tr())),
+      );
+    }
 
     return Scaffold(
       backgroundColor: context.colorScheme.surface,

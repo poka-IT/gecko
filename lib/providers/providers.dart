@@ -80,9 +80,10 @@ final genesisTimeProvider = FutureProvider<DateTime?>((ref) async {
 
 /// Provides the first wallet of the active safe for reactive UI updates.
 /// This provider watches the wallets list and returns the first wallet (sorted by number).
-final firstWalletProvider = Provider<d.WalletEntity>((ref) {
+/// Returns null when the wallet list is empty (e.g. empty safe after restore).
+final firstWalletProvider = Provider<d.WalletEntity?>((ref) {
   final walletsList = ref.watch(walletsListProvider).wallets;
-  return walletsList.first;
+  return walletsList.firstOrNull;
 });
 
 /// Notifier for the last wallet address used as payment source (session-only, not persisted).

@@ -47,7 +47,6 @@ import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/sentry_context_provider.dart';
 import 'package:gecko/widgets/certify/ready_certification_listener.dart';
 
-const bool enableSentry = true;
 const bool showVersionOverlay = true; // Set to false to hide version overlay in production
 
 Future<void> main() async {
@@ -111,6 +110,8 @@ Future<void> main() async {
   // Read user's language preference
   final savedLocale = configBox.get('localeOverride');
   final startLocale = savedLocale != null ? Locale(savedLocale) : null;
+
+  final enableSentry = configBox.get('sentryEnabled') ?? true;
 
   if (kReleaseMode && enableSentry) {
     await SentryService.init(

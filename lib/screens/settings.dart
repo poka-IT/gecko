@@ -487,6 +487,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
+                // Carte Rapports d'erreurs Sentry
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                    child: sentryToggle(context),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
                 // Carte Nettoyage du cache
                 Container(
                   decoration: BoxDecoration(
@@ -2019,6 +2039,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   setState(() {
                     _expertMode = value;
                   });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget sentryToggle(BuildContext context) {
+    final sentryEnabled = configBox.get('sentryEnabled') ?? true;
+
+    return InkWell(
+      onTap: () {
+        final newValue = !sentryEnabled;
+        configBox.put('sentryEnabled', newValue);
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: scaleSize(4)),
+        child: Row(
+          children: [
+            Icon(Icons.bug_report_outlined, color: context.colorScheme.primary, size: scaleSize(24)),
+            ScaledSizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'sendErrorReports'.tr(),
+                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                  ),
+                  Text(
+                    'sendErrorReportsDescription'.tr(),
+                    style: scaledTextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
+                  ),
+                  ScaledSizedBox(height: 2),
+                  Text(
+                    'requiresRestart'.tr(),
+                    style: scaledTextStyle(
+                      fontSize: 11,
+                      color: context.colorScheme.primary,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: sentryEnabled,
+              thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return context.colorScheme.primary;
+                }
+                return Colors.grey[400];
+              }),
+              trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (!states.contains(WidgetState.selected)) {
+                  return Colors.grey[300];
+                }
+                return null;
+              }),
+              onChanged: (bool value) {
+                configBox.put('sentryEnabled', value);
+                if (mounted) {
+                  setState(() {});
                 }
               },
             ),

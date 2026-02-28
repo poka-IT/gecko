@@ -97,7 +97,12 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
 
         // Build description text with parameters
         final description = 'currencyDescription'.tr(
-          args: [params.currencyName, startedAgo, params.members.toString(), udPeriod],
+          namedArgs: {
+            'currencyName': params.currencyName,
+            'startedAgo': startedAgo,
+            'membersCount': params.members.toString(),
+            'udPeriod': udPeriod,
+          },
         );
 
         return Container(

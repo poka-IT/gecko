@@ -334,7 +334,8 @@ build:linux:x64:
     - flutter pub get --offline || flutter pub get
     - flutter build linux --release --build-name=$VERSION --build-number=$BUILD --verbose
     - mkdir -p artifacts/linux
-    - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-x64.tar.gz" -C build/linux/x64/release/bundle .
+    - export ARCH=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/x64/')
+    - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-x64.tar.gz" -C build/linux/${ARCH}/release/bundle .
     - echo "$CI_JOB_ID" > artifacts/linux_x64_job_id.txt
   tags:
     - kepler
@@ -345,7 +346,8 @@ build:linux:arm64:
     - flutter pub get --offline || flutter pub get
     - flutter build linux --release --build-name=$VERSION --build-number=$BUILD --verbose
     - mkdir -p artifacts/linux
-    - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-arm64.tar.gz" -C build/linux/arm64/release/bundle .
+    - export ARCH=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/x64/')
+    - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-arm64.tar.gz" -C build/linux/${ARCH}/release/bundle .
     - echo "$CI_JOB_ID" > artifacts/linux_arm64_job_id.txt
   tags:
     - linuxARM

@@ -2,7 +2,6 @@
 
 import 'package:durt2/durt2.dart' show IdtyStatus, CertStatus;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -22,7 +21,6 @@ import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 import 'package:gecko/models/wallet_header_data.dart';
-import 'package:gecko/utils/debug_test_wallet.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/utils.dart';
 
@@ -263,11 +261,8 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
     );
   }
 
-  /// Build the certification section with optional developer dropdown
+  /// Build the certification section with optional multi-account dropdown
   Widget _buildCertificationSection(WidgetRef ref) {
-    final isUsingTestSafe = kDebugMode
-        ? DebugTestWalletService.isUsingTestSafe(ref.read(walletServiceProvider))
-        : false;
     final certStateAsync = ref.watch(certStateProvider(address));
 
     return certStateAsync.when(
@@ -291,16 +286,13 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
                   child: IgnorePointer(
                     ignoring: clampedValue < 0.1,
                     child: shouldShowCertification
-                        ? (kDebugMode && isUsingTestSafe
-                              ? Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _buildDeveloperCertificationDropdown(ref),
-                                    ScaledSizedBox(height: 8),
-                                    CertStateWidget(certState: certState, address: address),
-                                  ],
-                                )
-                              : CertStateWidget(certState: certState, address: address))
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildCertificationWalletDropdown(ref),
+                              CertStateWidget(certState: certState, address: address),
+                            ],
+                          )
                         : SizedBox(width: scaleSize(buttonSize), height: scaleSize(buttonSize + 20)),
                   ),
                 ),
@@ -314,8 +306,8 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
     );
   }
 
-  /// Build the developer certification wallet dropdown (only visible in debug mode with test mnemonic)
-  Widget _buildDeveloperCertificationDropdown(WidgetRef ref) {
+  /// Build the certification wallet dropdown for multi-account selection
+  Widget _buildCertificationWalletDropdown(WidgetRef ref) {
     final identityWalletsAsync = ref.watch(identityWalletsAsyncProvider);
     final selectedAddress = ref.watch(selectedCertificationWalletProvider);
 
@@ -332,46 +324,45 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
           });
         }
 
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(4)),
-          decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 1),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.bug_report, size: scaleSize(12), color: Colors.orange),
-              ScaledSizedBox(width: 4),
-              Text(
-                'Dev:',
-                style: scaledTextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.w500),
-              ),
-              ScaledSizedBox(width: 4),
-              DropdownButton<String>(
-                value: selectedAddress ?? identityWallets.first.address,
-                isDense: true,
-                underline: Container(),
-                style: scaledTextStyle(fontSize: 10, color: Colors.orange),
-                items: identityWallets.map((wallet) {
-                  return DropdownMenuItem<String>(
-                    value: wallet.address,
-                    child: Text(
-                      WalletNameService.isDefault(wallet.name)
-                          ? getShortPubkey(wallet.address)
-                          : (wallet.name ?? getShortPubkey(wallet.address)),
-                      style: scaledTextStyle(fontSize: 10, color: Colors.orange),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (newAddress) {
-                  if (newAddress != null) {
-                    ref.read(selectedCertificationWalletProvider.notifier).set(newAddress);
-                  }
-                },
-              ),
-            ],
+        return Padding(
+          padding: EdgeInsets.only(bottom: scaleSize(8)),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(2)),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.account_circle, size: scaleSize(14), color: context.colorScheme.primary),
+                ScaledSizedBox(width: 4),
+                DropdownButton<String>(
+                  value: selectedAddress ?? identityWallets.first.address,
+                  isDense: true,
+                  underline: Container(),
+                  style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface),
+                  dropdownColor: context.colorScheme.surfaceContainer,
+                  items: identityWallets.map((wallet) {
+                    return DropdownMenuItem<String>(
+                      value: wallet.address,
+                      child: Text(
+                        WalletNameService.isDefault(wallet.name)
+                            ? getShortPubkey(wallet.address)
+                            : (wallet.name ?? getShortPubkey(wallet.address)),
+                        style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (newAddress) {
+                    if (newAddress != null) {
+                      ref.read(selectedCertificationWalletProvider.notifier).set(newAddress);
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

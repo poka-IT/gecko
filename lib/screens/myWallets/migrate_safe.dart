@@ -8,6 +8,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/myWallets/migrate_safe_progress.dart';
+import 'package:gecko/services/mnemonic_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -24,6 +25,7 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
   bool _canMigrate = false;
   bool _isLoading = false;
   String _validationMessage = '';
+  String _englishMnemonic = '';
   List<WalletEntity> _walletsToMigrate = [];
   bool _isInitialized = false;
 
@@ -48,14 +50,17 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
       return;
     }
 
-    final isMnemonicValid = ref.read(walletServiceProvider).isMnemonicValid(newMnemonic);
-    if (!isMnemonicValid) {
+    // Validate mnemonic with multilingual support
+    final mnemonicResult = await MnemonicService.validateAndProcessMnemonic(newMnemonic);
+    if (mnemonicResult == null) {
       setState(() {
         _validationMessage = "thisMnemonicIsNotValid".tr();
         _isLoading = false;
       });
       return;
     }
+
+    _englishMnemonic = mnemonicResult.englishMnemonic;
 
     try {
       // Check if destination is empty
@@ -65,14 +70,14 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
       // Generate root address (without derivation)
       final rootKeypair = await ref
           .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(newMnemonic, keyPairType: Durt.defaultKeyPairType);
+          .getKeyPairFromMnemonic(_englishMnemonic, keyPairType: Durt.defaultKeyPairType);
       destAddresses.add(rootKeypair.address);
 
       // Generate derived addresses (derivation //0, //1, //2, etc.)
       for (int i = 0; i < nbrScan; i++) {
         final derivedKeypair = await ref
             .read(walletServiceProvider)
-            .getKeyPairFromMnemonic(newMnemonic, derivation: i, keyPairType: Durt.defaultKeyPairType);
+            .getKeyPairFromMnemonic(_englishMnemonic, derivation: i, keyPairType: Durt.defaultKeyPairType);
         destAddresses.add(derivedKeypair.address);
       }
 
@@ -290,7 +295,7 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => MigrateSafeProgressScreen(
-                                    newMnemonic: _newMnemonicController.text,
+                                    newMnemonic: _englishMnemonic,
                                     walletsToMigrate: _walletsToMigrate,
                                     oldSafePin: PinCodeService.pinCode,
                                   ),

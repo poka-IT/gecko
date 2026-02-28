@@ -19,6 +19,7 @@ import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/services/mnemonic_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:pointycastle/api.dart' show InvalidCipherTextException;
 import 'package:gecko/screens/transaction_in_progress.dart';
@@ -107,9 +108,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
     bool isSmall = !isTall;
 
     Future scanDerivations() async {
-      if (!ref.read(utilsProvider).isAddressValid(newWalletAddress.text) ||
-          !ref.read(walletServiceProvider).isMnemonicValid(newMnemonicSentence.text) ||
-          !migrationChecks.canMigrate) {
+      if (!ref.read(utilsProvider).isAddressValid(newWalletAddress.text) || !migrationChecks.canMigrate) {
         setState(() {
           mnemonicIsValid = false;
           matchInfo = '';
@@ -117,12 +116,24 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
 
         return;
       }
+
+      // Validate mnemonic with multilingual support
+      final mnemonicResult = await MnemonicService.validateAndProcessMnemonic(newMnemonicSentence.text);
+      if (mnemonicResult == null) {
+        setState(() {
+          mnemonicIsValid = false;
+          matchInfo = '';
+        });
+        return;
+      }
+
+      final englishMnemonic = mnemonicResult.englishMnemonic;
       log.d('Scan derivations to find a match');
 
       //Scan root wallet
       final keypair = await ref
           .read(walletServiceProvider)
-          .getKeyPairFromMnemonic(newMnemonicSentence.text, keyPairType: Durt.defaultKeyPairType);
+          .getKeyPairFromMnemonic(englishMnemonic, keyPairType: Durt.defaultKeyPairType);
 
       if (keypair.address == newWalletAddress.text) {
         setState(() {
@@ -139,11 +150,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
         // Use default scan number
         final keypair = await ref
             .read(walletServiceProvider)
-            .getKeyPairFromMnemonic(
-              newMnemonicSentence.text,
-              derivation: derivationNbr,
-              keyPairType: Durt.defaultKeyPairType,
-            );
+            .getKeyPairFromMnemonic(englishMnemonic, derivation: derivationNbr, keyPairType: Durt.defaultKeyPairType);
 
         if (keypair.address == newWalletAddress.text) {
           setState(() {

@@ -40,6 +40,7 @@ import 'package:gecko/services/log_collection_service.dart';
 import 'package:gecko/services/g1_genesis_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/services/empty_string_asset_loader.dart';
+import 'package:gecko/services/eo_locale_delegate.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -128,6 +129,7 @@ Future<void> main() async {
             path: 'assets/translations',
             assetLoader: const EmptyStringAssetLoader(),
             fallbackLocale: const Locale('en'),
+            useFallbackTranslations: true,
             startLocale: startLocale,
             child: const Gecko(),
           ),
@@ -142,7 +144,9 @@ Future<void> main() async {
         EasyLocalization(
           supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'), Locale('eo'), Locale('de')],
           path: 'assets/translations',
+          assetLoader: const EmptyStringAssetLoader(),
           fallbackLocale: const Locale('en'),
+          useFallbackTranslations: true,
           startLocale: startLocale,
           child: const Gecko(),
         ),
@@ -179,7 +183,7 @@ class Gecko extends StatelessWidget {
                 final themeMode = ref.watch(currentThemeModeProvider);
 
                 return MaterialApp(
-                  localizationsDelegates: context.localizationDelegates,
+                  localizationsDelegates: [...eoLocalizationDelegates, ...context.localizationDelegates],
                   supportedLocales: context.supportedLocales,
                   locale: context.locale,
                   theme: lightTheme,

@@ -100,6 +100,9 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
 
   /// Subscribe to network-wide identity activity (triggers refreshes when new identities are created)
   void _subscribeToNetworkIdentities() {
+    // Cancel existing subscription before creating new one
+    _networkIdentitiesSubscription?.cancel();
+
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
@@ -251,7 +254,7 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
 
   /// Refresh the network identities (public method for manual refresh)
   Future<void> refresh() async {
-    state = const NetworkIdentitiesState();
+    state = NetworkIdentitiesState(lastActivityId: state.lastActivityId);
     await loadIdentities();
   }
 }

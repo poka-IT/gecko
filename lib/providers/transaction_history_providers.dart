@@ -290,7 +290,7 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
 
   /// Refresh the transaction history (public method for manual refresh)
   Future<void> refresh() async {
-    state = const TransactionHistoryState();
+    state = TransactionHistoryState(lastActivityId: state.lastActivityId);
     await loadTransactions();
   }
 }
@@ -576,7 +576,7 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
 
   /// Refresh the transaction history (public method for manual refresh)
   Future<void> refresh() async {
-    state = const TransactionHistoryState();
+    state = TransactionHistoryState(lastActivityId: state.lastActivityId);
     await loadTransactions();
   }
 }

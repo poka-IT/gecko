@@ -257,7 +257,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
   /// Public method for manual refresh
   Future<void> refresh() async {
-    state = const CertificationListState();
+    state = CertificationListState(lastActivityId: state.lastActivityId);
     await loadCertifications();
   }
 }

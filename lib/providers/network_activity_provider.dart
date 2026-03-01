@@ -119,6 +119,9 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
 
   /// Subscribe to network-wide activity (triggers refreshes when new transactions occur)
   void _subscribeToNetworkActivity() {
+    // Cancel existing subscription before creating new one
+    _networkActivitySubscription?.cancel();
+
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
@@ -358,7 +361,7 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
 
   /// Refresh the network activity (public method for manual refresh)
   Future<void> refresh() async {
-    state = const NetworkActivityState();
+    state = NetworkActivityState(lastActivityId: state.lastActivityId);
     await loadTransactions();
   }
 }

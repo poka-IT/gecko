@@ -101,6 +101,9 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
 
   /// Subscribe to network-wide certification activity (triggers refreshes when new certifications are issued)
   void _subscribeToNetworkCertifications() {
+    // Cancel existing subscription before creating new one
+    _networkCertificationsSubscription?.cancel();
+
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
@@ -260,7 +263,7 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
 
   /// Refresh the network certifications (public method for manual refresh)
   Future<void> refresh() async {
-    state = const NetworkCertificationsState();
+    state = NetworkCertificationsState(lastActivityId: state.lastActivityId);
     await loadCertifications();
   }
 }

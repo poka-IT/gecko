@@ -7,6 +7,7 @@ import 'package:gecko/widgets/certs_list.dart';
 import 'package:gecko/widgets/certs_counter.dart';
 import 'package:accordion/accordion.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/distance_quality_section.dart';
 
 class CertificationsScreen extends StatefulWidget {
   const CertificationsScreen({super.key, required this.address, required this.username});
@@ -20,6 +21,7 @@ class CertificationsScreen extends StatefulWidget {
 class _CertificationsScreenState extends State<CertificationsScreen> {
   bool _isReceivedOpen = true;
   bool _isSentOpen = false;
+  bool _isDistanceOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
               onOpenSection: () => setState(() {
                 _isReceivedOpen = true;
                 _isSentOpen = false;
+                _isDistanceOpen = false;
               }),
               onCloseSection: () => setState(() {
                 _isReceivedOpen = false;
@@ -63,8 +66,7 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
                 title: 'received'.tr(),
                 icon: Icons.call_received,
                 address: widget.address,
-                isSent: false,
-                isReceived: true,
+                sectionType: _SectionType.received,
                 isOpen: _isReceivedOpen,
               ),
               content: Container(
@@ -88,6 +90,7 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
               onOpenSection: () => setState(() {
                 _isSentOpen = true;
                 _isReceivedOpen = false;
+                _isDistanceOpen = false;
               }),
               onCloseSection: () => setState(() {
                 _isSentOpen = false;
@@ -97,8 +100,7 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
                 title: 'sent'.tr(),
                 icon: Icons.call_made,
                 address: widget.address,
-                isSent: true,
-                isReceived: false,
+                sectionType: _SectionType.sent,
                 isOpen: _isSentOpen,
               ),
               content: Container(
@@ -107,6 +109,37 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
                   maxHeight: availableHeight * 0.8, // Use calculated available height
                 ),
                 child: CertsList(address: widget.address, direction: CertDirection.sent),
+              ),
+              contentHorizontalPadding: 0,
+              contentBorderWidth: 0,
+              paddingBetweenOpenSections: scaleSize(2),
+            ),
+            AccordionSection(
+              isOpen: _isDistanceOpen,
+              leftIcon: const SizedBox.shrink(),
+              headerBackgroundColor: context.colorScheme.surface,
+              headerBackgroundColorOpened: context.colorScheme.surface,
+              contentBackgroundColor: context.colorScheme.surface,
+              rightIcon: const SizedBox.shrink(),
+              onOpenSection: () => setState(() {
+                _isDistanceOpen = true;
+                _isReceivedOpen = false;
+                _isSentOpen = false;
+              }),
+              onCloseSection: () => setState(() {
+                _isDistanceOpen = false;
+              }),
+              header: _buildModernHeader(
+                context: context,
+                title: 'distanceAndQuality'.tr(),
+                icon: Icons.hub,
+                address: widget.address,
+                sectionType: _SectionType.distance,
+                isOpen: _isDistanceOpen,
+              ),
+              content: Container(
+                color: context.colorScheme.surface,
+                child: DistanceQualitySection(address: widget.address),
               ),
               contentHorizontalPadding: 0,
               contentBorderWidth: 0,
@@ -123,15 +156,29 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
     required String title,
     required IconData icon,
     required String address,
-    required bool isSent,
-    required bool isReceived,
+    required _SectionType sectionType,
     required bool isOpen,
   }) {
-    // Define distinct colors for received (green) and sent (blue)
-    final sectionColor = isReceived ? Colors.green.withValues(alpha: 0.05) : Colors.blue.withValues(alpha: 0.05);
-    final iconColor = isReceived ? Colors.green.shade600 : Colors.blue.shade600;
-    final iconBgColor = isReceived ? Colors.green.withValues(alpha: 0.1) : Colors.blue.withValues(alpha: 0.1);
-    final iconBorderColor = isReceived ? Colors.green.withValues(alpha: 0.3) : Colors.blue.withValues(alpha: 0.3);
+    final (sectionColor, iconColor, iconBgColor, iconBorderColor) = switch (sectionType) {
+      _SectionType.received => (
+        Colors.green.withValues(alpha: 0.05),
+        Colors.green.shade600,
+        Colors.green.withValues(alpha: 0.1),
+        Colors.green.withValues(alpha: 0.3),
+      ),
+      _SectionType.sent => (
+        Colors.blue.withValues(alpha: 0.05),
+        Colors.blue.shade600,
+        Colors.blue.withValues(alpha: 0.1),
+        Colors.blue.withValues(alpha: 0.3),
+      ),
+      _SectionType.distance => (
+        Colors.orange.withValues(alpha: 0.05),
+        Colors.orange.shade700,
+        Colors.orange.withValues(alpha: 0.1),
+        Colors.orange.withValues(alpha: 0.3),
+      ),
+    };
 
     return Container(
       decoration: BoxDecoration(
@@ -169,8 +216,10 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
                       color: context.colorScheme.onSurface,
                     ),
                   ),
-                  ScaledSizedBox(width: 6),
-                  CertsCounter(address: address, isSent: isSent),
+                  if (sectionType != _SectionType.distance) ...[
+                    ScaledSizedBox(width: 6),
+                    CertsCounter(address: address, isSent: sectionType == _SectionType.sent),
+                  ],
                 ],
               ),
             ),
@@ -198,3 +247,5 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
     );
   }
 }
+
+enum _SectionType { received, sent, distance }

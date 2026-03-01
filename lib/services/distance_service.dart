@@ -53,13 +53,9 @@ class DistanceService {
       final batchEnd = (i + batchSize > nextIndex) ? nextIndex : i + batchSize;
       final batch = List.generate(batchEnd - i, (j) => i + j);
 
-      final results = await Future.wait([
-        blockchain.query.membership.multiMembership(batch),
-        blockchain.query.identity.multiIdentities(batch),
-      ]);
-
-      final memberships = results[0] as List<dynamic>;
-      final identities = results[1] as List<dynamic>;
+      // Separate calls to avoid Future.wait type erasure
+      final memberships = await blockchain.query.membership.multiMembership(batch);
+      final identities = await blockchain.query.identity.multiIdentities(batch);
 
       for (var j = 0; j < batch.length; j++) {
         if (identities[j] != null) {
@@ -89,11 +85,17 @@ class DistanceService {
       final batchEnd = (i + batchSize > idtyList.length) ? idtyList.length : i + batchSize;
       final batch = idtyList.sublist(i, batchEnd);
 
-      final certsBatch = await blockchain.query.certification.multiCertsByReceiver(batch);
+      // Use dynamic to work around durt2 reified generic type cast issue
+      // (empty inner lists are List<dynamic> at runtime, not List<Tuple2<int, int>>)
+      final dynamic certsBatchDynamic = await blockchain.query.certification.multiCertsByReceiver(batch);
 
       for (var j = 0; j < batch.length; j++) {
         final idtyIndex = batch[j];
-        final issuers = certsBatch[j].map((tuple) => tuple.value0).toList();
+        final List<dynamic> certs = certsBatchDynamic[j] as List<dynamic>;
+        final issuers = <int>[];
+        for (final cert in certs) {
+          issuers.add((cert as dynamic).value0 as int);
+        }
         receivedCerts[idtyIndex] = issuers;
 
         for (final issuer in issuers) {

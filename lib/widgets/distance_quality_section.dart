@@ -14,28 +14,49 @@ class DistanceQualitySection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final distanceState = ref.watch(distanceProvider(address));
 
-    return switch (distanceState) {
-      DistanceIdle() => _buildIdleState(context, ref),
-      DistanceComputing(:final progress) => _buildComputingState(context, progress),
-      DistanceCompleted(:final result) => _buildCompletedState(context, ref, result),
-      DistanceError(:final message) => _buildErrorState(context, ref, message),
-    };
+    return Container(
+      margin: EdgeInsets.fromLTRB(scaleSize(8), scaleSize(4), scaleSize(8), 0),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(scaleSize(10)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.15), width: 1),
+      ),
+      child: switch (distanceState) {
+        DistanceIdle() => _buildIdleState(context, ref),
+        DistanceComputing(:final progress) => _buildComputingState(context, progress),
+        DistanceCompleted(:final result) => _buildCompletedState(context, ref, result),
+        DistanceError(:final message) => _buildErrorState(context, ref, message),
+      },
+    );
   }
 
   Widget _buildIdleState(BuildContext context, WidgetRef ref) {
-    return Center(
+    return InkWell(
+      onTap: () => ref.read(distanceProvider(address).notifier).compute(),
+      borderRadius: BorderRadius.circular(scaleSize(10)),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: scaleSize(16)),
-        child: FilledButton.icon(
-          onPressed: () => ref.read(distanceProvider(address).notifier).compute(),
-          icon: Icon(Icons.play_circle_outline, size: scaleSize(20)),
-          label: Text('computeDistanceQuality'.tr()),
-          style: FilledButton.styleFrom(
-            backgroundColor: Colors.orange.shade600,
-            foregroundColor: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(20), vertical: scaleSize(10)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(scaleSize(12))),
-          ),
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(10)),
+        child: Row(
+          children: [
+            Container(
+              width: scaleSize(28),
+              height: scaleSize(28),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.orange.withValues(alpha: 0.1),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 1),
+              ),
+              child: Icon(Icons.hub, size: scaleSize(14), color: Colors.orange.shade700),
+            ),
+            ScaledSizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'distanceAndQuality'.tr(),
+                style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colorScheme.onSurface),
+              ),
+            ),
+            Icon(Icons.play_arrow_rounded, size: scaleSize(22), color: Colors.orange.shade600),
+          ],
         ),
       ),
     );
@@ -54,21 +75,34 @@ class DistanceQualitySection extends ConsumerWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(scaleSize(16)),
+      padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(10)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: context.colorScheme.outline.withValues(alpha: 0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.orange.shade600),
-            borderRadius: BorderRadius.circular(scaleSize(4)),
-            minHeight: scaleSize(6),
+          Row(
+            children: [
+              SizedBox(
+                width: scaleSize(16),
+                height: scaleSize(16),
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange.shade600),
+              ),
+              ScaledSizedBox(width: 10),
+              Text(
+                '$percentage% — $phaseText',
+                style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+              ),
+            ],
           ),
-          ScaledSizedBox(height: 10),
-          Text(
-            '$percentage% — $phaseText',
-            style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
+          ScaledSizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(scaleSize(3)),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: context.colorScheme.outline.withValues(alpha: 0.08),
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange.shade500),
+              minHeight: scaleSize(4),
+            ),
           ),
         ],
       ),
@@ -77,129 +111,87 @@ class DistanceQualitySection extends ConsumerWidget {
 
   Widget _buildCompletedState(BuildContext context, WidgetRef ref, DistanceResult result) {
     return Padding(
-      padding: EdgeInsets.all(scaleSize(16)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(10)),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricCard(
-                  context: context,
-                  label: 'distanceLabel'.tr(),
-                  ratio: result.distanceRatio,
-                  accessible: result.distanceAccessible,
-                  total: result.distanceTotal,
-                  threshold: result.xPercent,
-                ),
-              ),
-              ScaledSizedBox(width: 12),
-              Expanded(
-                child: _buildMetricCard(
-                  context: context,
-                  label: 'qualityLabel'.tr(),
-                  ratio: result.qualityRatio,
-                  accessible: result.qualityAccessible,
-                  total: result.qualityTotal,
-                  threshold: result.xPercent,
-                ),
-              ),
-            ],
+          // Distance metric
+          Expanded(
+            child: _buildMetric(
+              context,
+              'distanceLabel'.tr(),
+              result.distanceRatio,
+              result.distanceAccessible,
+              result.distanceTotal,
+              result.xPercent,
+            ),
           ),
-          ScaledSizedBox(height: 12),
-          TextButton.icon(
-            onPressed: () => ref.read(distanceProvider(address).notifier).compute(),
-            icon: Icon(Icons.refresh, size: scaleSize(16)),
-            label: Text('recompute'.tr()),
-            style: TextButton.styleFrom(foregroundColor: Colors.orange.shade700),
+          Container(width: 1, height: scaleSize(36), color: Colors.orange.withValues(alpha: 0.15)),
+          // Quality metric
+          Expanded(
+            child: _buildMetric(
+              context,
+              'qualityLabel'.tr(),
+              result.qualityRatio,
+              result.qualityAccessible,
+              result.qualityTotal,
+              result.xPercent,
+            ),
+          ),
+          // Recompute button
+          InkWell(
+            onTap: () => ref.read(distanceProvider(address).notifier).compute(),
+            borderRadius: BorderRadius.circular(scaleSize(16)),
+            child: Padding(
+              padding: EdgeInsets.all(scaleSize(6)),
+              child: Icon(Icons.refresh, size: scaleSize(18), color: Colors.orange.shade400),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMetricCard({
-    required BuildContext context,
-    required String label,
-    required double ratio,
-    required int accessible,
-    required int total,
-    required double threshold,
-  }) {
+  Widget _buildMetric(BuildContext context, String label, double ratio, int accessible, int total, double threshold) {
     final percentage = (ratio * 100).toStringAsFixed(1);
-    final isAboveThreshold = ratio >= threshold;
-    final badgeColor = isAboveThreshold ? Colors.green : Colors.red;
+    final isOk = ratio >= threshold;
+    final valueColor = isOk ? Colors.green.shade600 : Colors.red.shade600;
 
-    return Container(
-      padding: EdgeInsets.all(scaleSize(12)),
-      decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(scaleSize(10)),
-        border: Border.all(color: badgeColor.withValues(alpha: 0.2), width: 1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: scaledTextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: context.colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-          ScaledSizedBox(height: 6),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(10), vertical: scaleSize(4)),
-            decoration: BoxDecoration(
-              color: badgeColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(scaleSize(8)),
-            ),
-            child: Text(
-              '$percentage%',
-              style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: badgeColor.shade700),
-            ),
-          ),
-          ScaledSizedBox(height: 6),
-          Text(
-            'refereesAccessible'.tr(args: [accessible.toString(), total.toString()]),
-            style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.5)),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.5))),
+        ScaledSizedBox(height: 2),
+        Text(
+          '$percentage%',
+          style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: valueColor),
+        ),
+        Text(
+          '$accessible/$total',
+          style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+        ),
+      ],
     );
   }
 
   Widget _buildErrorState(BuildContext context, WidgetRef ref, String message) {
-    return Padding(
-      padding: EdgeInsets.all(scaleSize(16)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.error_outline, color: Colors.red.shade400, size: scaleSize(32)),
-          ScaledSizedBox(height: 8),
-          Text(
-            'distanceComputeError'.tr(),
-            style: scaledTextStyle(fontSize: 14, color: Colors.red.shade600),
-            textAlign: TextAlign.center,
-          ),
-          ScaledSizedBox(height: 4),
-          Text(
-            message,
-            style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.5)),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          ScaledSizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: () => ref.read(distanceProvider(address).notifier).compute(),
-            icon: Icon(Icons.refresh, size: scaleSize(16)),
-            label: Text('recompute'.tr()),
-            style: FilledButton.styleFrom(backgroundColor: Colors.orange.shade600, foregroundColor: Colors.white),
-          ),
-        ],
+    return InkWell(
+      onTap: () => ref.read(distanceProvider(address).notifier).compute(),
+      borderRadius: BorderRadius.circular(scaleSize(10)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(10)),
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red.shade400, size: scaleSize(20)),
+            ScaledSizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'distanceComputeError'.tr(),
+                style: scaledTextStyle(fontSize: 13, color: Colors.red.shade600),
+              ),
+            ),
+            Icon(Icons.refresh, size: scaleSize(18), color: Colors.orange.shade400),
+          ],
+        ),
       ),
     );
   }

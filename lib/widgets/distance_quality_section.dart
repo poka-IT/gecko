@@ -115,28 +115,10 @@ class DistanceQualitySection extends ConsumerWidget {
       child: Row(
         children: [
           // Distance metric
-          Expanded(
-            child: _buildMetric(
-              context,
-              'distanceLabel'.tr(),
-              result.distanceRatio,
-              result.distanceAccessible,
-              result.distanceTotal,
-              result.xPercent,
-            ),
-          ),
-          Container(width: 1, height: scaleSize(36), color: Colors.orange.withValues(alpha: 0.15)),
+          Expanded(child: _buildMetric(context, 'distanceLabel'.tr(), result.distanceRatio, result.xPercent)),
+          Container(width: 1, height: scaleSize(40), color: Colors.orange.withValues(alpha: 0.15)),
           // Quality metric
-          Expanded(
-            child: _buildMetric(
-              context,
-              'qualityLabel'.tr(),
-              result.qualityRatio,
-              result.qualityAccessible,
-              result.qualityTotal,
-              result.xPercent,
-            ),
-          ),
+          Expanded(child: _buildMetric(context, 'qualityLabel'.tr(), result.qualityRatio, result.xPercent)),
           // Recompute button
           InkWell(
             onTap: () => ref.read(distanceProvider(address).notifier).compute(),
@@ -151,26 +133,38 @@ class DistanceQualitySection extends ConsumerWidget {
     );
   }
 
-  Widget _buildMetric(BuildContext context, String label, double ratio, int accessible, int total, double threshold) {
+  Widget _buildMetric(BuildContext context, String label, double ratio, double threshold) {
     final percentage = (ratio * 100).toStringAsFixed(1);
     final isOk = ratio >= threshold;
+    final barColor = isOk ? Colors.green.shade500 : Colors.red.shade400;
     final valueColor = isOk ? Colors.green.shade600 : Colors.red.shade600;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label, style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.5))),
-        ScaledSizedBox(height: 2),
-        Text(
-          '$percentage%',
-          style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: valueColor),
-        ),
-        Text(
-          'refereesAccessible'.tr(args: [accessible.toString(), total.toString()]),
-          style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
-          textAlign: TextAlign.center,
-        ),
-      ],
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: scaleSize(10)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.5)),
+          ),
+          ScaledSizedBox(height: 2),
+          Text(
+            '$percentage%',
+            style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: valueColor),
+          ),
+          ScaledSizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(scaleSize(2)),
+            child: LinearProgressIndicator(
+              value: ratio.clamp(0.0, 1.0),
+              backgroundColor: context.colorScheme.outline.withValues(alpha: 0.08),
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
+              minHeight: scaleSize(3),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

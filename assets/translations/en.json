@@ -107,7 +107,6 @@
     "fetchingIdentities": "Fetching identities...",
     "qualityLabel": "Quality (4 steps)",
     "recompute": "Recompute",
-    "refereesAccessible": "{}/{} ref.",
     "certify": "Certify this identity",
     "certifyUniqueIdentity": "I certify that this person only owns this identity",
     "cesiumCredentials": "Cesium Credentials",

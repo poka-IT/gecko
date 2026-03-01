@@ -299,7 +299,6 @@
     "fetchingIdentities": "Recuperation des identites...",
     "qualityLabel": "Qualite (4 pas)",
     "recompute": "Recalculer",
-    "refereesAccessible": "{}/{} ref.",
     "explainDraggableWallet": "Faites glisser et déposez une tuile sur une autre pour effectuer une transaction, avec un appui long.",
     "skip": "Passer",
     "fees": "frais: {} {}",

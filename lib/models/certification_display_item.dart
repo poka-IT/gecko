@@ -140,6 +140,38 @@ class CertificationDisplayItem {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'issuerName': issuerName,
+    'receiverName': receiverName,
+    'issuerAccountId': issuerAccountId,
+    'receiverAccountId': receiverAccountId,
+    'isActive': isActive,
+    'createdTimestamp': createdTimestamp.toIso8601String(),
+    'updatedTimestamp': updatedTimestamp.toIso8601String(),
+    'timestamp': timestamp.toIso8601String(),
+    'dateDelimiter': dateDelimiter,
+    'expireDate': expireDate.toIso8601String(),
+    'createdBlockHeight': createdBlockHeight,
+    'updatedBlockHeight': updatedBlockHeight,
+  };
+
+  factory CertificationDisplayItem.fromJson(Map<String, dynamic> json) => CertificationDisplayItem(
+    id: json['id'] as String,
+    issuerName: json['issuerName'] as String?,
+    receiverName: json['receiverName'] as String?,
+    issuerAccountId: json['issuerAccountId'] as String,
+    receiverAccountId: json['receiverAccountId'] as String,
+    isActive: json['isActive'] as bool,
+    createdTimestamp: DateTime.parse(json['createdTimestamp'] as String),
+    updatedTimestamp: DateTime.parse(json['updatedTimestamp'] as String),
+    timestamp: DateTime.parse(json['timestamp'] as String),
+    dateDelimiter: json['dateDelimiter'] as String,
+    expireDate: DateTime.parse(json['expireDate'] as String),
+    createdBlockHeight: json['createdBlockHeight'] as int?,
+    updatedBlockHeight: json['updatedBlockHeight'] as int?,
+  );
+
   /// Get a display-friendly status name
   String get displayStatus {
     return isActive ? "certificationActive".tr() : "certificationInactive".tr();

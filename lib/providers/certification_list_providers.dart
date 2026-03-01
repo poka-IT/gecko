@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:durt2/durt2.dart' as d;
+import 'package:flutter_riverpod/experimental/persist.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/persist_storage_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/widgets/certs_list.dart';
 
@@ -13,25 +16,41 @@ class CertificationListState {
   final bool isLoading;
   final bool hasError;
   final String? error;
+  final String? lastActivityId;
 
   const CertificationListState({
     this.certifications = const [],
     this.isLoading = false,
     this.hasError = false,
     this.error,
+    this.lastActivityId,
   });
+
+  Map<String, dynamic> toJson() => {
+    'certifications': certifications.map((c) => c.toJson()).toList(),
+    'lastActivityId': lastActivityId,
+  };
+
+  factory CertificationListState.fromJson(Map<String, dynamic> json) => CertificationListState(
+    certifications: (json['certifications'] as List)
+        .map((c) => CertDisplayItem.fromJson(c as Map<String, dynamic>))
+        .toList(),
+    lastActivityId: json['lastActivityId'] as String?,
+  );
 
   CertificationListState copyWith({
     required bool hasError,
     List<CertDisplayItem>? certifications,
     bool? isLoading,
     String? error,
+    String? lastActivityId,
   }) {
     return CertificationListState(
       hasError: hasError,
       certifications: certifications ?? this.certifications,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      lastActivityId: lastActivityId ?? this.lastActivityId,
     );
   }
 }
@@ -42,12 +61,19 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
   final ({String address, CertDirection direction}) _params;
 
   StreamSubscription<String?>? _activitySubscription;
-  String? _lastSeenCertId;
-  DateTime? _lastCertTimestamp;
 
   @override
   CertificationListState build() {
     ref.onDispose(() => _activitySubscription?.cancel());
+
+    // Persist state to local SQLite DB for instant display on app restart
+    final network = ref.read(durtProvider).network.name;
+    persist(
+      ref.watch(persistStorageProvider.future),
+      key: 'certList_${_params.address}_${_params.direction.name}_$network',
+      encode: (state) => jsonEncode(state.toJson()),
+      decode: (json) => CertificationListState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+    );
 
     // Start initial load asynchronously
     Future.microtask(() {
@@ -74,13 +100,13 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
       _activitySubscription = d.SquidService.client
           .subscribeCertActivity(address)
           .listen(
-            (certId) {
-              if (certId != null && certId != _lastSeenCertId) {
-                log.d('🔔 New cert activity detected for $address: $certId (previous: $_lastSeenCertId)');
-                _lastSeenCertId = certId;
+            (activityId) {
+              if (activityId != null && activityId != state.lastActivityId) {
+                log.d('🔔 New cert activity detected for $address: $activityId (previous: ${state.lastActivityId})');
+                state = state.copyWith(hasError: false, lastActivityId: activityId);
                 _onCertActivity();
-              } else if (certId != null) {
-                log.d('Received known cert ID: $certId');
+              } else if (activityId != null) {
+                log.d('Received known cert activity ID: $activityId');
               }
             },
             onError: (error) {
@@ -120,13 +146,6 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
     try {
       final certs = await _fetchCertifications();
 
-      // Store the most recent certification timestamp for activity detection
-      if (certs.isNotEmpty) {
-        _lastSeenCertId = certs.first.address + certs.first.date.toString();
-        // Extract timestamp from first certification
-        _lastCertTimestamp = certs.first.date;
-      }
-
       state = state.copyWith(certifications: certs, isLoading: false, hasError: false);
     } catch (e) {
       log.e('Error loading certifications: $e');
@@ -145,35 +164,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
     try {
       final newCerts = await _fetchCertifications();
 
-      // Check if we actually have new certifications by comparing timestamps
-      bool hasNewCerts = false;
-      if (newCerts.isNotEmpty) {
-        if (state.certifications.isEmpty) {
-          hasNewCerts = true;
-        } else {
-          // Compare with the last known timestamp
-          hasNewCerts =
-              _lastCertTimestamp == null ||
-              newCerts.first.date.isAfter(_lastCertTimestamp!) ||
-              !state.certifications.any(
-                (cert) => cert.address == newCerts.first.address && cert.date == newCerts.first.date,
-              );
-
-          if (hasNewCerts) {
-            _lastCertTimestamp = newCerts.first.date;
-          }
-        }
-      }
-
-      if (hasNewCerts) {
-        log.i('Found ${newCerts.length} certifications, with newer ones than before');
-      }
       state = state.copyWith(certifications: newCerts, hasError: false);
-
-      // Update last seen certification ID with the most recent one
-      if (newCerts.isNotEmpty) {
-        _lastSeenCertId = newCerts.first.address + newCerts.first.date.toString();
-      }
     } catch (e) {
       log.e('Error refreshing certifications: $e');
       // Don't update error state if we have existing data

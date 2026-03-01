@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:durt2/durt2.dart' as d;
+import 'package:flutter_riverpod/experimental/persist.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/persist_storage_provider.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/models/identity_display_item.dart';
 import 'package:gecko/providers/identity_filters_provider.dart';
 import 'package:gecko/models/identity_filters.dart';
@@ -16,6 +20,7 @@ class NetworkIdentitiesState {
   final String? error;
   final bool hasActiveFilters;
   final d.IdentityFilters? appliedServerFilters;
+  final String? lastActivityId;
 
   const NetworkIdentitiesState({
     this.identities = const [],
@@ -25,7 +30,24 @@ class NetworkIdentitiesState {
     this.error,
     this.hasActiveFilters = false,
     this.appliedServerFilters,
+    this.lastActivityId,
   });
+
+  Map<String, dynamic> toJson() => {
+    'identities': identities.map((i) => i.toJson()).toList(),
+    'hasNextPage': hasNextPage,
+    'cursor': cursor,
+    'lastActivityId': lastActivityId,
+  };
+
+  factory NetworkIdentitiesState.fromJson(Map<String, dynamic> json) => NetworkIdentitiesState(
+    identities: (json['identities'] as List)
+        .map((i) => IdentityDisplayItem.fromJson(i as Map<String, dynamic>))
+        .toList(),
+    hasNextPage: json['hasNextPage'] as bool? ?? false,
+    cursor: json['cursor'] as String?,
+    lastActivityId: json['lastActivityId'] as String?,
+  );
 
   NetworkIdentitiesState copyWith({
     List<IdentityDisplayItem>? identities,
@@ -35,6 +57,7 @@ class NetworkIdentitiesState {
     String? error,
     bool? hasActiveFilters,
     d.IdentityFilters? appliedServerFilters,
+    String? lastActivityId,
   }) {
     return NetworkIdentitiesState(
       identities: identities ?? this.identities,
@@ -44,6 +67,7 @@ class NetworkIdentitiesState {
       error: error ?? this.error,
       hasActiveFilters: hasActiveFilters ?? this.hasActiveFilters,
       appliedServerFilters: appliedServerFilters ?? this.appliedServerFilters,
+      lastActivityId: lastActivityId ?? this.lastActivityId,
     );
   }
 }
@@ -51,16 +75,27 @@ class NetworkIdentitiesState {
 /// Notifier for managing network-wide identity activity
 class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
   StreamSubscription<String?>? _networkIdentitiesSubscription;
-  String? _lastSeenIdentityId;
 
   @override
   NetworkIdentitiesState build() {
     ref.onDispose(() => _networkIdentitiesSubscription?.cancel());
+
+    // Persist state to local SQLite DB for instant display on app restart
+    final network = ref.read(durtProvider).network.name;
+    persist(
+      ref.watch(persistStorageProvider.future),
+      key: 'networkIdentities_$network',
+      encode: (state) => jsonEncode(state.toJson()),
+      decode: (json) => NetworkIdentitiesState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+    );
+
     Future.microtask(() {
       loadIdentities();
       _subscribeToNetworkIdentities();
     });
-    return const NetworkIdentitiesState();
+
+    // Start with isLoading: true to avoid flash of "no data" before loading starts
+    return const NetworkIdentitiesState(isLoading: true);
   }
 
   /// Subscribe to network-wide identity activity (triggers refreshes when new identities are created)
@@ -74,12 +109,12 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
 
     try {
       _networkIdentitiesSubscription = d.SquidService.client.subscribeNetworkIdentities().listen(
-        (identityId) {
-          if (identityId != null && identityId != _lastSeenIdentityId) {
-            _lastSeenIdentityId = identityId;
+        (activityId) {
+          if (activityId != null && activityId != state.lastActivityId) {
+            state = state.copyWith(lastActivityId: activityId);
             _onNetworkIdentityActivity();
-          } else if (identityId != null) {
-            log.d('Received known identity ID: $identityId');
+          } else if (activityId != null) {
+            log.d('Received known identity activity ID: $activityId');
           }
         },
         onError: (error) {
@@ -138,22 +173,12 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
           hasNextPage: result.pageInfo.hasNextPage,
           cursor: result.pageInfo.endCursor,
         );
-
-        // Update last seen identity ID with the most recent one
-        if (newIdentities.isNotEmpty) {
-          _lastSeenIdentityId = _generateIdentityId(newIdentities.first);
-        }
       } else {
         log.w('Received null result from getNetworkIdentities');
       }
     } catch (e) {
       log.e('Error refreshing network identities: $e');
     }
-  }
-
-  /// Generate a consistent identity ID from identity data
-  String _generateIdentityId(IdentityDisplayItem identity) {
-    return '${identity.name}_${identity.timestamp.millisecondsSinceEpoch}_${identity.status}';
   }
 
   /// Load the first page of network identities
@@ -185,11 +210,6 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
         hasNextPage: result.pageInfo.hasNextPage,
         cursor: result.pageInfo.endCursor,
       );
-
-      // Store the most recent identity ID for activity detection
-      if (identities.isNotEmpty) {
-        _lastSeenIdentityId = _generateIdentityId(identities.first);
-      }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

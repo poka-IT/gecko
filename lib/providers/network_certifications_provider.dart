@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:durt2/durt2.dart' as d;
+import 'package:flutter_riverpod/experimental/persist.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/persist_storage_provider.dart';
+import 'package:gecko/providers/providers.dart';
 import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/providers/certification_filters_provider.dart';
 import 'package:gecko/models/certification_filters.dart';
@@ -16,6 +20,7 @@ class NetworkCertificationsState {
   final String? error;
   final bool hasActiveFilters;
   final d.CertificationFilters? appliedServerFilters;
+  final String? lastActivityId;
 
   const NetworkCertificationsState({
     this.certifications = const [],
@@ -25,7 +30,24 @@ class NetworkCertificationsState {
     this.error,
     this.hasActiveFilters = false,
     this.appliedServerFilters,
+    this.lastActivityId,
   });
+
+  Map<String, dynamic> toJson() => {
+    'certifications': certifications.map((c) => c.toJson()).toList(),
+    'hasNextPage': hasNextPage,
+    'cursor': cursor,
+    'lastActivityId': lastActivityId,
+  };
+
+  factory NetworkCertificationsState.fromJson(Map<String, dynamic> json) => NetworkCertificationsState(
+    certifications: (json['certifications'] as List)
+        .map((c) => CertificationDisplayItem.fromJson(c as Map<String, dynamic>))
+        .toList(),
+    hasNextPage: json['hasNextPage'] as bool? ?? false,
+    cursor: json['cursor'] as String?,
+    lastActivityId: json['lastActivityId'] as String?,
+  );
 
   NetworkCertificationsState copyWith({
     List<CertificationDisplayItem>? certifications,
@@ -35,6 +57,7 @@ class NetworkCertificationsState {
     String? error,
     bool? hasActiveFilters,
     d.CertificationFilters? appliedServerFilters,
+    String? lastActivityId,
   }) {
     return NetworkCertificationsState(
       certifications: certifications ?? this.certifications,
@@ -44,6 +67,7 @@ class NetworkCertificationsState {
       error: error ?? this.error,
       hasActiveFilters: hasActiveFilters ?? this.hasActiveFilters,
       appliedServerFilters: appliedServerFilters ?? this.appliedServerFilters,
+      lastActivityId: lastActivityId ?? this.lastActivityId,
     );
   }
 }
@@ -51,11 +75,19 @@ class NetworkCertificationsState {
 /// Notifier for managing network-wide certification activity
 class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState> {
   StreamSubscription<String?>? _networkCertificationsSubscription;
-  String? _lastSeenCertificationId;
 
   @override
   NetworkCertificationsState build() {
     ref.onDispose(() => _networkCertificationsSubscription?.cancel());
+
+    // Persist state to local SQLite DB for instant display on app restart
+    final network = ref.read(durtProvider).network.name;
+    persist(
+      ref.watch(persistStorageProvider.future),
+      key: 'networkCertifications_$network',
+      encode: (state) => jsonEncode(state.toJson()),
+      decode: (json) => NetworkCertificationsState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+    );
 
     // Start initial load asynchronously
     Future.microtask(() {
@@ -78,12 +110,12 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
 
     try {
       _networkCertificationsSubscription = d.SquidService.client.subscribeNetworkCertifications().listen(
-        (certificationId) {
-          if (certificationId != null && certificationId != _lastSeenCertificationId) {
-            _lastSeenCertificationId = certificationId;
+        (activityId) {
+          if (activityId != null && activityId != state.lastActivityId) {
+            state = state.copyWith(lastActivityId: activityId);
             _onNetworkCertificationActivity();
-          } else if (certificationId != null) {
-            log.d('Received known certification ID: $certificationId');
+          } else if (activityId != null) {
+            log.d('Received known certification activity ID: $activityId');
           }
         },
         onError: (error) {
@@ -144,22 +176,12 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
           hasNextPage: result.pageInfo.hasNextPage,
           cursor: result.pageInfo.endCursor,
         );
-
-        // Update last seen certification ID with the most recent one
-        if (newCertifications.isNotEmpty) {
-          _lastSeenCertificationId = _generateCertificationId(newCertifications.first);
-        }
       } else {
         log.w('Received null result from getNetworkCertifications');
       }
     } catch (e) {
       log.e('Error refreshing network certifications: $e');
     }
-  }
-
-  /// Generate a consistent certification ID from certification data
-  String _generateCertificationId(CertificationDisplayItem certification) {
-    return '${certification.id}_${certification.timestamp.millisecondsSinceEpoch}_${certification.isActive}';
   }
 
   /// Load the first page of network certifications
@@ -194,11 +216,6 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
         hasNextPage: result.pageInfo.hasNextPage,
         cursor: result.pageInfo.endCursor,
       );
-
-      // Store the most recent certification ID for activity detection
-      if (certifications.isNotEmpty) {
-        _lastSeenCertificationId = _generateCertificationId(certifications.first);
-      }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

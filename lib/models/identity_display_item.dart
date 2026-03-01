@@ -76,6 +76,28 @@ class IdentityDisplayItem {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'accountId': accountId,
+    'accountRemovedId': accountRemovedId,
+    'status': status,
+    'timestamp': timestamp.toIso8601String(),
+    'dateDelimiter': dateDelimiter,
+    'blockHeight': blockHeight,
+    'blockTimestamp': blockTimestamp?.toIso8601String(),
+  };
+
+  factory IdentityDisplayItem.fromJson(Map<String, dynamic> json) => IdentityDisplayItem(
+    name: json['name'] as String,
+    accountId: json['accountId'] as String?,
+    accountRemovedId: json['accountRemovedId'] as String?,
+    status: json['status'] as String,
+    timestamp: DateTime.parse(json['timestamp'] as String),
+    dateDelimiter: json['dateDelimiter'] as String,
+    blockHeight: json['blockHeight'] as int?,
+    blockTimestamp: json['blockTimestamp'] != null ? DateTime.parse(json['blockTimestamp'] as String) : null,
+  );
+
   /// Get display text for status
   String get displayStatus {
     switch (status) {

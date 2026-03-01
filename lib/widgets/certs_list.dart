@@ -16,6 +16,20 @@ class CertDisplayItem {
   final DateTime? expireDate;
 
   CertDisplayItem({required this.address, required this.name, required this.date, this.expireDate});
+
+  Map<String, dynamic> toJson() => {
+    'address': address,
+    'name': name,
+    'date': date.toIso8601String(),
+    'expireDate': expireDate?.toIso8601String(),
+  };
+
+  factory CertDisplayItem.fromJson(Map<String, dynamic> json) => CertDisplayItem(
+    address: json['address'] as String,
+    name: json['name'] as String,
+    date: DateTime.parse(json['date'] as String),
+    expireDate: json['expireDate'] != null ? DateTime.parse(json['expireDate'] as String) : null,
+  );
 }
 
 class CertsList extends ConsumerStatefulWidget {

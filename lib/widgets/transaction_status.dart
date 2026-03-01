@@ -1,5 +1,6 @@
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/globals.dart';
 
 Map<String, String> actionMap = {
   'pay': 'transaction'.tr(),
@@ -36,6 +37,18 @@ Map<String, String> errorTransactionMap = {
   'identity.InsufficientBalance': 'identityInsufficientBalance'.tr(),
   'Transaction is temporarily banned': 'transactionTemporarilyBanned'.tr(),
   'Transaction Already Imported': 'transactionAlreadyImported'.tr(),
+  'cert.CertNotAllowed': 'certNotAllowed'.tr(),
+  'cert.CannotCertifyExpiredMembership': 'cannotCertifyExpiredMembership'.tr(),
+  'cert.InvalidCert': 'invalidCert'.tr(),
+  'identity.IdtyNotFound': 'idtyNotFound'.tr(),
+  'identity.NotAllowedToChangeIdtyAddress': 'notAllowedToChangeIdtyAddress'.tr(),
+  'identity.NotAllowedToRemoveIdty': 'notAllowedToRemoveIdty'.tr(),
+  'identity.IdtyAlreadyConfirmed': 'idtyAlreadyConfirmed'.tr(),
+  'identity.IdtyNotValidated': 'idtyNotValidated'.tr(),
+  'membership.MembershipNotFound': 'membershipNotFound'.tr(),
+  'universalDividend.AccountNotAllowedToClaim': 'accountNotAllowedToClaim'.tr(),
+  'balances.InsufficientBalance': 'fundsUnavailable'.tr(),
+  'Priority is too low': 'transactionPriorityTooLow'.tr(),
 };
 
 /// Lookup a transaction error message, trying exact match first then substring match.
@@ -48,5 +61,7 @@ String? lookupTransactionError(String? errorMessage) {
   for (final entry in errorTransactionMap.entries) {
     if (errorMessage.contains(entry.key)) return entry.value;
   }
+  // Log unmapped errors for future discovery
+  log.w('Unmapped transaction error: $errorMessage');
   return null;
 }

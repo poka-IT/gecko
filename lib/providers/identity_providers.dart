@@ -469,34 +469,17 @@ final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) 
   final wallets = query.build().find();
   if (wallets.isEmpty) return [];
 
-  final identityWalletsWithStatus = <({d.WalletEntity wallet, d.IdtyStatus status})>[];
+  final memberWallets = <d.WalletEntity>[];
 
-  // Check each wallet for identity status and collect those with identities
+  // Only keep wallets with member (validated) identity status
   for (final wallet in wallets) {
     final status = await storageService.getIdtyStatus(wallet.address);
-    if (status != d.IdtyStatus.none && status != d.IdtyStatus.unknown) {
-      identityWalletsWithStatus.add((wallet: wallet, status: status));
+    if (status == d.IdtyStatus.validated) {
+      memberWallets.add(wallet);
     }
   }
 
-  // Sort by priority: validated > confirmed > others
-  identityWalletsWithStatus.sort((a, b) {
-    // Priority order: validated (3) > confirmed (2) > others (1)
-    final priorityA = a.status == d.IdtyStatus.validated
-        ? 3
-        : a.status == d.IdtyStatus.confirmed
-        ? 2
-        : 1;
-    final priorityB = b.status == d.IdtyStatus.validated
-        ? 3
-        : b.status == d.IdtyStatus.confirmed
-        ? 2
-        : 1;
-
-    return priorityB.compareTo(priorityA); // Highest priority first
-  });
-
-  return identityWalletsWithStatus.map((e) => e.wallet).toList();
+  return memberWallets;
 });
 
 /// Provider that returns the effective certification wallet:

@@ -166,8 +166,9 @@ class DistanceQualitySection extends ConsumerWidget {
           style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: valueColor),
         ),
         Text(
-          '$accessible/$total',
+          'refereesAccessible'.tr(args: [accessible.toString(), total.toString()]),
           style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -179,17 +180,30 @@ class DistanceQualitySection extends ConsumerWidget {
       borderRadius: BorderRadius.circular(scaleSize(10)),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(10)),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.error_outline, color: Colors.red.shade400, size: scaleSize(20)),
-            ScaledSizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'distanceComputeError'.tr(),
-                style: scaledTextStyle(fontSize: 13, color: Colors.red.shade600),
-              ),
+            Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red.shade400, size: scaleSize(20)),
+                ScaledSizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'distanceComputeError'.tr(),
+                    style: scaledTextStyle(fontSize: 13, color: Colors.red.shade600),
+                  ),
+                ),
+                Icon(Icons.refresh, size: scaleSize(18), color: Colors.orange.shade400),
+              ],
             ),
-            Icon(Icons.refresh, size: scaleSize(18), color: Colors.orange.shade400),
+            ScaledSizedBox(height: 6),
+            Text(
+              message,
+              style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.5)),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),

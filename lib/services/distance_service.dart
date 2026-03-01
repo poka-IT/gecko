@@ -28,16 +28,29 @@ class WotData {
   final Map<int, List<int>> receivedCerts;
   final Set<int> referees;
   final int membersCount;
+  final DateTime fetchedAt;
 
-  const WotData({required this.receivedCerts, required this.referees, required this.membersCount});
+  WotData({required this.receivedCerts, required this.referees, required this.membersCount})
+    : fetchedAt = DateTime.now();
 }
 
 /// Stateless service for computing WoT distance and quality metrics.
 /// Ported from cesium2s distance.service.ts + distance-computation.service.ts.
 class DistanceService {
+  // Static WoT data cache — shared across all distance computations
+  static WotData? _cachedWotData;
+  static const _wotCacheTtl = Duration(minutes: 30);
+
   /// Fetches the full WoT graph data from the blockchain.
+  /// Uses cached data if available and fresh, otherwise fetches from network.
   /// [onProgress] emits progress from 0.0 to 1.0.
   static Future<WotData> fetchWotData({required void Function(double progress) onProgress}) async {
+    // Return cached data if fresh
+    if (_cachedWotData != null && DateTime.now().difference(_cachedWotData!.fetchedAt) < _wotCacheTtl) {
+      onProgress(1.0);
+      return _cachedWotData!;
+    }
+
     final blockchain = Durt.i.blockchain;
 
     // --- Phase 1 (0-15%): Fetch identities and memberships ---
@@ -47,15 +60,17 @@ class DistanceService {
     final allIdentityIndexes = <int>{};
     final memberIdties = <int>{};
 
-    const batchSize = 100;
+    const batchSize = 500;
 
     for (var i = 0; i < nextIndex; i += batchSize) {
       final batchEnd = (i + batchSize > nextIndex) ? nextIndex : i + batchSize;
       final batch = List.generate(batchEnd - i, (j) => i + j);
 
-      // Separate calls to avoid Future.wait type erasure
-      final memberships = await blockchain.query.membership.multiMembership(batch);
-      final identities = await blockchain.query.identity.multiIdentities(batch);
+      // Parallel queries per batch (separate futures preserve types)
+      final membershipsFuture = blockchain.query.membership.multiMembership(batch);
+      final identitiesFuture = blockchain.query.identity.multiIdentities(batch);
+      final memberships = await membershipsFuture;
+      final identities = await identitiesFuture;
 
       for (var j = 0; j < batch.length; j++) {
         if (identities[j] != null) {
@@ -85,17 +100,11 @@ class DistanceService {
       final batchEnd = (i + batchSize > idtyList.length) ? idtyList.length : i + batchSize;
       final batch = idtyList.sublist(i, batchEnd);
 
-      // Use dynamic to work around durt2 reified generic type cast issue
-      // (empty inner lists are List<dynamic> at runtime, not List<Tuple2<int, int>>)
-      final dynamic certsBatchDynamic = await blockchain.query.certification.multiCertsByReceiver(batch);
+      final certsBatch = await blockchain.query.certification.multiCertsByReceiver(batch);
 
       for (var j = 0; j < batch.length; j++) {
         final idtyIndex = batch[j];
-        final List<dynamic> certs = certsBatchDynamic[j] as List<dynamic>;
-        final issuers = <int>[];
-        for (final cert in certs) {
-          issuers.add((cert as dynamic).value0 as int);
-        }
+        final issuers = certsBatch[j].map((t) => t.value0).toList();
         receivedCerts[idtyIndex] = issuers;
 
         for (final issuer in issuers) {
@@ -120,7 +129,9 @@ class DistanceService {
 
     onProgress(1.0);
 
-    return WotData(receivedCerts: receivedCerts, referees: referees, membersCount: membersCount);
+    final wotData = WotData(receivedCerts: receivedCerts, referees: referees, membersCount: membersCount);
+    _cachedWotData = wotData;
+    return wotData;
   }
 
   /// Computes the distance metric: ratio of accessible referees via DFS.
@@ -205,7 +216,7 @@ class DistanceService {
     final minAccessibleRefereesPerbill = Durt.i.blockchain.constant.distance.minAccessibleReferees;
     final xPercent = minAccessibleRefereesPerbill / 1000000000;
 
-    // Fetch WoT data (0% to 95%)
+    // Fetch WoT data (0% to 95%) — uses cache if available
     final wotData = await fetchWotData(onProgress: (p) => onProgress(p * 0.95));
 
     onProgress(0.95);

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/distance_service.dart';
 
@@ -54,13 +55,16 @@ class DistanceNotifier extends Notifier<DistanceState> {
 
     try {
       final storageService = ref.read(storageServiceProvider);
+      log.i('[Distance] Starting computation for $address');
       final idtyIndex = await storageService.getIdentityIndexOf(address);
 
       if (idtyIndex == null) {
+        log.w('[Distance] No identity found for $address');
         state = const DistanceError('noIdentity');
         return;
       }
 
+      log.i('[Distance] Identity index: $idtyIndex — fetching WoT data...');
       final result = await DistanceService.computeDistanceAndQuality(
         accountIndex: idtyIndex,
         onProgress: (progress) {
@@ -68,11 +72,19 @@ class DistanceNotifier extends Notifier<DistanceState> {
         },
       );
 
+      log.i(
+        '[Distance] Done — distance: ${(result.distanceRatio * 100).toStringAsFixed(1)}% '
+        '(${result.distanceAccessible}/${result.distanceTotal}), '
+        'quality: ${(result.qualityRatio * 100).toStringAsFixed(1)}% '
+        '(${result.qualityAccessible}/${result.qualityTotal})',
+      );
+
       // Cache the result
       _cache[address] = _CachedResult(result: result, timestamp: DateTime.now());
 
       state = DistanceCompleted(result);
-    } catch (e) {
+    } catch (e, stack) {
+      log.e('[Distance] Error computing distance for $address: $e\n$stack');
       state = DistanceError(e.toString());
     }
   }

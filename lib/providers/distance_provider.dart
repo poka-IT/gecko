@@ -34,7 +34,7 @@ class DistanceNotifier extends Notifier<DistanceState> {
 
   // Static cache with TTL (shared across instances)
   static final Map<String, _CachedResult> _cache = {};
-  static const _cacheTtl = Duration(hours: 1);
+  static const _cacheTtl = Duration(hours: 3);
 
   @override
   DistanceState build() {

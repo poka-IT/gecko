@@ -39,7 +39,7 @@ class WotData {
 class DistanceService {
   // Static WoT data cache — shared across all distance computations
   static WotData? _cachedWotData;
-  static const _wotCacheTtl = Duration(minutes: 30);
+  static const _wotCacheTtl = Duration(hours: 3);
 
   /// Fetches the full WoT graph data from the blockchain.
   /// Uses cached data if available and fresh, otherwise fetches from network.
@@ -60,7 +60,7 @@ class DistanceService {
     final allIdentityIndexes = <int>{};
     final memberIdties = <int>{};
 
-    const batchSize = 500;
+    const batchSize = 1000;
 
     for (var i = 0; i < nextIndex; i += batchSize) {
       final batchEnd = (i + batchSize > nextIndex) ? nextIndex : i + batchSize;

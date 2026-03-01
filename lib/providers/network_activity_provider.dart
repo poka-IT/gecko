@@ -23,6 +23,7 @@ class NetworkActivityState {
   final String? error;
   final bool hasActiveFilters;
   final d.TransactionFilters? appliedServerFilters;
+  final String? lastActivityId;
 
   const NetworkActivityState({
     this.transactions = const [],
@@ -32,12 +33,14 @@ class NetworkActivityState {
     this.error,
     this.hasActiveFilters = false,
     this.appliedServerFilters,
+    this.lastActivityId,
   });
 
   Map<String, dynamic> toJson() => {
     'transactions': transactions.map((t) => t.toJson()).toList(),
     'hasNextPage': hasNextPage,
     'cursor': cursor,
+    'lastActivityId': lastActivityId,
   };
 
   factory NetworkActivityState.fromJson(Map<String, dynamic> json) => NetworkActivityState(
@@ -46,6 +49,7 @@ class NetworkActivityState {
         .toList(),
     hasNextPage: json['hasNextPage'] as bool? ?? false,
     cursor: json['cursor'] as String?,
+    lastActivityId: json['lastActivityId'] as String?,
   );
 
   NetworkActivityState copyWith({
@@ -56,6 +60,7 @@ class NetworkActivityState {
     String? error,
     bool? hasActiveFilters,
     d.TransactionFilters? appliedServerFilters,
+    String? lastActivityId,
   }) {
     return NetworkActivityState(
       transactions: transactions ?? this.transactions,
@@ -65,6 +70,7 @@ class NetworkActivityState {
       error: error ?? this.error,
       hasActiveFilters: hasActiveFilters ?? this.hasActiveFilters,
       appliedServerFilters: appliedServerFilters ?? this.appliedServerFilters,
+      lastActivityId: lastActivityId ?? this.lastActivityId,
     );
   }
 }
@@ -72,7 +78,6 @@ class NetworkActivityState {
 /// Notifier for managing network-wide transaction history with UD support
 class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
   StreamSubscription<String?>? _networkActivitySubscription;
-  String? _lastSeenTransactionId;
 
   @override
   NetworkActivityState build() {
@@ -123,13 +128,13 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
 
     try {
       _networkActivitySubscription = d.SquidService.client.subscribeNetworkActivity().listen(
-        (transactionId) {
-          if (transactionId != null && transactionId != _lastSeenTransactionId) {
-            log.d('🔔 New network activity detected: $transactionId (previous: $_lastSeenTransactionId)');
-            _lastSeenTransactionId = transactionId;
+        (activityId) {
+          if (activityId != null && activityId != state.lastActivityId) {
+            log.d('🔔 New network activity detected: $activityId (previous: ${state.lastActivityId})');
+            state = state.copyWith(lastActivityId: activityId);
             _onNetworkActivity();
-          } else if (transactionId != null) {
-            log.d('Received known transaction ID: $transactionId');
+          } else if (activityId != null) {
+            log.d('Received known activity ID: $activityId');
           }
         },
         onError: (error) {
@@ -194,22 +199,12 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
           hasNextPage: result.pageInfo.hasNextPage,
           cursor: result.pageInfo.endCursor,
         );
-
-        // Update last seen transaction ID with the most recent one
-        if (newTransactions.isNotEmpty) {
-          _lastSeenTransactionId = _generateTransactionId(newTransactions.first);
-        }
       } else {
         log.w('Received null result from getNetworkActivity');
       }
     } catch (e) {
       log.e('Error refreshing network activity: $e');
     }
-  }
-
-  /// Generate a consistent transaction ID from transaction data
-  String _generateTransactionId(TransactionDisplayItem transaction) {
-    return '${transaction.timestamp.millisecondsSinceEpoch}_${transaction.amount}_${transaction.isReceived}_${transaction.type.name}';
   }
 
   /// Load the first page of network transactions
@@ -267,11 +262,6 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
         hasNextPage: transferResult.pageInfo.hasNextPage,
         cursor: transferResult.pageInfo.endCursor,
       );
-
-      // Store the most recent transaction ID for activity detection
-      if (allTransactions.isNotEmpty) {
-        _lastSeenTransactionId = _generateTransactionId(allTransactions.first);
-      }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

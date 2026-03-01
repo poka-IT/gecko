@@ -21,6 +21,7 @@ class TransactionHistoryState {
   final bool hasNextPage;
   final String? error;
   final String? cursor;
+  final String? lastActivityId;
 
   const TransactionHistoryState({
     this.transactions = const [],
@@ -28,12 +29,14 @@ class TransactionHistoryState {
     this.hasNextPage = false,
     this.error,
     this.cursor,
+    this.lastActivityId,
   });
 
   Map<String, dynamic> toJson() => {
     'transactions': transactions.map((t) => t.toJson()).toList(),
     'hasNextPage': hasNextPage,
     'cursor': cursor,
+    'lastActivityId': lastActivityId,
   };
 
   factory TransactionHistoryState.fromJson(Map<String, dynamic> json) => TransactionHistoryState(
@@ -42,6 +45,7 @@ class TransactionHistoryState {
         .toList(),
     hasNextPage: json['hasNextPage'] as bool? ?? false,
     cursor: json['cursor'] as String?,
+    lastActivityId: json['lastActivityId'] as String?,
   );
 
   TransactionHistoryState copyWith({
@@ -50,6 +54,7 @@ class TransactionHistoryState {
     bool? hasNextPage,
     String? error,
     String? cursor,
+    String? lastActivityId,
   }) {
     return TransactionHistoryState(
       transactions: transactions ?? this.transactions,
@@ -57,6 +62,7 @@ class TransactionHistoryState {
       hasNextPage: hasNextPage ?? this.hasNextPage,
       error: error ?? this.error,
       cursor: cursor ?? this.cursor,
+      lastActivityId: lastActivityId ?? this.lastActivityId,
     );
   }
 }
@@ -67,7 +73,6 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
   final String _address;
 
   StreamSubscription<String?>? _activitySubscription;
-  String? _lastSeenTransactionId;
 
   String get address => _address;
 
@@ -124,13 +129,13 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
       _activitySubscription = d.SquidService.client
           .subscribeAccountActivity(_address)
           .listen(
-            (transactionId) {
-              if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                log.d('🔔 New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
-                _lastSeenTransactionId = transactionId;
+            (activityId) {
+              if (activityId != null && activityId != state.lastActivityId) {
+                log.d('🔔 New activity detected for $_address: $activityId (previous: ${state.lastActivityId})');
+                state = state.copyWith(lastActivityId: activityId);
                 _onAccountActivity();
-              } else if (transactionId != null) {
-                log.d('Received known transaction ID: $transactionId');
+              } else if (activityId != null) {
+                log.d('Received known activity ID: $activityId');
               }
             },
             onError: (error) {
@@ -191,22 +196,12 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
           hasNextPage: result.pageInfo.hasNextPage,
           cursor: result.pageInfo.endCursor,
         );
-
-        // Update last seen transaction ID with the most recent one
-        if (newTransactions.isNotEmpty) {
-          _lastSeenTransactionId = _generateTransactionId(newTransactions.first);
-        }
       } else {
         log.w('Received null result from getAccountHistory');
       }
     } catch (e) {
       log.e('Error refreshing transfers-only history: $e');
     }
-  }
-
-  /// Generate a consistent transaction ID from transaction data
-  String _generateTransactionId(TransactionDisplayItem transaction) {
-    return '${transaction.timestamp.millisecondsSinceEpoch}_${transaction.amount}_${transaction.isReceived}_${transaction.type.name}';
   }
 
   /// Load the first page of transfers
@@ -239,11 +234,6 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
       final transactions = result.edges
           .map((edge) => TransactionDisplayItem.fromGraphQLNode(edge.node, _address, genesisTime))
           .toList();
-
-      // Store the most recent transaction ID for activity detection
-      if (transactions.isNotEmpty) {
-        _lastSeenTransactionId = _generateTransactionId(transactions.first);
-      }
 
       state = state.copyWith(
         transactions: transactions,
@@ -311,7 +301,6 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
   final String _address;
 
   StreamSubscription<String?>? _activitySubscription;
-  String? _lastSeenTransactionId;
 
   String get address => _address;
 
@@ -368,13 +357,13 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
       _activitySubscription = d.SquidService.client
           .subscribeAccountActivity(_address)
           .listen(
-            (transactionId) {
-              if (transactionId != null && transactionId != _lastSeenTransactionId) {
-                log.d('🔔 New activity detected for $_address: $transactionId (previous: $_lastSeenTransactionId)');
-                _lastSeenTransactionId = transactionId;
+            (activityId) {
+              if (activityId != null && activityId != state.lastActivityId) {
+                log.d('🔔 New activity detected for $_address: $activityId (previous: ${state.lastActivityId})');
+                state = state.copyWith(lastActivityId: activityId);
                 _onAccountActivity();
-              } else if (transactionId != null) {
-                log.d('Received known transaction ID: $transactionId');
+              } else if (activityId != null) {
+                log.d('Received known activity ID: $activityId');
               }
             },
             onError: (error) {
@@ -451,22 +440,12 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
           hasNextPage: result.hasNextPage,
           cursor: result.endCursor,
         );
-
-        // Update last seen transaction ID with the most recent one
-        if (newTransactions.isNotEmpty) {
-          _lastSeenTransactionId = _generateTransactionId(newTransactions.first);
-        }
       } else {
         log.w('Received null result from getCombinedAccountHistory');
       }
     } catch (e) {
       log.e('Error refreshing combined history: $e');
     }
-  }
-
-  /// Generate a consistent transaction ID from transaction data
-  String _generateTransactionId(TransactionDisplayItem transaction) {
-    return '${transaction.timestamp.millisecondsSinceEpoch}_${transaction.amount}_${transaction.isReceived}_${transaction.type.name}';
   }
 
   /// Load the first page of combined transactions
@@ -515,11 +494,6 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
           })
           .whereType<TransactionDisplayItem>()
           .toList();
-
-      // Store the most recent transaction ID for activity detection
-      if (transactions.isNotEmpty) {
-        _lastSeenTransactionId = _generateTransactionId(transactions.first);
-      }
 
       state = state.copyWith(
         transactions: transactions,

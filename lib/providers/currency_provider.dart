@@ -83,7 +83,7 @@ class CurrencyDataNotifier extends AsyncNotifier<CurrencyData> {
   Future<CurrencyData> _loadCurrencyData() async {
     try {
       final durt = ref.watch(durtProvider);
-      final blockchain = durt.blockchain;
+      final blockchain = durt.chainAdapter.chain;
       final network = durt.network;
 
       // Get block time constant for time calculations
@@ -93,7 +93,7 @@ class CurrencyDataNotifier extends AsyncNotifier<CurrencyData> {
       final powBase = 100.0; // Duniter uses 2 decimal places (centimes)
 
       // Fetch data in parallel for better performance
-      final results = await Future.wait([
+      final results = await Future.wait<dynamic>([
         // Currency data
         blockchain.query.universalDividend.monetaryMass(),
         blockchain.query.universalDividend.currentUd(),

@@ -51,7 +51,7 @@ class DistanceService {
       return _cachedWotData!;
     }
 
-    final blockchain = Durt.i.blockchain;
+    final blockchain = Durt.i.chainAdapter.chain;
 
     // --- Phase 1 (0-15%): Fetch identities and memberships ---
     onProgress(0.0);
@@ -212,8 +212,9 @@ class DistanceService {
     required int accountIndex,
     required void Function(double progress) onProgress,
   }) async {
-    final maxDepth = Durt.i.blockchain.constant.distance.maxRefereeDistance;
-    final minAccessibleRefereesPerbill = Durt.i.blockchain.constant.distance.minAccessibleReferees;
+    final chain = Durt.i.chainAdapter.chain;
+    final maxDepth = chain.constant.distance.maxRefereeDistance;
+    final minAccessibleRefereesPerbill = chain.constant.distance.minAccessibleReferees;
     final xPercent = minAccessibleRefereesPerbill / 1000000000;
 
     // Fetch WoT data (0% to 95%) — uses cache if available

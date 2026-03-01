@@ -133,10 +133,11 @@ class TrmDataNotifier extends Notifier<AsyncValue<TrmData>> {
       final durt = durt2.Durt.i;
 
       // Get money supply (M) from Duniter
-      final moneySupply = await durt.blockchain.query.balances.totalIssuance();
+      final chain = durt.chainAdapter.chain;
+      final moneySupply = await chain.query.balances.totalIssuance();
 
       // Get members count (N) from Duniter
-      final membersCount = await durt.blockchain.query.membership.counterForMembership();
+      final membersCount = await chain.query.membership.counterForMembership();
 
       final trmData = TrmData(moneySupply: moneySupply, membersCount: membersCount, lastUpdated: DateTime.now());
 

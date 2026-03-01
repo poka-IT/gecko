@@ -34,6 +34,7 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
+import 'package:gecko/widgets/membership_alert_card.dart';
 import 'package:gecko/widgets/migration_alert_card.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
@@ -88,6 +89,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             ),
             // Migration alert (shown when identity was migrated away)
             SliverToBoxAdapter(child: MigrationAlertCard(address: widget.wallet.address)),
+            // Membership alert (shown when renewal needed or pending)
+            SliverToBoxAdapter(child: MembershipAlertCard(address: widget.wallet.address)),
             // Content as a sliver with proper padding
             SliverToBoxAdapter(
               child: Padding(

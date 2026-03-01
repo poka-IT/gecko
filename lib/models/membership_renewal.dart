@@ -13,16 +13,40 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 class MembershipRenewal {
   static RenewalInfo calculateRenewalInfo(MembershipStatus status) {
     if (status.expireDate == null) {
-      return status.idtyStatus == IdtyStatus.expired
-          ? RenewalInfo(canRenew: true, isExpired: true, hasPendingRenewal: status.hasPendingRenewal)
-          : RenewalInfo(canRenew: false);
+      if (status.idtyStatus == IdtyStatus.expired) {
+        return RenewalInfo(
+          canRenew: !status.hasPendingRenewal,
+          isExpired: true,
+          hasPendingRenewal: status.hasPendingRenewal,
+          autoRevocationDate: status.autoRevocationDate,
+          pendingEvalEstimate: status.pendingEvalEstimate,
+          disableReason: status.hasPendingRenewal ? RenewalDisableReason.pendingEvaluation : null,
+        );
+      }
+      if (status.idtyStatus == IdtyStatus.revoked) {
+        return RenewalInfo(canRenew: false, disableReason: RenewalDisableReason.identityRevoked);
+      }
+      if (status.idtyStatus == IdtyStatus.none || status.idtyStatus == IdtyStatus.unknown) {
+        return RenewalInfo(canRenew: false, disableReason: RenewalDisableReason.identityNotMember);
+      }
+      return RenewalInfo(canRenew: false);
     }
 
     final now = DateTime.now();
     final isExpired = status.expireDate!.isBefore(now);
 
     // On peut renouveler si on est après la date de début de renouvellement
-    final canRenew = !status.hasPendingRenewal && (status.renewalStartDate?.isBefore(now) ?? false);
+    final renewalStartReached = status.renewalStartDate?.isBefore(now) ?? false;
+    final canRenew = !status.hasPendingRenewal && renewalStartReached;
+
+    RenewalDisableReason? disableReason;
+    if (!canRenew) {
+      if (status.hasPendingRenewal) {
+        disableReason = RenewalDisableReason.pendingEvaluation;
+      } else if (!renewalStartReached) {
+        disableReason = RenewalDisableReason.renewalPeriodNotReached;
+      }
+    }
 
     return RenewalInfo(
       expireDate: status.expireDate,
@@ -30,14 +54,22 @@ class MembershipRenewal {
       canRenew: canRenew,
       hasPendingRenewal: status.hasPendingRenewal,
       renewalStartDate: status.renewalStartDate,
+      autoRevocationDate: status.autoRevocationDate,
+      pendingEvalEstimate: status.pendingEvalEstimate,
+      disableReason: disableReason,
     );
   }
 
-  static Future<void> executeRenewal(BuildContext context, WidgetRef ref, String address) async {
+  static Future<void> executeRenewal(
+    BuildContext context,
+    WidgetRef ref,
+    String address, {
+    bool isExpired = false,
+  }) async {
     final answer = await showConfirmationDialog(
       context: context,
-      message: 'areYouSureYouWantToRenewMembership'.tr(),
-      type: ConfirmationDialogType.question,
+      message: isExpired ? 'renewMembershipExpiredConfirm'.tr() : 'areYouSureYouWantToRenewMembership'.tr(),
+      type: isExpired ? ConfirmationDialogType.warning : ConfirmationDialogType.question,
     );
     if (!answer) return;
 
@@ -101,12 +133,23 @@ class MembershipRenewal {
   }
 }
 
+enum RenewalDisableReason {
+  pendingEvaluation,
+  renewalPeriodNotReached,
+  identityExpired,
+  identityRevoked,
+  identityNotMember,
+}
+
 class RenewalInfo {
   final DateTime? expireDate;
   final bool isExpired;
   final bool canRenew;
   final bool hasPendingRenewal;
   final DateTime? renewalStartDate;
+  final DateTime? autoRevocationDate;
+  final DateTime? pendingEvalEstimate;
+  final RenewalDisableReason? disableReason;
 
   RenewalInfo({
     this.expireDate,
@@ -114,5 +157,8 @@ class RenewalInfo {
     this.canRenew = false,
     this.hasPendingRenewal = false,
     this.renewalStartDate,
+    this.autoRevocationDate,
+    this.pendingEvalEstimate,
+    this.disableReason,
   });
 }

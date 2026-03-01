@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:durt2/durt2.dart' as d;
+import 'package:flutter_riverpod/experimental/persist.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/persist_storage_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
@@ -26,6 +29,20 @@ class TransactionHistoryState {
     this.error,
     this.cursor,
   });
+
+  Map<String, dynamic> toJson() => {
+    'transactions': transactions.map((t) => t.toJson()).toList(),
+    'hasNextPage': hasNextPage,
+    'cursor': cursor,
+  };
+
+  factory TransactionHistoryState.fromJson(Map<String, dynamic> json) => TransactionHistoryState(
+    transactions: (json['transactions'] as List)
+        .map((t) => TransactionDisplayItem.fromJson(t as Map<String, dynamic>))
+        .toList(),
+    hasNextPage: json['hasNextPage'] as bool? ?? false,
+    cursor: json['cursor'] as String?,
+  );
 
   TransactionHistoryState copyWith({
     List<TransactionDisplayItem>? transactions,
@@ -57,6 +74,15 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
   @override
   TransactionHistoryState build() {
     ref.onDispose(() => _activitySubscription?.cancel());
+
+    // Persist state to local SQLite DB for instant display on app restart
+    final network = ref.read(durtProvider).network.name;
+    persist(
+      ref.watch(persistStorageProvider.future),
+      key: 'transfers_${_address}_$network',
+      encode: (state) => jsonEncode(state.toJson()),
+      decode: (json) => TransactionHistoryState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+    );
 
     // Watch the cache buster to force refresh when Squid endpoint changes
     ref.listen(squidCacheBusterProvider, (previous, next) {
@@ -292,6 +318,15 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
   @override
   TransactionHistoryState build() {
     ref.onDispose(() => _activitySubscription?.cancel());
+
+    // Persist state to local SQLite DB for instant display on app restart
+    final network = ref.read(durtProvider).network.name;
+    persist(
+      ref.watch(persistStorageProvider.future),
+      key: 'combined_${_address}_$network',
+      encode: (state) => jsonEncode(state.toJson()),
+      decode: (json) => TransactionHistoryState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+    );
 
     // Watch the cache buster to force refresh when Squid endpoint changes
     ref.listen(squidCacheBusterProvider, (previous, next) {

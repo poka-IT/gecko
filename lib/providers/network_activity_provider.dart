@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:durt2/durt2.dart' as d;
+import 'package:flutter_riverpod/experimental/persist.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/persist_storage_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
@@ -30,6 +33,20 @@ class NetworkActivityState {
     this.hasActiveFilters = false,
     this.appliedServerFilters,
   });
+
+  Map<String, dynamic> toJson() => {
+    'transactions': transactions.map((t) => t.toJson()).toList(),
+    'hasNextPage': hasNextPage,
+    'cursor': cursor,
+  };
+
+  factory NetworkActivityState.fromJson(Map<String, dynamic> json) => NetworkActivityState(
+    transactions: (json['transactions'] as List)
+        .map((t) => TransactionDisplayItem.fromJson(t as Map<String, dynamic>))
+        .toList(),
+    hasNextPage: json['hasNextPage'] as bool? ?? false,
+    cursor: json['cursor'] as String?,
+  );
 
   NetworkActivityState copyWith({
     List<TransactionDisplayItem>? transactions,
@@ -60,6 +77,15 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
   @override
   NetworkActivityState build() {
     ref.onDispose(() => _networkActivitySubscription?.cancel());
+
+    // Persist state to local SQLite DB for instant display on app restart
+    final network = ref.read(durtProvider).network.name;
+    persist(
+      ref.watch(persistStorageProvider.future),
+      key: 'networkActivity_$network',
+      encode: (state) => jsonEncode(state.toJson()),
+      decode: (json) => NetworkActivityState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+    );
 
     // Watch the cache buster to force refresh when Squid endpoint changes
     ref.listen(squidCacheBusterProvider, (previous, next) {

@@ -280,6 +280,42 @@ class TransactionDisplayItem {
   /// Check if this is an identity migration "to" event
   bool get isIdentityMigrationTo => type == TransactionType.identityMigrationTo;
 
+  Map<String, dynamic> toJson() => {
+    'address': address,
+    'username': username,
+    'amount': amount.toString(),
+    'comment': comment,
+    'isReceived': isReceived,
+    'timestamp': timestamp.toIso8601String(),
+    'transactionTime': transactionTime.toIso8601String(),
+    'dateDelimiter': dateDelimiter,
+    'isMigrationTime': isMigrationTime,
+    'type': type.name,
+    'fromAddress': fromAddress,
+    'toAddress': toAddress,
+    'fromUsername': fromUsername,
+    'toUsername': toUsername,
+    'squidId': squidId,
+  };
+
+  factory TransactionDisplayItem.fromJson(Map<String, dynamic> json) => TransactionDisplayItem(
+    address: json['address'] as String,
+    username: json['username'] as String?,
+    amount: BigInt.parse(json['amount'] as String),
+    comment: json['comment'] as String?,
+    isReceived: json['isReceived'] as bool,
+    timestamp: DateTime.parse(json['timestamp'] as String),
+    transactionTime: DateTime.parse(json['transactionTime'] as String),
+    dateDelimiter: json['dateDelimiter'] as String,
+    isMigrationTime: json['isMigrationTime'] as bool,
+    type: TransactionType.values.byName(json['type'] as String),
+    fromAddress: json['fromAddress'] as String?,
+    toAddress: json['toAddress'] as String?,
+    fromUsername: json['fromUsername'] as String?,
+    toUsername: json['toUsername'] as String?,
+    squidId: json['squidId'] as String?,
+  );
+
   /// Get a display-friendly type name
   String get displayType {
     return switch (type) {

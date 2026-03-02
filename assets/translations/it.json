@@ -261,6 +261,7 @@
     "estimatedProcessingDate": "Trattamento stimato: {}",
     "everyDay": "giorno",
     "everyHour": "ora",
+    "oneHour": "un'ora",
     "everyMinute": "minuto",
     "exactIssuerMatch": "Corrispondenza esatta emittente",
     "exactMatch": "Esatto",

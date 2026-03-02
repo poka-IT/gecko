@@ -255,6 +255,7 @@
     "estimatedProcessingDate": "Estimated processing: {}",
     "everyDay": "day",
     "everyHour": "hour",
+    "oneHour": "one hour",
     "everyMinute": "minute",
     "exactIssuerMatch": "Exact issuer match",
     "exactMatch": "Exact",

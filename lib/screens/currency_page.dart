@@ -90,7 +90,7 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
         }
         // Calculate time since blockchain start
         final timeSinceStart = DateTime.now().difference(genesisTime);
-        final startedAgo = _formatDuration(timeSinceStart.inMilliseconds);
+        final startedAgo = _formatElapsed(timeSinceStart.inMilliseconds);
 
         // Format UD period using existing duration formatting
         final udPeriod = _formatDuration(params.udCreationPeriodMs);
@@ -397,6 +397,25 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
     );
   }
 
+  /// Format a duration as elapsed time (e.g., "une heure", "2 ans").
+  /// Always uses the numeric form, suitable for "started X ago" context.
+  String _formatElapsed(int milliseconds) {
+    final duration = Duration(milliseconds: milliseconds);
+    if (duration.inDays > 365) {
+      return 'years'.tr(args: [(duration.inDays ~/ 365).toString()]);
+    } else if (duration.inDays > 30) {
+      return 'months'.tr(args: [(duration.inDays ~/ 30).toString()]);
+    } else if (duration.inDays > 0) {
+      return 'days'.tr(args: [duration.inDays.toString()]);
+    } else if (duration.inHours > 0) {
+      return duration.inHours == 1 ? 'oneHour'.tr() : 'hours'.tr(args: [duration.inHours.toString(), '']);
+    } else {
+      return 'minutes'.tr(args: [duration.inMinutes.toString()]);
+    }
+  }
+
+  /// Format a duration as a period (e.g., "jour", "heure").
+  /// Uses singular form for ==1, suitable for "every X" context.
   String _formatDuration(int milliseconds) {
     final duration = Duration(milliseconds: milliseconds);
     if (duration.inDays > 365) {
@@ -406,7 +425,7 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
     } else if (duration.inDays > 0) {
       return duration.inDays == 1 ? 'everyDay'.tr() : 'days'.tr(args: [duration.inDays.toString()]);
     } else if (duration.inHours > 0) {
-      return duration.inHours == 1 ? 'everyHour'.tr() : 'hours'.tr(args: [duration.inHours.toString()]);
+      return duration.inHours == 1 ? 'everyHour'.tr() : 'hours'.tr(args: [duration.inHours.toString(), '']);
     } else {
       return duration.inMinutes == 1 ? 'everyMinute'.tr() : 'minutes'.tr(args: [duration.inMinutes.toString()]);
     }

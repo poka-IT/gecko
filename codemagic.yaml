@@ -12,6 +12,13 @@ workflows:
       flutter: stable
 
     scripts:
+      - name: Remove local dependency overrides
+        script: |
+          $content = Get-Content pubspec.yaml -Raw
+          $content = $content -replace '(?m)^\s*# Local development override - use local durt2 when available\r?\n\s*durt2:\r?\n\s*path: \.\./durt2\r?\n', ''
+          Set-Content pubspec.yaml -Value $content -NoNewline
+          Write-Host "Local overrides removed - using pub.dev dependencies"
+
       - name: Get Flutter dependencies
         script: flutter pub get
 

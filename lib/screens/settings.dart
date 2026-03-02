@@ -197,13 +197,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _syncDuniterEndpointController();
       _syncIndexerEndpointController();
       _refreshBlockHeightProvider();
-      ref.invalidate(currencyDataProvider);
 
-      // 7. Invalidate genesisTimeProvider to force recalculation with new network
-      // This is critical because genesisTime is network-specific and must be recalculated
-      // when switching networks to avoid incorrect date calculations (e.g., certification expiration dates)
+      // 7. Invalidate all providers that cache Durt.i properties, since Durt.i
+      // is a singleton whose internal state changed (new orchestrator/storage).
+      // Riverpod won't detect this because the Durt.i reference is unchanged.
+      ref.invalidate(storageServiceProvider);
+      ref.invalidate(currencyDataProvider);
       ref.invalidate(genesisTimeProvider);
-      log.i('🔄 Invalidated genesisTimeProvider after network switch');
+      log.i('🔄 Invalidated storage, currency, and genesis providers after network switch');
 
       log.i('Successfully switched to network: ${newNetwork.name}');
     } catch (e) {

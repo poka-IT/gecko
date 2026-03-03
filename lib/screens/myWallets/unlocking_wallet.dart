@@ -41,6 +41,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   late List<SafeEntity> allSafes;
   int currentSafeIndex = 0;
   bool canUnlock = true;
+  bool _hasNonLegacySafes = false;
   late final TextEditingController enterPin;
   late final FocusNode pinFocus;
   late final PinInputController _pinController;
@@ -99,6 +100,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
         currentSafeNumber = allSafes[0].number;
       }
       currentSafe = allSafes[currentSafeIndex];
+
+      // Check if at least one non-legacy safe exists
+      _hasNonLegacySafes = allSafes.any((safe) => safe.safeType != SafeType.legacy);
     } else {
       // Single-safe mode - only load current safe
       try {
@@ -673,9 +677,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   /// Build the safe carousel slider with multi-safe support
   Widget _buildSafeSlider(BuildContext context) {
     // Show carousel with optional placeholder for creating new safes
-    final totalItems =
-        allSafes.length + (widget.canSwitch ? 1 : 0); // +1 for create/import placeholder only if canSwitch
-    final isPlaceholderSelected = widget.canSwitch && currentSafeIndex >= allSafes.length;
+    final showPlaceholder = widget.canSwitch && _hasNonLegacySafes;
+    final totalItems = allSafes.length + (showPlaceholder ? 1 : 0);
+    final isPlaceholderSelected = showPlaceholder && currentSafeIndex >= allSafes.length;
 
     return Column(
       children: [
@@ -714,7 +718,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
             },
             onSafeCreated: _simpleReloadSafes,
             onSafeImported: _simpleReloadSafes,
-            showCreatePlaceholder: widget.canSwitch,
+            showCreatePlaceholder: showPlaceholder,
             height: scaleSize(isTall ? 140 : 120),
             isCompact: true,
           ),
@@ -763,7 +767,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           Text(
             isPlaceholderSelected
                 ? 'tapToCreateOrImport'.tr()
-                : (allSafes.length > 1 ? 'swipeToChangeSafe'.tr() : 'swipeToCreateSafe'.tr()),
+                : (allSafes.length > 1 ? 'swipeToChangeSafe'.tr() : (showPlaceholder ? 'swipeToCreateSafe'.tr() : '')),
             style: scaledTextStyle(
               fontSize: 11,
               color: context.colorScheme.onSurfaceVariant,
@@ -828,6 +832,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       // Reload all safes
       allSafes = ref.read(walletServiceProvider).safeBox.getAll();
       allSafes.sort((a, b) => a.number.compareTo(b.number));
+
+      // Recalculate non-legacy safes flag
+      _hasNonLegacySafes = allSafes.any((safe) => safe.safeType != SafeType.legacy);
 
       // Update to the current default safe
       currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;

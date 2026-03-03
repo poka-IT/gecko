@@ -1,6 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:durt2/durt2.dart' show SafeEntity;
+import 'package:durt2/durt2.dart' show SafeEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +27,7 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
   late int currentSafe;
   late List<SafeEntity> allSafes;
   late int currentSafeIndex;
+  late bool hasNonLegacySafes;
 
   @override
   void initState() {
@@ -42,6 +43,9 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       currentSafeIndex = 0; // Fallback to first safe if default not found
       currentSafe = allSafes[0].number;
     }
+
+    // Block safe creation when only legacy safes exist
+    hasNonLegacySafes = allSafes.any((safe) => safe.safeType != SafeType.legacy);
   }
 
   /// Reload safes after creation/import
@@ -52,6 +56,9 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       // Reload all safes
       allSafes = ref.read(walletServiceProvider).safeBox.getAll();
       allSafes.sort((a, b) => a.number.compareTo(b.number));
+
+      // Recalculate non-legacy safes flag
+      hasNonLegacySafes = allSafes.any((safe) => safe.safeType != SafeType.legacy);
 
       // Update to the newest default safe (likely the newly created one)
       currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
@@ -102,15 +109,15 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
               },
               onSafeCreated: () => _reloadSafes(),
               onSafeImported: () => _reloadSafes(),
-              showCreatePlaceholder: true,
+              showCreatePlaceholder: hasNonLegacySafes,
               height: 210,
               isCompact: false,
             ),
             // Always show pagination dots if there are multiple items (safes + placeholder)
-            if (allSafes.length + 1 > 1)
+            if (allSafes.length + (hasNonLegacySafes ? 1 : 0) > 1)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(allSafes.length + 1, (index) {
+                children: List.generate(allSafes.length + (hasNonLegacySafes ? 1 : 0), (index) {
                   return GestureDetector(
                     onTap: () => buttonCarouselController.animateToPage(index),
                     child: Container(

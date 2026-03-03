@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:durt2/durt2.dart';
 
@@ -67,70 +68,83 @@ class DistanceService {
     }
 
     // Fire all batch queries + counterForMembership simultaneously
-    final totalPhase1 = batches.length * 2 + 1; // identities + memberships + counter
+    // Each batch uses a single queryStorageAt with interleaved identity+membership keys
+    final totalPhase1 = batches.length + 1; // one queryStorageAt per batch + counter
     var phase1Done = 0;
     void phase1Progress() => onProgress(0.15 * (++phase1Done / totalPhase1));
 
-    final allIdentitiesFuture = Future.wait(
-      batches.map(
-        (b) => blockchain.query.identity.multiIdentities(b).then((r) {
+    final allBatchesFuture = Future.wait(
+      batches.map((batch) {
+        final keys = <Uint8List>[
+          for (final idx in batch) ...[
+            blockchain.query.identity.identitiesKey(idx),
+            blockchain.query.membership.membershipKey(idx),
+          ],
+        ];
+        return Durt.i.stateApi.queryStorageAt(keys).then((r) {
           phase1Progress();
           return r;
-        }),
-      ),
-    );
-    final allMembershipsFuture = Future.wait(
-      batches.map(
-        (b) => blockchain.query.membership.multiMembership(b).then((r) {
-          phase1Progress();
-          return r;
-        }),
-      ),
+        });
+      }),
     );
     final membersCountFuture = blockchain.query.membership.counterForMembership().then((r) {
       phase1Progress();
       return r;
     });
 
-    final allIdentities = await allIdentitiesFuture;
-    final allMemberships = await allMembershipsFuture;
+    final allBatchResults = (await allBatchesFuture).toList();
     final membersCount = await membersCountFuture;
 
-    // Process results
+    // Process results: interleaved keys → identity at 2*j, membership at 2*j+1
     final allIdentityIndexes = <int>{};
     final memberIdties = <int>{};
     for (var b = 0; b < batches.length; b++) {
+      final changes = allBatchResults[b].first.changes;
       for (var j = 0; j < batches[b].length; j++) {
-        if (allIdentities[b][j] != null) allIdentityIndexes.add(batches[b][j]);
-        if (allMemberships[b][j] != null) memberIdties.add(batches[b][j]);
+        final idx = batches[b][j];
+        if (changes[2 * j].value != null) allIdentityIndexes.add(idx);
+        if (changes[2 * j + 1].value != null) memberIdties.add(idx);
       }
     }
 
     final minCertsForReferee = (pow(membersCount, 1 / maxDepth)).ceil();
 
-    // --- Phase 2 (15-95%): Fetch all certifications in parallel ---
+    // --- Phase 2 (15-95%): Fetch all certifications via batched queryStorageAt ---
     final idtyList = allIdentityIndexes.toList();
-    final totalPhase2 = idtyList.length;
+    const certBatchSize = 500;
+    final certBatches = <List<int>>[];
+    for (var i = 0; i < idtyList.length; i += certBatchSize) {
+      final end = (i + certBatchSize > idtyList.length) ? idtyList.length : i + certBatchSize;
+      certBatches.add(idtyList.sublist(i, end));
+    }
+
+    final totalPhase2 = certBatches.length;
     var phase2Done = 0;
 
-    final allCerts = await Future.wait(
-      idtyList.map(
-        (key) => blockchain.query.certification.certsByReceiver(key).then((r) {
+    final allCertResults = (await Future.wait(
+      certBatches.map((batch) {
+        final keys = <Uint8List>[for (final idx in batch) blockchain.query.certification.certsByReceiverKey(idx)];
+        return Durt.i.stateApi.queryStorageAt(keys).then((r) {
           onProgress(0.15 + 0.80 * (++phase2Done / totalPhase2));
           return r;
-        }),
-      ),
-    );
+        });
+      }),
+    )).toList();
 
+    // Decode SCALE-encoded certifications
     final receivedCerts = <int, List<int>>{};
     final certsByIssuer = <int, List<int>>{};
-    for (var j = 0; j < idtyList.length; j++) {
-      final idtyIndex = idtyList[j];
-      final issuers = <int>[for (final t in allCerts[j]) t.value0 as int];
-      receivedCerts[idtyIndex] = issuers;
+    for (var b = 0; b < certBatches.length; b++) {
+      final changes = allCertResults[b].first.changes;
+      for (var j = 0; j < certBatches[b].length; j++) {
+        final idtyIndex = certBatches[b][j];
+        final value = changes[j].value;
+        final issuers = value != null ? _decodeCertIssuers(value) : <int>[];
+        receivedCerts[idtyIndex] = issuers;
 
-      for (final issuer in issuers) {
-        certsByIssuer.putIfAbsent(issuer, () => []).add(idtyIndex);
+        for (final issuer in issuers) {
+          certsByIssuer.putIfAbsent(issuer, () => []).add(idtyIndex);
+        }
       }
     }
 
@@ -185,6 +199,19 @@ class DistanceService {
     } else {
       return accessibleReferees.length / refereesCount;
     }
+  }
+
+  /// Decodes SCALE-encoded certifications to extract issuer indexes.
+  /// Format: compact(count) followed by count pairs of (U32 issuer, U32 blockNumber).
+  static List<int> _decodeCertIssuers(Uint8List bytes) {
+    final input = ByteInput(bytes);
+    final count = CompactCodec.codec.decode(input);
+    final issuers = <int>[];
+    for (var i = 0; i < count; i++) {
+      issuers.add(U32Codec.codec.decode(input));
+      U32Codec.codec.decode(input); // skip block number
+    }
+    return issuers;
   }
 
   /// Recursive DFS through the certification graph.

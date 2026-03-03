@@ -104,8 +104,12 @@ class CertTile extends StatelessWidget {
                       // Date
                       Text(
                         cert.date.year == DateTime.now().year
-                            ? DateFormat.MMMd(Localizations.localeOf(context).languageCode).format(cert.date)
-                            : DateFormat.yMMMd(Localizations.localeOf(context).languageCode).format(cert.date),
+                            ? DateFormat.MMMd(
+                                safeLocale(Localizations.localeOf(context).languageCode),
+                              ).format(cert.date)
+                            : DateFormat.yMMMd(
+                                safeLocale(Localizations.localeOf(context).languageCode),
+                              ).format(cert.date),
                         style: scaledTextStyle(
                           fontSize: 11,
                           color: context.colorScheme.onSurface.withValues(alpha: 0.6),

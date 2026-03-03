@@ -41,6 +41,7 @@ import 'package:gecko/services/g1_genesis_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/services/empty_string_asset_loader.dart';
 import 'package:gecko/services/eo_locale_delegate.dart';
+import 'package:gecko/utils.dart' show safeLocale;
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -182,6 +183,12 @@ class Gecko extends StatelessWidget {
                 final navigatorObserver = BottomAppBarNavigatorObserver(ref);
                 final textScale = ref.watch(textScalingProvider);
                 final themeMode = ref.watch(currentThemeModeProvider);
+
+                // Override Intl.defaultLocale with a safe fallback for locales
+                // not supported by the intl package (e.g. Esperanto "eo").
+                // easy_localization sets Intl.defaultLocale automatically,
+                // which would crash every DateFormat call for unsupported locales.
+                Intl.defaultLocale = safeLocale(context.locale.languageCode);
 
                 return MaterialApp(
                   localizationsDelegates: [...eoLocalizationDelegates, ...context.localizationDelegates],

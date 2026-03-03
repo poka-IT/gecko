@@ -2,7 +2,12 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:intl/date_symbol_data_local.dart' show dateTimeSymbolMap;
 import 'package:truncate/truncate.dart';
+
+/// Returns a locale code safe for use with [DateFormat] / [NumberFormat].
+/// Falls back to 'en' for locales not supported by the intl package (e.g. Esperanto 'eo').
+String safeLocale(String locale) => dateTimeSymbolMap().containsKey(locale) ? locale : 'en';
 
 String getShortPubkey(String pubkey) {
   String pubkeyShort =
@@ -97,7 +102,7 @@ String calculateDateDelimiter(DateTime timestamp) {
   } else if (daysDifference < 7) {
     return "daysAgo".tr(args: [daysDifference.toString()]);
   } else {
-    final locale = Localizations.localeOf(homeContext).languageCode;
+    final locale = safeLocale(Localizations.localeOf(homeContext).languageCode);
     final formatPattern = timestamp.year == now.year ? 'EEEE d MMMM' : 'EEEE d MMMM y';
     final formatted = DateFormat(formatPattern, locale).format(timestamp);
     return formatted

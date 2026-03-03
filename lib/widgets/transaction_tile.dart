@@ -168,7 +168,7 @@ class TransactionTile extends StatelessWidget {
                               // Date
                               Text(
                                 DateFormat.MMMd(
-                                  Localizations.localeOf(context).languageCode,
+                                  safeLocale(Localizations.localeOf(context).languageCode),
                                 ).format(transaction.transactionTime),
                                 style: scaledTextStyle(
                                   fontSize: 11,
@@ -302,7 +302,9 @@ class TransactionTile extends StatelessWidget {
                   BalanceDisplay(value: finalAmount, size: 16, color: context.colorScheme.primary),
                   ScaledSizedBox(height: 4),
                   Text(
-                    DateFormat.MMMd(Localizations.localeOf(context).languageCode).format(transaction.transactionTime),
+                    DateFormat.MMMd(
+                      safeLocale(Localizations.localeOf(context).languageCode),
+                    ).format(transaction.transactionTime),
                     style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
                   ),
                 ],
@@ -400,7 +402,9 @@ class TransactionTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      DateFormat.MMMd(Localizations.localeOf(context).languageCode).format(transaction.transactionTime),
+                      DateFormat.MMMd(
+                        safeLocale(Localizations.localeOf(context).languageCode),
+                      ).format(transaction.transactionTime),
                       style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
                     ScaledSizedBox(height: 2),
@@ -504,7 +508,9 @@ class TransactionTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      DateFormat.MMMd(Localizations.localeOf(context).languageCode).format(transaction.transactionTime),
+                      DateFormat.MMMd(
+                        safeLocale(Localizations.localeOf(context).languageCode),
+                      ).format(transaction.transactionTime),
                       style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
                     ScaledSizedBox(height: 2),

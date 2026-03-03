@@ -53,66 +53,85 @@ class DistanceService {
 
     final blockchain = Durt.i.chainAdapter.chain;
 
-    // --- Phase 1 (0-15%): Fetch identities and memberships ---
+    // --- Phase 1 (0-15%): Fetch identities, memberships and member count in parallel ---
     onProgress(0.0);
 
     final nextIndex = await blockchain.query.identity.nextIdtyIndex();
-    final allIdentityIndexes = <int>{};
-    final memberIdties = <int>{};
+    final maxDepth = blockchain.constant.distance.maxRefereeDistance;
 
     const batchSize = 1000;
-
+    final batches = <List<int>>[];
     for (var i = 0; i < nextIndex; i += batchSize) {
       final batchEnd = (i + batchSize > nextIndex) ? nextIndex : i + batchSize;
-      final batch = List.generate(batchEnd - i, (j) => i + j);
-
-      // Parallel queries per batch (separate futures preserve types)
-      final membershipsFuture = blockchain.query.membership.multiMembership(batch);
-      final identitiesFuture = blockchain.query.identity.multiIdentities(batch);
-      final memberships = await membershipsFuture;
-      final identities = await identitiesFuture;
-
-      for (var j = 0; j < batch.length; j++) {
-        if (identities[j] != null) {
-          allIdentityIndexes.add(batch[j]);
-        }
-        if (memberships[j] != null) {
-          memberIdties.add(batch[j]);
-        }
-      }
-
-      onProgress(0.15 * (batchEnd / nextIndex));
+      batches.add(List.generate(batchEnd - i, (j) => i + j));
     }
 
-    onProgress(0.15);
+    // Fire all batch queries + counterForMembership simultaneously
+    final totalPhase1 = batches.length * 2 + 1; // identities + memberships + counter
+    var phase1Done = 0;
+    void phase1Progress() => onProgress(0.15 * (++phase1Done / totalPhase1));
 
-    // Compute minCertsForReferee
-    final membersCount = await blockchain.query.membership.counterForMembership();
-    final maxDepth = blockchain.constant.distance.maxRefereeDistance;
+    final allIdentitiesFuture = Future.wait(
+      batches.map(
+        (b) => blockchain.query.identity.multiIdentities(b).then((r) {
+          phase1Progress();
+          return r;
+        }),
+      ),
+    );
+    final allMembershipsFuture = Future.wait(
+      batches.map(
+        (b) => blockchain.query.membership.multiMembership(b).then((r) {
+          phase1Progress();
+          return r;
+        }),
+      ),
+    );
+    final membersCountFuture = blockchain.query.membership.counterForMembership().then((r) {
+      phase1Progress();
+      return r;
+    });
+
+    final allIdentities = await allIdentitiesFuture;
+    final allMemberships = await allMembershipsFuture;
+    final membersCount = await membersCountFuture;
+
+    // Process results
+    final allIdentityIndexes = <int>{};
+    final memberIdties = <int>{};
+    for (var b = 0; b < batches.length; b++) {
+      for (var j = 0; j < batches[b].length; j++) {
+        if (allIdentities[b][j] != null) allIdentityIndexes.add(batches[b][j]);
+        if (allMemberships[b][j] != null) memberIdties.add(batches[b][j]);
+      }
+    }
+
     final minCertsForReferee = (pow(membersCount, 1 / maxDepth)).ceil();
 
-    // --- Phase 2 (15-95%): Fetch certifications ---
+    // --- Phase 2 (15-95%): Fetch all certifications in parallel ---
+    final idtyList = allIdentityIndexes.toList();
+    final totalPhase2 = idtyList.length;
+    var phase2Done = 0;
+
+    final allCerts = await Future.wait(
+      idtyList.map(
+        (key) => blockchain.query.certification.certsByReceiver(key).then((r) {
+          onProgress(0.15 + 0.80 * (++phase2Done / totalPhase2));
+          return r;
+        }),
+      ),
+    );
+
     final receivedCerts = <int, List<int>>{};
     final certsByIssuer = <int, List<int>>{};
-    final idtyList = allIdentityIndexes.toList();
+    for (var j = 0; j < idtyList.length; j++) {
+      final idtyIndex = idtyList[j];
+      final issuers = <int>[for (final t in allCerts[j]) t.value0 as int];
+      receivedCerts[idtyIndex] = issuers;
 
-    for (var i = 0; i < idtyList.length; i += batchSize) {
-      final batchEnd = (i + batchSize > idtyList.length) ? idtyList.length : i + batchSize;
-      final batch = idtyList.sublist(i, batchEnd);
-
-      final certsBatch = await Future.wait(batch.map((key) => blockchain.query.certification.certsByReceiver(key)));
-
-      for (var j = 0; j < batch.length; j++) {
-        final idtyIndex = batch[j];
-        final issuers = <int>[for (final t in certsBatch[j]) t.value0 as int];
-        receivedCerts[idtyIndex] = issuers;
-
-        for (final issuer in issuers) {
-          certsByIssuer.putIfAbsent(issuer, () => []).add(idtyIndex);
-        }
+      for (final issuer in issuers) {
+        certsByIssuer.putIfAbsent(issuer, () => []).add(idtyIndex);
       }
-
-      onProgress(0.15 + 0.80 * (batchEnd / idtyList.length));
     }
 
     onProgress(0.95);

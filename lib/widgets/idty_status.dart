@@ -51,14 +51,14 @@ class IdentityStatus extends ConsumerWidget {
         ? NameByAddress(
             wallet: displayWallet,
             size: 18,
-            color: context.colorScheme.onSurface,
+            color: color,
             fontWeight: FontWeight.w500,
             fontStyle: FontStyle.normal,
           )
         : NameByAddress(
             wallet: displayWallet,
             size: 16,
-            color: context.colorScheme.onSurfaceVariant,
+            color: color,
             fontWeight: FontWeight.w500,
             fontStyle: FontStyle.italic,
           );

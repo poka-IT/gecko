@@ -430,7 +430,7 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
                               ),
                             ),
                           ScaledSizedBox(width: 8),
-                          Certifications(address: flowState.v2Address, size: 12),
+                          Certifications(address: flowState.v2Address, size: 12, color: Colors.green.shade900),
                         ],
                       ),
                     ],

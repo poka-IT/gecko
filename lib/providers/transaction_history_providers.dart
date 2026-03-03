@@ -86,7 +86,8 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
       ref.watch(persistStorageProvider.future),
       key: 'transfers_${_address}_$network',
       encode: (state) => jsonEncode(state.toJson()),
-      decode: (json) => TransactionHistoryState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+      decode: (json) =>
+          TransactionHistoryState.fromJson(jsonDecode(json) as Map<String, dynamic>).copyWith(isLoading: true),
     );
 
     // Watch the cache buster to force refresh when Squid endpoint changes
@@ -314,7 +315,8 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
       ref.watch(persistStorageProvider.future),
       key: 'combined_${_address}_$network',
       encode: (state) => jsonEncode(state.toJson()),
-      decode: (json) => TransactionHistoryState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+      decode: (json) =>
+          TransactionHistoryState.fromJson(jsonDecode(json) as Map<String, dynamic>).copyWith(isLoading: true),
     );
 
     // Watch the cache buster to force refresh when Squid endpoint changes

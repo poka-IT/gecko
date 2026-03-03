@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
@@ -35,26 +34,13 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
   @override
   void initState() {
     super.initState();
+    // Reset filters via microtask to run right after the current build frame,
+    // before any server-filtered provider can complete its API call
+    Future.microtask(() {
+      if (mounted) ref.read(transactionFiltersProvider.notifier).reset();
+    });
     ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
     _headerDataFuture = _loadWalletData();
-
-    // Clear filters when opening a new activity screen
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      // Multiple safety checks to prevent lifecycle errors
-      if (!mounted) return;
-
-      try {
-        // Use a future to ensure we're in a stable state
-        Future.delayed(Duration.zero, () {
-          if (mounted) {
-            ref.read(transactionFiltersProvider.notifier).reset();
-          }
-        });
-      } catch (e) {
-        // Silently handle any errors during filter reset
-        debugPrint('Filter reset error: $e');
-      }
-    });
   }
 
   Future<WalletHeaderData> _loadWalletData() async {

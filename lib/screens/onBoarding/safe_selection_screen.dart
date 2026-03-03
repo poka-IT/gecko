@@ -6,6 +6,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class SafeSelectionScreen extends ConsumerStatefulWidget {
@@ -191,7 +192,7 @@ class _SafeSelectionScreenState extends ConsumerState<SafeSelectionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      safe.name,
+                      WalletNameService.displayName(safe.name),
                       style: scaledTextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

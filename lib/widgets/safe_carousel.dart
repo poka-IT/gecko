@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/create_safe_placeholder.dart';
 
 class SafeCarousel extends StatelessWidget {
@@ -83,7 +84,7 @@ class SafeCarousel extends StatelessWidget {
                                     : Image.asset('assets/safes/${safe.number % 4}.png', height: 150))
                               : Image.file(File(safe.imagePath!), height: 150),
                           const SizedBox(height: 30),
-                          Text(safe.name, style: const TextStyle(fontSize: 20)),
+                          Text(WalletNameService.displayName(safe.name), style: const TextStyle(fontSize: 20)),
                         ],
                       ),
               );

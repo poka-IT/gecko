@@ -12,6 +12,7 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/certification_queue_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 /// Safe management operations provider
@@ -27,7 +28,7 @@ class SafeManager {
 
   /// Delete a safe with proper confirmation and cleanup
   Future<void> deleteSafe(BuildContext context, SafeEntity safe) async {
-    final bool? confirmed = await _confirmDeletingSafe(context, safe.name);
+    final bool? confirmed = await _confirmDeletingSafe(context, WalletNameService.displayName(safe.name));
 
     if (!(confirmed ?? false)) return;
 

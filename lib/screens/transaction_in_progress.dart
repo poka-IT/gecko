@@ -14,6 +14,7 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/transaction_state_icon.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 
 class TransactionInProgressScreen extends ConsumerStatefulWidget {
   final Stream<TransactionStatus> transactionStatus;
@@ -62,7 +63,7 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
     if (providedUsername != null && providedUsername.isNotEmpty) return providedUsername;
     final cachedUsername = g1WalletsBox.get(address)?.username;
     if (cachedUsername != null && cachedUsername.isNotEmpty) return cachedUsername;
-    if (walletName != null && walletName.isNotEmpty) return walletName;
+    if (walletName != null && walletName.isNotEmpty) return WalletNameService.displayName(walletName);
     if (address.isNotEmpty) return getShortPubkey(address);
     return 'unknown'.tr();
   }

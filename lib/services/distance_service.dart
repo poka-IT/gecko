@@ -100,11 +100,11 @@ class DistanceService {
       final batchEnd = (i + batchSize > idtyList.length) ? idtyList.length : i + batchSize;
       final batch = idtyList.sublist(i, batchEnd);
 
-      final certsBatch = await blockchain.query.certification.multiCertsByReceiver(batch);
+      final certsBatch = await Future.wait(batch.map((key) => blockchain.query.certification.certsByReceiver(key)));
 
       for (var j = 0; j < batch.length; j++) {
         final idtyIndex = batch[j];
-        final issuers = certsBatch[j].map((t) => t.value0).toList();
+        final issuers = <int>[for (final t in certsBatch[j]) t.value0 as int];
         receivedCerts[idtyIndex] = issuers;
 
         for (final issuer in issuers) {

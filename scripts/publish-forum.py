@@ -89,6 +89,13 @@ This is a **BETA** build for ĞTest network.
 
 else:
     # Complete release message for tag releases
+    # Build optional desktop lines based on available builds
+    optional_desktop_lines = ""
+    if linux_x64_job_id:
+        optional_desktop_lines += f"\n\n• **[Linux Desktop (tar.gz)]({linux_x64_base_url}/gecko-{version}-linux-x64.tar.gz)** (x64)"
+    if windows_x64_job_id:
+        optional_desktop_lines += f"\n\n• **[Windows Desktop (zip)]({windows_x64_base_url}/gecko-{version}-windows-x64.zip)** (x64)"
+
     complete_message = f"""{base_message}
 
 This is a **BETA** release for ĞTest network.
@@ -114,7 +121,7 @@ This is a **BETA** release for ĞTest network.
 
 🖥️ **Desktop:**
 
-• **[Linux Desktop (tar.gz)]({linux_arm64_base_url}/gecko-{version}-linux-arm64.tar.gz)** (ARM64)
+• **[Linux Desktop (tar.gz)]({linux_arm64_base_url}/gecko-{version}-linux-arm64.tar.gz)** (ARM64){optional_desktop_lines}
 
 • **[macOS Desktop (dmg)]({macos_base_url}/gecko-{version}-macos-arm64.zip)** (Apple Silicon)
 

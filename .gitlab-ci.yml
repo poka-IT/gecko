@@ -102,17 +102,19 @@ publish:forum:complete:
     - build:android:apk
     - build:android:bundle
     # - build:ios
-    # - build:linux:x64
+    - build:linux:x64
     - build:linux:arm64
-    # - build:windows:x64
+    - build:windows:x64
     # - build:macos
   needs:
     - job: build:android:apk
     - job: build:android:bundle
     # - job: build:ios
-    # - job: build:linux:x64
+    - job: build:linux:x64
+      optional: true
     - job: build:linux:arm64
-    # - job: build:windows:x64
+    - job: build:windows:x64
+      optional: true
     # - job: build:macos
     - job: deploy:android:playstore
     # - job: deploy:ios:appstore
@@ -122,9 +124,9 @@ publish:forum:complete:
   script:
     - export VERSION=$(cat artifacts/version.txt)
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
-    # - export LINUX_X64_JOB_ID=$(cat artifacts/linux_x64_job_id.txt)
+    - export LINUX_X64_JOB_ID=$(cat artifacts/linux_x64_job_id.txt 2>/dev/null || echo "")
     - export LINUX_ARM64_JOB_ID=$(cat artifacts/linux_arm64_job_id.txt)
-    # - export WINDOWS_X64_JOB_ID=$(cat artifacts/windows_x64_job_id.txt)
+    - export WINDOWS_X64_JOB_ID=$(cat artifacts/windows_x64_job_id.txt 2>/dev/null || echo "")
     # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
     # Fetch all tags for changelog generation
     - git fetch --tags --unshallow || git fetch --tags
@@ -330,8 +332,7 @@ build:android:bundle:
 
 build:linux:x64:
   extends: .linux_env
-  rules:
-    - when: manual
+  allow_failure: true
   script:
     - flutter pub get --offline || flutter pub get
     - flutter build linux --release --build-name=$VERSION --build-number=$BUILD --verbose
@@ -358,7 +359,9 @@ build:linux:arm64:
 build:windows:x64:
   image: alpine:latest
   stage: build
+  allow_failure: true
   rules:
+    - if: $CI_COMMIT_TAG =~ /^v/
     - when: manual
   script:
     - apk add --no-cache curl jq bash
@@ -485,17 +488,19 @@ release:gitlab:
     - build:android:apk
     - build:android:bundle
     # - build:ios
-    # - build:linux:x64
+    - build:linux:x64
     - build:linux:arm64
-    # - build:windows:x64
+    - build:windows:x64
     # - build:macos
   needs:
     - job: build:android:apk
     - job: build:android:bundle
     # - job: build:ios
-    # - job: build:linux:x64
+    - job: build:linux:x64
+      optional: true
     - job: build:linux:arm64
-    # - job: build:windows:x64
+    - job: build:windows:x64
+      optional: true
     # - job: build:macos
     - job: publish:forum:complete
   rules:
@@ -507,9 +512,9 @@ release:gitlab:
     # URL-encode the + character as %2B for artifact URLs
     - export VERSION_URL=$(echo "$VERSION" | sed 's/+/%2B/g')
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
-    # - export LINUX_X64_JOB_ID=$(cat artifacts/linux_x64_job_id.txt)
+    - export LINUX_X64_JOB_ID=$(cat artifacts/linux_x64_job_id.txt 2>/dev/null || echo "")
     - export LINUX_ARM64_JOB_ID=$(cat artifacts/linux_arm64_job_id.txt)
-    # - export WINDOWS_X64_JOB_ID=$(cat artifacts/windows_x64_job_id.txt)
+    - export WINDOWS_X64_JOB_ID=$(cat artifacts/windows_x64_job_id.txt 2>/dev/null || echo "")
     # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
 
     # Generate changelog (limited to 30 commits to avoid "Argument list too long" error)
@@ -535,6 +540,16 @@ release:gitlab:
       EOF
     - cat release_description.txt >> release_description_full.md
     - |
+      DESKTOP_LINES="- **Linux (ARM64)**: tar.gz archive below"
+      if [ -n "$LINUX_X64_JOB_ID" ]; then
+        DESKTOP_LINES="$DESKTOP_LINES
+      - **Linux (x64)**: tar.gz archive below"
+      fi
+      if [ -n "$WINDOWS_X64_JOB_ID" ]; then
+        DESKTOP_LINES="$DESKTOP_LINES
+      - **Windows (x64)**: zip archive below"
+      fi
+
       cat >> release_description_full.md << EOF
 
       ## Downloads
@@ -547,12 +562,21 @@ release:gitlab:
       - **App Store**: Available through the App Store app
 
       ### Desktop
-      - **Linux (ARM64)**: tar.gz archive below
+      $DESKTOP_LINES
       EOF
 
     # Create release using release-cli directly (avoids "Argument list too long" error)
     # Use VERSION_URL (with + encoded as %2B) for artifact URLs
+    # Build optional asset link arguments
     - |
+      OPTIONAL_ASSETS=""
+      if [ -n "$LINUX_X64_JOB_ID" ]; then
+        OPTIONAL_ASSETS="$OPTIONAL_ASSETS --assets-link {\"name\":\"Gecko $CI_COMMIT_TAG Linux Desktop (x64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$LINUX_X64_JOB_ID/artifacts/raw/artifacts/linux/gecko-$VERSION_URL-linux-x64.tar.gz\",\"link_type\":\"package\"}"
+      fi
+      if [ -n "$WINDOWS_X64_JOB_ID" ]; then
+        OPTIONAL_ASSETS="$OPTIONAL_ASSETS --assets-link {\"name\":\"Gecko $CI_COMMIT_TAG Windows Desktop (x64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$WINDOWS_X64_JOB_ID/artifacts/raw/artifacts/windows/gecko-$VERSION_URL-windows-x64.zip\",\"link_type\":\"package\"}"
+      fi
+
       release-cli create \
         --name "Gecko $CI_COMMIT_TAG" \
         --tag-name "$CI_COMMIT_TAG" \
@@ -560,7 +584,8 @@ release:gitlab:
         --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG APK (ARMv7)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$APK_JOB_ID/artifacts/raw/artifacts/android/gecko-$VERSION_URL-v7a.apk\",\"link_type\":\"package\"}" \
         --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG APK (ARM64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$APK_JOB_ID/artifacts/raw/artifacts/android/gecko-$VERSION_URL-v8a.apk\",\"link_type\":\"package\"}" \
         --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG APK (x86_64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$APK_JOB_ID/artifacts/raw/artifacts/android/gecko-$VERSION_URL-x86_64.apk\",\"link_type\":\"package\"}" \
-        --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG Linux Desktop (ARM64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$LINUX_ARM64_JOB_ID/artifacts/raw/artifacts/linux/gecko-$VERSION_URL-linux-arm64.tar.gz\",\"link_type\":\"package\"}"
+        --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG Linux Desktop (ARM64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$LINUX_ARM64_JOB_ID/artifacts/raw/artifacts/linux/gecko-$VERSION_URL-linux-arm64.tar.gz\",\"link_type\":\"package\"}" \
+        $OPTIONAL_ASSETS
 
 # --- macOS (app + dmg) ---
 # build:macos:

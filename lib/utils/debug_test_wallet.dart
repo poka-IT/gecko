@@ -71,7 +71,6 @@ class DebugTestWalletService {
       // Get the app's ProviderContainer (not a new isolated one!)
       final container = ProviderScope.containerOf(context);
       final walletService = container.read(walletServiceProvider);
-      final currentSafe = container.read(currentSafeNumberProvider);
 
       // Show loading dialog
       _showLoadingDialog(context);
@@ -83,8 +82,9 @@ class DebugTestWalletService {
         safeName: 'Test Safe (Development)',
       );
 
-      // 2. Get the safe reference
-      final safe = walletService.getSafeBox(currentSafe);
+      // 2. Get the safe reference (read AFTER createSafe which updates defaultSafeBoxNumber)
+      container.read(defaultSafeBoxNumberProvider.notifier).refresh();
+      final safe = walletService.getSafeBox(walletService.defaultSafeBoxNumber);
 
       // 3. Create all wallets
       final List<WalletEntity> wallets = [];

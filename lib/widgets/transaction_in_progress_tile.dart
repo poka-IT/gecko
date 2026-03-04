@@ -447,8 +447,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
     String humanStatus = '';
     final finalAmount = _currentTransactionData.amount * -1;
 
-    if (_status.state == TransactionState.finalized) {
-      // This part is for the text, but the tile will start disappearing.
+    if (_status.state == TransactionState.finalized || _status.state == TransactionState.inBlock) {
       humanStatus = 'extrinsicValidated'.tr(args: [actionMap['pay']!]);
     } else if (_status.state == TransactionState.error) {
       humanStatus = lookupTransactionError(_status.errorMessage) ?? _status.errorMessage ?? 'unknownError'.tr();

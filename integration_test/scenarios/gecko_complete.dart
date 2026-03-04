@@ -55,7 +55,7 @@ Future payTest2() async {
   Durt.i.duniter.spawnBlock();
   await tester.pump(const Duration(seconds: 2));
   await waitFor('sending'.tr(), reverse: true, timeout: const Duration(seconds: 20));
-  await waitFor('extrinsicInBlock'.tr(), timeout: const Duration(seconds: 12));
+  await waitFor('extrinsicValidated'.tr(args: ['transaction'.tr()]), timeout: const Duration(seconds: 12));
   await tapKey(keyCloseTransactionScreen, duration: 0);
   await waitFor('12.14');
   Durt.i.duniter.spawnBlock();
@@ -71,7 +71,7 @@ Future certifyTest5() async {
   Durt.i.duniter.spawnBlock();
   await pump(number: 3);
   await waitFor('sending'.tr(), reverse: true, timeout: const Duration(seconds: 20));
-  await waitFor('extrinsicInBlock'.tr(), timeout: const Duration(seconds: 6));
+  await waitFor('extrinsicValidated'.tr(args: ['certification'.tr()]), timeout: const Duration(seconds: 6));
   await tapKey(keyCloseTransactionScreen);
   await waitFor('identityCreated'.tr());
 

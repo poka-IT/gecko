@@ -15,7 +15,7 @@ Map<String, String> actionMap = {
 Map<TransactionState, String> statusStatusMap = {
   TransactionState.none: 'noTransaction'.tr(),
   TransactionState.pending: 'sending'.tr(),
-  TransactionState.inBlock: 'extrinsicInBlock'.tr(),
+  TransactionState.inBlock: 'extrinsicValidated'.tr(args: [actionMap['pay']!]),
   TransactionState.finalized: 'extrinsicFinalized'.tr(args: [actionMap['pay']!]),
   TransactionState.timeout: 'execTimeoutOver'.tr(),
   TransactionState.retrying: 'retrying'.tr(),

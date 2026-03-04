@@ -368,7 +368,7 @@ class StepConfirmation extends ConsumerWidget {
     // 8. Listen to invalidate identity/certification providers on success
     // Capture container before navigation since ConsumerWidget has no mounted check
     final container = ProviderScope.containerOf(context);
-    broadcastStream.listen((status) {
+    final invalidateSubscription = broadcastStream.listen((status) {
       if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
         container.invalidate(persistentIdtyStatusStreamProvider(targetAddress));
         container.invalidate(persistentCertificationStreamProvider(targetAddress));
@@ -381,17 +381,21 @@ class StepConfirmation extends ConsumerWidget {
     });
 
     // 9. Replace migration flow with transaction screen
-    await navigator.pushReplacement(
-      MaterialPageRoute(
-        builder: (context) {
-          return TransactionInProgressScreen(
-            transactionStatus: broadcastStream,
-            transType: hasIdentity ? 'identityMigration' : 'accountMigration',
-            fromAddress: fromAddress,
-            toAddress: targetAddress,
-          );
-        },
-      ),
-    );
+    try {
+      await navigator.pushReplacement(
+        MaterialPageRoute(
+          builder: (context) {
+            return TransactionInProgressScreen(
+              transactionStatus: broadcastStream,
+              transType: hasIdentity ? 'identityMigration' : 'accountMigration',
+              fromAddress: fromAddress,
+              toAddress: targetAddress,
+            );
+          },
+        ),
+      );
+    } finally {
+      await invalidateSubscription.cancel();
+    }
   }
 }

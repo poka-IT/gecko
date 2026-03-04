@@ -281,6 +281,7 @@
     "externalLinkTitle": "Externer Link",
     "externalLinkWarning": "Sie verlassen die App, um einen externen Link zu öffnen. Seien Sie vorsichtig und stellen Sie sicher, dass der Link vertrauenswürdig ist, bevor Sie fortfahren.",
     "extrinsicFinalized": "",
+    "extrinsicInBlock": "Im Block enthalten, warte auf Bestätigung...",
     "extrinsicInProgress": "",
     "extrinsicValidated": "",
     "failedStatus": "",

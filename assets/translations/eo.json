@@ -211,6 +211,7 @@
     "to": "Al:{}",
     "amount": "Sumo:",
     "choiceOfSourceWallet": "Elektu originan monujon",
+    "extrinsicInBlock": "Inkluzivita en bloko, atendante konfirmon...",
     "extrinsicInProgress": "{} estiĝanta",
     "extrinsicValidated": "{} validigita !",
     "extrinsicFinalized": "{} finpretigita !",

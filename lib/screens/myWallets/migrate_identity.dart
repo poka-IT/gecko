@@ -451,7 +451,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
 
                                 // Listen to transaction stream to invalidate providers on success
                                 // Use mounted check to avoid using ref after widget disposal
-                                broadcastStream.listen((status) {
+                                final invalidateSubscription = broadcastStream.listen((status) {
                                   if ((status.state == TransactionState.finalized ||
                                           status.state == TransactionState.inBlock) &&
                                       mounted) {
@@ -464,17 +464,21 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 });
 
                                 Navigator.pop(context);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TransactionInProgressScreen(
-                                      transactionStatus: broadcastStream,
-                                      transType: 'identityMigration',
-                                      fromAddress: fromAddress,
-                                      toAddress: toKeypair!.address,
+                                try {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TransactionInProgressScreen(
+                                        transactionStatus: broadcastStream,
+                                        transType: 'identityMigration',
+                                        fromAddress: fromAddress,
+                                        toAddress: toKeypair!.address,
+                                      ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                } finally {
+                                  await invalidateSubscription.cancel();
+                                }
                               } catch (e) {
                                 log.e('Error during migration setup: $e');
                                 // Gestion d'erreur si nécessaire

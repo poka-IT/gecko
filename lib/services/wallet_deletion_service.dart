@@ -139,9 +139,15 @@ class WalletDeletionService {
 
       await for (final status in transactionStatus) {
         switch (status.state) {
-          case TransactionState.finalized || TransactionState.inBlock:
+          case TransactionState.finalized:
+            // Only consider success at finalized (not inBlock) because
+            // execution errors are only checked definitively at finalized.
             transactionSuccessful = true;
             break;
+          case TransactionState.inBlock:
+            // inBlock is a progress indicator, not a terminal state.
+            // Wait for finalized to confirm success.
+            continue;
           case TransactionState.error || TransactionState.timeout || TransactionState.none:
             errorMessage = status.errorMessage ?? 'unknownError'.tr();
             break;

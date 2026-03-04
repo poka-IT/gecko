@@ -135,7 +135,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
     // Listen to transaction stream to invalidate providers on success
     // Use mounted check to avoid using ref after widget disposal
-    broadcastStream.listen((status) {
+    final invalidateSubscription = broadcastStream.listen((status) {
       if ((status.state == TransactionState.finalized || status.state == TransactionState.inBlock) && mounted) {
         // Invalidate identity-related providers to refresh cache
         ref.invalidate(identityNameProvider(widget.address));
@@ -148,16 +148,20 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     if (!mounted) return;
     navigatorState.pop();
 
-    navigatorState.push(
-      MaterialPageRoute(
-        builder: (context) => TransactionInProgressScreen(
-          transactionStatus: broadcastStream,
-          transType: 'comfirmIdty',
-          fromAddress: widget.address,
-          toAddress: widget.address,
+    try {
+      await navigatorState.push(
+        MaterialPageRoute(
+          builder: (context) => TransactionInProgressScreen(
+            transactionStatus: broadcastStream,
+            transType: 'comfirmIdty',
+            fromAddress: widget.address,
+            toAddress: widget.address,
+          ),
         ),
-      ),
-    );
+      );
+    } finally {
+      await invalidateSubscription.cancel();
+    }
   }
 
   @override

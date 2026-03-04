@@ -101,6 +101,14 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       // --- Step 1: Create safe ---
       safeJustCreated = await _createSafe();
 
+      // Sync Riverpod provider with durt2's internal defaultSafeBoxNumber.
+      // createSafe()/importLegacyWallet() in durt2 update the configBox directly,
+      // but the Riverpod state is not automatically updated. Without this sync,
+      // idtyWalletAsyncProvider reads the old safe number and may return a wallet
+      // from the wrong safe (e.g. the legacy wallet instead of the new mnemonic wallet),
+      // causing migration to target the source wallet (OwnerKeyAlreadyUsed).
+      ref.read(defaultSafeBoxNumberProvider.notifier).refresh();
+
       await ref.read(biometricProvider.notifier).refresh();
       final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
@@ -344,24 +352,30 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
       final broadcastStream = transactionStream.asBroadcastStream();
 
-      broadcastStream.listen((status) async {
-        if ((status.state == TransactionState.finalized || status.state == TransactionState.inBlock) &&
-            !_cleanupCompleted) {
+      final cleanupSubscription = broadcastStream.listen((status) async {
+        // Only cleanup at finalized (not inBlock) because execution errors
+        // are only checked definitively at finalized. Cleaning up at inBlock
+        // would delete the legacy safe before we know if the tx succeeded.
+        if (status.state == TransactionState.finalized && !_cleanupCompleted) {
           await _deleteLegacySafeAfterMigration();
         }
       });
 
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TransactionInProgressScreen(
-            transactionStatus: broadcastStream,
-            transType: migrationData.hasIdentity ? 'identityMigration' : 'accountMigration',
-            fromAddress: migrationData.fromAddress,
-            toAddress: targetWallet.address,
+      try {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TransactionInProgressScreen(
+              transactionStatus: broadcastStream,
+              transType: migrationData.hasIdentity ? 'identityMigration' : 'accountMigration',
+              fromAddress: migrationData.fromAddress,
+              toAddress: targetWallet.address,
+            ),
           ),
-        ),
-      );
+        );
+      } finally {
+        await cleanupSubscription.cancel();
+      }
     } catch (e) {
       log.e('Error during legacy migration with progress: $e');
     }
@@ -517,6 +531,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       pinColor: pinColor,
       length: pinLenght,
       onCompleted: (pin) async {
+        if (_isProcessing) return;
         PinCodeService.pinCode = pin.toUpperCase();
         ref.read(pinStateProvider.notifier).setPinLength(pinLenght);
 

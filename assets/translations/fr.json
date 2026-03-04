@@ -211,6 +211,7 @@
     "to": "Vers:{}",
     "amount": "Montant:",
     "choiceOfSourceWallet": "Choix du portefeuille source",
+    "extrinsicInBlock": "Inclus dans un bloc, en attente de confirmation...",
     "extrinsicInProgress": "{} en cours",
     "extrinsicValidated": "{} validée !",
     "extrinsicFinalized": "{} finalisé !",

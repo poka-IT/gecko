@@ -228,7 +228,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
           } else if (status.state == TransactionState.inBlock) {
             if (!mounted) return;
             setState(() {
-              task.details = 'extrinsicValidated'.tr(args: ['identityMigration'.tr()]);
+              task.details = 'extrinsicInBlock'.tr();
             });
           } else if (status.state == TransactionState.error) {
             throw Exception("Migration failed: ${status.errorMessage}");
@@ -252,7 +252,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
           } else if (status.state == TransactionState.inBlock) {
             if (!mounted) return;
             setState(() {
-              task.details = 'extrinsicValidated'.tr(args: ['transaction'.tr()]);
+              task.details = 'extrinsicInBlock'.tr();
             });
           } else if (status.state == TransactionState.error) {
             throw Exception("Transfer failed: ${status.errorMessage}");

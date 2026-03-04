@@ -207,3 +207,6 @@ release/macos/
 .fvm/
 
 scripts/show_cert_queue
+
+# ObjectBox native library (installed for flutter test)
+lib/libobjectbox.dylib

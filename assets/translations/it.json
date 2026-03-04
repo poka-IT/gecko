@@ -287,6 +287,7 @@
     "externalLinkTitle": "Link esterno",
     "externalLinkWarning": "Stai per uscire dall'app per aprire un link esterno. Fai attenzione e assicurati che il link sia affidabile prima di continuare.",
     "extrinsicFinalized": "{} finalizzato!",
+    "extrinsicInBlock": "Incluso nel blocco, in attesa di conferma...",
     "extrinsicInProgress": "{} in corso",
     "extrinsicValidated": "{} convalidato!",
     "failedStatus": "Fallito",

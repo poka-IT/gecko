@@ -357,8 +357,8 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
       resultText = lookupTransactionError(error) ?? '${'technicalError'.tr()}: $error';
       statusColor = Colors.red;
     } else if (txStatus.state == TransactionState.inBlock) {
-      resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
-      statusColor = Colors.orange;
+      resultText = 'extrinsicInBlock'.tr();
+      statusColor = context.colorScheme.primary;
     } else {
       resultText = _getStatusMessage(txStatus.state);
       statusColor = context.colorScheme.primary;

@@ -14,7 +14,7 @@ class TransactionStateIcon extends StatelessWidget {
     TransactionState.pending ||
     TransactionState.futureNonce ||
     TransactionState.retrying => Loading(size: size, stroke: stroke),
-    TransactionState.inBlock => Icon(Icons.done, size: scaleSize(size), color: Colors.green),
+    TransactionState.inBlock => Loading(size: size, stroke: stroke),
     TransactionState.finalized => Icon(Icons.done_all, size: scaleSize(size), color: Colors.green),
     TransactionState.error || TransactionState.timeout => Icon(Icons.close, size: scaleSize(size), color: Colors.red),
     TransactionState.none => ScaledSizedBox(height: size, width: size),

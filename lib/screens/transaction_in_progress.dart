@@ -37,6 +37,13 @@ class TransactionInProgressScreen extends ConsumerStatefulWidget {
 class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgressScreen> {
   late String _fromAddress;
   late String _toAddress;
+  TransactionState _lastState = TransactionState.none;
+
+  bool get _canClose =>
+      _lastState == TransactionState.inBlock ||
+      _lastState == TransactionState.finalized ||
+      _lastState == TransactionState.error ||
+      _lastState == TransactionState.timeout;
 
   bool get _isSelfTransaction =>
       _fromAddress.isNotEmpty &&
@@ -305,6 +312,13 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
 
         final txStatus = snapshot.data!;
 
+        // Track state for close button enablement
+        if (txStatus.state != _lastState) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) setState(() => _lastState = txStatus.state);
+          });
+        }
+
         // Note: Certification cache updates are handled by CertificationTransactionHelper
         // which listens to the stream independently of this widget
 
@@ -391,7 +405,7 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(scaleSize(12))),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _canClose ? () => Navigator.pop(context) : null,
           child: Text(
             'close'.tr(),
             style: scaledTextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),

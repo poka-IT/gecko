@@ -50,6 +50,19 @@ build_and_push() {
     if is_multiarch "$name"; then
         echo "Building ${image} (multi-arch: amd64 + arm64)..."
         ensure_buildx_builder
+        # Push architecture-specific tags for explicit use in CI
+        for plat in linux/amd64 linux/arm64; do
+            arch_tag="${plat#linux/}"
+            echo "  Building ${image}:${arch_tag}..."
+            docker buildx build \
+                --platform "$plat" \
+                --provenance=false \
+                -f "$dockerfile" \
+                -t "${image}:${arch_tag}" \
+                --push \
+                .
+        done
+        # Also push multi-arch :latest manifest
         docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --provenance=false \

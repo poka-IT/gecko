@@ -332,6 +332,7 @@ build:android:bundle:
 
 build:linux:x64:
   extends: .linux_env
+  image: poka/gecko-ci-linux:amd64
   allow_failure: true
   script:
     - flutter pub get --offline || flutter pub get
@@ -345,6 +346,7 @@ build:linux:x64:
 
 build:linux:arm64:
   extends: .linux_env
+  image: poka/gecko-ci-linux:arm64
   script:
     - flutter pub get --offline || flutter pub get
     - flutter build linux --release --build-name=$VERSION --build-number=$BUILD --verbose

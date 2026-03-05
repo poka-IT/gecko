@@ -693,7 +693,7 @@
     "reportIssueDialogTitle": "Reportar un Problema",
     "reportIssueError": "Error al enviar el informe. Por favor, inténtalo de nuevo más tarde.",
     "reportIssueHint": "Describe qué pasó, qué esperabas, y los pasos para reproducir el problema...",
-    "reportIssueRateLimit": "",
+    "reportIssueRateLimit": "Espere al menos 1 minuto entre informes.",
     "reportIssueSend": "Enviar Informe",
     "reportIssueSending": "Enviando informe...",
     "reportIssueSent": "¡Informe enviado exitosamente! Gracias por ayudar a mejorar Gecko.",

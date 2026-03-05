@@ -1,21 +1,24 @@
 # Gecko CI - Linux desktop builder
 # Used by: build:linux
 # Reads Flutter version from .fvmrc automatically
-FROM buildpack-deps:jammy
+#
+# Based on Ubuntu 20.04 (focal) for maximum GLIBC compatibility (2.31).
+# This ensures binaries run on Debian 11+, Ubuntu 20.04+, Fedora 33+, etc.
+FROM buildpack-deps:focal
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/flutter/bin:${PATH}"
 
-# Install clang-17 from LLVM repo (clang-14 from Jammy segfaults on ARM64 with crashpad)
-# llvm/lld: needed by Flutter's native assets system
+# Install clang-17 from LLVM repo (needed by Flutter's native assets system)
+# Use libstdc++-10-dev (focal's latest available version)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git unzip xz-utils zip libglu1-mesa gnupg ca-certificates \
+    curl git unzip xz-utils zip libglu1-mesa gnupg ca-certificates software-properties-common \
     cmake ninja-build pkg-config \
-    libgtk-3-dev liblzma-dev libstdc++-12-dev libasound2-dev libpulse-dev \
+    libgtk-3-dev liblzma-dev libstdc++-10-dev libasound2-dev libpulse-dev \
     libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev \
     libgstreamer-plugins-bad1.0-dev libsecret-1-dev libcurl4-openssl-dev openjdk-11-jdk \
   && curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm.gpg \
-  && echo "deb [signed-by=/usr/share/keyrings/llvm.gpg] http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" \
+  && echo "deb [signed-by=/usr/share/keyrings/llvm.gpg] http://apt.llvm.org/focal/ llvm-toolchain-focal-17 main" \
      > /etc/apt/sources.list.d/llvm-17.list \
   && apt-get update && apt-get install -y --no-install-recommends clang-17 lld-17 llvm-17 \
   && ln -sf /usr/bin/clang-17 /usr/bin/clang \

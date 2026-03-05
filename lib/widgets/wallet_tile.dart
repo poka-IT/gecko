@@ -16,12 +16,14 @@ class WalletTile extends ConsumerWidget {
     this.tutorialKey,
     required this.uniqueId,
     required this.currentSafe,
+    this.hasIdentityWallet = false,
   });
 
   final WalletEntity repository;
   final GlobalKey? tutorialKey; // GlobalKey needed for tutorial targeting
   final String uniqueId; // Add unique identifier to avoid key conflicts
   final int currentSafe; // Pass currentSafe to avoid provider access during layout
+  final bool hasIdentityWallet;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,13 +35,15 @@ class WalletTile extends ConsumerWidget {
     // Create stable key once
     final gestureKey = ValueKey('wallet_${repository.address}_safe${currentSafe}_$uniqueId');
 
-    // Highlight root wallet (no derivation) or first wallet if no root exists
+    // Highlight root wallet (no derivation) or first wallet if no root exists,
+    // but only when there is no identity wallet (which has its own dedicated tile).
     final wallets = ref.watch(walletsListProvider).wallets;
     final isHighlighted =
-        freshWallet.derivation == null ||
-        (wallets.isNotEmpty &&
-            wallets.first.address == freshWallet.address &&
-            !wallets.any((w) => w.derivation == null));
+        !hasIdentityWallet &&
+        (freshWallet.derivation == null ||
+            (wallets.isNotEmpty &&
+                wallets.first.address == freshWallet.address &&
+                !wallets.any((w) => w.derivation == null)));
 
     return Padding(
       padding: padding,

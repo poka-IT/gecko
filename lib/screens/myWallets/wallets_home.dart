@@ -430,6 +430,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
                                 tutorialKey: i == targetWalletIndex ? tutorialKey : null,
                                 uniqueId: 'grid_${widget.safeFingerprint}_$i',
                                 currentSafe: currentSafe.number,
+                                hasIdentityWallet: idtyWallet != null,
                               ),
                             ),
                           if (ref.read(durtProvider).isConnected && frozenWalletsWithoutIdty.length < maxWalletsInSafe)

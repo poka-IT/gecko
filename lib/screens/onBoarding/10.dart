@@ -137,19 +137,20 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       log.i('Direct migration to existing safe $targetSafeNumber, target wallet: ${migrationData.targetWalletAddress}');
 
       // Perform the on-chain migration (shows TransactionInProgressScreen)
-      await _performLegacyMigrationWithProgress(context, ref, targetWallet, migrationData);
+      // Returns the possibly reassigned safe number (e.g. 0 after legacy deletion)
+      final finalSafeNumber = await _performLegacyMigrationWithProgress(context, ref, targetWallet, migrationData);
 
       // Clear migration state
       ref.read(pendingLegacyMigrationProvider.notifier).clear();
       _clearSensitiveState();
 
-      // Ensure Riverpod state is synced with the target safe
-      ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(targetSafeNumber);
-      await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: targetSafeNumber);
+      // Ensure Riverpod state is synced with the (possibly reassigned) safe
+      ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(finalSafeNumber);
+      await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: finalSafeNumber);
       ref.read(walletActionsProvider.notifier).invalidateProviders();
 
       final walletCount = ref.read(walletsListProvider).wallets.length;
-      log.i('Direct migration complete. Safe $targetSafeNumber loaded with $walletCount wallets');
+      log.i('Direct migration complete. Safe $finalSafeNumber loaded with $walletCount wallets');
 
       // Navigate to congratulations
       if (context.mounted) {
@@ -417,23 +418,26 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
   /// Perform legacy migration with progress screen (used during onboarding).
   ///
+  /// Returns the (possibly reassigned) target safe number after cleanup.
   /// The legacy safe deletion is done synchronously AFTER the TransactionInProgressScreen
   /// returns, not via an async stream listener. This avoids race conditions where
   /// concurrent loadWallets calls and async deletions could leave Riverpod state
   /// out of sync with the ObjectBox database.
-  Future<void> _performLegacyMigrationWithProgress(
+  Future<int> _performLegacyMigrationWithProgress(
     BuildContext context,
     WidgetRef ref,
     WalletEntity targetWallet,
     LegacyMigrationData migrationData,
   ) async {
-    try {
-      final toKeypair = await ref
-          .read(walletServiceProvider)
-          .getKeyPairFromAddress(address: targetWallet.address, pinCode: widget.pinCode);
+    final walletService = ref.read(walletServiceProvider);
+    var targetSafeNumber = targetWallet.safe.target!.number;
 
-      final walletService = ref.read(walletServiceProvider);
-      final targetSafeNumber = targetWallet.safe.target!.number;
+    try {
+      final toKeypair = await walletService.getKeyPairFromAddress(
+        address: targetWallet.address,
+        pinCode: widget.pinCode,
+      );
+
       ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(targetSafeNumber);
       log.i('Switched to target safe $targetSafeNumber before migration');
 
@@ -465,24 +469,32 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         await stateSubscription.cancel();
       }
 
-      // Synchronous cleanup: delete legacy safe only if tx was finalized successfully.
-      // This runs AFTER the user closed TransactionInProgressScreen, so there are
-      // no concurrent loadWallets calls that could race with the deletion.
-      if (lastTxState == TransactionState.finalized) {
-        await _deleteLegacySafeAndSyncState(walletService, migrationData.fromAddress, targetSafeNumber);
+      // Synchronous cleanup: delete legacy safe only if tx succeeded.
+      // Accept both inBlock (validated in a block) and finalized (block finalized by consensus).
+      // The close button is enabled at inBlock, so users typically close the screen
+      // before finalized arrives.
+      if (lastTxState == TransactionState.inBlock || lastTxState == TransactionState.finalized) {
+        targetSafeNumber = await _deleteLegacySafeAndSyncState(
+          walletService,
+          migrationData.fromAddress,
+          targetSafeNumber,
+        );
       } else {
-        log.w('Legacy safe NOT deleted: tx state was $lastTxState (expected finalized)');
+        log.w('Legacy safe NOT deleted: tx state was $lastTxState (expected inBlock or finalized)');
       }
     } catch (e) {
       log.e('Error during legacy migration with progress: $e');
     }
+    return targetSafeNumber;
   }
 
-  /// Delete the legacy safe after successful migration and sync Riverpod state.
+  /// Delete the legacy safe after successful migration, reassign safe number
+  /// to 0 if needed, and sync Riverpod state.
   ///
+  /// Returns the (possibly reassigned) target safe number.
   /// This must be called synchronously (not from a stream listener) to avoid
   /// race conditions with concurrent loadWallets calls.
-  Future<void> _deleteLegacySafeAndSyncState(
+  Future<int> _deleteLegacySafeAndSyncState(
     WalletService walletService,
     String legacyAddress,
     int targetSafeNumber,
@@ -492,17 +504,28 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       final legacySafe = legacyWallet.safe.target;
       if (legacySafe == null) {
         log.w('Cannot delete legacy safe: safe relation is null for $legacyAddress');
-        return;
+        return targetSafeNumber;
       }
 
       await walletService.deleteSafe(legacySafe.number);
       log.i('Legacy safe ${legacySafe.number} deleted successfully after migration');
 
-      // Sync Riverpod state with the database after deletion.
-      // deleteSafe() in durt2 may update the configBox defaultSafeBoxNumber,
-      // but the Riverpod provider is NOT automatically updated.
-      // Force-refresh to ensure consistency.
-      ref.read(defaultSafeBoxNumberProvider.notifier).refresh();
+      // After deleting the legacy safe, if the target safe is not number 0,
+      // reassign it so it appears as "Coffre 1" (the first safe).
+      if (targetSafeNumber != 0) {
+        try {
+          walletService.reassignSafeNumber(targetSafeNumber, 0);
+          // Also rename to the default first safe name (without number suffix)
+          await walletService.renameSafe(0, 'safeBoxName'.tr());
+          targetSafeNumber = 0;
+          log.i('Target safe reassigned to number 0 after legacy migration');
+        } catch (e) {
+          log.w('Could not reassign safe number: $e');
+        }
+      }
+
+      // Sync Riverpod state with the database after deletion/reassignment.
+      ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(targetSafeNumber);
 
       // Reload wallets from the target safe to ensure the Riverpod state
       // reflects the current database state (legacy wallets removed).
@@ -511,6 +534,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     } catch (e) {
       log.e('Failed to delete legacy safe after migration: $e');
     }
+    return targetSafeNumber;
   }
 
   // ---------------------------------------------------------------------------

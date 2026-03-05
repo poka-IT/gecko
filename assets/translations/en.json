@@ -504,6 +504,8 @@
     "migrationSuccess": "Migration successful",
     "migrationSuccessfullyCompleted": "Migration completed successfully!",
     "migrationTransactionSent": "Migration transaction sent: {}",
+    "migration_account_already_migrated": "This account has already been migrated.",
+    "migration_account_already_migrated_details": "Migration done on {} to account {}.",
     "migration_account_empty": "This account has nothing to migrate. No balance or identity found.",
     "migration_account_has_balance": "Account found with a balance ready to migrate.",
     "migration_account_has_identity": "Account found with an identity and a balance.",

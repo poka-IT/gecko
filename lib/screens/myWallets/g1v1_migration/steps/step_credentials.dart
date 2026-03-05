@@ -349,6 +349,50 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
           ),
         );
 
+      case MigrationAccountType.alreadyMigrated:
+        final migration = flowState.migrationFromData!;
+        final dateStr = DateFormat.yMMMd(context.locale.toString()).format(migration.migrationDate);
+        return Card(
+          color: Colors.orange.shade50,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.orange.shade300, width: 1),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(scaleSize(12)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, color: Colors.orange.shade700, size: scaleSize(20)),
+                ScaledSizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'migration_account_already_migrated'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.orange.shade900,
+                        ),
+                      ),
+                      ScaledSizedBox(height: 4),
+                      Text(
+                        'migration_account_already_migrated_details'.tr(
+                          args: [dateStr, getShortPubkey(migration.toAddress)],
+                        ),
+                        style: scaledTextStyle(fontSize: 12, color: Colors.orange.shade800),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
       case MigrationAccountType.balanceOnly:
         return Card(
           color: Colors.green.shade50,

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:durt2/durt2.dart'
     show CsToV2AddressResult, IdtyStatus, MigrateWalletChecks, WalletBalance, WalletEntity;
+import 'package:durt2/durt2.dart' as d;
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/g1v1_migration_service.dart';
 
@@ -74,7 +76,7 @@ final csPasswordControllerProvider = Provider<TextEditingController>((ref) {
 // ============================================================================
 
 /// Type of account detected from Cesium credentials
-enum MigrationAccountType { unknown, empty, balanceOnly, withIdentity }
+enum MigrationAccountType { unknown, empty, alreadyMigrated, balanceOnly, withIdentity }
 
 /// Immutable state for the multi-step migration flow
 class G1v1MigrationFlowState {
@@ -88,6 +90,7 @@ class G1v1MigrationFlowState {
   final WalletBalance? sourceBalance;
   final IdtyStatus? sourceIdtyStatus;
   final String? sourceIdentityName;
+  final MigrationData? migrationFromData;
 
   const G1v1MigrationFlowState({
     this.currentStep = 0,
@@ -100,6 +103,7 @@ class G1v1MigrationFlowState {
     this.sourceBalance,
     this.sourceIdtyStatus,
     this.sourceIdentityName,
+    this.migrationFromData,
   });
 
   G1v1MigrationFlowState copyWith({
@@ -120,6 +124,8 @@ class G1v1MigrationFlowState {
     bool clearSourceIdtyStatus = false,
     String? sourceIdentityName,
     bool clearSourceIdentityName = false,
+    MigrationData? migrationFromData,
+    bool clearMigrationFromData = false,
   }) {
     return G1v1MigrationFlowState(
       currentStep: currentStep ?? this.currentStep,
@@ -132,6 +138,7 @@ class G1v1MigrationFlowState {
       sourceBalance: clearSourceBalance ? null : (sourceBalance ?? this.sourceBalance),
       sourceIdtyStatus: clearSourceIdtyStatus ? null : (sourceIdtyStatus ?? this.sourceIdtyStatus),
       sourceIdentityName: clearSourceIdentityName ? null : (sourceIdentityName ?? this.sourceIdentityName),
+      migrationFromData: clearMigrationFromData ? null : (migrationFromData ?? this.migrationFromData),
     );
   }
 
@@ -159,6 +166,7 @@ class G1v1MigrationFlowState {
   /// Determine account type based on balance and identity
   MigrationAccountType get accountType {
     if (!hasValidCredentials) return MigrationAccountType.unknown;
+    if (migrationFromData != null) return MigrationAccountType.alreadyMigrated;
     if (!hasBalance) return MigrationAccountType.empty;
     if (hasIdentity) return MigrationAccountType.withIdentity;
     return MigrationAccountType.balanceOnly;
@@ -213,6 +221,7 @@ class G1v1MigrationFlowNotifier extends Notifier<G1v1MigrationFlowState> {
         clearSourceBalance: true,
         clearSourceIdtyStatus: true,
         clearSourceIdentityName: true,
+        clearMigrationFromData: true,
         clearErrorMessage: true,
       );
       return;
@@ -239,12 +248,33 @@ class G1v1MigrationFlowNotifier extends Notifier<G1v1MigrationFlowState> {
         identityName = squidService.walletNameIndexer[result.address];
       }
 
+      // If account is empty and has no identity, check if it was already migrated
+      MigrationData? migrationFromData;
+      if (balance.transferableBalance == BigInt.zero && idtyStatus == IdtyStatus.none) {
+        try {
+          final squidClient = d.SquidService.client;
+          final migrations = await squidClient.getIdentityMigrations(result.address);
+          if (migrations?.migrationFrom != null) {
+            final genesisTime = await ref.read(genesisTimeProvider.future);
+            if (genesisTime != null) {
+              migrationFromData = await MigrationData.fromSquidMigrationFromNode(
+                migrations!.migrationFrom!,
+                genesisTime,
+              );
+            }
+          }
+        } catch (e) {
+          log.d('Could not check migration history: $e');
+        }
+      }
+
       state = state.copyWith(
         isConverting: false,
         conversionResult: result,
         sourceBalance: balance,
         sourceIdtyStatus: idtyStatus,
         sourceIdentityName: identityName,
+        migrationFromData: migrationFromData,
       );
     } catch (e) {
       log.e('G1v1 conversion error: $e');
@@ -255,6 +285,7 @@ class G1v1MigrationFlowNotifier extends Notifier<G1v1MigrationFlowState> {
         clearSourceBalance: true,
         clearSourceIdtyStatus: true,
         clearSourceIdentityName: true,
+        clearMigrationFromData: true,
       );
     }
   }

@@ -845,6 +845,8 @@
     "migration_v1_pubkey_label": "Via publika ŝlosilo Cesium",
     "migration_v2_address_label": "v2-adreso",
     "migration_v2_address_hint": "Montri la v2-adreson (altnivela)",
+    "migration_account_already_migrated": "Tiu ĉi konto jam estis migrita.",
+    "migration_account_already_migrated_details": "Migrado farita la {} al konto {}.",
     "migration_account_empty": "Nenio migrebla troviĝas en tiu ĉi konto. Neniu saldo nek identeco trovita.",
     "migration_account_has_balance": "Konto trovita kun saldo preta por migrado.",
     "migration_account_has_identity": "Konto trovita kun identeco kaj saldo.",

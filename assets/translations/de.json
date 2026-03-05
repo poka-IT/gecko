@@ -490,6 +490,8 @@
     "migrationSuccess": "",
     "migrationSuccessfullyCompleted": "",
     "migrationTransactionSent": "",
+    "migration_account_already_migrated": "",
+    "migration_account_already_migrated_details": "",
     "migration_account_empty": "",
     "migration_account_has_balance": "",
     "migration_account_has_identity": "",

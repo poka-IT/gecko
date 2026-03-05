@@ -859,6 +859,8 @@
     "migration_v1_pubkey_label": "Votre clé publique Cesium",
     "migration_v2_address_label": "Adresse v2",
     "migration_v2_address_hint": "Afficher l'adresse v2 (avancé)",
+    "migration_account_already_migrated": "Ce compte a déjà été migré.",
+    "migration_account_already_migrated_details": "Migration effectuée le {} vers le compte {}.",
     "migration_account_empty": "Ce compte n'a rien à migrer. Aucun solde ni identité trouvés.",
     "migration_account_has_balance": "Compte trouvé avec un solde prêt à migrer.",
     "migration_account_has_identity": "Compte trouvé avec une identité et un solde.",

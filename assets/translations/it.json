@@ -510,6 +510,8 @@
     "migrationSuccess": "Migrazione completata",
     "migrationSuccessfullyCompleted": "Migrazione completata con successo!",
     "migrationTransactionSent": "Transazione di migrazione inviata: {}",
+    "migration_account_already_migrated": "Questo account è già stato migrato.",
+    "migration_account_already_migrated_details": "Migrazione effettuata il {} verso l'account {}.",
     "migration_account_empty": "Questo account non ha nulla da migrare. Nessun saldo o identità trovati.",
     "migration_account_has_balance": "Account trovato con saldo pronto per la migrazione.",
     "migration_account_has_identity": "Account trovato con identità e saldo.",

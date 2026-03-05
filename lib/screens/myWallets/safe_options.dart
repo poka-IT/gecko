@@ -16,6 +16,7 @@ import 'package:gecko/screens/myWallets/migrate_safe.dart';
 import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/rename_safe.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/biometric/biometric_settings_tile.dart';
 
@@ -33,7 +34,7 @@ class SafeOptions extends ConsumerWidget {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       resizeToAvoidBottomInset: false,
-      appBar: GeckoAppBar(currentSafe.name),
+      appBar: GeckoAppBar(WalletNameService.displayName(currentSafe.name)),
       body: Builder(
         builder: (ctx) => SafeArea(
           child: Column(
@@ -72,7 +73,12 @@ class SafeOptionsContent extends ConsumerWidget {
           key: keyShowSeed,
           onTap: () async {
             if (!await PinCodeService.askPinCode(force: true)) return;
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ShowSeed(walletName: currentSafe.name)));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ShowSeed(walletName: WalletNameService.displayName(currentSafe.name)),
+              ),
+            );
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -128,7 +134,9 @@ class SafeOptionsContent extends ConsumerWidget {
             if (!await PinCodeService.askPinCode(force: true)) return;
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ChangePinScreen(walletName: currentSafe.name)),
+              MaterialPageRoute(
+                builder: (context) => ChangePinScreen(walletName: WalletNameService.displayName(currentSafe.name)),
+              ),
             );
           },
           child: Container(
@@ -191,8 +199,10 @@ class SafeOptionsContent extends ConsumerWidget {
             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    RenameSafeScreen(currentName: currentSafe.name, safeBoxNumber: currentSafe.number),
+                builder: (context) => RenameSafeScreen(
+                  currentName: WalletNameService.displayName(currentSafe.name),
+                  safeBoxNumber: currentSafe.number,
+                ),
               ),
             );
           },

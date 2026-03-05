@@ -15,6 +15,7 @@ import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/safe_data_provider.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/screens/myWallets/wallet_options.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/buttons/add_new_derivation_button.dart';
@@ -363,7 +364,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
                   : Image.asset('assets/safes/${currentSafe.number % 4}.png', height: 32),
               ScaledSizedBox(width: 17),
               Text(
-                currentSafe.name,
+                WalletNameService.displayName(currentSafe.name),
                 style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ],

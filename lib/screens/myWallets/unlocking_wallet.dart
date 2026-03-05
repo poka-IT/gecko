@@ -16,6 +16,7 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/pin_security_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:gecko/globals.dart';
@@ -728,7 +729,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
         // Safe name or action hint
         Text(
-          isPlaceholderSelected ? 'createOrImportSafe'.tr() : currentSafe.name,
+          isPlaceholderSelected ? 'createOrImportSafe'.tr() : WalletNameService.displayName(currentSafe.name),
           textAlign: TextAlign.center,
           style: scaledTextStyle(
             fontSize: isTall ? 24 : 20,
@@ -808,7 +809,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
         ScaledSizedBox(height: 8),
         // Safe name (no pagination dots, no hint)
         Text(
-          currentSafe.name,
+          WalletNameService.displayName(currentSafe.name),
           textAlign: TextAlign.center,
           style: scaledTextStyle(
             fontSize: isTall ? 24 : 20,

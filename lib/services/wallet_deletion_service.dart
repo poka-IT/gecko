@@ -106,7 +106,7 @@ class WalletDeletionService {
     // Show loading dialog while transaction is processing
     showConfirmationDialog(
       context: context,
-      message: 'transferringFundsToWallet'.tr(args: [destinationWallet.name ?? 'wallet'.tr()]),
+      message: 'transferringFundsToWallet'.tr(args: [WalletNameService.displayName(destinationWallet.name)]),
       type: ConfirmationDialogType.info,
       customIcon: const CircularProgressIndicator(),
       barrierDismissible: false,

@@ -864,5 +864,19 @@
     "migration_confirm_warning": "Tiu operacio estas neinversigebla. Viaj malnovaj Cesium-identigiloj ĉesos funkcii post la migrado.",
     "migration_confirm_button": "Konfirmi la migradon",
     "language": "Lingvo",
-    "systemLanguage": "Sistemo (aŭtomate)"
+    "systemLanguage": "Sistemo (aŭtomate)",
+    "membershipRenewalAvailable": "Renovigo disponebla",
+    "membershipRenewalAvailableMessage": "Via aliĝo povas esti renovigita nun. Renovigu por konservi vian statuson kiel membron.",
+    "membershipExpiringSoon": "Aliĝo baldaŭ eksvalidiĝinta",
+    "membershipExpiringSoonMessage": "Via aliĝo eksvalidiĝos la {}. Renovigu nun por eviti perdi vian statuson kiel membron.",
+    "membershipExpiredAlert": "Aliĝo eksvalidiĝinta",
+    "membershipExpiredRenewNow": "Via aliĝo eksvalidiĝis. Renovigu nun por reakiri vian statuson kiel membron antaŭ la mem-nuligo.",
+    "membershipAutoRevocationWarning": "Mem-nuligo antaŭvidita la {}",
+    "membershipEvalPending": "Taksado de distanco okazanta",
+    "membershipEvalEstimate": "Via peto por renoviĝo estas taksata. Taksita rezulto: {}.",
+    "membershipEvalPendingNoEstimate": "Via peto por renoviĝo estas taksata. Bonvolu pacienci.",
+    "membershipRenewalNotYetAvailable": "La renoviĝo disponeblos ekde la {}.",
+    "membershipCannotRenewRevoked": "Via identeco estis nuligita. La renovigo de aliĝo ne eblas.",
+    "membershipRenewalUnavailable": "Renovigo nedisponebla",
+    "renewMembershipExpiredConfirm": "Via aliĝo eksvalidiĝis. Ĉu vi certas, ke vi volas renovigi ĝin?"
 }

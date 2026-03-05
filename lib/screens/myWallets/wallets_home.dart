@@ -114,6 +114,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
   int _keyCounter = 0;
   bool _tutorialScheduled = false;
   GlobalKey? _currentTutorialKey;
+  bool _hasAttemptedReload = false;
 
   // Fade-in animation controller
   late final AnimationController _fadeController;
@@ -164,6 +165,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
     if (_lastSafeNumber != currentSafe.number) {
       _tutorialShownInSession = false;
       _tutorialScheduled = false;
+      _hasAttemptedReload = false;
       _lastSafeNumber = currentSafe.number;
 
       // Increment key counter and reset tutorial key for new safe
@@ -176,13 +178,30 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
     }
 
     if (walletsState.wallets.isEmpty) {
+      // One-shot defensive reload: Riverpod state may be out of sync with ObjectBox
+      // after legacy migration. Only attempt once to avoid infinite reload loops.
+      if (!_hasAttemptedReload) {
+        _hasAttemptedReload = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            log.w('WalletsHome: wallet list empty for safe $currentSafeNumber, attempting reload');
+            ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafeNumber);
+          }
+        });
+        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary));
+      }
+      // Reload already attempted and wallets still empty — show empty state
       return Center(
         child: Text(
-          'Veuillez générer votre premier portefeuille',
-          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          'noWalletFound'.tr(),
+          textAlign: TextAlign.center,
+          style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurfaceVariant),
         ),
       );
     }
+
+    // Reset reload flag when wallets are present (for future safe switches)
+    _hasAttemptedReload = false;
 
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule;

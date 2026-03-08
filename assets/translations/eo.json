@@ -250,7 +250,7 @@
     "migrate_cesium_account_info": "Tiu ĉi ekrano ebligas al vi migri malnovan Cesium-konton (identigilo/pasvorto) al monujo de via kofro. Se via Cesium-konto estas ligita al identeco de la Reto de Fido, tiu ĉi ankaŭ estos migrigita kun via saldo.",
     "migrateAccount": "Migrigi la konton",
     "migrateIdentity": "Migrigi la identecon",
-    "identityMigration": "Identeco migranta",
+    "identityMigration": "Migrado de la identeco",
     "areYouSureMigrateIdentity": "Ĉu vi certas, ke vi volas migrigi definitive la identecon **{}** kaj ties saldon de",
     "someoneCreatedYourIdentity": "Iu kreis vian identecon {}!",
     "confirmMyIdentity": "Konfirmi mian identecon",

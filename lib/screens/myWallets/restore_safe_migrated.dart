@@ -238,30 +238,29 @@ class RestoreSafeMigrated extends ConsumerWidget {
           contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(8)),
         ),
         onChanged: (value) async {
-          // Remove spaces
+          // Strip spaces and convert to lowercase
           if (value.contains(' ')) {
             controller.text = controller.text.replaceAll(' ', '');
-            FocusScope.of(context).nextFocus();
-            return;
           }
+          if (value.isNotEmpty) controller.text = controller.text.toLowerCase();
 
-          // Convert to lowercase
-          if (value.isNotEmpty) {
-            controller.text = controller.text.toLowerCase();
-          }
+          final cleanText = controller.text;
 
           // Auto-advance on valid word (except last field)
-          if (value.isNotEmpty && index < 11) {
+          if (cleanText.isNotEmpty && index < 11) {
             try {
               final languageCode = context.locale.languageCode;
               final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
 
-              final isValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
-                value,
+              // Use checkRedundance to only auto-advance when the word uniquely
+              // identifies a single BIP39 word (no other words share this prefix)
+              final isUniqueValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
+                cleanText,
+                checkRedundance: true,
                 preferredLanguage: preferredLanguage,
               );
 
-              if (isValidWord) {
+              if (isUniqueValidWord) {
                 FocusScope.of(context).nextFocus();
               }
             } catch (e) {

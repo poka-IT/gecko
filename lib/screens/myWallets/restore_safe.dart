@@ -369,40 +369,39 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
           ), // Better padding for text scaling
         ),
         onChanged: (v) async {
+          // Strip spaces and convert to lowercase
           if (v.contains(' ')) {
             cellCtl.text = cellCtl.text.replaceAll(' ', '');
-            FocusScope.of(context).nextFocus();
           }
-
-          // Convert to lowercase for consistency
           if (v.isNotEmpty) cellCtl.text = cellCtl.text.toLowerCase();
 
+          final cleanText = cellCtl.text;
+
           // Only move to next field if we have a valid BIP39 word AND we're not at the last field
-          if (v.isNotEmpty && index < 11) {
-            // Check if the current word is a valid BIP39 word
+          if (cleanText.isNotEmpty && index < 11) {
             try {
-              // Get user's preferred language from locale
               final languageCode = context.locale.languageCode;
               final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
 
-              final isValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
-                v,
+              // Use checkRedundance to only auto-advance when the word uniquely
+              // identifies a single BIP39 word (no other words share this prefix)
+              final isUniqueValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
+                cleanText,
+                checkRedundance: true,
                 preferredLanguage: preferredLanguage,
               );
-              if (isValidWord) {
+              if (isUniqueValidWord) {
                 FocusScope.of(context).nextFocus();
-              }
-
-              // Hide keyboard if mnemonic is now complete and valid
-              if (mnemonicInput.isComplete && mnemonicInput.isValid) {
-                FocusScope.of(context).unfocus();
               }
             } catch (e) {
               // If validation fails, don't move to next field
             }
           }
 
-          // No need to trigger separate validation with new provider - it's automatic
+          // Hide keyboard if mnemonic is now complete and valid
+          if (mnemonicInput.isComplete && mnemonicInput.isValid) {
+            FocusScope.of(context).unfocus();
+          }
         },
         textAlign: TextAlign.center,
         style: scaledTextStyle(

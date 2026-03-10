@@ -72,6 +72,14 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
               const BuildProgressBar(pagePosition: 8),
               ScaledSizedBox(height: isTall ? 25 : 5),
               BuildText(text: "hereIsThePasswordKeepIt".tr()),
+              if (hasError)
+                Padding(
+                  padding: EdgeInsets.only(top: scaleSize(10)),
+                  child: Text(
+                    'passwordTooSimple'.tr(),
+                    style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
+                  ),
+                ),
               ScaledSizedBox(height: isTall ? 60 : 10),
               pinForm(context, 1, 2),
             ],
@@ -86,6 +94,11 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
       key: keyPinForm,
       pinController: _pinController,
       length: pinLength,
+      onChanged: (value) {
+        if (hasError && value.isNotEmpty) {
+          setState(() => hasError = false);
+        }
+      },
       onCompleted: (pin) async {
         if (isPinComplex(pin)) {
           // Check if we're offline before proceeding
@@ -108,7 +121,7 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
             ),
           );
         } else {
-          hasError = true;
+          setState(() => hasError = true);
           enterPin.text = '';
           pinFocus.requestFocus();
         }

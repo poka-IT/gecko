@@ -121,6 +121,7 @@
     "cesium_import_info_body": "Para importar un monedero Cesium (con frase secreta y contraseña), primero debes crear un monedero en Ğecko. Una vez creado tu monedero, podrás migrar tu antiguo monedero a este nuevo formato, más simple y securizado.",
     "cesium_import_info_title": "¿Importar un monedero Cesium?",
     "changePassword": "Cambiar mi código secreto",
+    "changePinError": "Error al cambiar el código secreto. Inténtelo de nuevo.",
     "changeSafe": "Cambiar de bóveda",
     "choiceOfSourceWallet": "Elección del monedero de origen",
     "chooseATargetWallet": "Elige un monedero de destino",

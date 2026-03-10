@@ -116,6 +116,7 @@
     "cesium_import_info_body": "",
     "cesium_import_info_title": "",
     "changePassword": "Mein Sicherheitscode ändern",
+    "changePinError": "Fehler beim Ändern des Sicherheitscodes. Bitte versuchen Sie es erneut.",
     "changeSafe": "",
     "choiceOfSourceWallet": "",
     "chooseATargetWallet": "",

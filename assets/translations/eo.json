@@ -37,6 +37,7 @@
     "walletNameReservedPrefix": "La nomo ne povas komenciĝi per #",
     "displayMnemonic": "Montri mian reakiran frazon",
     "changePassword": "Ŝanĝi mian sekretan kodon",
+    "changePinError": "Malsukcesis ŝanĝi la sekretan kodon. Bonvolu reprovi.",
     "createDerivation": "Krei alian derivaĵon",
     "createCustomDerivation": "Krei personigitan derivaĵon",
     "forgetSafe": "Forgesi tiun ĉi kofron",

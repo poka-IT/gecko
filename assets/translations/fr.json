@@ -37,6 +37,7 @@
     "walletNameReservedPrefix": "Le nom ne peut pas commencer par #",
     "displayMnemonic": "Afficher ma phrase de restauration",
     "changePassword": "Changer mon code secret",
+    "changePinError": "Échec du changement de code secret. Veuillez réessayer.",
     "createDerivation": "Créer une autre dérivation",
     "createCustomDerivation": "Créer une dérivation personnalisé",
     "forgetSafe": "Oublier ce coffre",

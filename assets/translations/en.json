@@ -116,6 +116,7 @@
     "cesium_import_info_body": "To import a Cesium wallet (with username and password), you first need to create a wallet in Ğecko. Once your wallet is created, you can migrate your old wallet to this new, simpler, and more secure format.",
     "cesium_import_info_title": "Importing a Cesium wallet?",
     "changePassword": "Change my password",
+    "changePinError": "Failed to change password. Please try again.",
     "changeSafe": "Change safe",
     "choiceOfSourceWallet": "Choose a source wallet",
     "chooseATargetWallet": "Choose a target wallet",

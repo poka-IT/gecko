@@ -93,9 +93,24 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
           final firstWallet = ref.read(firstWalletProvider);
           if (firstWallet == null) return;
 
-          await ref
-              .read(walletServiceProvider)
-              .changePin(address: firstWallet.address, oldPin: widget.oldPin, newPin: pin);
+          try {
+            await ref
+                .read(walletServiceProvider)
+                .changePin(address: firstWallet.address, oldPin: widget.oldPin, newPin: pin);
+          } catch (e) {
+            log.e('Failed to change PIN: $e');
+            if (!mounted) return;
+            setState(() {
+              isPinLoading = false;
+              hasError = true;
+              pinColor = Colors.red[600];
+              enterPin.text = '';
+            });
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('changePinError'.tr()), backgroundColor: Colors.red));
+            return;
+          }
 
           // Mettre à jour le PIN dans le provider
           PinCodeService.pinCode = pin;

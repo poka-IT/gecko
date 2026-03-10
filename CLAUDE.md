@@ -129,6 +129,10 @@ final state = await container.read(certButtonStateProvider(address).future);
 
 Uses `easy_localization` with translations in `assets/translations/`. Supported: en, fr, es, it.
 
+## Git Commit Conventions
+
+- When a commit fixes a GitLab issue, include `Closes #<number>` in the commit message (e.g. `fix: membership banner too early\n\nCloses #156`). This auto-closes the issue on GitLab.
+
 ## Platform Notes
 
 - Android API 23+, iOS, macOS, Linux supported

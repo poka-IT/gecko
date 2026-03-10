@@ -76,7 +76,11 @@ class SearchResult extends ConsumerWidget {
       subtitle: Row(
         children: <Widget>[
           NameByAddress(
-            wallet: WalletEntity.create(address: g1Wallet.address, keyPairType: Durt.defaultKeyPairType),
+            wallet: WalletEntity.create(
+              address: g1Wallet.address,
+              name: g1Wallet.username,
+              keyPairType: Durt.defaultKeyPairType,
+            ),
             size: 14,
           ),
         ],

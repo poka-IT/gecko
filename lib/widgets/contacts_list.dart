@@ -162,6 +162,7 @@ class ContactsList extends ConsumerWidget {
                               size: scaleSize(14),
                               wallet: WalletEntity.create(
                                 address: g1Wallet.address,
+                                name: g1Wallet.username,
                                 keyPairType: Durt.defaultKeyPairType,
                               ),
                             ),

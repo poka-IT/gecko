@@ -316,8 +316,6 @@
     "accountNotAllowedToClaim": "This account is not allowed to claim universal dividends",
     "transactionPriorityTooLow": "Transaction priority too low, please try again later",
     "technicalError": "Technical error",
-    "g1GenesisHashChangedMessage": "The Ğ1 network configuration has been updated. Please restart the application to apply the changes.",
-    "g1GenesisHashChangedTitle": "Network Update",
     "geckoGenerateYourWalletFromMnemonic": "Ğecko builds your wallet from a **restoration sentence**. It is a bit like the blueprint that builds your wallet.",
     "geckoGeneratedYourMnemonicKeepItSecret": "Ğecko generated your mnemonic successfully! Keep it secret, because anyone who knows it can access all your wallets.",
     "geckoWillCheckPassword": "Gecko will check with you if you have remembered your secret code.\n\n Type your secret code in the field below to check that you have written it down correctly.",

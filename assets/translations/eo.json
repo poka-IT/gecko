@@ -831,8 +831,6 @@
     "updateAvailableMessage": "Niva versio de Ğecko (**{}**) disponeblas.\nVi nun uzas la version {}.",
     "updateNow": "Ĝisdatigi",
     "updateLater": "Poste",
-    "g1GenesisHashChangedTitle": "Ĝisdatigo de la reto",
-    "g1GenesisHashChangedMessage": "La agordo de la Ğ1-reto estis ĝisdatigita. Bonvolu restartigi la aplikaĵon por apliki la ŝanĝojn.",
     "switchToTestNetworkTitle": "Prov-reto",
     "switchToTestNetworkMessage": "Vi estas konektiĝonta al la reto {}, kiu estas prov-reto kaj ne la reto produktanta Ğ1.\n\nĈu vi certas, ke vi volas daŭrigi?",
     "migration_intro_title": "Migrigi vian Cesium-konton",

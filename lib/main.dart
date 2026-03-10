@@ -37,7 +37,6 @@ import 'package:gecko/services/storage_init_service.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:gecko/services/log_collection_service.dart';
-import 'package:gecko/services/g1_genesis_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/services/empty_string_asset_loader.dart';
 import 'package:gecko/services/eo_locale_delegate.dart';
@@ -67,27 +66,15 @@ Future<void> main() async {
   // Initialize log collection service
   LogCollectionService.instance.initialize();
 
-  // Check G1 genesis hash (blocking on first run, cached after)
-  final g1Available = await G1GenesisService.initializeAtStartup(configBox);
-
-  // Network selection: local override preserved, then g1 if available, else default (gtest)
+  // Network selection: restore saved network, default to g1
   final savedNetwork = configBox.get('selectedNetwork');
   final Networks selectedNetwork;
-  if (savedNetwork == Networks.local.name) {
-    selectedNetwork = Networks.local;
-  } else if (g1Available) {
-    selectedNetwork = Networks.g1;
+  if (savedNetwork != null) {
+    selectedNetwork = Networks.values.firstWhere((n) => n.name == savedNetwork, orElse: () => Networks.defaultNetwork);
   } else {
     selectedNetwork = Networks.defaultNetwork;
+    configBox.put('selectedNetwork', selectedNetwork.name);
   }
-
-  // Sync the saved network so the rest of the app is consistent
-  configBox.put('selectedNetwork', selectedNetwork.name);
-
-  // Clear any custom endpoint configuration to ensure clean connection
-  configBox.delete('customEndpoint');
-  configBox.delete('customIndexer');
-  configBox.put('autoEndpoint', true);
 
   // Configure SSL certificate handling before any network connections.
   // Duniter nodes commonly use self-signed certificates, so we must accept them.

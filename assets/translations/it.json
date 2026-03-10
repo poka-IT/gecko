@@ -322,8 +322,6 @@
     "accountNotAllowedToClaim": "Questo conto non è autorizzato a richiedere il dividendo universale",
     "transactionPriorityTooLow": "Priorità della transazione troppo bassa, riprovare più tardi",
     "technicalError": "Errore tecnico",
-    "g1GenesisHashChangedMessage": "La configurazione della rete Ğ1 è stata aggiornata. Si prega di riavviare l'applicazione per applicare le modifiche.",
-    "g1GenesisHashChangedTitle": "Aggiornamento rete",
     "geckoGenerateYourWalletFromMnemonic": "Ğecko crea il tuo portafoglio a partire da una **frase di ripristino**. È un po' come il progetto che ti permette di costruire il tuo portafoglio.",
     "geckoGeneratedYourMnemonicKeepItSecret": "Gecko ha generato la tua frase di ripristino! Assicurati di tenerla segretissima, perché permette a chiunque la conosca di accedere a tutti i tuoi portafogli.",
     "geckoWillCheckPassword": "Gecko verificherà con te se hai ben memorizzato il codice PIN.\n\nDigita il tuo codice PIN nel campo qui sotto per verificare di averlo annotato bene.",

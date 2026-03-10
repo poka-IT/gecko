@@ -316,8 +316,6 @@
     "accountNotAllowedToClaim": "Dieses Konto darf kein Grundeinkommen beanspruchen",
     "transactionPriorityTooLow": "Transaktionspriorität zu niedrig, bitte versuchen Sie es später erneut",
     "technicalError": "Technischer Fehler",
-    "g1GenesisHashChangedMessage": "Die Konfiguration des Ğ1-Netzwerks wurde aktualisiert. Bitte starten Sie die Anwendung neu, um die Änderungen zu übernehmen.",
-    "g1GenesisHashChangedTitle": "Netzwerk-Update",
     "geckoGenerateYourWalletFromMnemonic": "",
     "geckoGeneratedYourMnemonicKeepItSecret": "",
     "geckoWillCheckPassword": "",

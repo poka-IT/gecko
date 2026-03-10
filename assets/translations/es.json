@@ -321,8 +321,6 @@
     "accountNotAllowedToClaim": "Esta cuenta no puede reclamar el dividendo universal",
     "transactionPriorityTooLow": "Prioridad de transacción demasiado baja, inténtelo de nuevo más tarde",
     "technicalError": "Error técnico",
-    "g1GenesisHashChangedMessage": "La configuración de la red Ğ1 ha sido actualizada. Por favor, reinicie la aplicación para aplicar los cambios.",
-    "g1GenesisHashChangedTitle": "Actualización de red",
     "geckoGenerateYourWalletFromMnemonic": "Ğecko crea tu monedero a partir de una **frase semilla**. Es como los planos que permiten construir tu monedero.",
     "geckoGeneratedYourMnemonicKeepItSecret": "¡Ğecko ha generado tu frase semilla! Intenta mantenerla en secreto, porque permite que cualquiera que la conozca pueda acceder a todos tus monederos.",
     "geckoWillCheckPassword": "Ğecko va a comprobar contigo si has memorizado bien tu código secreto.\n\nEscribe tu código secreto en el campo de abajo para verificar que lo hayas anotado bien.",

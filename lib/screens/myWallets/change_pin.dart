@@ -12,9 +12,10 @@ import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ChangePinScreen extends StatefulWidget {
-  const ChangePinScreen({super.key, required this.walletName});
+  const ChangePinScreen({super.key, required this.walletName, required this.oldPin});
 
   final String walletName;
+  final String oldPin;
 
   @override
   State<ChangePinScreen> createState() => _ChangePinScreenState();
@@ -83,7 +84,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
               Navigator.push(
                 context,
                 FaderTransition(
-                  page: ConfirmChangePinScreen(walletName: widget.walletName, newPinCode: pin),
+                  page: ConfirmChangePinScreen(walletName: widget.walletName, newPinCode: pin, oldPin: widget.oldPin),
                   isFast: false,
                 ),
               );

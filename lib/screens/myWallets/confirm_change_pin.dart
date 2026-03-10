@@ -13,10 +13,11 @@ import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ConfirmChangePinScreen extends ConsumerStatefulWidget {
-  const ConfirmChangePinScreen({super.key, required this.walletName, required this.newPinCode});
+  const ConfirmChangePinScreen({super.key, required this.walletName, required this.newPinCode, required this.oldPin});
 
   final String walletName;
   final String newPinCode;
+  final String oldPin;
 
   @override
   ConsumerState<ConfirmChangePinScreen> createState() => _ConfirmChangePinScreenState();
@@ -89,18 +90,12 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
             hasError = false;
           });
 
-          // Demander l'ancien PIN pour confirmation
-          if (!await PinCodeService.askPinCode()) {
-            setState(() => isPinLoading = false);
-            return;
-          }
-
           final firstWallet = ref.read(firstWalletProvider);
           if (firstWallet == null) return;
 
           await ref
               .read(walletServiceProvider)
-              .changePin(address: firstWallet.address, oldPin: PinCodeService.pinCode, newPin: pin);
+              .changePin(address: firstWallet.address, oldPin: widget.oldPin, newPin: pin);
 
           // Mettre à jour le PIN dans le provider
           PinCodeService.pinCode = pin;

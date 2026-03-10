@@ -654,11 +654,17 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     // Ask for current PIN first
     if (!await PinCodeService.askPinCode(force: true)) return;
 
+    // Capture the old PIN immediately after successful askPinCode, before any async
+    // operation that could trigger debounceResetPinCode clearing it.
+    final oldPin = PinCodeService.pinCode;
+    if (oldPin.isEmpty) return;
+
     // Navigate to change PIN screen
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChangePinScreen(walletName: WalletNameService.displayName(widget.wallet.name)),
+        builder: (context) =>
+            ChangePinScreen(walletName: WalletNameService.displayName(widget.wallet.name), oldPin: oldPin),
       ),
     );
   }

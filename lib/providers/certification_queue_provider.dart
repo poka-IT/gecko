@@ -336,6 +336,14 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
       if (remoteQueue != null) {
         log.d('[CertQueueSync] Remote queue found for $issuerAddress: ${remoteQueue.queueLength} items');
+
+        // Guard: don't overwrite a locally-modified state that is newer than remote
+        final currentState = state.value;
+        if (currentState != null && !currentState.lastUpdated.isBefore(remoteQueue.lastUpdated)) {
+          log.d('[CertQueueSync] Local state is same or newer than remote, skipping overwrite');
+          return;
+        }
+
         finalQueue = await _updateQueueDates(remoteQueue);
         finalQueue = finalQueue.copyWith(isSynced: true);
       } else if (hasLocalItems) {

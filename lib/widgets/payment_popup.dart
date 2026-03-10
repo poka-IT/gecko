@@ -74,7 +74,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   final commentFocus = FocusNode();
 
   // Balance validation state
-  BigInt? defaultWalletBalance;
+  BigInt? defaultWalletSpendable;
   BigInt? toAddressBalance;
   bool balancesLoaded = false;
 
@@ -150,7 +150,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       if (!mounted) return;
 
       setState(() {
-        defaultWalletBalance = defaultBalance.transferableBalance;
+        defaultWalletSpendable = defaultBalance.spendable;
         toAddressBalance = toBalance.transferableBalance;
         balancesLoaded = true;
       });
@@ -159,7 +159,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       if (mounted) {
         setState(() {
           // Set conservative defaults on error
-          defaultWalletBalance = BigInt.zero;
+          defaultWalletSpendable = BigInt.zero;
           toAddressBalance = BigInt.zero;
           balancesLoaded = true;
         });
@@ -376,7 +376,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     final payAmount = ref.read(profileViewProvider(widget.toAddress)).payAmount;
     if (payAmount.isEmpty) return null; // No error message when empty
 
-    if (!balancesLoaded || defaultWalletBalance == null || toAddressBalance == null) {
+    if (!balancesLoaded || defaultWalletSpendable == null || toAddressBalance == null) {
       return null; // Still loading
     }
 
@@ -384,7 +384,6 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       final ratio = ref.watch(balanceRatioProvider);
       final BigInt payAmountValue = BigInt.from((double.parse(payAmount) * ratio.toDouble()).round());
       final existentialDeposit = ref.read(storageServiceProvider).currencyConstants.existentialDeposit;
-      final BigInt transferableBalance = defaultWalletBalance! - existentialDeposit;
 
       // Check each condition and return appropriate error
       if (payAmountValue <= BigInt.zero) {
@@ -395,7 +394,10 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
         return 'cannotSendToYourself'.tr();
       }
 
-      if (payAmountValue > transferableBalance && defaultWalletBalance != payAmountValue) {
+      // spendable = max sendable with keep_alive (excludes ED and reserved).
+      // Allow sending full displayed balance (spendable + ED) as transferAll.
+      final displayedBalance = defaultWalletSpendable! + existentialDeposit;
+      if (payAmountValue > defaultWalletSpendable! && payAmountValue != displayedBalance) {
         return 'insufficientBalance'.tr();
       }
 
@@ -544,7 +546,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                   fromWallet = newSelectedWallet;
                                   // Reset balance loading state when wallet changes
                                   balancesLoaded = false;
-                                  defaultWalletBalance = null;
+                                  defaultWalletSpendable = null;
                                   toAddressBalance = null;
                                 });
 

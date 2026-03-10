@@ -132,10 +132,13 @@ class SafeOptionsContent extends ConsumerWidget {
           key: keyChangePin,
           onTap: () async {
             if (!await PinCodeService.askPinCode(force: true)) return;
+            final oldPin = PinCodeService.pinCode;
+            if (oldPin.isEmpty) return;
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ChangePinScreen(walletName: WalletNameService.displayName(currentSafe.name)),
+                builder: (context) =>
+                    ChangePinScreen(walletName: WalletNameService.displayName(currentSafe.name), oldPin: oldPin),
               ),
             );
           },

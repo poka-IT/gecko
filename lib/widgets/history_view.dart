@@ -63,7 +63,7 @@ class HistoryView extends StatelessWidget {
   /// Builds a flat list of widgets (separators, migration markers, transaction tiles)
   /// for use with SliverList.builder in the parent.
   List<Widget> buildItems(BuildContext context) {
-    final mergedTransactions = _getMergedTransactionList();
+    final mergedTransactions = compactConsecutiveUds(_getMergedTransactionList());
 
     if (mergedTransactions.isEmpty) {
       return [

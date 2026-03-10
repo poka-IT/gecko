@@ -26,6 +26,8 @@ class TransactionDisplayItem {
   final String? fromUsername; // For network view: from identity name
   final String? toUsername; // For network view: to identity name
   final String? squidId; // Squid transfer id for exact deduplication
+  final int udCount; // Number of merged consecutive UDs (1 = single)
+  final List<TransactionDisplayItem>? udItems; // Individual UDs when merged
 
   TransactionDisplayItem({
     required this.address,
@@ -43,6 +45,8 @@ class TransactionDisplayItem {
     this.fromUsername,
     this.toUsername,
     this.squidId,
+    this.udCount = 1,
+    this.udItems,
   });
 
   factory TransactionDisplayItem.fromGraphQLNode(
@@ -296,6 +300,8 @@ class TransactionDisplayItem {
     'fromUsername': fromUsername,
     'toUsername': toUsername,
     'squidId': squidId,
+    'udCount': udCount,
+    if (udItems != null) 'udItems': udItems!.map((e) => e.toJson()).toList(),
   };
 
   factory TransactionDisplayItem.fromJson(Map<String, dynamic> json) => TransactionDisplayItem(
@@ -314,6 +320,10 @@ class TransactionDisplayItem {
     fromUsername: json['fromUsername'] as String?,
     toUsername: json['toUsername'] as String?,
     squidId: json['squidId'] as String?,
+    udCount: json['udCount'] as int? ?? 1,
+    udItems: json['udItems'] != null
+        ? (json['udItems'] as List).map((e) => TransactionDisplayItem.fromJson(e as Map<String, dynamic>)).toList()
+        : null,
   );
 
   /// Get a display-friendly type name
@@ -325,4 +335,57 @@ class TransactionDisplayItem {
       TransactionType.transfer => "Transfer",
     };
   }
+}
+
+/// Merges consecutive Universal Dividends in a sorted (DESC) transaction list.
+/// Adjacent UDs are compacted into a single entry with summed amount and udCount.
+List<TransactionDisplayItem> compactConsecutiveUds(List<TransactionDisplayItem> items) {
+  if (items.isEmpty) return items;
+
+  final result = <TransactionDisplayItem>[];
+  int i = 0;
+
+  while (i < items.length) {
+    final current = items[i];
+
+    if (current.type == TransactionType.universalDividend) {
+      final udSequence = <TransactionDisplayItem>[current];
+      int j = i + 1;
+
+      while (j < items.length && items[j].type == TransactionType.universalDividend) {
+        udSequence.add(items[j]);
+        j++;
+      }
+
+      if (udSequence.length > 1) {
+        final totalAmount = udSequence.fold(BigInt.zero, (sum, op) => sum + op.amount);
+        final firstUd = udSequence.first; // Most recent (list is DESC)
+
+        result.add(
+          TransactionDisplayItem(
+            address: firstUd.address,
+            username: firstUd.username,
+            amount: totalAmount,
+            isReceived: true,
+            timestamp: firstUd.timestamp,
+            transactionTime: firstUd.transactionTime,
+            dateDelimiter: firstUd.dateDelimiter,
+            isMigrationTime: firstUd.isMigrationTime,
+            type: TransactionType.universalDividend,
+            udCount: udSequence.length,
+            udItems: udSequence,
+          ),
+        );
+      } else {
+        result.add(current);
+      }
+
+      i = j;
+    } else {
+      result.add(current);
+      i++;
+    }
+  }
+
+  return result;
 }

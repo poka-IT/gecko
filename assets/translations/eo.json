@@ -456,6 +456,8 @@
     "hideUniversalDividends": "Kaŝi la universalajn dividendojn",
     "universalDividends": "Universalaj dividendoj",
     "universalDividend": "Universala Dividendo",
+    "universalDividendCompact": "Universala Dividendo ×{}",
+    "total": "Totalo",
     "udShort": "UD",
     "offline": "Malkonektita",
     "onboardingOfflineTitle": "Interreta konekto necesa",

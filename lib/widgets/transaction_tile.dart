@@ -35,6 +35,9 @@ class TransactionTile extends StatelessWidget {
 
     // Different UI for Universal Dividends
     if (transaction.type == TransactionType.universalDividend) {
+      if (transaction.udCount > 1) {
+        return ExpandableUdTile(transaction: transaction, keyID: newKey);
+      }
       return _buildUniversalDividendTile(context, newKey, finalAmount);
     }
 
@@ -248,8 +251,10 @@ class TransactionTile extends StatelessWidget {
     return buildSmartAddressText(address: transaction.address, maxWidth: maxWidth, style: style);
   }
 
-  /// Build a modern tile for Universal Dividends
+  /// Build a modern tile for a single Universal Dividend
   Widget _buildUniversalDividendTile(BuildContext context, int newKey, BigInt finalAmount) {
+    final locale = safeLocale(Localizations.localeOf(context).languageCode);
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
       decoration: BoxDecoration(
@@ -264,7 +269,6 @@ class TransactionTile extends StatelessWidget {
           padding: EdgeInsets.all(scaleSize(12)),
           child: Row(
             children: [
-              // Modern icon container
               Container(
                 width: scaleSize(40),
                 height: scaleSize(40),
@@ -275,36 +279,24 @@ class TransactionTile extends StatelessWidget {
                 ),
                 child: Icon(Icons.water_drop, size: scaleSize(20), color: context.colorScheme.primary),
               ),
-
               ScaledSizedBox(width: 12),
-
-              // Content
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'universalDividend'.tr(),
-                      style: scaledTextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: context.colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'universalDividend'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: context.colorScheme.onSurface,
+                  ),
                 ),
               ),
-
-              // Amount and date
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   BalanceDisplay(value: finalAmount, size: 16, color: context.colorScheme.primary),
                   ScaledSizedBox(height: 4),
                   Text(
-                    DateFormat.MMMd(
-                      safeLocale(Localizations.localeOf(context).languageCode),
-                    ).format(transaction.transactionTime),
+                    DateFormat.MMMd(locale).format(transaction.transactionTime),
                     style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
                   ),
                 ],
@@ -526,5 +518,235 @@ class TransactionTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Expandable tile for merged consecutive Universal Dividends.
+/// Tapping the header toggles inline expansion of individual UDs.
+class ExpandableUdTile extends StatefulWidget {
+  const ExpandableUdTile({super.key, required this.transaction, required this.keyID});
+
+  final TransactionDisplayItem transaction;
+  final int keyID;
+
+  @override
+  State<ExpandableUdTile> createState() => _ExpandableUdTileState();
+}
+
+class _ExpandableUdTileState extends State<ExpandableUdTile> with SingleTickerProviderStateMixin {
+  bool _isExpanded = false;
+  late AnimationController _controller;
+  late Animation<double> _expandAnimation;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _expandAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 0.25).animate(_expandAnimation);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tx = widget.transaction;
+    final locale = safeLocale(Localizations.localeOf(context).languageCode);
+    final udItems = tx.udItems ?? [];
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface,
+        borderRadius: BorderRadius.circular(scaleSize(12)),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.1), width: 1),
+      ),
+      child: Material(
+        color: context.colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(scaleSize(12)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header tile (tappable)
+            InkWell(
+              onTap: _toggle,
+              borderRadius: BorderRadius.circular(scaleSize(12)),
+              child: Padding(
+                padding: EdgeInsets.all(scaleSize(12)),
+                child: Row(
+                  children: [
+                    // Icon with count badge
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: scaleSize(40),
+                          height: scaleSize(40),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: context.colorScheme.primary.withValues(alpha: 0.1),
+                            border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.3), width: 1),
+                          ),
+                          child: Icon(Icons.water_drop, size: scaleSize(20), color: context.colorScheme.primary),
+                        ),
+                        Positioned(
+                          right: scaleSize(-4),
+                          top: scaleSize(-4),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: scaleSize(5), vertical: scaleSize(1)),
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(scaleSize(10)),
+                            ),
+                            child: Text(
+                              '×${tx.udCount}',
+                              style: scaledTextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: context.colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    ScaledSizedBox(width: 12),
+
+                    // Label + date range
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  'universalDividendCompact'.tr(args: ['${tx.udCount}']),
+                                  style: scaledTextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              ScaledSizedBox(width: 4),
+                              RotationTransition(
+                                turns: _rotationAnimation,
+                                child: Icon(
+                                  Icons.chevron_right,
+                                  size: scaleSize(18),
+                                  color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ScaledSizedBox(height: 2),
+                          Text(
+                            _formatUdDateRange(udItems, locale),
+                            style: scaledTextStyle(
+                              fontSize: 12,
+                              color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Total amount
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        BalanceDisplay(value: tx.amount, size: 16, color: context.colorScheme.primary),
+                        ScaledSizedBox(height: 4),
+                        Text(
+                          'total'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 11,
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Expandable individual UDs
+            SizeTransition(
+              sizeFactor: _expandAnimation,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Divider(
+                    height: 1,
+                    indent: scaleSize(16),
+                    endIndent: scaleSize(16),
+                    color: context.colorScheme.primary.withValues(alpha: 0.2),
+                  ),
+                  ...udItems.map(
+                    (ud) => Padding(
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(3)),
+                      child: Row(
+                        children: [
+                          ScaledSizedBox(width: 16),
+                          Container(
+                            width: scaleSize(6),
+                            height: scaleSize(6),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: context.colorScheme.primary.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          ScaledSizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              DateFormat.yMMMd(locale).format(ud.transactionTime),
+                              style: scaledTextStyle(
+                                fontSize: 13,
+                                color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ),
+                          BalanceDisplay(value: ud.amount, size: 13, color: context.colorScheme.primary),
+                          ScaledSizedBox(width: 4),
+                        ],
+                      ),
+                    ),
+                  ),
+                  ScaledSizedBox(height: 8),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatUdDateRange(List<TransactionDisplayItem> udItems, String locale) {
+    if (udItems.isEmpty) return '';
+    final oldest = udItems.last.transactionTime;
+    final newest = udItems.first.transactionTime;
+    final dateFormat = DateFormat.MMMd(locale);
+    return '${dateFormat.format(oldest)} — ${dateFormat.format(newest)}';
   }
 }

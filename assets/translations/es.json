@@ -836,6 +836,8 @@
     "undefinedName": "Nombre indefinido",
     "universalDividend": "Dividendo Universal",
     "universalDividends": "Dividendos Universales",
+    "universalDividendCompact": "Dividendo Universal ×{}",
+    "total": "Total",
     "unknown": "Desconocido",
     "unknownError": "Error desconocido",
     "unvalidated": "Sin validar",

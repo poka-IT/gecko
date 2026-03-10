@@ -562,12 +562,13 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
 
     final hasAdvancedFilters = filters.hasActiveFilters;
 
-    // Show UD toggle if the identity is a member (members receive UDs)
+    // Show UD toggle if the identity is or was a member (validated, expired, revoked)
     bool showUDToggle = false;
     bool isUDEnabled = false;
     if (widget.mode == FilterMode.account && widget.address != null) {
       final idtyStatus = ref.watch(hybridIdtyStatusProvider(widget.address!));
-      showUDToggle = idtyStatus.value == IdtyStatus.validated;
+      const wasOrIsMember = {IdtyStatus.validated, IdtyStatus.expired, IdtyStatus.revoked};
+      showUDToggle = idtyStatus.value != null && wasOrIsMember.contains(idtyStatus.value);
       isUDEnabled = ref.watch(universalDividendsToggleProvider);
     }
 

@@ -368,13 +368,17 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                 contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(8)),
               ),
               onChanged: (v) async {
-                // Strip spaces and convert to lowercase
-                if (v.contains(' ')) {
-                  cellCtl.text = cellCtl.text.replaceAll(' ', '');
+                // Strip spaces and convert to lowercase, preserving cursor position
+                final cleaned = v.replaceAll(' ', '').toLowerCase();
+                if (cleaned != v) {
+                  final cursorPos = cellCtl.selection.baseOffset - (v.length - cleaned.length);
+                  cellCtl.value = TextEditingValue(
+                    text: cleaned,
+                    selection: TextSelection.collapsed(offset: cursorPos.clamp(0, cleaned.length)),
+                  );
                 }
-                if (v.isNotEmpty) cellCtl.text = cellCtl.text.toLowerCase();
 
-                final cleanText = cellCtl.text;
+                final cleanText = cleaned;
 
                 // Only move to next field if we have a valid BIP39 word AND we're not at the last field
                 if (cleanText.isNotEmpty && index < 11) {

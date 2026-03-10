@@ -98,10 +98,16 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
             }
           },
           onChanged: (value) {
-            setState(() {
-              hasError = false;
-              pinColor = const Color(0xFFA4B600);
-            });
+            if (hasError && value.isNotEmpty) {
+              setState(() {
+                hasError = false;
+                pinColor = const Color(0xFFA4B600);
+              });
+            } else if (pinColor != const Color(0xFFA4B600)) {
+              setState(() {
+                pinColor = const Color(0xFFA4B600);
+              });
+            }
           },
         ),
         if (hasError) ...[

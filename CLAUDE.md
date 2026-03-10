@@ -133,6 +133,14 @@ Uses `easy_localization` with translations in `assets/translations/`. Supported:
 
 - When a commit fixes a GitLab issue, include `Closes #<number>` in the commit message (e.g. `fix: membership banner too early\n\nCloses #156`). This auto-closes the issue on GitLab.
 
+## Bug Research Strategy
+
+When searching for bugs across forums and issue trackers, always launch all searches **in parallel using multiple agents or tool calls**:
+- Forum Duniter (MCP `discourse`): filter by `tag:bugv2`, search `gecko after:DATE`, read recent posts of topic #9372
+- Forum Monnaie Libre (MCP `discourse-ml`): filter `category:gecko`, search `gecko bug after:DATE`
+- GitLab API: `WebFetch` on `https://git.duniter.org/api/v4/projects/clients%2Fgecko/issues?state=opened&order_by=created_at&sort=desc`
+- See `memory/forum_search_guide.md` for full details
+
 ## Platform Notes
 
 - Android API 23+, iOS, macOS, Linux supported

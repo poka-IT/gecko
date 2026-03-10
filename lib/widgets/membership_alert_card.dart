@@ -42,8 +42,8 @@ class MembershipAlertCard extends ConsumerWidget {
               return _buildExpiredCard(context, ref, info);
             }
 
-            // Expiring soon (<30 days) or renewal available (orange)
-            if (info.canRenew || _isExpiringSoon(info)) {
+            // Show renewal banner only in the last third of membership period
+            if (_shouldShowRenewalBanner(info)) {
               return _buildExpiringSoonCard(context, ref, info);
             }
 
@@ -62,6 +62,23 @@ class MembershipAlertCard extends ConsumerWidget {
     if (info.expireDate == null || info.isExpired) return false;
     final daysUntilExpire = info.expireDate!.difference(DateTime.now()).inDays;
     return daysUntilExpire <= 30;
+  }
+
+  /// Show renewal banner only when in the last third of the membership period.
+  /// renewalStartDate marks 2/3 of the period, so the last third is
+  /// the second half of the [renewalStartDate, expireDate] window.
+  bool _shouldShowRenewalBanner(RenewalInfo info) {
+    if (info.isExpired && info.canRenew) return true;
+    if (info.expireDate == null) return false;
+
+    if (info.canRenew && info.renewalStartDate != null) {
+      final renewalWindow = info.expireDate!.difference(info.renewalStartDate!);
+      final bannerThreshold = renewalWindow ~/ 2;
+      final timeUntilExpire = info.expireDate!.difference(DateTime.now());
+      return timeUntilExpire <= bannerThreshold;
+    }
+
+    return _isExpiringSoon(info);
   }
 
   Widget _buildEvalPendingCard(BuildContext context, WidgetRef ref, RenewalInfo info) {

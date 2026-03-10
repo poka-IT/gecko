@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
-import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/transaction_filters.dart';
 import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
+import 'package:durt2/durt2.dart' show IdtyStatus;
 
 /// Generic transaction filters widget that adapts to both account and network modes
 class TransactionFilters extends ConsumerStatefulWidget {
@@ -561,12 +562,12 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
 
     final hasAdvancedFilters = filters.hasActiveFilters;
 
-    // Check for UDs if in account mode
-    bool hasUDs = false;
+    // Show UD toggle if the identity is a member (members receive UDs)
+    bool showUDToggle = false;
     bool isUDEnabled = false;
     if (widget.mode == FilterMode.account && widget.address != null) {
-      final combinedState = ref.watch(combinedHistoryProvider(widget.address!));
-      hasUDs = combinedState.transactions.any((transaction) => transaction.type == TransactionType.universalDividend);
+      final idtyStatus = ref.watch(hybridIdtyStatusProvider(widget.address!));
+      showUDToggle = idtyStatus.value == IdtyStatus.validated;
       isUDEnabled = ref.watch(universalDividendsToggleProvider);
     }
 
@@ -623,7 +624,7 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
                           ),
 
                           // UD toggle for account mode
-                          if (widget.mode == FilterMode.account && hasUDs) ...[
+                          if (widget.mode == FilterMode.account && showUDToggle) ...[
                             SizedBox(width: scaleSize(12)),
                             _buildQuickToggle(
                               'udShort'.tr(),

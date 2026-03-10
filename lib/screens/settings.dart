@@ -713,50 +713,57 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ],
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      InkWell(
-                        key: keyDeleteAllWallets,
-                        onTap: () async {
-                          log.w('Oublier tous mes coffres');
-                          final answer = await showConfirmationDialog(
-                            context: context,
-                            message: 'areYouSureForgetAllSafes'.tr(),
-                            type: ConfirmationDialogType.warning,
-                          );
-                          if (answer) {
-                            final success = await ref.read(walletActionsProvider.notifier).deleteAllWallets();
-                            if (success && mounted) {
-                              await Navigator.of(
-                                context,
-                              ).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
-                            }
-                          }
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.delete_forever_rounded,
-                                color: const Color(0xffD80000),
-                                size: scaleSize(isSmallScreen ? 20 : 24),
+                  child: Builder(
+                    builder: (context) {
+                      final hasSafes = ref.watch(walletServiceProvider).safeBox.getAll().isNotEmpty;
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          InkWell(
+                            key: keyDeleteAllWallets,
+                            onTap: hasSafes
+                                ? () async {
+                                    log.w('Oublier tous mes coffres');
+                                    final answer = await showConfirmationDialog(
+                                      context: context,
+                                      message: 'areYouSureForgetAllSafes'.tr(),
+                                      type: ConfirmationDialogType.warning,
+                                    );
+                                    if (answer) {
+                                      final success = await ref.read(walletActionsProvider.notifier).deleteAllWallets();
+                                      if (success && mounted) {
+                                        await Navigator.of(
+                                          context,
+                                        ).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
+                                      }
+                                    }
+                                  }
+                                : null,
+                            child: Padding(
+                              padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete_forever_rounded,
+                                    color: hasSafes ? const Color(0xffD80000) : Colors.grey[400],
+                                    size: scaleSize(isSmallScreen ? 20 : 24),
+                                  ),
+                                  ScaledSizedBox(width: 12),
+                                  Text(
+                                    'forgetAllMySafes'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: isSmallScreen ? 14 : 15,
+                                      color: hasSafes ? const Color(0xffD80000) : Colors.grey[400],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              ScaledSizedBox(width: 12),
-                              Text(
-                                'forgetAllMySafes'.tr(),
-                                style: scaledTextStyle(
-                                  fontSize: isSmallScreen ? 14 : 15,
-                                  color: const Color(0xffD80000),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   ),
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 20 : 24),

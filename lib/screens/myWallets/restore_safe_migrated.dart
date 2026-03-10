@@ -219,61 +219,84 @@ class RestoreSafeMigrated extends ConsumerWidget {
   }) {
     final mnemonicInput = ref.watch(mnemonicInputProvider);
     final isWordValid = mnemonicInput.wordValidations[index] ?? true;
+    final suggestion = mnemonicInput.wordSuggestions[index];
 
-    return Container(
+    return SizedBox(
       width: cellWidth,
-      height: cellHeight,
-      constraints: BoxConstraints(minWidth: cellWidth, minHeight: cellHeight),
-      decoration: BoxDecoration(
-        border: Border.all(color: isWordValid ? Colors.grey[400]! : Colors.red[400]!, width: 1.5),
-        color: context.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: TextField(
-        controller: controller,
-        textInputAction: TextInputAction.next,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary, width: 2)),
-          contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(8)),
-        ),
-        onChanged: (value) async {
-          // Strip spaces and convert to lowercase
-          if (value.contains(' ')) {
-            controller.text = controller.text.replaceAll(' ', '');
-          }
-          if (value.isNotEmpty) controller.text = controller.text.toLowerCase();
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: cellHeight,
+            constraints: BoxConstraints(minWidth: cellWidth, minHeight: cellHeight),
+            decoration: BoxDecoration(
+              border: Border.all(color: isWordValid ? Colors.grey[400]! : Colors.red[400]!, width: 1.5),
+              color: context.colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: TextField(
+              controller: controller,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(8)),
+              ),
+              onChanged: (value) async {
+                // Strip spaces and convert to lowercase
+                if (value.contains(' ')) {
+                  controller.text = controller.text.replaceAll(' ', '');
+                }
+                if (value.isNotEmpty) controller.text = controller.text.toLowerCase();
 
-          final cleanText = controller.text;
+                final cleanText = controller.text;
 
-          // Auto-advance on valid word (except last field)
-          if (cleanText.isNotEmpty && index < 11) {
-            try {
-              final languageCode = context.locale.languageCode;
-              final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
+                // Auto-advance on valid word (except last field)
+                if (cleanText.isNotEmpty && index < 11) {
+                  try {
+                    final languageCode = context.locale.languageCode;
+                    final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
 
-              // Use checkRedundance to only auto-advance when the word uniquely
-              // identifies a single BIP39 word (no other words share this prefix)
-              final isUniqueValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
-                cleanText,
-                checkRedundance: true,
-                preferredLanguage: preferredLanguage,
-              );
+                    final isUniqueValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
+                      cleanText,
+                      checkRedundance: true,
+                      preferredLanguage: preferredLanguage,
+                    );
 
-              if (isUniqueValidWord) {
-                FocusScope.of(context).nextFocus();
-              }
-            } catch (e) {
-              // If validation fails, don't auto-advance
-            }
-          }
-        },
-        textAlign: TextAlign.center,
-        style: scaledTextStyle(
-          fontSize: 16,
-          color: isWordValid ? context.colorScheme.onSecondaryContainer : Colors.red[600],
-          height: 0.8,
-        ),
+                    if (isUniqueValidWord) {
+                      FocusScope.of(context).nextFocus();
+                    }
+                  } catch (e) {
+                    // If validation fails, don't auto-advance
+                  }
+                }
+              },
+              textAlign: TextAlign.center,
+              style: scaledTextStyle(
+                fontSize: 16,
+                color: isWordValid ? context.colorScheme.onSecondaryContainer : Colors.red[600],
+                height: 0.8,
+              ),
+            ),
+          ),
+          if (suggestion != null)
+            GestureDetector(
+              onTap: () {
+                controller.text = suggestion;
+                if (index < 11) FocusScope.of(context).nextFocus();
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  suggestion,
+                  style: scaledTextStyle(fontSize: 11, color: context.colorScheme.primary, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

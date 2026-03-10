@@ -164,6 +164,61 @@ class MnemonicService {
     }
   }
 
+  /// Find the closest BIP39 word to a given input using Levenshtein distance.
+  ///
+  /// Returns the closest word if found within a reasonable distance, null otherwise.
+  static Future<String?> findClosestBip39Word(String word, {BidouilleLang? preferredLanguage}) async {
+    if (word.trim().isEmpty || word.length < 3) return null;
+
+    final cleanWord = word.trim().toLowerCase();
+    final multilangService = Durt.i.wallets.multilangService;
+
+    String? bestMatch;
+    int bestDistance = 3; // Max 2 edits to suggest a correction
+
+    // Check preferred language first, then all others
+    final languages = <BidouilleLang>[?preferredLanguage, ...BidouilleLang.values.where((l) => l != preferredLanguage)];
+
+    for (final lang in languages) {
+      try {
+        final wordlist = await multilangService.getWordlist(lang);
+        for (final candidate in wordlist) {
+          if ((candidate.length - cleanWord.length).abs() > 2) continue;
+          final dist = _levenshtein(cleanWord, candidate);
+          if (dist < bestDistance) {
+            bestDistance = dist;
+            bestMatch = candidate;
+            if (dist == 1) return bestMatch; // Good enough
+          }
+        }
+      } catch (_) {}
+    }
+
+    return bestMatch;
+  }
+
+  /// Compute Levenshtein distance between two strings.
+  static int _levenshtein(String a, String b) {
+    if (a == b) return 0;
+    if (a.isEmpty) return b.length;
+    if (b.isEmpty) return a.length;
+
+    List<int> prev = List.generate(b.length + 1, (i) => i);
+    List<int> curr = List.filled(b.length + 1, 0);
+
+    for (int i = 1; i <= a.length; i++) {
+      curr[0] = i;
+      for (int j = 1; j <= b.length; j++) {
+        final cost = a[i - 1] == b[j - 1] ? 0 : 1;
+        curr[j] = [curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost].reduce((a, b) => a < b ? a : b);
+      }
+      final temp = prev;
+      prev = curr;
+      curr = temp;
+    }
+    return prev[b.length];
+  }
+
   /// Convert ordinal number to localized string representation.
   static String getOrdinalString(int number, BuildContext context) {
     final Map<int, String> ordinalMap = {

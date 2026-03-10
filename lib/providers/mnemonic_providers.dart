@@ -89,20 +89,29 @@ class MnemonicInputState {
   final bool isValid;
   final bool isComplete;
   final Map<int, bool> wordValidations;
+  final Map<int, String> wordSuggestions;
 
   const MnemonicInputState({
     this.words = const [],
     this.isValid = false,
     this.isComplete = false,
     this.wordValidations = const {},
+    this.wordSuggestions = const {},
   });
 
-  MnemonicInputState copyWith({List<String>? words, bool? isValid, bool? isComplete, Map<int, bool>? wordValidations}) {
+  MnemonicInputState copyWith({
+    List<String>? words,
+    bool? isValid,
+    bool? isComplete,
+    Map<int, bool>? wordValidations,
+    Map<int, String>? wordSuggestions,
+  }) {
     return MnemonicInputState(
       words: words ?? this.words,
       isValid: isValid ?? this.isValid,
       isComplete: isComplete ?? this.isComplete,
       wordValidations: wordValidations ?? this.wordValidations,
+      wordSuggestions: wordSuggestions ?? this.wordSuggestions,
     );
   }
 
@@ -121,15 +130,29 @@ class MnemonicInputNotifier extends Notifier<MnemonicInputState> {
   Future<void> updateWord(int index, String word) async {
     if (index < 0 || index >= 12) return;
 
+    final cleanWord = word.trim().toLowerCase();
     final newWords = List<String>.from(state.words);
-    newWords[index] = word.trim().toLowerCase();
+    newWords[index] = cleanWord;
 
     // Validate the individual word
-    final isWordValid = word.trim().isEmpty || await MnemonicService.isValidBip39Word(word.trim());
+    final isWordValid = cleanWord.isEmpty || await MnemonicService.isValidBip39Word(cleanWord);
     final newValidations = Map<int, bool>.from(state.wordValidations);
     newValidations[index] = isWordValid;
 
-    state = state.copyWith(words: newWords, wordValidations: newValidations);
+    // Find suggestion for invalid words (3+ chars)
+    final newSuggestions = Map<int, String>.from(state.wordSuggestions);
+    if (!isWordValid && cleanWord.length >= 3) {
+      final suggestion = await MnemonicService.findClosestBip39Word(cleanWord);
+      if (suggestion != null) {
+        newSuggestions[index] = suggestion;
+      } else {
+        newSuggestions.remove(index);
+      }
+    } else {
+      newSuggestions.remove(index);
+    }
+
+    state = state.copyWith(words: newWords, wordValidations: newValidations, wordSuggestions: newSuggestions);
 
     // Check if complete and valid
     await _validateComplete();

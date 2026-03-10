@@ -340,75 +340,92 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
   }) {
     final mnemonicInput = ref.watch(mnemonicInputProvider);
     final isWordValid = mnemonicInput.wordValidations[index] ?? true;
+    final suggestion = mnemonicInput.wordSuggestions[index];
 
-    return Container(
+    return SizedBox(
       width: cellWidth,
-      height: cellHeight,
-      constraints: BoxConstraints(minWidth: cellWidth, minHeight: cellHeight),
-      decoration: BoxDecoration(
-        border: Border.all(color: isWordValid ? Colors.grey[400]! : Colors.red[400]!, width: 1.5),
-        color: context.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: TextField(
-        autofocus: true,
-        controller: cellCtl,
-        enabled: !(mnemonicInput.isComplete && mnemonicInput.isValid) && !_isRestoring,
-        textInputAction: TextInputAction.next,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colorScheme.primary,
-              width: 2, // Thicker focus indicator
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: cellHeight,
+            constraints: BoxConstraints(minWidth: cellWidth, minHeight: cellHeight),
+            decoration: BoxDecoration(
+              border: Border.all(color: isWordValid ? Colors.grey[400]! : Colors.red[400]!, width: 1.5),
+              color: context.colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: TextField(
+              autofocus: true,
+              controller: cellCtl,
+              enabled: !(mnemonicInput.isComplete && mnemonicInput.isValid) && !_isRestoring,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(8)),
+              ),
+              onChanged: (v) async {
+                // Strip spaces and convert to lowercase
+                if (v.contains(' ')) {
+                  cellCtl.text = cellCtl.text.replaceAll(' ', '');
+                }
+                if (v.isNotEmpty) cellCtl.text = cellCtl.text.toLowerCase();
+
+                final cleanText = cellCtl.text;
+
+                // Only move to next field if we have a valid BIP39 word AND we're not at the last field
+                if (cleanText.isNotEmpty && index < 11) {
+                  try {
+                    final languageCode = context.locale.languageCode;
+                    final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
+
+                    // Use checkRedundance to only auto-advance when the word uniquely
+                    // identifies a single BIP39 word (no other words share this prefix)
+                    final isUniqueValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
+                      cleanText,
+                      checkRedundance: true,
+                      preferredLanguage: preferredLanguage,
+                    );
+                    if (isUniqueValidWord) {
+                      FocusScope.of(context).nextFocus();
+                    }
+                  } catch (e) {
+                    // If validation fails, don't move to next field
+                  }
+                }
+
+                // Hide keyboard if mnemonic is now complete and valid
+                if (mnemonicInput.isComplete && mnemonicInput.isValid) {
+                  FocusScope.of(context).unfocus();
+                }
+              },
+              textAlign: TextAlign.center,
+              style: scaledTextStyle(
+                fontSize: 16,
+                color: isWordValid ? context.colorScheme.onSecondaryContainer : Colors.red[600],
+                height: 0.8,
+              ),
             ),
           ),
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: scaleSize(4),
-            vertical: scaleSize(8),
-          ), // Better padding for text scaling
-        ),
-        onChanged: (v) async {
-          // Strip spaces and convert to lowercase
-          if (v.contains(' ')) {
-            cellCtl.text = cellCtl.text.replaceAll(' ', '');
-          }
-          if (v.isNotEmpty) cellCtl.text = cellCtl.text.toLowerCase();
-
-          final cleanText = cellCtl.text;
-
-          // Only move to next field if we have a valid BIP39 word AND we're not at the last field
-          if (cleanText.isNotEmpty && index < 11) {
-            try {
-              final languageCode = context.locale.languageCode;
-              final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
-
-              // Use checkRedundance to only auto-advance when the word uniquely
-              // identifies a single BIP39 word (no other words share this prefix)
-              final isUniqueValidWord = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
-                cleanText,
-                checkRedundance: true,
-                preferredLanguage: preferredLanguage,
-              );
-              if (isUniqueValidWord) {
-                FocusScope.of(context).nextFocus();
-              }
-            } catch (e) {
-              // If validation fails, don't move to next field
-            }
-          }
-
-          // Hide keyboard if mnemonic is now complete and valid
-          if (mnemonicInput.isComplete && mnemonicInput.isValid) {
-            FocusScope.of(context).unfocus();
-          }
-        },
-        textAlign: TextAlign.center,
-        style: scaledTextStyle(
-          fontSize: 16,
-          color: isWordValid ? context.colorScheme.onSecondaryContainer : Colors.red[600],
-          height: 0.8,
-        ),
+          if (suggestion != null)
+            GestureDetector(
+              onTap: () {
+                cellCtl.text = suggestion;
+                if (index < 11) FocusScope.of(context).nextFocus();
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  suggestion,
+                  style: scaledTextStyle(fontSize: 11, color: context.colorScheme.primary, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

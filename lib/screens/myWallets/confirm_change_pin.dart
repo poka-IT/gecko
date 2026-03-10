@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -114,6 +115,19 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
 
           // Mettre à jour le PIN dans le provider
           PinCodeService.pinCode = pin;
+
+          // Ré-enrôler la biométrie avec le nouveau PIN si elle était activée
+          final biometricState = ref.read(biometricProvider);
+          if (biometricState.isEnrolledForCurrentSafe) {
+            try {
+              final walletService = ref.read(walletServiceProvider);
+              await walletService.disableBiometric();
+              await walletService.enableBiometric(pin: pin);
+              log.i('Biometric re-enrolled with new PIN');
+            } catch (e) {
+              log.e('Failed to re-enroll biometric after PIN change: $e');
+            }
+          }
 
           // Recharger les wallets avec le nouveau PIN
           final currentSafe = ref.read(currentSafeNumberProvider);

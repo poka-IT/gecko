@@ -384,7 +384,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       final ratio = ref.watch(balanceRatioProvider);
       final BigInt payAmountValue = BigInt.from((double.parse(payAmount) * ratio.toDouble()).round());
       final existentialDeposit = ref.read(storageServiceProvider).currencyConstants.existentialDeposit;
-      final BigInt transferableBalance = defaultWalletBalance! - existentialDeposit;
+      final BigInt transferableBalance = defaultWalletBalance!;
 
       // Check each condition and return appropriate error
       if (payAmountValue <= BigInt.zero) {

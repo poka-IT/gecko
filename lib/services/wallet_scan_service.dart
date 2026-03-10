@@ -125,7 +125,7 @@ class WalletScanService {
     // 4. SCAN BALANCES
     onStatusChanged(WalletScanStatus.scanningBalances);
     final balanceMap = await _scanBalances(addressToDerivation.keys.toList());
-    final validWallets = balanceMap.entries.where((entry) => entry.value.free > BigInt.zero).toList();
+    final validWallets = balanceMap.entries.where((entry) => entry.value.total > BigInt.zero).toList();
 
     if (validWallets.isNotEmpty) {
       hasWallets = true;
@@ -158,7 +158,7 @@ class WalletScanService {
           .getBalance(address)
           .timeout(const Duration(seconds: 1), onTimeout: () => WalletBalance.empty());
 
-      if (balance.free > BigInt.zero) {
+      if (balance.total > BigInt.zero) {
         // Import root wallet
         final walletName = WalletNameService.defaultMain();
         final actualSafeNumber = _ref.read(walletServiceProvider).defaultSafeBoxNumber;
@@ -226,7 +226,7 @@ class WalletScanService {
           .timeout(const Duration(seconds: 20));
 
       // Remove addresses with zero balance
-      balanceList.removeWhere((key, value) => value.free == BigInt.zero);
+      balanceList.removeWhere((key, value) => value.total == BigInt.zero);
       return balanceList;
     } catch (e) {
       log.e('Error scanning balances: $e');

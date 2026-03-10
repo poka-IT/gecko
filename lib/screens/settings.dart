@@ -2224,7 +2224,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   final List<ButtonSegment<String>> segments = [
                     ButtonSegment(value: 'g1', label: Text('g1'), icon: const Icon(Icons.account_balance_rounded)),
                     ButtonSegment(value: 'gtest', label: Text('gtest'), icon: const Icon(Icons.bug_report_rounded)),
-                    ButtonSegment(value: 'gdev', label: Text('gdev'), icon: const Icon(Icons.bug_report_rounded)),
                   ];
 
                   // Add local network in debug mode or if already selected

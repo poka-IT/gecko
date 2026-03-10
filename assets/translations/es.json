@@ -714,6 +714,7 @@
     "revokeMyIdentity": "Revocar mi identidad",
     "revoked": "Revocada",
     "revokedAccountCannotBeCertified": "Una cuenta revocada no puede ser certificada",
+    "migratedAccountCannotBeCertified": "Esta cuenta ha sido migrada y ya no puede ser certificada",
     "rootWallet": "Monedero raíz",
     "creatingSafe": "Creando tu bóveda...",
     "creatingSafePleaseWait": "Esto puede tardar un momento, por favor espera.",

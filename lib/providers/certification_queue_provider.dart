@@ -670,6 +670,15 @@ final certButtonStateProvider = FutureProvider.family<CertButtonState, ({String 
     return const CertButtonState(action: CertButtonAction.none);
   }
 
+  // Check if target address has been migrated (identity moved away via changeOwnerKey)
+  // If so, block certification to avoid confusion with the old address
+  final migrationFrom = await ref.watch(
+    migrationDataProvider((direction: MigrationDirection.from, address: targetAddress)).future,
+  );
+  if (migrationFrom != null) {
+    return const CertButtonState(action: CertButtonAction.disabled, disabledReason: 'migratedAccountCannotBeCertified');
+  }
+
   // Watch the recent certifications provider to trigger rebuilds when state changes
   ref.watch(recentCertificationsProvider);
   final recentCertsNotifier = ref.read(recentCertificationsProvider.notifier);

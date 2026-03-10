@@ -272,6 +272,8 @@ class CesiumProfileViewScreen extends ConsumerWidget {
         return 'GitHub';
       case 'linkedin':
         return 'LinkedIn';
+      case 'telegram':
+        return 'Telegram';
       default:
         return type.isNotEmpty ? type[0].toUpperCase() + type.substring(1) : 'Link';
     }
@@ -291,6 +293,8 @@ class CesiumProfileViewScreen extends ConsumerWidget {
         return Icons.code;
       case 'linkedin':
         return Icons.business;
+      case 'telegram':
+        return Icons.send;
       default:
         return Icons.link;
     }

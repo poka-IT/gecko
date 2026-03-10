@@ -137,9 +137,59 @@ Uses `easy_localization` with translations in `assets/translations/`. Supported:
 
 When searching for bugs across forums and issue trackers, always launch all searches **in parallel using multiple agents or tool calls**:
 - Forum Duniter (MCP `discourse`): filter by `tag:bugv2`, search `gecko after:DATE`, read recent posts of topic #9372
+  - **IMPORTANT**: Always paginate to read ALL posts of a topic. `discourse_read_topic` returns max 50 posts per call. Use `start_post_number` to fetch subsequent pages until `has_more` is false. Missing the latest posts means missing critical information.
+  - **Viewing forum images**: Discourse MCP tools don't resolve `upload://` image URLs. To view screenshots/images from forum posts:
+    1. Get the `post_id` from the MCP `discourse_read_topic` response
+    2. `WebFetch` on `https://forum.duniter.org/posts/{post_id}.json` → extract image URLs from the `cooked` HTML field (look for `<img src="..."`)
+    3. Download the image: `curl -sL "{image_url}" -o /tmp/forum_image.png`
+    4. View with `Read` tool: `Read /tmp/forum_image.png` (supports PNG, JPG, etc.)
+  - For Forum Monnaie Libre, use `https://forum.monnaie-libre.fr/posts/{post_id}.json` instead
 - Forum Monnaie Libre (MCP `discourse-ml`): filter `category:gecko`, search `gecko bug after:DATE`
 - GitLab API: `WebFetch` on `https://git.duniter.org/api/v4/projects/clients%2Fgecko/issues?state=opened&order_by=created_at&sort=desc`
 - See `memory/forum_search_guide.md` for full details
+
+## GitLab Issue Management
+
+The `GITLAB_TOKEN` env variable provides access to `git.duniter.org` API. Project ID: **474** (path: `clients/gecko`).
+
+**IMPORTANT**: Use `Authorization: Bearer` header (NOT `PRIVATE-TOKEN`) for ALL write operations (POST, PUT, DELETE). `PRIVATE-TOKEN` works only for read (GET).
+
+### Create an issue
+
+Prefer Python over curl to avoid shell quoting issues with apostrophes/accents:
+
+```python
+import json, urllib.request, os
+token = os.environ['GITLAB_TOKEN']
+data = json.dumps({"title": "...", "description": "...", "labels": "bug"}).encode()
+req = urllib.request.Request('https://git.duniter.org/api/v4/projects/474/issues', data=data, method='POST')
+req.add_header('Authorization', f'Bearer {token}')
+req.add_header('Content-Type', 'application/json')
+with urllib.request.urlopen(req) as resp:
+    result = json.loads(resp.read())
+    print(f'#{result["iid"]} - {result["web_url"]}')
+```
+
+### List open issues
+
+```bash
+curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  "https://git.duniter.org/api/v4/projects/474/issues?state=opened&order_by=created_at&sort=desc"
+```
+
+### Add a comment to an issue
+
+```bash
+curl -s --request POST \
+  --header "Authorization: Bearer $GITLAB_TOKEN" \
+  --header "Content-Type: application/json" \
+  -d '{"body":"comment text"}' \
+  "https://git.duniter.org/api/v4/projects/474/issues/ISSUE_IID/notes"
+```
+
+**IMPORTANT**: When creating an issue from a forum report that contains screenshots/images, always include those images in the GitLab issue description. Use the Discourse image resolution method (see "Viewing forum images" in Bug Research Strategy) to get the actual image URLs, then embed them in the issue description with `![description](image_url)`.
+
+Available labels: `bug`, `p1`, `p2`, `p3`, `need-infos`, `GoodFirstIssue`, `Refactoring`, `WIP`, `blocked`, `duplicated`
 
 ## Platform Notes
 

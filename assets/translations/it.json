@@ -715,6 +715,7 @@
     "revokeMyIdentity": "Revocare la mia identità",
     "revoked": "Revocata",
     "revokedAccountCannotBeCertified": "Un conto revocato non può essere certificato",
+    "migratedAccountCannotBeCertified": "Questo conto è stato migrato e non può più essere certificato",
     "rootWallet": "Portafoglio radice",
     "creatingSafe": "Creazione della cassaforte...",
     "creatingSafePleaseWait": "Potrebbe richiedere un momento, attendere prego.",

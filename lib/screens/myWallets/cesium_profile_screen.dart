@@ -700,6 +700,8 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
         return Icons.code;
       case 'linkedin':
         return Icons.business;
+      case 'telegram':
+        return Icons.send;
       default:
         return Icons.link;
     }
@@ -725,6 +727,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                 'mastodon',
                 'github',
                 'linkedin',
+                'telegram',
                 'other',
               ].map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
               onChanged: (value) {

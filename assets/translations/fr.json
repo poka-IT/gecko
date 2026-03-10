@@ -403,6 +403,7 @@
     "timeoutScanDerivations": "Délai d'attente dépassé lors du scan des dérivations. Veuillez réessayer plus tard.",
     "errorScanDerivations": "Une erreur s'est produite lors du scan des dérivations. Veuillez réessayer.",
     "revokedAccountCannotBeCertified": "Un compte révoqué ne peut pas être certifié",
+    "migratedAccountCannotBeCertified": "Ce compte a été migré et ne peut plus être certifié",
     "info": "Information",
     "warning": "Attention",
     "success": "Succès",

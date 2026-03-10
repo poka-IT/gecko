@@ -389,6 +389,7 @@
     "timeoutScanDerivations": "Tempolimo atingita dum la skanado de la derivaĵoj. Bonvolu reprovi poste.",
     "errorScanDerivations": "Eraro okazis dum la skanado de la derivaĵoj. Bonvolu reprovi.",
     "revokedAccountCannotBeCertified": "Nuligita konto ne povas esti atestita",
+    "migratedAccountCannotBeCertified": "Ĉi tiu konto estis migrita kaj ne plu povas esti atestita",
     "info": "Informo",
     "warning": "Atenton",
     "success": "Sukceso",

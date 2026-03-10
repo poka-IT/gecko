@@ -82,6 +82,7 @@ class CertStateWidget extends ConsumerWidget {
       'canRenewCertInX' => 'canRenewCertInX'.tr(args: [formatDuration(state.duration ?? Duration.zero)]),
       'mustWaitXBeforeCertify' => 'mustWaitXBeforeCertify'.tr(args: [formatDuration(state.duration ?? Duration.zero)]),
       'justCertified' => 'justCertified'.tr(),
+      'migratedAccountCannotBeCertified' => 'migratedAccountCannotBeCertified'.tr(),
       _ => _getLabelFromStatus(state),
     };
     return WaitToCertWidget(

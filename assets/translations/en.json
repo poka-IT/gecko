@@ -709,6 +709,7 @@
     "revokeMyIdentity": "Revoke my identity",
     "revoked": "Revoked",
     "revokedAccountCannotBeCertified": "A revoked account cannot be certified",
+    "migratedAccountCannotBeCertified": "This account has been migrated and can no longer be certified",
     "rootWallet": "Root Wallet",
     "creatingSafe": "Creating your safe...",
     "creatingSafePleaseWait": "This may take a moment, please wait.",

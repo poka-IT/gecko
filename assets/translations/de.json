@@ -695,6 +695,7 @@
     "revokeMyIdentity": "",
     "revoked": "",
     "revokedAccountCannotBeCertified": "",
+    "migratedAccountCannotBeCertified": "",
     "rootWallet": "",
     "creatingSafe": "Tresor wird erstellt...",
     "creatingSafePleaseWait": "Dies kann einen Moment dauern, bitte warten.",

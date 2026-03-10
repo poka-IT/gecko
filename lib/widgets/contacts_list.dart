@@ -49,7 +49,7 @@ class ContactsList extends ConsumerWidget {
                   await toggleContact(contact, context);
                 },
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
             ],
           ),
         );

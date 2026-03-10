@@ -37,7 +37,7 @@ class GeckoPinField extends StatelessWidget {
 
     return Center(
       child: MaterialPinField(
-        textCapitalization: TextCapitalization.characters,
+        textCapitalization: TextCapitalization.none,
         pinController: pinController,
         autoFocus: autoFocus,
         enabled: enabled,

@@ -24,7 +24,7 @@ class NetworkActivityScreen extends ConsumerStatefulWidget {
 
 class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> with TickerProviderStateMixin {
   late TabController _tabController;
-  late ScrollController _scrollController;
+  late List<ScrollController> _scrollControllers;
   late AnimationController _newActivityController;
   late Animation<double> _fadeInAnimation;
   bool _showNewActivityIndicator = false;
@@ -33,7 +33,8 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
   double _lastScrollOffset = 0.0;
   double _filterTranslationY = 0.0;
 
-  bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
+  ScrollController get _activeScrollController => _scrollControllers[_tabController.index];
+  bool get _isAtTop => _activeScrollController.hasClients && _activeScrollController.position.pixels <= 50;
 
   @override
   void initState() {
@@ -42,8 +43,10 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
     // Initialize tab controller with 3 tabs
     _tabController = TabController(length: 3, vsync: this);
 
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
+    _scrollControllers = List.generate(3, (_) => ScrollController());
+    for (final sc in _scrollControllers) {
+      sc.addListener(_onScroll);
+    }
 
     // Animation for new activity indicator
     _newActivityController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
@@ -75,8 +78,10 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
   void dispose() {
     _isDisposed = true;
     _hideIndicatorTimer?.cancel();
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
+    for (final sc in _scrollControllers) {
+      sc.removeListener(_onScroll);
+      sc.dispose();
+    }
     _tabController.dispose();
 
     // Stop any ongoing animation before disposing
@@ -92,7 +97,8 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
     final currentTabIndex = _tabController.index;
 
     // Load more content based on current tab
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.7) {
+    if (_activeScrollController.hasClients &&
+        _activeScrollController.position.pixels >= _activeScrollController.position.maxScrollExtent * 0.7) {
       switch (currentTabIndex) {
         case 0: // Transactions
           loadMoreNetworkTransactions(ref);
@@ -111,7 +117,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
   }
 
   void _handleFilterVisibility(int tabIndex) {
-    if (!_scrollController.hasClients) return;
+    if (!_activeScrollController.hasClients) return;
 
     // Get appropriate filter provider based on tab
     bool hasAdvancedFilters = false;
@@ -133,7 +139,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
     }
 
     if (!hasAdvancedFilters && !isFilterPanelExpanded) {
-      final currentOffset = _scrollController.position.pixels;
+      final currentOffset = _activeScrollController.position.pixels;
       final scrollDelta = currentOffset - _lastScrollOffset;
 
       // Always show filter when at the top
@@ -223,7 +229,7 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
 
   void _onIndicatorTapped() {
     // Scroll to top of the list
-    _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+    _activeScrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
 
     // Hide the indicator immediately
     _hideNewActivityIndicator();
@@ -272,69 +278,74 @@ class _NetworkActivityScreenState extends ConsumerState<NetworkActivityScreen> w
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          TabBarView(
-            controller: _tabController,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Stack(
             children: [
-              TransactionActivityTab(
-                scrollController: _scrollController,
-                filterTranslationY: _filterTranslationY,
-                onNewActivityDetected: () => _onNewNetworkActivityReceived('transactions'),
+              TabBarView(
+                controller: _tabController,
+                children: [
+                  TransactionActivityTab(
+                    scrollController: _scrollControllers[0],
+                    filterTranslationY: _filterTranslationY,
+                    onNewActivityDetected: () => _onNewNetworkActivityReceived('transactions'),
+                  ),
+                  IdentityActivityTab(
+                    scrollController: _scrollControllers[1],
+                    filterTranslationY: _filterTranslationY,
+                    onNewActivityDetected: () => _onNewNetworkActivityReceived('identities'),
+                  ),
+                  CertificationActivityTab(
+                    scrollController: _scrollControllers[2],
+                    filterTranslationY: _filterTranslationY,
+                    onNewActivityDetected: () => _onNewNetworkActivityReceived('certifications'),
+                  ),
+                ],
               ),
-              IdentityActivityTab(
-                scrollController: _scrollController,
-                filterTranslationY: _filterTranslationY,
-                onNewActivityDetected: () => _onNewNetworkActivityReceived('identities'),
-              ),
-              CertificationActivityTab(
-                scrollController: _scrollController,
-                filterTranslationY: _filterTranslationY,
-                onNewActivityDetected: () => _onNewNetworkActivityReceived('certifications'),
-              ),
-            ],
-          ),
-          // New activity indicator (positioned absolutely)
-          if (_showNewActivityIndicator)
-            Positioned(
-              top: 16, // Position at top with margin
-              left: 16,
-              right: 16,
-              child: FadeTransition(
-                opacity: _fadeInAnimation,
-                child: GestureDetector(
-                  onTap: _onIndicatorTapped,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+              // New activity indicator (positioned absolutely)
+              if (_showNewActivityIndicator)
+                Positioned(
+                  top: 16, // Position at top with margin
+                  left: 16,
+                  right: 16,
+                  child: FadeTransition(
+                    opacity: _fadeInAnimation,
+                    child: GestureDetector(
+                      onTap: _onIndicatorTapped,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.public, color: Colors.white, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          "newNetworkActivity".tr(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.public, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              "newNetworkActivity".tr(),
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(width: 8),
+                            if (!_isAtTop) Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 20),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        if (!_isAtTop) Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 20),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

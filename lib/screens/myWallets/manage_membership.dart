@@ -14,6 +14,7 @@ import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/models/membership_renewal.dart';
 
 class ManageMembership extends ConsumerWidget {
@@ -26,17 +27,21 @@ class ManageMembership extends ConsumerWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('manageMembership'.tr()),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ScaledSizedBox(height: 20),
-                _buildRenewMembershipSection(context, ref),
-                Column(children: [migrateIdentity(context), revokeMyIdentity(context, ref)]),
-                ScaledSizedBox(height: 20),
-              ],
+        child: ResponsiveCenter(
+          maxWidth: 600,
+          padding: EdgeInsets.zero,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ScaledSizedBox(height: 20),
+                  _buildRenewMembershipSection(context, ref),
+                  Column(children: [migrateIdentity(context), revokeMyIdentity(context, ref)]),
+                  ScaledSizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:gecko/screens/myWallets/g1v1_migration/steps/step_intro.dart';
 import 'package:gecko/screens/myWallets/g1v1_migration/steps/step_credentials.dart';
 import 'package:gecko/screens/myWallets/g1v1_migration/steps/step_destination.dart';
 import 'package:gecko/screens/myWallets/g1v1_migration/steps/step_confirmation.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class G1v1MigrationFlow extends ConsumerStatefulWidget {
@@ -53,21 +54,25 @@ class _G1v1MigrationFlowState extends ConsumerState<G1v1MigrationFlow> {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('importOldAccount'.tr()),
         body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (index) {
-                    ref.read(g1v1MigrationFlowProvider.notifier).goToStep(index);
-                  },
-                  children: const [StepIntro(), StepCredentials(), StepDestination(), StepConfirmation()],
+          child: ResponsiveCenter(
+            maxWidth: 600,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (index) {
+                      ref.read(g1v1MigrationFlowProvider.notifier).goToStep(index);
+                    },
+                    children: const [StepIntro(), StepCredentials(), StepDestination(), StepConfirmation()],
+                  ),
                 ),
-              ),
-              // Bottom dots indicator
-              _buildDotsIndicator(context, flowState.currentStep),
-            ],
+                // Bottom dots indicator
+                _buildDotsIndicator(context, flowState.currentStep),
+              ],
+            ),
           ),
         ),
       ),

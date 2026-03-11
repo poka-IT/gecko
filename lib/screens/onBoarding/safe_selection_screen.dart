@@ -7,6 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/wallet_name_service.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class SafeSelectionScreen extends ConsumerStatefulWidget {
@@ -59,29 +60,47 @@ class _SafeSelectionScreenState extends ConsumerState<SafeSelectionScreen> {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('selectTargetSafe'.tr()),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // Main content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(scaleSize(20)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header
-                        Text(
-                          'selectTargetSafeDescription'.tr(),
-                          style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurfaceVariant),
-                          textAlign: TextAlign.left,
-                        ),
-                        ScaledSizedBox(height: 24),
-
-                        // Existing safes
-                        if (availableSafes.isNotEmpty) ...[
+      body: ResponsiveCenter(
+        maxWidth: 500,
+        padding: EdgeInsets.zero,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  // Main content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(scaleSize(20)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header
                           Text(
-                            'existingSafes'.tr(),
+                            'selectTargetSafeDescription'.tr(),
+                            style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurfaceVariant),
+                            textAlign: TextAlign.left,
+                          ),
+                          ScaledSizedBox(height: 24),
+
+                          // Existing safes
+                          if (availableSafes.isNotEmpty) ...[
+                            Text(
+                              'existingSafes'.tr(),
+                              style: scaledTextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: context.colorScheme.onSurface,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                            ScaledSizedBox(height: 16),
+                            ...availableSafes.map((safe) => _buildSafeTile(safe)),
+                            ScaledSizedBox(height: 24),
+                          ],
+
+                          // Import new safe option
+                          Text(
+                            'importNewSafe'.tr(),
                             style: scaledTextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -90,59 +109,45 @@ class _SafeSelectionScreenState extends ConsumerState<SafeSelectionScreen> {
                             textAlign: TextAlign.left,
                           ),
                           ScaledSizedBox(height: 16),
-                          ...availableSafes.map((safe) => _buildSafeTile(safe)),
-                          ScaledSizedBox(height: 24),
+                          _buildImportNewSafeTile(),
+
+                          // Add bottom padding to ensure content doesn't hide behind button
+                          ScaledSizedBox(height: 80),
                         ],
+                      ),
+                    ),
+                  ),
 
-                        // Import new safe option
-                        Text(
-                          'importNewSafe'.tr(),
-                          style: scaledTextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: context.colorScheme.onSurface,
+                  // Fixed bottom button
+                  if (selectedSafe != null || importNewSafe)
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(scaleSize(20)),
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surface,
+                        border: Border(
+                          top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
+                        ),
+                      ),
+                      child: SafeArea(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: scaleSize(16)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          textAlign: TextAlign.left,
-                        ),
-                        ScaledSizedBox(height: 16),
-                        _buildImportNewSafeTile(),
-
-                        // Add bottom padding to ensure content doesn't hide behind button
-                        ScaledSizedBox(height: 80),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Fixed bottom button
-                if (selectedSafe != null || importNewSafe)
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(scaleSize(20)),
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surface,
-                      border: Border(
-                        top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
-                      ),
-                    ),
-                    child: SafeArea(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: scaleSize(16)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: _proceedWithSelection,
-                        child: Text(
-                          'continue'.tr(),
-                          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                          onPressed: _proceedWithSelection,
+                          child: Text(
+                            'continue'.tr(),
+                            style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 

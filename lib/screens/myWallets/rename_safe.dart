@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class RenameSafeScreen extends ConsumerStatefulWidget {
@@ -70,7 +71,8 @@ class _RenameSafeScreenState extends ConsumerState<RenameSafeScreen> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('renameSafe'.tr()),
       body: SafeArea(
-        child: Padding(
+        child: ResponsiveCenter(
+          maxWidth: 500,
           padding: EdgeInsets.all(scaleSize(16)),
           child: Form(
             key: _formKey,

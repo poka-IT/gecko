@@ -30,8 +30,15 @@ class SearchResult extends ConsumerWidget {
           return SearchIdentityQuery(name: searchText);
         } else {
           return Expanded(
-            child: ListView(
-              children: <Widget>[for (G1WalletsList g1Wallet in results) resultTileAddressSearch(g1Wallet, context)],
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: ListView(
+                  children: <Widget>[
+                    for (G1WalletsList g1Wallet in results) resultTileAddressSearch(g1Wallet, context),
+                  ],
+                ),
+              ),
             ),
           );
         }

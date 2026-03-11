@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepEight extends StatelessWidget {
@@ -18,15 +19,22 @@ class OnboardingStepEight extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: InfoIntro(
-          text: 'thisPasswordProtectsYourWalletsInASecureSafe'.tr(),
-          assetName: 'coffre-fort-protege-les-portefeuilles.png',
-          buttonText: '>',
-          nextScreen: RouteNames.onboardingStepNine,
-          routeArguments: OnboardingStepsSevenToNineArguments(scanDerivation: scanDerivation, fromRestore: fromRestore),
-          pagePosition: 7,
-          isMd: true,
-          boxHeight: 320,
+        child: ResponsiveCenter(
+          maxWidth: 500,
+          padding: EdgeInsets.zero,
+          child: InfoIntro(
+            text: 'thisPasswordProtectsYourWalletsInASecureSafe'.tr(),
+            assetName: 'coffre-fort-protege-les-portefeuilles.png',
+            buttonText: '>',
+            nextScreen: RouteNames.onboardingStepNine,
+            routeArguments: OnboardingStepsSevenToNineArguments(
+              scanDerivation: scanDerivation,
+              fromRestore: fromRestore,
+            ),
+            pagePosition: 7,
+            isMd: true,
+            boxHeight: 320,
+          ),
         ),
       ),
     );

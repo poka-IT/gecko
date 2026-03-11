@@ -22,25 +22,30 @@ class SearchResultScreen extends ConsumerWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('researchResults'.tr()),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 15, right: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              ScaledSizedBox(height: 20),
-              Center(
-                child: Column(
-                  children: <Widget>[
-                    Text("resultsFor".tr(), style: scaledTextStyle(color: Colors.grey[600], fontSize: 15)),
-                    Text('"$searchText"', style: scaledTextStyle(fontStyle: FontStyle.italic, fontSize: 16)),
-                  ],
-                ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 15, right: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ScaledSizedBox(height: 20),
+                  Center(
+                    child: Column(
+                      children: <Widget>[
+                        Text("resultsFor".tr(), style: scaledTextStyle(color: Colors.grey[600], fontSize: 15)),
+                        Text('"$searchText"', style: scaledTextStyle(fontStyle: FontStyle.italic, fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                  ScaledSizedBox(height: 22),
+                  Text('inBlockchainResult'.tr(args: [Durt.i.network.symbol]), style: scaledTextStyle(fontSize: 15)),
+                  ScaledSizedBox(height: 13),
+                  SearchResult(avatarSize: avatarSize),
+                ],
               ),
-              ScaledSizedBox(height: 22),
-              Text('inBlockchainResult'.tr(args: [Durt.i.network.symbol]), style: scaledTextStyle(fontSize: 15)),
-              ScaledSizedBox(height: 13),
-              SearchResult(avatarSize: avatarSize),
-            ],
+            ),
           ),
         ),
       ),

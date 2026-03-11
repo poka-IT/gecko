@@ -52,7 +52,13 @@ class WelcomeHomeWidget extends StatelessWidget {
                 children: <Widget>[
                   Positioned(top: statusBarHeight + scaleSize(10), left: scaleSize(15), child: IconHomeSettings()),
                   Align(
-                    child: Image(image: imageCache.getImageProvider('assets/home/header.png'), height: scaleSize(165)),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Image(
+                        image: imageCache.getImageProvider('assets/home/header.png'),
+                        height: scaleSize(165),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -92,29 +98,24 @@ class WelcomeHomeWidget extends StatelessWidget {
                   ),
                   child: Center(
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
+                      constraints: const BoxConstraints(maxWidth: 600),
                       child: Column(
                         children: <Widget>[
                           const Spacer(flex: 2),
                           Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: Stack(
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.only(top: scaleSize(isTall ? 55 : 0)),
-                                      child: Image(
-                                        image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'),
-                                        height: scaleSize(isTall ? 180 : 160),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      left: scaleSize(160),
-                                      top: 10,
-                                      child: BubbleSpeakWithTail(text: "noLizard".tr()),
-                                    ),
-                                  ],
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(top: scaleSize(isTall ? 55 : 0)),
+                                child: Image(
+                                  image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'),
+                                  height: scaleSize(isTall ? 180 : 160),
                                 ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: BubbleSpeakWithTail(text: "noLizard".tr()),
                               ),
                             ],
                           ),
@@ -125,7 +126,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                               child: Column(
                                 children: [
                                   ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: scaleSize(330), minHeight: scaleSize(60)),
+                                    constraints: BoxConstraints(maxWidth: 400, minHeight: scaleSize(60)),
                                     child: SizedBox(
                                       width: double.infinity,
                                       child: ElevatedButton(
@@ -166,7 +167,7 @@ class WelcomeHomeWidget extends StatelessWidget {
                                   ),
                                   ScaledSizedBox(height: scaleSize(17)),
                                   ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: scaleSize(330), minHeight: scaleSize(60)),
+                                    constraints: BoxConstraints(maxWidth: 400, minHeight: scaleSize(60)),
                                     child: SizedBox(
                                       width: double.infinity,
                                       child: OutlinedButton(

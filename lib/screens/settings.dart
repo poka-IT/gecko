@@ -363,411 +363,418 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: GeckoAppBar('parameters'.tr()),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ScaledSizedBox(height: isSmallScreen ? 12 : 20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 20),
 
-                // Section Général
-                Text(
-                  'generalSettings'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: isSmallScreen ? 15 : 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.titleLarge?.color,
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 8 : 12),
-
-                // Carte Unité de devise
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
+                    // Section Général
+                    Text(
+                      'generalSettings'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: isSmallScreen ? 15 : 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).textTheme.titleLarge?.color,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 8 : 12),
+
+                    // Carte Unité de devise
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                            child: chooseCurrencyUnit(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                    // Carte Sélection du thème
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
                         padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                        child: chooseCurrencyUnit(context),
+                        child: chooseThemeMode(context),
                       ),
-                    ],
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
-                // Carte Sélection du thème
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                    child: chooseThemeMode(context),
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                // Language setting
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                    child: chooseLanguage(context),
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                // Text size setting
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                    child: textSizeSelection(context),
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                // Carte Mode expert
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                    child: expertModeToggle(context),
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                // Carte Rapports d'erreurs Sentry
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                    child: sentryToggle(context),
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                // Carte Nettoyage du cache
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: InkWell(
-                    onTap: () async {
-                      final confirm = await showConfirmationDialog(
-                        context: context,
-                        message: 'clearCacheConfirmMessage'.tr(),
-                        type: ConfirmationDialogType.warning,
-                      );
-
-                      if (confirm) {
-                        try {
-                          // Clear cache
-                          final settingsService = ref.read(settingsServiceProvider);
-                          await settingsService.clearAllCaches();
-
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('clearCacheExplanation'.tr()),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          log.e('Error clearing caches: $e');
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error clearing caches: $e'), backgroundColor: Colors.red),
-                            );
-                          }
-                        }
-                      }
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.cleaning_services_rounded,
-                            color: context.colorScheme.primary,
-                            size: scaleSize(isSmallScreen ? 20 : 24),
-                          ),
-                          ScaledSizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'clearCache'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: isSmallScreen ? 14 : 15,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                                  ),
-                                ),
-                                Text(
-                                  'clearCacheDescription'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(context).textTheme.bodySmall?.color,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    // Language setting
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-                ScaledSizedBox(height: isSmallScreen ? 20 : 24),
-
-                // Section Expert (visible seulement en mode expert)
-                if (_expertMode) ...[
-                  // Carte Génération de mnémoniques en anglais
-                  Container(
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                      child: generateMnemonicsInEnglishToggle(context),
-                    ),
-                  ),
-                  ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                  Text(
-                    'networkSettings'.tr(),
-                    style: scaledTextStyle(
-                      fontSize: isSmallScreen ? 15 : 16,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.titleLarge?.color,
-                    ),
-                  ),
-                  ScaledSizedBox(height: isSmallScreen ? 8 : 12),
-
-                  // Carte Sélection du réseau
-                  Container(
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                          child: networkSelection(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                  // Carte Nœud Duniter
-                  Container(
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                          child: duniterEndpointSelection(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ScaledSizedBox(height: isSmallScreen ? 12 : 16),
-
-                  // Carte Indexer
-                  Container(
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                          child: indexerEndpointSelection(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ScaledSizedBox(height: isSmallScreen ? 20 : 24),
-                ],
-
-                // Section Danger
-                ScaledSizedBox(height: isSmallScreen ? 8 : 12),
-
-                // Carte Suppression des coffres
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceContainer,
-                    border: Border.all(color: const Color(0xffD80000).withValues(alpha: 0.1)),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
+                      child: Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                        child: chooseLanguage(context),
                       ),
-                    ],
-                  ),
-                  child: Builder(
-                    builder: (context) {
-                      final hasSafes = ref.watch(walletServiceProvider).safeBox.getAll().isNotEmpty;
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          InkWell(
-                            key: keyDeleteAllWallets,
-                            onTap: hasSafes
-                                ? () async {
-                                    log.w('Oublier tous mes coffres');
-                                    final answer = await showConfirmationDialog(
-                                      context: context,
-                                      message: 'areYouSureForgetAllSafes'.tr(),
-                                      type: ConfirmationDialogType.warning,
-                                    );
-                                    if (answer) {
-                                      final success = await ref.read(walletActionsProvider.notifier).deleteAllWallets();
-                                      if (success && mounted) {
-                                        await Navigator.of(
-                                          context,
-                                        ).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
-                                      }
-                                    }
-                                  }
-                                : null,
-                            child: Padding(
-                              padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete_forever_rounded,
-                                    color: hasSafes ? const Color(0xffD80000) : Colors.grey[400],
-                                    size: scaleSize(isSmallScreen ? 20 : 24),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                    // Text size setting
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                        child: textSizeSelection(context),
+                      ),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                    // Carte Mode expert
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                        child: expertModeToggle(context),
+                      ),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                    // Carte Rapports d'erreurs Sentry
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                        child: sentryToggle(context),
+                      ),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                    // Carte Nettoyage du cache
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: InkWell(
+                        onTap: () async {
+                          final confirm = await showConfirmationDialog(
+                            context: context,
+                            message: 'clearCacheConfirmMessage'.tr(),
+                            type: ConfirmationDialogType.warning,
+                          );
+
+                          if (confirm) {
+                            try {
+                              // Clear cache
+                              final settingsService = ref.read(settingsServiceProvider);
+                              await settingsService.clearAllCaches();
+
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('clearCacheExplanation'.tr()),
+                                    duration: const Duration(seconds: 2),
                                   ),
-                                  ScaledSizedBox(width: 12),
-                                  Text(
-                                    'forgetAllMySafes'.tr(),
-                                    style: scaledTextStyle(
-                                      fontSize: isSmallScreen ? 14 : 15,
-                                      color: hasSafes ? const Color(0xffD80000) : Colors.grey[400],
-                                      fontWeight: FontWeight.w600,
+                                );
+                              }
+                            } catch (e) {
+                              log.e('Error clearing caches: $e');
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error clearing caches: $e'), backgroundColor: Colors.red),
+                                );
+                              }
+                            }
+                          }
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.cleaning_services_rounded,
+                                color: context.colorScheme.primary,
+                                size: scaleSize(isSmallScreen ? 20 : 24),
+                              ),
+                              ScaledSizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'clearCache'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: isSmallScreen ? 14 : 15,
+                                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    Text(
+                                      'clearCacheDescription'.tr(),
+                                      style: scaledTextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(context).textTheme.bodySmall?.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 20 : 24),
+
+                    // Section Expert (visible seulement en mode expert)
+                    if (_expertMode) ...[
+                      // Carte Génération de mnémoniques en anglais
+                      Container(
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
                             ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                          child: generateMnemonicsInEnglishToggle(context),
+                        ),
+                      ),
+                      ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                      Text(
+                        'networkSettings'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: isSmallScreen ? 15 : 16,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).textTheme.titleLarge?.color,
+                        ),
+                      ),
+                      ScaledSizedBox(height: isSmallScreen ? 8 : 12),
+
+                      // Carte Sélection du réseau
+                      Container(
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                              child: networkSelection(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                      // Carte Nœud Duniter
+                      Container(
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                              child: duniterEndpointSelection(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                      // Carte Indexer
+                      Container(
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                              child: indexerEndpointSelection(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ScaledSizedBox(height: isSmallScreen ? 20 : 24),
+                    ],
+
+                    // Section Danger
+                    ScaledSizedBox(height: isSmallScreen ? 8 : 12),
+
+                    // Carte Suppression des coffres
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        border: Border.all(color: const Color(0xffD80000).withValues(alpha: 0.1)),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
                           ),
                         ],
-                      );
-                    },
-                  ),
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          final hasSafes = ref.watch(walletServiceProvider).safeBox.getAll().isNotEmpty;
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                key: keyDeleteAllWallets,
+                                onTap: hasSafes
+                                    ? () async {
+                                        log.w('Oublier tous mes coffres');
+                                        final answer = await showConfirmationDialog(
+                                          context: context,
+                                          message: 'areYouSureForgetAllSafes'.tr(),
+                                          type: ConfirmationDialogType.warning,
+                                        );
+                                        if (answer) {
+                                          final success = await ref
+                                              .read(walletActionsProvider.notifier)
+                                              .deleteAllWallets();
+                                          if (success && mounted) {
+                                            await Navigator.of(
+                                              context,
+                                            ).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
+                                          }
+                                        }
+                                      }
+                                    : null,
+                                child: Padding(
+                                  padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_forever_rounded,
+                                        color: hasSafes ? const Color(0xffD80000) : Colors.grey[400],
+                                        size: scaleSize(isSmallScreen ? 20 : 24),
+                                      ),
+                                      ScaledSizedBox(width: 12),
+                                      Text(
+                                        'forgetAllMySafes'.tr(),
+                                        style: scaledTextStyle(
+                                          fontSize: isSmallScreen ? 14 : 15,
+                                          color: hasSafes ? const Color(0xffD80000) : Colors.grey[400],
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    ScaledSizedBox(height: isSmallScreen ? 20 : 24),
+                  ],
                 ),
-                ScaledSizedBox(height: isSmallScreen ? 20 : 24),
-              ],
+              ),
             ),
           ),
         ),

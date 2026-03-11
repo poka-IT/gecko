@@ -15,6 +15,7 @@ import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/mnemonic_display.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepFive extends ConsumerStatefulWidget {
@@ -107,8 +108,8 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
   void _checkScrollable() {
     if (!_scrollController.hasClients) return;
 
-    // Only show indicator if there's meaningful scroll content (more than 10 pixels)
-    final bool isScrollable = _scrollController.position.maxScrollExtent > 10;
+    // Only show indicator if there's meaningful scroll content (more than 50 pixels)
+    final bool isScrollable = _scrollController.position.maxScrollExtent > 50;
     if (_showScrollIndicator != isScrollable) {
       setState(() {
         _showScrollIndicator = isScrollable;
@@ -188,118 +189,128 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
-      bottomNavigationBar: Container(
-        color: context.colorScheme.surface,
-        padding: EdgeInsets.only(left: 20, right: 20, bottom: MediaQuery.of(context).padding.bottom + 22, top: 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Secondary button
-            ScaledSizedBox(
-              width: 350,
-              height: 55,
-              child: ElevatedButton(
-                key: keyGenerateMnemonic,
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  backgroundColor: const Color(0xffFFD58D),
-                  elevation: 2,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
-                ),
-                onPressed: () {
-                  _regenerateMnemonic();
-                },
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    "chooseAnotherMnemonic".tr(),
-                    textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+      bottomNavigationBar: Align(
+        heightFactor: 1.0,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Container(
+            color: context.colorScheme.surface,
+            padding: EdgeInsets.only(left: 20, right: 20, bottom: MediaQuery.of(context).padding.bottom + 22, top: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Secondary button
+                ScaledSizedBox(
+                  width: 350,
+                  height: 55,
+                  child: ElevatedButton(
+                    key: keyGenerateMnemonic,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.black,
+                      backgroundColor: const Color(0xffFFD58D),
+                      elevation: 2,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shadowColor: const Color(0xffFFD58D).withValues(alpha: 0.3),
+                    ),
+                    onPressed: () {
+                      _regenerateMnemonic();
+                    },
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        "chooseAnotherMnemonic".tr(),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                SizedBox(height: 10),
+                // Main button
+                nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
+              ],
             ),
-            SizedBox(height: 10),
-            // Main button
-            nextButton(context, "iNotedMyMnemonic".tr(), false, widget.skipIntro),
-          ],
+          ),
         ),
       ),
       body: Stack(
         children: [
           SafeArea(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: SizedBox(
-                width: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ScaledSizedBox(height: isTall ? 25 : 5),
-                    const BuildProgressBar(pagePosition: 4),
-                    ScaledSizedBox(height: isTall ? 25 : 5),
-                    BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
-                    ScaledSizedBox(height: isTall ? 15 : 5),
-                    sentenceArray(),
-                    ScaledSizedBox(height: isTall ? 17 : 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ScaledSizedBox(
-                          height: 40,
-                          width: 132,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              backgroundColor: context.colorScheme.primary,
-                              elevation: 1,
-                            ),
-                            onPressed: _isMnemonicGenerated
-                                ? () {
-                                    final mnemonicState = ref.read(mnemonicStateProvider);
-                                    if (mnemonicState.mnemonicResult != null) {
-                                      SnackbarService.copyMnemonicToClipboard(
-                                        context,
-                                        mnemonicState.mnemonicResult!.displayMnemonic,
-                                      );
-                                    }
-                                  }
-                                : null,
-                            child: Row(
-                              children: <Widget>[
-                                Image.asset('assets/walletOptions/copy-white.png', height: scaleSize(23)),
-                                const Spacer(),
-                                Text('copy'.tr(), style: scaledTextStyle(fontSize: 14, color: Colors.grey[50])),
-                                const Spacer(),
-                              ],
-                            ),
-                          ),
-                        ),
-                        ScaledSizedBox(width: 70),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              RouteNames.printWallet,
-                              arguments: PrintWalletArguments(
-                                sentence: ref.read(mnemonicStateProvider).mnemonicResult?.displayMnemonic ?? '',
+            child: ResponsiveCenter(
+              maxWidth: 500,
+              padding: EdgeInsets.zero,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ScaledSizedBox(height: isTall ? 25 : 5),
+                      const BuildProgressBar(pagePosition: 4),
+                      ScaledSizedBox(height: isTall ? 25 : 5),
+                      BuildText(text: 'geckoGeneratedYourMnemonicKeepItSecret'.tr()),
+                      ScaledSizedBox(height: isTall ? 15 : 5),
+                      sentenceArray(),
+                      ScaledSizedBox(height: isTall ? 17 : 5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ScaledSizedBox(
+                            height: 40,
+                            width: 132,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: context.colorScheme.primary,
+                                elevation: 1,
                               ),
-                            );
-                          },
-                          child: Image.asset(
-                            'assets/printer.png',
-                            height: scaleSize(42),
-                            color: context.colorScheme.onSurface,
+                              onPressed: _isMnemonicGenerated
+                                  ? () {
+                                      final mnemonicState = ref.read(mnemonicStateProvider);
+                                      if (mnemonicState.mnemonicResult != null) {
+                                        SnackbarService.copyMnemonicToClipboard(
+                                          context,
+                                          mnemonicState.mnemonicResult!.displayMnemonic,
+                                        );
+                                      }
+                                    }
+                                  : null,
+                              child: Row(
+                                children: <Widget>[
+                                  Image.asset('assets/walletOptions/copy-white.png', height: scaleSize(23)),
+                                  const Spacer(),
+                                  Text('copy'.tr(), style: scaledTextStyle(fontSize: 14, color: Colors.grey[50])),
+                                  const Spacer(),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: isTall ? 20 : 10), // Small bottom spacing
-                  ],
+                          ScaledSizedBox(width: 70),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                RouteNames.printWallet,
+                                arguments: PrintWalletArguments(
+                                  sentence: ref.read(mnemonicStateProvider).mnemonicResult?.displayMnemonic ?? '',
+                                ),
+                              );
+                            },
+                            child: Image.asset(
+                              'assets/printer.png',
+                              height: scaleSize(42),
+                              color: context.colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: isTall ? 20 : 10), // Small bottom spacing
+                    ],
+                  ),
                 ),
               ),
             ),

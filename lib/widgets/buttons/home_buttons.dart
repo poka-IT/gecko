@@ -101,29 +101,120 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
     );
   }
 
+  Widget _buildLabeledButton({
+    required Color baseColor,
+    required double offset,
+    required VoidCallback onTap,
+    required Widget child,
+    required String label,
+  }) {
+    return Column(
+      children: <Widget>[
+        _buildFlowerPowerButton(baseColor: baseColor, offset: offset, onTap: onTap, child: child),
+        ScaledSizedBox(height: 10),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: scaledTextStyle(
+            color: Colors.white,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w500,
+            shadows: [Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Use absolute positioning based on screen height, independent of other content
     final screenSize = MediaQuery.of(context).size;
     final screenHeight = screenSize.height;
     final screenWidth = screenSize.width;
     final aspectRatio = screenHeight / screenWidth;
+    final isWide = screenWidth >= 600;
 
-    // Adjust position based on screen aspect ratio
-    // Tall screens (mobile): higher percentage
-    // Wide screens (desktop/tablet): lower percentage
+    // Build the 3 action buttons
+    final searchButton = _buildLabeledButton(
+      baseColor: context.colorScheme.primary,
+      offset: 0.33,
+      onTap: () => Navigator.pushNamed(context, RouteNames.search),
+      child: Padding(
+        padding: EdgeInsets.all(scaleSize(15)),
+        child: Image(image: _imageCache.getImageProvider('assets/home/loupe.png'), height: scaleSize(58)),
+      ),
+      label: "searchWallet".tr(),
+    );
+
+    final walletsButton = _buildLabeledButton(
+      baseColor: context.colorScheme.primary,
+      offset: 0.66,
+      onTap: () async {
+        final hadToUnlock = PinCodeService.pinCode.isEmpty;
+        if (!await PinCodeService.askPinCode(canSwitch: true)) return;
+        if (hadToUnlock) {
+          await _performSmoothTransition(context);
+        } else {
+          Navigator.pushNamed(context, RouteNames.myWallets);
+        }
+      },
+      child: Padding(
+        key: keyOpenWalletsHomme,
+        padding: EdgeInsets.all(scaleSize(14.5)),
+        child: Image(image: _imageCache.getImageProvider('assets/home/wallet.png'), height: scaleSize(61)),
+      ),
+      label: "manageWallets".tr(),
+    );
+
+    final qrButton = _buildLabeledButton(
+      baseColor: context.colorScheme.primary,
+      offset: 0.0,
+      onTap: () async {
+        final scanQr = ref.read(qrScanProvider);
+        await scanQr(context);
+      },
+      child: Padding(
+        padding: EdgeInsets.all(scaleSize(14)),
+        child: Image(image: _imageCache.getImageProvider('assets/home/qrcode.png'), height: scaleSize(62)),
+      ),
+      label: "scanQRCode".tr(),
+    );
+
+    // Wide screen: 3 buttons in a row inside a glass container, anchored to bottom
+    if (isWide) {
+      return SizedBox.expand(
+        child: Column(
+          children: [
+            const Spacer(),
+            Container(
+              constraints: const BoxConstraints(maxWidth: 640),
+              padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 40),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [searchButton, const SizedBox(width: 64), walletsButton, const SizedBox(width: 64), qrButton],
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.08),
+          ],
+        ),
+      );
+    }
+
+    // Mobile: original 2+1 triangle layout
     double topOffsetPercentage;
     if (aspectRatio > 2.0) {
-      // Very tall screens (modern phones)
       topOffsetPercentage = 0.50;
     } else if (aspectRatio > 1.5) {
-      // Standard mobile screens
       topOffsetPercentage = 0.45;
     } else if (aspectRatio > 1.2) {
-      // Tablet portrait
       topOffsetPercentage = 0.40;
     } else {
-      // Wide screens (desktop, tablet landscape)
       topOffsetPercentage = 0.35;
     }
 
@@ -137,118 +228,23 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
             top: topOffset,
             left: 0,
             right: 0,
-            child: Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 450),
+                child: Column(
                   children: <Widget>[
-                    Column(
-                      children: <Widget>[
-                        _buildFlowerPowerButton(
-                          baseColor: context.colorScheme.primary,
-                          offset: 0.33, // Premier bouton - décalage 1/3
-                          onTap: () {
-                            Navigator.pushNamed(context, RouteNames.search);
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.all(scaleSize(15)),
-                            child: Image(
-                              image: _imageCache.getImageProvider('assets/home/loupe.png'),
-                              height: scaleSize(58),
-                            ),
-                          ),
-                        ),
-                        ScaledSizedBox(height: 10),
-                        Text(
-                          "searchWallet".tr(),
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(
-                            color: Colors.white,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w500,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[searchButton, ScaledSizedBox(width: 95), walletsButton],
                     ),
-                    ScaledSizedBox(width: 95),
-                    Column(
-                      children: <Widget>[
-                        _buildFlowerPowerButton(
-                          baseColor: context.colorScheme.primary,
-                          offset: 0.66, // Deuxième bouton - décalage 2/3
-                          onTap: () async {
-                            final hadToUnlock = PinCodeService.pinCode.isEmpty;
-                            if (!await PinCodeService.askPinCode(canSwitch: true)) return;
-
-                            if (hadToUnlock) {
-                              // Use smooth transition if we came from unlocking screen
-                              await _performSmoothTransition(context);
-                            } else {
-                              // Direct navigation if already unlocked
-                              Navigator.pushNamed(context, RouteNames.myWallets);
-                            }
-                          },
-                          child: Padding(
-                            key: keyOpenWalletsHomme,
-                            padding: EdgeInsets.all(scaleSize(14.5)),
-                            child: Image(
-                              image: _imageCache.getImageProvider('assets/home/wallet.png'),
-                              height: scaleSize(61),
-                            ),
-                          ),
-                        ),
-                        ScaledSizedBox(height: 10),
-                        Text(
-                          "manageWallets".tr(),
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w500),
-                        ),
-                      ],
+                    Padding(
+                      padding: EdgeInsets.only(top: scaleSize(30)),
+                      child: qrButton,
                     ),
+                    ScaledSizedBox(height: isTall ? 40 : 20),
                   ],
                 ),
-                Padding(
-                  padding: EdgeInsets.only(top: scaleSize(30)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Column(
-                        children: <Widget>[
-                          _buildFlowerPowerButton(
-                            baseColor: context.colorScheme.primary,
-                            offset: 0.0, // Troisième bouton - pas de décalage
-                            onTap: () async {
-                              final scanQr = ref.read(qrScanProvider);
-                              await scanQr(context);
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.all(scaleSize(14)),
-                              child: Image(
-                                image: _imageCache.getImageProvider('assets/home/qrcode.png'),
-                                height: scaleSize(62),
-                              ),
-                            ),
-                          ),
-                          ScaledSizedBox(height: 10),
-                          Text(
-                            "scanQRCode".tr(),
-                            textAlign: TextAlign.center,
-                            style: scaledTextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                ScaledSizedBox(height: isTall ? 40 : 20),
-              ],
+              ),
             ),
           ),
         ],

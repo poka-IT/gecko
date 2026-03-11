@@ -91,6 +91,7 @@ class BiometricSettingsTile extends ConsumerWidget {
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
+          constraints: const BoxConstraints(maxWidth: 600),
           builder: (context) => _BiometricSetupBottomSheet(
             pin: PinCodeService.pinCode,
             onSetupComplete: () {

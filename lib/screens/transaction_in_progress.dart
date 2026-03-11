@@ -93,13 +93,18 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            ScaledSizedBox(height: 16),
-            _buildTransactionHeader(context, fromWalletData, toWalletData),
-            Expanded(child: _buildStatusSection(context)),
-            _buildCloseButton(context),
-          ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                ScaledSizedBox(height: 16),
+                _buildTransactionHeader(context, fromWalletData, toWalletData),
+                Expanded(child: _buildStatusSection(context)),
+                _buildCloseButton(context),
+              ],
+            ),
+          ),
         ),
       ),
     );

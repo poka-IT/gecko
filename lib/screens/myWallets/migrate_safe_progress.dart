@@ -15,6 +15,7 @@ import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/transaction_status.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
@@ -278,104 +279,111 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
       child: Scaffold(
         appBar: GeckoAppBar(_migrationCompleted ? 'migrationComplete'.tr() : 'migrationInProgress'.tr()),
         body: SafeArea(
-          child: Column(
-            children: [
-              if (!_migrationCompleted)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      LinearProgressIndicator(value: totalTasks > 0 ? _completedSteps / totalTasks : 0),
-                      const SizedBox(height: 16),
-                      Text('migratedWalletsNofM'.tr(args: [_completedSteps.toString(), totalTasks.toString()])),
-                    ],
+          child: ResponsiveCenter(
+            maxWidth: 600,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                if (!_migrationCompleted)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        LinearProgressIndicator(value: totalTasks > 0 ? _completedSteps / totalTasks : 0),
+                        const SizedBox(height: 16),
+                        Text('migratedWalletsNofM'.tr(args: [_completedSteps.toString(), totalTasks.toString()])),
+                      ],
+                    ),
                   ),
-                ),
-              if (_migrationCompleted)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        _migrationSuccess ? Icons.check_circle_outline : Icons.error_outline,
-                        color: _migrationSuccess ? Colors.green : Colors.red,
-                        size: 50,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _migrationSuccess ? 'migrationSuccess'.tr() : 'migrationFailedTitle'.tr(),
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                    ],
-                  ),
-                ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _tasks.length,
-                  itemBuilder: (context, index) {
-                    return _buildTaskTile(_tasks[index]);
-                  },
-                ),
-              ),
-              if (_migrationCompleted)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      if (!_migrationSuccess)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: Text(
-                            'migrationFailedExplanation'.tr(),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                          ),
+                if (_migrationCompleted)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          _migrationSuccess ? Icons.check_circle_outline : Icons.error_outline,
+                          color: _migrationSuccess ? Colors.green : Colors.red,
+                          size: 50,
                         ),
-                      PrimaryButton(
-                        onPressed: () async {
-                          if (_migrationSuccess) {
-                            if (_existingSafeNumber != null) {
-                              // Safe already exists, clear its wallets and recreate migrated ones
-                              await _recreateWalletsInExistingSafe(_existingSafeNumber!);
-
-                              // Switch to the existing safe
-                              ref
-                                  .read(defaultSafeBoxNumberProvider.notifier)
-                                  .setDefaultSafeBoxNumber(_existingSafeNumber!);
-                              // Invalidate identity providers to ensure they use the new safe
-                              ref.invalidate(idtyWalletAsyncProvider);
-                              ref.invalidate(identityWalletsAsyncProvider);
-
-                              // Navigate to switch safe screen
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => const SwitchSafe()),
-                              );
-                            } else {
-                              // Create new safe
-                              // Set the mnemonic in the provider for the next screen
-                              await ref.read(mnemonicStateProvider.notifier).setMnemonic(widget.newMnemonic);
-
-                              await AppNavigator.pushAndRemoveUntilWithFader(
-                                context,
-                                RouteNames.onboardingStepSeven,
-                                arguments: OnboardingStepsSevenToNineArguments(scanDerivation: true, fromRestore: true),
-                                isFast: true,
-                                (route) => route.settings.name == RouteNames.home,
-                              );
-                            }
-                          } else {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        label: _migrationSuccess
-                            ? (_existingSafeNumber != null ? 'accessThisSafe'.tr() : 'setupNewSafe'.tr())
-                            : 'goBack'.tr(),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          _migrationSuccess ? 'migrationSuccess'.tr() : 'migrationFailedTitle'.tr(),
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _tasks.length,
+                    itemBuilder: (context, index) {
+                      return _buildTaskTile(_tasks[index]);
+                    },
                   ),
                 ),
-            ],
+                if (_migrationCompleted)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        if (!_migrationSuccess)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: Text(
+                              'migrationFailedExplanation'.tr(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            ),
+                          ),
+                        PrimaryButton(
+                          onPressed: () async {
+                            if (_migrationSuccess) {
+                              if (_existingSafeNumber != null) {
+                                // Safe already exists, clear its wallets and recreate migrated ones
+                                await _recreateWalletsInExistingSafe(_existingSafeNumber!);
+
+                                // Switch to the existing safe
+                                ref
+                                    .read(defaultSafeBoxNumberProvider.notifier)
+                                    .setDefaultSafeBoxNumber(_existingSafeNumber!);
+                                // Invalidate identity providers to ensure they use the new safe
+                                ref.invalidate(idtyWalletAsyncProvider);
+                                ref.invalidate(identityWalletsAsyncProvider);
+
+                                // Navigate to switch safe screen
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const SwitchSafe()),
+                                );
+                              } else {
+                                // Create new safe
+                                // Set the mnemonic in the provider for the next screen
+                                await ref.read(mnemonicStateProvider.notifier).setMnemonic(widget.newMnemonic);
+
+                                await AppNavigator.pushAndRemoveUntilWithFader(
+                                  context,
+                                  RouteNames.onboardingStepSeven,
+                                  arguments: OnboardingStepsSevenToNineArguments(
+                                    scanDerivation: true,
+                                    fromRestore: true,
+                                  ),
+                                  isFast: true,
+                                  (route) => route.settings.name == RouteNames.home,
+                                );
+                              }
+                            } else {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          label: _migrationSuccess
+                              ? (_existingSafeNumber != null ? 'accessThisSafe'.tr() : 'setupNewSafe'.tr())
+                              : 'goBack'.tr(),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

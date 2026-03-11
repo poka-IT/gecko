@@ -16,6 +16,7 @@ import 'package:gecko/widgets/certify/certification_transaction_helper.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 
 class CertificationQueueScreen extends ConsumerStatefulWidget {
   const CertificationQueueScreen({super.key, required this.issuerAddress});
@@ -65,10 +66,14 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
             ),
         ],
       ),
-      body: queueAsync.when(
-        data: (queue) => _buildQueueContent(context, queue),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('error'.tr())),
+      body: ResponsiveCenter(
+        maxWidth: 600,
+        padding: EdgeInsets.zero,
+        child: queueAsync.when(
+          data: (queue) => _buildQueueContent(context, queue),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(child: Text('error'.tr())),
+        ),
       ),
     );
   }

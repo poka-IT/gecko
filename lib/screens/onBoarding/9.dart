@@ -14,6 +14,7 @@ import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_progress_bar.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -64,25 +65,29 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('myPassword'.tr()),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Column(
-            children: <Widget>[
-              ScaledSizedBox(height: isTall ? 25 : 5),
-              const BuildProgressBar(pagePosition: 8),
-              ScaledSizedBox(height: isTall ? 25 : 5),
-              BuildText(text: "hereIsThePasswordKeepIt".tr()),
-              if (hasError)
-                Padding(
-                  padding: EdgeInsets.only(top: scaleSize(10)),
-                  child: Text(
-                    'passwordTooSimple'.tr(),
-                    style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
+        child: ResponsiveCenter(
+          maxWidth: 500,
+          padding: EdgeInsets.zero,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Column(
+              children: <Widget>[
+                ScaledSizedBox(height: isTall ? 25 : 5),
+                const BuildProgressBar(pagePosition: 8),
+                ScaledSizedBox(height: isTall ? 25 : 5),
+                BuildText(text: "hereIsThePasswordKeepIt".tr()),
+                if (hasError)
+                  Padding(
+                    padding: EdgeInsets.only(top: scaleSize(10)),
+                    child: Text(
+                      'passwordTooSimple'.tr(),
+                      style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
+                    ),
                   ),
-                ),
-              ScaledSizedBox(height: isTall ? 60 : 10),
-              pinForm(context, 1, 2),
-            ],
+                ScaledSizedBox(height: isTall ? 60 : 10),
+                pinForm(context, 1, 2),
+              ],
+            ),
           ),
         ),
       ),

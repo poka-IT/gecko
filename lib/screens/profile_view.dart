@@ -57,7 +57,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
       hasIdentity: profileData.idtyStatus != IdtyStatus.none,
       isOwner: ref.read(isOwnerProvider(address)),
       walletName: ref.read(squidServiceProvider).walletNameIndexer[address],
-      balance: profileData.balance.transferableBalance,
+      balance: profileData.balance.total,
       certsReceived: profileData.certData.receivedCount,
       certsSent: profileData.certData.sentCount,
     );
@@ -102,63 +102,75 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                // Fixed top section: header + action buttons
+                // Header spans full width (has internal centering)
                 WalletHeader(address: address),
                 ScaledSizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildActionButton(
-                      context: context,
-                      key: keyViewActivity,
-                      icon: 'assets/walletOptions/clock.png',
-                      label: "displayNActivity".tr(),
-                      onTap: () async {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => ActivityScreen(address: address),
-                            transitionDuration: const Duration(milliseconds: 300),
-                            reverseTransitionDuration: const Duration(milliseconds: 300),
-                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              const begin = Offset(1.0, 0.0);
-                              const end = Offset.zero;
-                              const curve = Curves.easeInOut;
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildActionButton(
+                                context: context,
+                                key: keyViewActivity,
+                                icon: 'assets/walletOptions/clock.png',
+                                label: "displayNActivity".tr(),
+                                onTap: () async {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation, secondaryAnimation) =>
+                                          ActivityScreen(address: address),
+                                      transitionDuration: const Duration(milliseconds: 300),
+                                      reverseTransitionDuration: const Duration(milliseconds: 300),
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        const begin = Offset(1.0, 0.0);
+                                        const end = Offset.zero;
+                                        const curve = Curves.easeInOut;
 
-                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-                              return SlideTransition(position: animation.drive(tween), child: child);
-                            },
+                                        return SlideTransition(position: animation.drive(tween), child: child);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  ref.watch(blockHeightProvider);
+                                  return _buildCertificationSection(ref);
+                                },
+                              ),
+                              _buildActionButton(
+                                context: context,
+                                key: keyCopyAddress,
+                                icon: 'assets/copy_key.png',
+                                label: "copyAddress".tr(),
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: address));
+                                  SnackbarService.showAddressCopied(context);
+                                },
+                              ),
+                            ],
                           ),
-                        );
-                      },
+                          const Spacer(),
+                          // Fixed bottom: transfer button
+                          Column(
+                            children: [
+                              _buildTransferButton(ref),
+                              ScaledSizedBox(height: isTall ? 40 : 7),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    Consumer(
-                      builder: (context, ref, _) {
-                        ref.watch(blockHeightProvider);
-                        return _buildCertificationSection(ref);
-                      },
-                    ),
-                    _buildActionButton(
-                      context: context,
-                      key: keyCopyAddress,
-                      icon: 'assets/copy_key.png',
-                      label: "copyAddress".tr(),
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: address));
-                        SnackbarService.showAddressCopied(context);
-                      },
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // Fixed bottom: transfer button
-                Column(
-                  children: [
-                    _buildTransferButton(ref),
-                    ScaledSizedBox(height: isTall ? 40 : 7),
-                  ],
+                  ),
                 ),
               ],
             ),

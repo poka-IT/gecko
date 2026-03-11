@@ -25,6 +25,7 @@ class ContactsList extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      constraints: const BoxConstraints(maxWidth: 600),
       builder: (BuildContext context) {
         return Container(
           decoration: BoxDecoration(
@@ -75,120 +76,125 @@ class ContactsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          ScaledSizedBox(height: 10, width: double.infinity),
-          if (myContacts.isEmpty)
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.people_outline, size: scaleSize(48), color: Colors.grey[400]),
-                      ScaledSizedBox(height: 16),
-                      Text(
-                        'noContacts'.tr(),
-                        style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        textAlign: TextAlign.center,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              ScaledSizedBox(height: 10, width: double.infinity),
+              if (myContacts.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.people_outline, size: scaleSize(48), color: Colors.grey[400]),
+                          ScaledSizedBox(height: 16),
+                          Text(
+                            'noContacts'.tr(),
+                            style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            textAlign: TextAlign.center,
+                          ),
+                          ScaledSizedBox(height: 12),
+                          Text.rich(
+                            TextSpan(children: _buildHintSpans(context)),
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: 13, color: Colors.grey[600]),
+                          ),
+                        ],
                       ),
-                      ScaledSizedBox(height: 12),
-                      Text.rich(
-                        TextSpan(children: _buildHintSpans(context)),
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(fontSize: 13, color: Colors.grey[600]),
-                      ),
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView(
+                    children: <Widget>[
+                      for (G1WalletsList g1Wallet in myContacts)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: ListTile(
+                            key: keySearchResult('keyID++'),
+                            horizontalTitleGap: 7,
+                            contentPadding: const EdgeInsets.all(5),
+                            dense: !isTall,
+                            leading: AspectRatio(
+                              aspectRatio: 1,
+                              child: DatapodAvatar(address: g1Wallet.address, size: 47, name: g1Wallet.username),
+                            ),
+                            title: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    getShortPubkey(g1Wallet.address),
+                                    style: scaledTextStyle(
+                                      fontSize: 14,
+                                      fontFamily: 'Monospace',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                    softWrap: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ScaledSizedBox(
+                                  width: 110,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [Balance(address: g1Wallet.address, size: scaleSize(13))],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Row(
+                              children: <Widget>[
+                                NameByAddress(
+                                  size: scaleSize(14),
+                                  wallet: WalletEntity.create(
+                                    address: g1Wallet.address,
+                                    name: g1Wallet.username,
+                                    keyPairType: Durt.defaultKeyPairType,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            isThreeLine: false,
+                            onLongPress: () => _showContactMenu(context, ref, g1Wallet),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return ProfileViewScreen(
+                                      address: g1Wallet.address,
+                                      username: ref.read(squidServiceProvider).walletNameIndexer[g1Wallet.address],
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                     ],
                   ),
                 ),
-              ),
-            )
-          else
-            Expanded(
-              child: ListView(
-                children: <Widget>[
-                  for (G1WalletsList g1Wallet in myContacts)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: ListTile(
-                        key: keySearchResult('keyID++'),
-                        horizontalTitleGap: 7,
-                        contentPadding: const EdgeInsets.all(5),
-                        dense: !isTall,
-                        leading: AspectRatio(
-                          aspectRatio: 1,
-                          child: DatapodAvatar(address: g1Wallet.address, size: 47, name: g1Wallet.username),
-                        ),
-                        title: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                getShortPubkey(g1Wallet.address),
-                                style: scaledTextStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'Monospace',
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                textAlign: TextAlign.left,
-                                softWrap: true,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ScaledSizedBox(
-                              width: 110,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [Balance(address: g1Wallet.address, size: scaleSize(13))],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        subtitle: Row(
-                          children: <Widget>[
-                            NameByAddress(
-                              size: scaleSize(14),
-                              wallet: WalletEntity.create(
-                                address: g1Wallet.address,
-                                name: g1Wallet.username,
-                                keyPairType: Durt.defaultKeyPairType,
-                              ),
-                            ),
-                          ],
-                        ),
-                        isThreeLine: false,
-                        onLongPress: () => _showContactMenu(context, ref, g1Wallet),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ProfileViewScreen(
-                                  address: g1Wallet.address,
-                                  username: ref.read(squidServiceProvider).walletNameIndexer[g1Wallet.address],
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

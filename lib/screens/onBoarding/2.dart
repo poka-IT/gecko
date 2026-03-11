@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/intro_info.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class OnboardingStepTwo extends StatelessWidget {
@@ -16,12 +17,16 @@ class OnboardingStepTwo extends StatelessWidget {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('yourMnemonic'.tr()),
       body: SafeArea(
-        child: InfoIntro(
-          text: 'keepThisMnemonicSecure'.tr(),
-          assetName: 'fabrication-de-portefeuille-impossible-sans-phrase.png',
-          buttonText: '>',
-          nextScreen: RouteNames.onboardingStepThree,
-          pagePosition: 1,
+        child: ResponsiveCenter(
+          maxWidth: 500,
+          padding: EdgeInsets.zero,
+          child: InfoIntro(
+            text: 'keepThisMnemonicSecure'.tr(),
+            assetName: 'fabrication-de-portefeuille-impossible-sans-phrase.png',
+            buttonText: '>',
+            nextScreen: RouteNames.onboardingStepThree,
+            pagePosition: 1,
+          ),
         ),
       ),
     );

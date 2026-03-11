@@ -79,7 +79,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         ),
         body: CustomScrollView(
           slivers: [
-            // Wallet header as a sliver
+            // Wallet header spans full width (has internal centering)
             SliverToBoxAdapter(
               child: WalletHeader(
                 address: widget.wallet.address,
@@ -87,43 +87,52 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 defaultImagePath: widget.wallet.imagePath,
               ),
             ),
-            // Migration alert (shown when identity was migrated away)
-            SliverToBoxAdapter(child: MigrationAlertCard(address: widget.wallet.address)),
-            // Membership alert (shown when renewal needed or pending)
-            SliverToBoxAdapter(child: MembershipAlertCard(address: widget.wallet.address)),
-            // Content as a sliver with proper padding
+            // Centered content below the header
             SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ScaledSizedBox(height: 16), // Add some top spacing
-                    if (isLegacyWallet)
-                      // Warning about legacy wallet
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                        padding: EdgeInsets.all(scaleSize(12)),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-                        ),
-                        child: Row(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Migration alert (shown when identity was migrated away)
+                      MigrationAlertCard(address: widget.wallet.address),
+                      // Membership alert (shown when renewal needed or pending)
+                      MembershipAlertCard(address: widget.wallet.address),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Icon(Icons.warning_amber, color: Colors.orange, size: scaleSize(20)),
-                            ScaledSizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'legacyWalletWarning'.tr(),
-                                style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800),
+                            ScaledSizedBox(height: 16),
+                            if (isLegacyWallet)
+                              Container(
+                                margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                                padding: EdgeInsets.all(scaleSize(12)),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.warning_amber, color: Colors.orange, size: scaleSize(20)),
+                                    ScaledSizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'legacyWalletWarning'.tr(),
+                                        style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                            _buildWalletOptionsContent(context, ref, isAlone, currentSafe),
                           ],
                         ),
                       ),
-                    _buildWalletOptionsContent(context, ref, isAlone, currentSafe),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

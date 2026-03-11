@@ -82,24 +82,29 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('contactsManagementWithNbr'.tr(args: ['${allContacts.length}'])),
         body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  focusNode: _searchFocus,
-                  onChanged: (value) => setState(() => searchQuery = value),
-                  decoration: InputDecoration(
-                    hintText: 'searchContacts'.tr(),
-                    prefixIcon: const Icon(Icons.search),
-                    border: const OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      focusNode: _searchFocus,
+                      onChanged: (value) => setState(() => searchQuery = value),
+                      decoration: InputDecoration(
+                        hintText: 'searchContacts'.tr(),
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colorScheme.primary)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
+                    ),
                   ),
-                ),
+                  Expanded(child: ContactsList(myContacts: filteredContacts)),
+                ],
               ),
-              Expanded(child: ContactsList(myContacts: filteredContacts)),
-            ],
+            ),
           ),
         ),
       ),

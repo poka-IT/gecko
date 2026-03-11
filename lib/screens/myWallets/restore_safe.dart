@@ -13,6 +13,7 @@ import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/async_elevated_button.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/mnemonic_scanner.dart';
 
@@ -42,266 +43,270 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
         appBar: GeckoAppBar('restoreASafe'.tr()),
         body: SafeArea(
           child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                ScaledSizedBox(height: isTall ? 20 : 3),
-                bubbleSpeak('toRestoreEnterMnemonic'.tr()),
-                ScaledSizedBox(height: isTall ? 20 : 5),
-                // Flexible layout that adapts to screen size and text scaling
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final textScaler = MediaQuery.textScalerOf(context);
-                    final isTextScaled = textScaler.scale(1.0) > 1.3;
+            child: ResponsiveCenter(
+              maxWidth: 500,
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: <Widget>[
+                  ScaledSizedBox(height: isTall ? 20 : 3),
+                  bubbleSpeak('toRestoreEnterMnemonic'.tr()),
+                  ScaledSizedBox(height: isTall ? 20 : 5),
+                  // Flexible layout that adapts to screen size and text scaling
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final textScaler = MediaQuery.textScalerOf(context);
+                      final isTextScaled = textScaler.scale(1.0) > 1.3;
 
-                    // Calculate optimal cell size based on available space
-                    final horizontalPadding = scaleSize(32); // Total horizontal padding
-                    final availableWidth = constraints.maxWidth - horizontalPadding;
-                    final spacing = scaleSize(8);
+                      // Calculate optimal cell size based on available space
+                      final horizontalPadding = scaleSize(32); // Total horizontal padding
+                      final availableWidth = constraints.maxWidth - horizontalPadding;
+                      final spacing = scaleSize(8);
 
-                    // Determine cells per row based on text scaling and available space
-                    int cellsPerRow;
-                    if (isTextScaled) {
-                      cellsPerRow = 3;
-                    } else if (availableWidth < scaleSize(300)) {
-                      cellsPerRow = 2; // Very small screens
-                    } else {
-                      cellsPerRow = 4; // Default
-                    }
+                      // Determine cells per row based on text scaling and available space
+                      int cellsPerRow;
+                      if (isTextScaled) {
+                        cellsPerRow = 3;
+                      } else if (availableWidth < scaleSize(300)) {
+                        cellsPerRow = 2; // Very small screens
+                      } else {
+                        cellsPerRow = 4; // Default
+                      }
 
-                    // Calculate cell width to use available space efficiently
-                    final cellWidth = (availableWidth - (spacing * (cellsPerRow - 1))) / cellsPerRow;
-                    final cellHeight = scaleSize(44);
+                      // Calculate cell width to use available space efficiently
+                      final cellWidth = (availableWidth - (spacing * (cellsPerRow - 1))) / cellsPerRow;
+                      final cellHeight = scaleSize(44);
 
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                      child: Wrap(
-                        spacing: spacing,
-                        runSpacing: scaleSize(isTall ? 10 : 6),
-                        alignment: WrapAlignment.center,
-                        children: controllers
-                            .asMap()
-                            .entries
-                            .map(
-                              (entry) => arrayCell(
-                                context,
-                                ref,
-                                entry.value,
-                                entry.key,
-                                cellWidth: cellWidth,
-                                cellHeight: cellHeight,
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    );
-                  },
-                ),
-                // Validation state and continue button
-                if (mnemonicInput.isComplete && mnemonicInput.isValid)
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Padding(
+                      return Padding(
                         padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                        child: AsyncElevatedButton(
-                          key: keyGoNext,
-                          style:
-                              ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: context.colorScheme.primary,
-                                elevation: 0,
-                                padding: EdgeInsets.symmetric(vertical: scaleSize(16), horizontal: scaleSize(24)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                minimumSize: Size(scaleSize(280), scaleSize(56)), // Minimum size for accessibility
-                              ).copyWith(
-                                elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.pressed)) return 0;
-                                  return 8;
-                                }),
-                                shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
-                              ),
-                          onPressed: () async {
-                            // Set restoring state immediately to prevent UI flash
-                            setState(() {
-                              _isRestoring = true;
-                            });
-
-                            final validatedMnemonic = await ref
-                                .read(mnemonicInputProvider.notifier)
-                                .getValidatedMnemonic();
-
-                            if (validatedMnemonic != null) {
-                              try {
-                                // Set the mnemonic in the state for the next screen
-                                await ref
-                                    .read(mnemonicStateProvider.notifier)
-                                    .setMnemonic(validatedMnemonic.displayMnemonic);
-
-                                // Clear input and clean up global keys
-                                ref.read(clearMnemonicInputProvider)();
-
-                                await AppNavigator.pushWithFader(
+                        child: Wrap(
+                          spacing: spacing,
+                          runSpacing: scaleSize(isTall ? 10 : 6),
+                          alignment: WrapAlignment.center,
+                          children: controllers
+                              .asMap()
+                              .entries
+                              .map(
+                                (entry) => arrayCell(
                                   context,
-                                  widget.skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
-                                  arguments: OnboardingStepsSevenToNineArguments(
-                                    scanDerivation: true,
-                                    fromRestore: true,
-                                  ),
-                                  isFast: true,
-                                );
-                              } catch (e) {
-                                setState(() {
-                                  _isRestoring = false;
-                                });
-                                await badMnemonicPopup(context);
-                              }
-                            } else {
-                              setState(() {
-                                _isRestoring = false;
-                              });
-                              await badMnemonicPopup(context);
-                            }
-                          },
-                          child: Text(
-                            'restoreThisSafe'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              height: 1.3, // Better line height for accessibility
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2, // Allow text to wrap if needed
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                                  ref,
+                                  entry.value,
+                                  entry.key,
+                                  cellWidth: cellWidth,
+                                  cellHeight: cellHeight,
+                                ),
+                              )
+                              .toList(),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-
-                // Paste from clipboard and scan options (only show if mnemonic not complete/valid and not restoring)
-                if (!(mnemonicInput.isComplete && mnemonicInput.isValid) && !_isRestoring) ...[
-                  ScaledSizedBox(height: 20),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                    child: Row(
-                      children: [
-                        // Paste button
-                        Expanded(
-                          child: ElevatedButton(
-                            key: keyPastMnemonic,
-                            style:
-                                ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.black,
-                                  backgroundColor: context.colorScheme.secondary,
-                                  elevation: 0,
-                                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  minimumSize: Size(scaleSize(120), scaleSize(48)),
-                                ).copyWith(
-                                  elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                    if (states.contains(WidgetState.pressed)) return 0;
-                                    return 4;
-                                  }),
-                                  shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
-                                ),
-                            onPressed: () async {
-                              final success = await ref.read(pasteMnemonicProvider)();
-                              if (!success) {
-                                // Show error if paste failed
-                                await badMnemonicPopup(context);
-                              }
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.content_paste_go,
-                                  size: scaleSize(18),
-                                  color: Colors.black.withValues(alpha: 0.7),
-                                ),
-                                SizedBox(width: scaleSize(6)),
-                                Flexible(
-                                  child: Text(
-                                    'pasteFromClipboard'.tr(),
-                                    textAlign: TextAlign.center,
-                                    style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.3),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: scaleSize(12)),
-                        // Scan button
-                        Expanded(
-                          child: ElevatedButton(
+                  // Validation state and continue button
+                  if (mnemonicInput.isComplete && mnemonicInput.isValid)
+                    Container(
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                          child: AsyncElevatedButton(
+                            key: keyGoNext,
                             style:
                                 ElevatedButton.styleFrom(
                                   foregroundColor: Colors.white,
                                   backgroundColor: context.colorScheme.primary,
                                   elevation: 0,
-                                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
+                                  padding: EdgeInsets.symmetric(vertical: scaleSize(16), horizontal: scaleSize(24)),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  minimumSize: Size(scaleSize(120), scaleSize(48)),
+                                  minimumSize: Size(scaleSize(280), scaleSize(56)), // Minimum size for accessibility
                                 ).copyWith(
                                   elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
                                     if (states.contains(WidgetState.pressed)) return 0;
-                                    return 4;
+                                    return 8;
                                   }),
-                                  shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                  shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
                                 ),
                             onPressed: () async {
-                              // Navigate to the OCR scanner
-                              await Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => MnemonicScanner(
-                                    onMnemonicDetected: (List<String> words) async {
-                                      // Update controllers first so the UI shows the scanned words
-                                      final ctrls = ref.read(mnemonicControllersProvider);
-                                      for (int i = 0; i < words.length && i < 12; i++) {
-                                        ctrls[i].text = words[i];
-                                      }
-                                      // Then update the provider state for validation
-                                      await ref.read(mnemonicInputProvider.notifier).fillWords(words);
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.camera_alt, size: scaleSize(18), color: Colors.white),
-                                SizedBox(width: scaleSize(6)),
-                                Flexible(
-                                  child: Text(
-                                    'scanMnemonic'.tr(),
-                                    textAlign: TextAlign.center,
-                                    style: scaledTextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.3,
-                                      color: Colors.white,
+                              // Set restoring state immediately to prevent UI flash
+                              setState(() {
+                                _isRestoring = true;
+                              });
+
+                              final validatedMnemonic = await ref
+                                  .read(mnemonicInputProvider.notifier)
+                                  .getValidatedMnemonic();
+
+                              if (validatedMnemonic != null) {
+                                try {
+                                  // Set the mnemonic in the state for the next screen
+                                  await ref
+                                      .read(mnemonicStateProvider.notifier)
+                                      .setMnemonic(validatedMnemonic.displayMnemonic);
+
+                                  // Clear input and clean up global keys
+                                  ref.read(clearMnemonicInputProvider)();
+
+                                  await AppNavigator.pushWithFader(
+                                    context,
+                                    widget.skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
+                                    arguments: OnboardingStepsSevenToNineArguments(
+                                      scanDerivation: true,
+                                      fromRestore: true,
                                     ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                                    isFast: true,
+                                  );
+                                } catch (e) {
+                                  setState(() {
+                                    _isRestoring = false;
+                                  });
+                                  await badMnemonicPopup(context);
+                                }
+                              } else {
+                                setState(() {
+                                  _isRestoring = false;
+                                });
+                                await badMnemonicPopup(context);
+                              }
+                            },
+                            child: Text(
+                              'restoreThisSafe'.tr(),
+                              style: scaledTextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                height: 1.3, // Better line height for accessibility
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2, // Allow text to wrap if needed
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+
+                  // Paste from clipboard and scan options (only show if mnemonic not complete/valid and not restoring)
+                  if (!(mnemonicInput.isComplete && mnemonicInput.isValid) && !_isRestoring) ...[
+                    ScaledSizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                      child: Row(
+                        children: [
+                          // Paste button
+                          Expanded(
+                            child: ElevatedButton(
+                              key: keyPastMnemonic,
+                              style:
+                                  ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.black,
+                                    backgroundColor: context.colorScheme.secondary,
+                                    elevation: 0,
+                                    padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    minimumSize: Size(scaleSize(120), scaleSize(48)),
+                                  ).copyWith(
+                                    elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                      if (states.contains(WidgetState.pressed)) return 0;
+                                      return 4;
+                                    }),
+                                    shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                  ),
+                              onPressed: () async {
+                                final success = await ref.read(pasteMnemonicProvider)();
+                                if (!success) {
+                                  // Show error if paste failed
+                                  await badMnemonicPopup(context);
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.content_paste_go,
+                                    size: scaleSize(18),
+                                    color: Colors.black.withValues(alpha: 0.7),
+                                  ),
+                                  SizedBox(width: scaleSize(6)),
+                                  Flexible(
+                                    child: Text(
+                                      'pasteFromClipboard'.tr(),
+                                      textAlign: TextAlign.center,
+                                      style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.3),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: scaleSize(12)),
+                          // Scan button
+                          Expanded(
+                            child: ElevatedButton(
+                              style:
+                                  ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: context.colorScheme.primary,
+                                    elevation: 0,
+                                    padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    minimumSize: Size(scaleSize(120), scaleSize(48)),
+                                  ).copyWith(
+                                    elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                      if (states.contains(WidgetState.pressed)) return 0;
+                                      return 4;
+                                    }),
+                                    shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
+                                  ),
+                              onPressed: () async {
+                                // Navigate to the OCR scanner
+                                await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => MnemonicScanner(
+                                      onMnemonicDetected: (List<String> words) async {
+                                        // Update controllers first so the UI shows the scanned words
+                                        final ctrls = ref.read(mnemonicControllersProvider);
+                                        for (int i = 0; i < words.length && i < 12; i++) {
+                                          ctrls[i].text = words[i];
+                                        }
+                                        // Then update the provider state for validation
+                                        await ref.read(mnemonicInputProvider.notifier).fillWords(words);
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.camera_alt, size: scaleSize(18), color: Colors.white),
+                                  SizedBox(width: scaleSize(6)),
+                                  Flexible(
+                                    child: Text(
+                                      'scanMnemonic'.tr(),
+                                      textAlign: TextAlign.center,
+                                      style: scaledTextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.3,
+                                        color: Colors.white,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

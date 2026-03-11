@@ -50,41 +50,27 @@ class MnemonicDisplayWidget extends StatelessWidget {
       padding: EdgeInsets.all(scaleSize(14)),
       child: Stack(
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              // First row: words 1-4
-              Row(
-                children: <Widget>[
-                  _arrayCell(context, 1, mnemonicWords[0]),
-                  _arrayCell(context, 2, mnemonicWords[1]),
-                  _arrayCell(context, 3, mnemonicWords[2]),
-                  _arrayCell(context, 4, mnemonicWords[3]),
-                ],
-              ),
-              ScaledSizedBox(height: 15),
-              // Second row: words 5-8
-              Row(
-                children: <Widget>[
-                  _arrayCell(context, 5, mnemonicWords[4]),
-                  _arrayCell(context, 6, mnemonicWords[5]),
-                  _arrayCell(context, 7, mnemonicWords[6]),
-                  _arrayCell(context, 8, mnemonicWords[7]),
-                ],
-              ),
-              ScaledSizedBox(height: 15),
-              // Third row: words 9-12
-              Row(
-                children: <Widget>[
-                  _arrayCell(context, 9, mnemonicWords[8]),
-                  _arrayCell(context, 10, mnemonicWords[9]),
-                  _arrayCell(context, 11, mnemonicWords[10]),
-                  _arrayCell(context, 12, mnemonicWords[11]),
-                ],
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final int cols = constraints.maxWidth >= 600 ? 6 : 4;
+              final rows = <Widget>[];
+              for (int i = 0; i < 12; i += cols) {
+                if (i > 0) rows.add(ScaledSizedBox(height: 15));
+                rows.add(
+                  Row(
+                    children: <Widget>[
+                      for (int j = i; j < i + cols && j < 12; j++) _arrayCell(context, j + 1, mnemonicWords[j]),
+                    ],
+                  ),
+                );
+              }
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: rows,
+              );
+            },
           ),
           if (isLoading)
             Container(

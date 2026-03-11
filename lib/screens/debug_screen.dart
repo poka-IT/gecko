@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 import 'package:gecko/providers/block_height_provider.dart';
@@ -22,7 +23,8 @@ class DebugScreen extends ConsumerWidget {
       appBar: GeckoAppBar('Debug'),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
+          child: ResponsiveCenter(
+            maxWidth: 700,
             padding: EdgeInsets.symmetric(horizontal: scaleSize(24)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

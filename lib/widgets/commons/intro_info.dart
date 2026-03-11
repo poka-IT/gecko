@@ -103,8 +103,8 @@ class _InfoIntroState extends State<InfoIntro> with TickerProviderStateMixin {
   void _checkScrollable() {
     if (!_scrollController.hasClients) return;
 
-    // Only show indicator if there's meaningful scroll content (more than 10 pixels)
-    final bool isScrollable = _scrollController.position.maxScrollExtent > 10;
+    // Only show indicator if there's meaningful scroll content (more than 50 pixels)
+    final bool isScrollable = _scrollController.position.maxScrollExtent > 50;
     if (_showScrollIndicator != isScrollable) {
       setState(() {
         _showScrollIndicator = isScrollable;

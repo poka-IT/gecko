@@ -23,6 +23,7 @@ import 'package:gecko/widgets/bottom_sheets/mnemonic_challenge_sheet.dart';
 import 'package:gecko/widgets/commons/async_elevated_button.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/shimmer_placeholder.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 
 class ConfirmIdentityScreen extends ConsumerStatefulWidget {
@@ -171,19 +172,23 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
     return Scaffold(
       appBar: WalletAppBar(address: widget.address, title: 'chooseIdentityName'.tr()),
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              onPageChanged: (index) => setState(() => _currentPage = index),
-              children: [_buildPage1(context, isSmallScreen), _buildPage2(context, isSmallScreen)],
+      body: ResponsiveCenter(
+        maxWidth: 500,
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (index) => setState(() => _currentPage = index),
+                children: [_buildPage1(context, isSmallScreen), _buildPage2(context, isSmallScreen)],
+              ),
             ),
-          ),
-          // Bottom section with page dots + action button
-          _buildBottomSection(context, isSmallScreen),
-        ],
+            // Bottom section with page dots + action button
+            _buildBottomSection(context, isSmallScreen),
+          ],
+        ),
       ),
     );
   }

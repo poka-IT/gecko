@@ -9,6 +9,7 @@ import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -53,27 +54,31 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar(widget.walletName),
       body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 80),
-            SizedBox(
-              width: 300,
-              child: Text(
-                'geckoWillCheckPassword'.tr(),
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
+        child: ResponsiveCenter(
+          maxWidth: 500,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 80),
+              SizedBox(
+                width: 300,
+                child: Text(
+                  'geckoWillCheckPassword'.tr(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
+                ),
               ),
-            ),
-            const SizedBox(height: 30),
-            if (hasError) ...[
-              Text(
-                "thisIsNotAGoodCode".tr(),
-                style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
+              if (hasError) ...[
+                Text(
+                  "thisIsNotAGoodCode".tr(),
+                  style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 20),
+              ],
+              pinForm(context),
             ],
-            pinForm(context),
-          ],
+          ),
         ),
       ),
     );

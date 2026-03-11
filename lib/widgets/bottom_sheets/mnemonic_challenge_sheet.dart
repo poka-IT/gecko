@@ -42,6 +42,7 @@ Future<bool> showMnemonicChallenge({
     isDismissible: false,
     enableDrag: false,
     useSafeArea: true,
+    constraints: const BoxConstraints(maxWidth: 600),
     builder: (BuildContext sheetContext) {
       return _MnemonicChallengeSheet(address: address);
     },

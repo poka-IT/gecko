@@ -25,6 +25,7 @@ import 'package:pointycastle/api.dart' show InvalidCipherTextException;
 import 'package:gecko/screens/transaction_in_progress.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
@@ -178,323 +179,330 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('migrateIdentity'.tr()),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: scaleSize(24)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ScaledSizedBox(height: isSmall ? 16 : 24),
-                      // En-tête avec icône et texte explicatif
-                      Center(
-                        child: Column(
-                          children: [
-                            Container(
-                              width: scaleSize(isSmall ? 50 : 70),
-                              height: scaleSize(isSmall ? 50 : 70),
-                              decoration: BoxDecoration(
-                                color: context.colorScheme.primary.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.swap_horiz_rounded,
-                                size: scaleSize(isSmall ? 25 : 35),
-                                color: context.colorScheme.primary,
-                              ),
-                            ),
-                            ScaledSizedBox(height: isSmall ? 16 : 24),
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              children: [
-                                TextMarkDown(
-                                  'areYouSureMigrateIdentity'.tr(
-                                    args: [ref.read(squidServiceProvider).walletNameIndexer[fromAddress] ?? '???'],
-                                  ),
-                                  textAlign: WrapAlignment.center,
-                                  style: scaledTextStyle(
-                                    fontSize: isSmall ? 14 : 15,
-                                    color: context.colorScheme.onSurface,
-                                    height: 1.5,
-                                  ),
+        child: ResponsiveCenter(
+          maxWidth: 600,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(24)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ScaledSizedBox(height: isSmall ? 16 : 24),
+                        // En-tête avec icône et texte explicatif
+                        Center(
+                          child: Column(
+                            children: [
+                              Container(
+                                width: scaleSize(isSmall ? 50 : 70),
+                                height: scaleSize(isSmall ? 50 : 70),
+                                decoration: BoxDecoration(
+                                  color: context.colorScheme.primary.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
                                 ),
-                                // Use the Balance widget instead of accessing cache directly
-                                Balance(
-                                  address: fromAddress,
-                                  size: isSmall ? 14 : 15,
-                                  color: context.colorScheme.onSurface,
+                                child: Icon(
+                                  Icons.swap_horiz_rounded,
+                                  size: scaleSize(isSmall ? 25 : 35),
+                                  color: context.colorScheme.primary,
                                 ),
-                                Text(
-                                  ' ?',
-                                  style: scaledTextStyle(
-                                    fontSize: isSmall ? 14 : 15,
-                                    color: context.colorScheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      ScaledSizedBox(height: isSmall ? 24 : 40),
-
-                      // Champ de phrase de restauration
-                      Text(
-                        'migrateToThisWallet'.tr(),
-                        style: scaledTextStyle(
-                          fontSize: isSmall ? 15 : 16,
-                          fontWeight: FontWeight.w600,
-                          color: context.colorScheme.onSurface,
-                        ),
-                      ),
-                      ScaledSizedBox(height: isSmall ? 12 : 16),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: context.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: scaleSize(16),
-                                right: scaleSize(16),
-                                top: scaleSize(isSmall ? 8 : 12),
                               ),
-                              child: Row(
+                              ScaledSizedBox(height: isSmall ? 16 : 24),
+                              Wrap(
+                                alignment: WrapAlignment.center,
                                 children: [
-                                  Image.asset(
-                                    'assets/onBoarding/phrase_de_restauration_flou.png',
-                                    width: scaleSize(isSmall ? 16 : 20),
+                                  TextMarkDown(
+                                    'areYouSureMigrateIdentity'.tr(
+                                      args: [ref.read(squidServiceProvider).walletNameIndexer[fromAddress] ?? '???'],
+                                    ),
+                                    textAlign: WrapAlignment.center,
+                                    style: scaledTextStyle(
+                                      fontSize: isSmall ? 14 : 15,
+                                      color: context.colorScheme.onSurface,
+                                      height: 1.5,
+                                    ),
                                   ),
-                                  ScaledSizedBox(width: isSmall ? 8 : 12),
-                                  SizedBox(
-                                    width: 280,
-                                    child: Text(
-                                      'enterYourNewMnemonic'.tr(),
+                                  // Use the Balance widget instead of accessing cache directly
+                                  Balance(
+                                    address: fromAddress,
+                                    size: isSmall ? 14 : 15,
+                                    color: context.colorScheme.onSurface,
+                                  ),
+                                  Text(
+                                    ' ?',
+                                    style: scaledTextStyle(
+                                      fontSize: isSmall ? 14 : 15,
+                                      color: context.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        ScaledSizedBox(height: isSmall ? 24 : 40),
+
+                        // Champ de phrase de restauration
+                        Text(
+                          'migrateToThisWallet'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: isSmall ? 15 : 16,
+                            fontWeight: FontWeight.w600,
+                            color: context.colorScheme.onSurface,
+                          ),
+                        ),
+                        ScaledSizedBox(height: isSmall ? 12 : 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  left: scaleSize(16),
+                                  right: scaleSize(16),
+                                  top: scaleSize(isSmall ? 8 : 12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Image.asset(
+                                      'assets/onBoarding/phrase_de_restauration_flou.png',
+                                      width: scaleSize(isSmall ? 16 : 20),
+                                    ),
+                                    ScaledSizedBox(width: isSmall ? 8 : 12),
+                                    SizedBox(
+                                      width: 280,
+                                      child: Text(
+                                        'enterYourNewMnemonic'.tr(),
+                                        style: scaledTextStyle(
+                                          fontSize: isSmall ? 13 : 14,
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextField(
+                                controller: newMnemonicSentence,
+                                minLines: isSmall ? 2 : 3,
+                                maxLines: isSmall ? 2 : 3,
+                                style: scaledTextStyle(
+                                  fontSize: isSmall ? 14 : 15,
+                                  color: context.colorScheme.onSurface,
+                                  height: 1.5,
+                                ),
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
+                                  border: InputBorder.none,
+                                  hintText: 'word1 word2 word3 word4 ...',
+                                  hintStyle: scaledTextStyle(
+                                    fontSize: isSmall ? 14 : 15,
+                                    color: Colors.grey[400],
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                                onChanged: (newMnemonic) async {
+                                  await scanDerivations();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        ScaledSizedBox(height: isSmall ? 16 : 24),
+
+                        // Champ d'adresse
+                        Container(
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.surfaceContainer,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  left: scaleSize(16),
+                                  right: scaleSize(16),
+                                  top: scaleSize(isSmall ? 8 : 12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Image.asset('assets/walletOptions/key.png', width: scaleSize(isSmall ? 16 : 20)),
+                                    ScaledSizedBox(width: isSmall ? 8 : 12),
+                                    Text(
+                                      'enterYourNewAddress'.tr(args: [Durt.i.network.symbol]),
                                       style: scaledTextStyle(
                                         fontSize: isSmall ? 13 : 14,
                                         color: Colors.grey[600],
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextField(
-                              controller: newMnemonicSentence,
-                              minLines: isSmall ? 2 : 3,
-                              maxLines: isSmall ? 2 : 3,
-                              style: scaledTextStyle(
-                                fontSize: isSmall ? 14 : 15,
-                                color: context.colorScheme.onSurface,
-                                height: 1.5,
-                              ),
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
-                                border: InputBorder.none,
-                                hintText: 'word1 word2 word3 word4 ...',
-                                hintStyle: scaledTextStyle(
-                                  fontSize: isSmall ? 14 : 15,
-                                  color: Colors.grey[400],
-                                  fontStyle: FontStyle.italic,
+                                  ],
                                 ),
                               ),
-                              onChanged: (newMnemonic) async {
-                                await scanDerivations();
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      ScaledSizedBox(height: isSmall ? 16 : 24),
-
-                      // Champ d'adresse
-                      Container(
-                        decoration: BoxDecoration(
-                          color: context.colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: scaleSize(16),
-                                right: scaleSize(16),
-                                top: scaleSize(isSmall ? 8 : 12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Image.asset('assets/walletOptions/key.png', width: scaleSize(isSmall ? 16 : 20)),
-                                  ScaledSizedBox(width: isSmall ? 8 : 12),
-                                  Text(
-                                    'enterYourNewAddress'.tr(args: [Durt.i.network.symbol]),
-                                    style: scaledTextStyle(
-                                      fontSize: isSmall ? 13 : 14,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextField(
-                              controller: newWalletAddress,
-                              style: scaledTextStyle(fontSize: isSmall ? 14 : 15, color: context.colorScheme.onSurface),
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
-                                border: InputBorder.none,
-                                hintText: 'G1....',
-                                hintStyle: scaledTextStyle(
+                              TextField(
+                                controller: newWalletAddress,
+                                style: scaledTextStyle(
                                   fontSize: isSmall ? 14 : 15,
-                                  color: Colors.grey[400],
-                                  fontStyle: FontStyle.italic,
+                                  color: context.colorScheme.onSurface,
                                 ),
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.all(scaleSize(isSmall ? 12 : 16)),
+                                  border: InputBorder.none,
+                                  hintText: 'G1....',
+                                  hintStyle: scaledTextStyle(
+                                    fontSize: isSmall ? 14 : 15,
+                                    color: Colors.grey[400],
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                                onChanged: (newAddress) async {
+                                  if (ref.read(utilsProvider).isAddressValid(newAddress)) {
+                                    final checks = await ref
+                                        .read(storageServiceProvider)
+                                        .getMigrateWalletChecks(fromAddress: fromAddress, toAddress: newAddress);
+                                    setState(() {
+                                      migrationChecks = checks;
+                                    });
+                                    await scanDerivations();
+                                  } else {
+                                    setState(() {
+                                      migrationChecks = const MigrateWalletChecks.defaultValues();
+                                      matchInfo = '';
+                                    });
+                                  }
+                                },
                               ),
-                              onChanged: (newAddress) async {
-                                if (ref.read(utilsProvider).isAddressValid(newAddress)) {
-                                  final checks = await ref
-                                      .read(storageServiceProvider)
-                                      .getMigrateWalletChecks(fromAddress: fromAddress, toAddress: newAddress);
-                                  setState(() {
-                                    migrationChecks = checks;
-                                  });
-                                  await scanDerivations();
-                                } else {
-                                  setState(() {
-                                    migrationChecks = const MigrateWalletChecks.defaultValues();
-                                    matchInfo = '';
-                                  });
-                                }
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Messages de statut et bouton de validation
-            Container(
-              padding: EdgeInsets.all(scaleSize(isSmall ? 16 : 24)),
-              decoration: BoxDecoration(
-                color: context.colorScheme.surfaceContainer,
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: Offset(0, -5)),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Column(
-                    children: [
-                      if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
-                        Text(
-                          mapValidationErrors(migrationChecks.errors),
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
-                        ),
-                      if (matchInfo.isNotEmpty) ...[
+              // Messages de statut et bouton de validation
+              Container(
+                padding: EdgeInsets.all(scaleSize(isSmall ? 16 : 24)),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surfaceContainer,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: Offset(0, -5)),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      children: [
                         if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
-                          ScaledSizedBox(height: isSmall ? 4 : 8),
-                        Text(
-                          matchInfo,
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
-                        ),
+                          Text(
+                            mapValidationErrors(migrationChecks.errors),
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
+                          ),
+                        if (matchInfo.isNotEmpty) ...[
+                          if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
+                            ScaledSizedBox(height: isSmall ? 4 : 8),
+                          Text(
+                            matchInfo,
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
+                          ),
+                        ],
+                        ScaledSizedBox(height: isSmall ? 12 : 16),
                       ],
-                      ScaledSizedBox(height: isSmall ? 12 : 16),
-                    ],
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    height: scaleSize(isSmall ? 44 : 50),
-                    child: ElevatedButton(
-                      key: keyConfirm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: migrationChecks.canMigrate && mnemonicIsValid && toKeypair != null
-                          ? () async {
-                              try {
-                                // Demander le code PIN d'abord
-                                if (!await PinCodeService.askPinCode()) return;
-
-                                // Capture services before navigation (ref won't be valid after pop)
-                                final walletService = ref.read(walletServiceProvider);
-                                final duniterService = ref.read(duniterServiceProvider);
-
-                                final transactionStream = _performMigration(
-                                  fromAddress: fromAddress,
-                                  pinCode: PinCodeService.pinCode,
-                                  toKeypair: toKeypair!,
-                                  walletService: walletService,
-                                  duniterService: duniterService,
-                                );
-
-                                // Convert to broadcast stream to allow multiple listeners
-                                final broadcastStream = transactionStream.asBroadcastStream();
-
-                                // Listen to transaction stream to invalidate providers on success
-                                // Use mounted check to avoid using ref after widget disposal
-                                final invalidateSubscription = broadcastStream.listen((status) {
-                                  if ((status.state == TransactionState.finalized ||
-                                          status.state == TransactionState.inBlock) &&
-                                      mounted) {
-                                    // Invalidate identity-related providers to refresh cache
-                                    ref.invalidate(persistentIdtyStatusStreamProvider(widget.address));
-                                    ref.invalidate(smartIdtyStatusStreamProvider(widget.address));
-                                    // Also invalidate any other identity-related providers
-                                    ref.invalidate(idtyStatusStreamProvider(widget.address));
-                                  }
-                                });
-
-                                Navigator.pop(context);
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: scaleSize(isSmall ? 44 : 50),
+                      child: ElevatedButton(
+                        key: keyConfirm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: migrationChecks.canMigrate && mnemonicIsValid && toKeypair != null
+                            ? () async {
                                 try {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TransactionInProgressScreen(
-                                        transactionStatus: broadcastStream,
-                                        transType: 'identityMigration',
-                                        fromAddress: fromAddress,
-                                        toAddress: toKeypair!.address,
-                                      ),
-                                    ),
+                                  // Demander le code PIN d'abord
+                                  if (!await PinCodeService.askPinCode()) return;
+
+                                  // Capture services before navigation (ref won't be valid after pop)
+                                  final walletService = ref.read(walletServiceProvider);
+                                  final duniterService = ref.read(duniterServiceProvider);
+
+                                  final transactionStream = _performMigration(
+                                    fromAddress: fromAddress,
+                                    pinCode: PinCodeService.pinCode,
+                                    toKeypair: toKeypair!,
+                                    walletService: walletService,
+                                    duniterService: duniterService,
                                   );
-                                } finally {
-                                  await invalidateSubscription.cancel();
+
+                                  // Convert to broadcast stream to allow multiple listeners
+                                  final broadcastStream = transactionStream.asBroadcastStream();
+
+                                  // Listen to transaction stream to invalidate providers on success
+                                  // Use mounted check to avoid using ref after widget disposal
+                                  final invalidateSubscription = broadcastStream.listen((status) {
+                                    if ((status.state == TransactionState.finalized ||
+                                            status.state == TransactionState.inBlock) &&
+                                        mounted) {
+                                      // Invalidate identity-related providers to refresh cache
+                                      ref.invalidate(persistentIdtyStatusStreamProvider(widget.address));
+                                      ref.invalidate(smartIdtyStatusStreamProvider(widget.address));
+                                      // Also invalidate any other identity-related providers
+                                      ref.invalidate(idtyStatusStreamProvider(widget.address));
+                                    }
+                                  });
+
+                                  Navigator.pop(context);
+                                  try {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TransactionInProgressScreen(
+                                          transactionStatus: broadcastStream,
+                                          transType: 'identityMigration',
+                                          fromAddress: fromAddress,
+                                          toAddress: toKeypair!.address,
+                                        ),
+                                      ),
+                                    );
+                                  } finally {
+                                    await invalidateSubscription.cancel();
+                                  }
+                                } catch (e) {
+                                  log.e('Error during migration setup: $e');
+                                  // Gestion d'erreur si nécessaire
                                 }
-                              } catch (e) {
-                                log.e('Error during migration setup: $e');
-                                // Gestion d'erreur si nécessaire
                               }
-                            }
-                          : null,
-                      child: Text(
-                        'migrateIdentity'.tr(),
-                        style: scaledTextStyle(fontSize: isSmall ? 15 : 16, fontWeight: FontWeight.w600),
+                            : null,
+                        child: Text(
+                          'migrateIdentity'.tr(),
+                          style: scaledTextStyle(fontSize: isSmall ? 15 : 16, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

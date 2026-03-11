@@ -7,6 +7,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/currency_provider.dart';
 import 'package:gecko/screens/license_page.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 
 class CurrencyPage extends ConsumerStatefulWidget {
   const CurrencyPage({super.key});
@@ -28,48 +29,52 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('currency'.tr()),
       body: SafeArea(
-        child: currencyDataAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stackTrace) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: scaleSize(64), color: context.colorScheme.error),
-                ScaledSizedBox(height: 16),
-                Text(
-                  'errorLoadingCurrencyData'.tr(),
-                  textAlign: TextAlign.center,
-                  style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error, fontWeight: FontWeight.w500),
-                ),
-                ScaledSizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
-                  textAlign: TextAlign.center,
-                ),
-                ScaledSizedBox(height: 24),
-                ElevatedButton(onPressed: () => ref.refresh(currencyDataProvider), child: Text('retry'.tr())),
-              ],
-            ),
-          ),
-          data: (currencyData) => RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(currencyDataProvider);
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(scaleSize(16)),
+        child: ResponsiveCenter(
+          maxWidth: 600,
+          padding: EdgeInsets.zero,
+          child: currencyDataAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildCurrencyDescription(context, currencyData.currencyParams),
+                  Icon(Icons.error_outline, size: scaleSize(64), color: context.colorScheme.error),
                   ScaledSizedBox(height: 16),
-                  _buildLicenseLink(context),
+                  Text(
+                    'errorLoadingCurrencyData'.tr(),
+                    textAlign: TextAlign.center,
+                    style: scaledTextStyle(fontSize: 16, color: context.colorScheme.error, fontWeight: FontWeight.w500),
+                  ),
+                  ScaledSizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
+                    textAlign: TextAlign.center,
+                  ),
                   ScaledSizedBox(height: 24),
-                  _buildCurrencySection(context, currencyData.currencyParams),
-                  ScaledSizedBox(height: 24),
-                  _buildWotSection(context, currencyData.wotParams),
+                  ElevatedButton(onPressed: () => ref.refresh(currencyDataProvider), child: Text('retry'.tr())),
                 ],
+              ),
+            ),
+            data: (currencyData) => RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(currencyDataProvider);
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.all(scaleSize(16)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCurrencyDescription(context, currencyData.currencyParams),
+                    ScaledSizedBox(height: 16),
+                    _buildLicenseLink(context),
+                    ScaledSizedBox(height: 24),
+                    _buildCurrencySection(context, currencyData.currencyParams),
+                    ScaledSizedBox(height: 24),
+                    _buildWotSection(context, currencyData.wotParams),
+                  ],
+                ),
               ),
             ),
           ),

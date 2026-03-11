@@ -17,6 +17,7 @@ import 'package:gecko/screens/myWallets/show_seed.dart';
 import 'package:gecko/screens/myWallets/rename_safe.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/biometric/biometric_settings_tile.dart';
 
@@ -37,14 +38,18 @@ class SafeOptions extends ConsumerWidget {
       appBar: GeckoAppBar(WalletNameService.displayName(currentSafe.name)),
       body: Builder(
         builder: (ctx) => SafeArea(
-          child: Column(
-            children: [
-              ScaledSizedBox(height: 20),
-              Padding(
-                padding: EdgeInsets.only(left: scaleSize(16)),
-                child: SafeOptionsContent(),
-              ),
-            ],
+          child: ResponsiveCenter(
+            maxWidth: 600,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ScaledSizedBox(height: 20),
+                Padding(
+                  padding: EdgeInsets.only(left: scaleSize(16)),
+                  child: SafeOptionsContent(),
+                ),
+              ],
+            ),
           ),
         ),
       ),

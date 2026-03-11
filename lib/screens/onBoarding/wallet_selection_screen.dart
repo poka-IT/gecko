@@ -11,6 +11,7 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class WalletSelectionScreen extends ConsumerStatefulWidget {
@@ -94,64 +95,68 @@ class _WalletSelectionScreenState extends ConsumerState<WalletSelectionScreen> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('selectTargetWallet'.tr()),
       body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Padding(
-                padding: EdgeInsets.all(scaleSize(20)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BuildText(
-                      text: widget.migrationData.hasIdentity
-                          ? 'selectWalletForIdentityMigration'.tr()
-                          : 'selectWalletForMigration'.tr(),
-                    ),
-                    ScaledSizedBox(height: 20),
+        child: ResponsiveCenter(
+          maxWidth: 500,
+          padding: EdgeInsets.zero,
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: EdgeInsets.all(scaleSize(20)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BuildText(
+                        text: widget.migrationData.hasIdentity
+                            ? 'selectWalletForIdentityMigration'.tr()
+                            : 'selectWalletForMigration'.tr(),
+                      ),
+                      ScaledSizedBox(height: 20),
 
-                    Expanded(
-                      child: availableWallets.isEmpty
-                          ? Center(
-                              child: Text(
-                                widget.migrationData.hasIdentity
-                                    ? 'noWalletAvailableForIdentityMigration'.tr()
-                                    : 'noWalletAvailableForMigration'.tr(),
-                                textAlign: TextAlign.center,
-                                style: scaledTextStyle(fontSize: 16, color: Colors.grey[600]),
+                      Expanded(
+                        child: availableWallets.isEmpty
+                            ? Center(
+                                child: Text(
+                                  widget.migrationData.hasIdentity
+                                      ? 'noWalletAvailableForIdentityMigration'.tr()
+                                      : 'noWalletAvailableForMigration'.tr(),
+                                  textAlign: TextAlign.center,
+                                  style: scaledTextStyle(fontSize: 16, color: Colors.grey[600]),
+                                ),
+                              )
+                            : ListView(
+                                children: [
+                                  // Existing wallets
+                                  ...availableWallets.map((wallet) => _buildWalletTile(wallet)),
+
+                                  // Create new wallet option
+                                  _buildCreateNewWalletTile(),
+                                ],
                               ),
-                            )
-                          : ListView(
-                              children: [
-                                // Existing wallets
-                                ...availableWallets.map((wallet) => _buildWalletTile(wallet)),
+                      ),
 
-                                // Create new wallet option
-                                _buildCreateNewWalletTile(),
-                              ],
+                      // Continue button
+                      if (selectedWallet != null || createNewWallet)
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.only(top: scaleSize(20)),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: scaleSize(16)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                    ),
-
-                    // Continue button
-                    if (selectedWallet != null || createNewWallet)
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.only(top: scaleSize(20)),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: context.colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(vertical: scaleSize(16)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: _performMigration,
-                          child: Text(
-                            'continueMigration'.tr(),
-                            style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            onPressed: _performMigration,
+                            child: Text(
+                              'continueMigration'.tr(),
+                              style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }

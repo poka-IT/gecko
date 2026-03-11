@@ -12,6 +12,7 @@ import 'package:gecko/screens/network_activity_screen.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -59,108 +60,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('search'.tr()),
         body: SafeArea(
-          child: Column(
-            children: <Widget>[
-              ScaledSizedBox(height: 20),
-              _buttonsRow(),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 17),
-                child: TextField(
-                  onSubmitted: canValidate
-                      ? (_) {
-                          _isNavigating = true; // Set flag before navigation
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) => const SearchResultScreen(),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                // Fast fade transition to reduce visual jarring
-                                return FadeTransition(
-                                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                                  child: child,
-                                );
-                              },
-                              transitionDuration: const Duration(milliseconds: 200),
-                            ),
-                          );
-                        }
-                      : (value) {},
-                  textInputAction: TextInputAction.search,
-                  key: keySearchField,
-                  controller: searchController,
-                  focusNode: _searchFocusNode,
-                  autofocus: true,
-                  maxLines: 1,
-                  textAlign: TextAlign.left,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    prefixIconConstraints: const BoxConstraints(minHeight: 32),
-                    suffixIcon: searchState.searchText == ''
-                        ? null
-                        : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: IconButton(
-                              onPressed: () {
-                                clearSearch();
-                                _searchFocusNode.requestFocus();
-                              },
-                              icon: Icon(Icons.close, color: Colors.grey[600], size: scaleSize(28)),
-                            ),
-                          ),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 13),
-                      child: Image.asset('assets/loupe-noire.png', height: scaleSize(10)),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey[500]!, width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey[500]!, width: 2.5),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    contentPadding: const EdgeInsets.all(13),
-                  ),
-                  style: scaledTextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w400),
-                ),
-              ),
-              const Spacer(),
-              ScaledSizedBox(
-                width: 270,
-                height: 70,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: canValidate || searchState.canPasteAddress
-                        ? [
-                            BoxShadow(
-                              color: context.colorScheme.primary.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                              spreadRadius: -2,
-                            ),
-                            BoxShadow(
-                              color: context.colorScheme.primary.withValues(alpha: 0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                              spreadRadius: 0,
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: ElevatedButton(
-                    key: keyConfirmSearch,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: context.colorScheme.primary,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: canValidate
-                        ? () {
+          child: ResponsiveCenter(
+            maxWidth: 500,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: <Widget>[
+                ScaledSizedBox(height: 20),
+                _buttonsRow(),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 17),
+                  child: TextField(
+                    onSubmitted: canValidate
+                        ? (_) {
                             _isNavigating = true; // Set flag before navigation
                             Navigator.push(
                               context,
@@ -177,40 +89,136 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                             );
                           }
-                        : searchState.canPasteAddress
-                        ? () async {
-                            _isNavigating = true; // Set flag before navigation
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) =>
-                                    ProfileViewScreen(address: searchState.pastedAddress, username: null),
-                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                  // Fast fade transition to reduce visual jarring
-                                  return FadeTransition(
-                                    opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                                    child: child,
-                                  );
+                        : (value) {},
+                    textInputAction: TextInputAction.search,
+                    key: keySearchField,
+                    controller: searchController,
+                    focusNode: _searchFocusNode,
+                    autofocus: true,
+                    maxLines: 1,
+                    textAlign: TextAlign.left,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIconConstraints: const BoxConstraints(minHeight: 32),
+                      suffixIcon: searchState.searchText == ''
+                          ? null
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: IconButton(
+                                onPressed: () {
+                                  clearSearch();
+                                  _searchFocusNode.requestFocus();
                                 },
-                                transitionDuration: const Duration(milliseconds: 200),
+                                icon: Icon(Icons.close, color: Colors.grey[600], size: scaleSize(28)),
                               ),
-                            );
-                          }
-                        : null,
-                    child: Text(
-                      canValidate
-                          ? 'search'.tr()
-                          : searchState.canPasteAddress
-                          ? 'pasteAddress'.tr()
-                          : 'search'.tr(),
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                            ),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 13),
+                        child: Image.asset('assets/loupe-noire.png', height: scaleSize(10)),
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey[500]!, width: 2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey[500]!, width: 2.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.all(13),
+                    ),
+                    style: scaledTextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w400),
+                  ),
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 17),
+                  child: SizedBox(
+                    height: scaleSize(70),
+                    width: double.infinity,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: canValidate || searchState.canPasteAddress
+                            ? [
+                                BoxShadow(
+                                  color: context.colorScheme.primary.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                  spreadRadius: -2,
+                                ),
+                                BoxShadow(
+                                  color: context.colorScheme.primary.withValues(alpha: 0.2),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                  spreadRadius: 0,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: ElevatedButton(
+                        key: keyConfirmSearch,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: context.colorScheme.primary,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: canValidate
+                            ? () {
+                                _isNavigating = true; // Set flag before navigation
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) => const SearchResultScreen(),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      // Fast fade transition to reduce visual jarring
+                                      return FadeTransition(
+                                        opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 200),
+                                  ),
+                                );
+                              }
+                            : searchState.canPasteAddress
+                            ? () async {
+                                _isNavigating = true; // Set flag before navigation
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) =>
+                                        ProfileViewScreen(address: searchState.pastedAddress, username: null),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      // Fast fade transition to reduce visual jarring
+                                      return FadeTransition(
+                                        opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 200),
+                                  ),
+                                );
+                              }
+                            : null,
+                        child: Text(
+                          canValidate
+                              ? 'search'.tr()
+                              : searchState.canPasteAddress
+                              ? 'pasteAddress'.tr()
+                              : 'search'.tr(),
+                          textAlign: TextAlign.center,
+                          style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const Spacer(),
-            ],
+                const Spacer(),
+              ],
+            ),
           ),
         ),
       ),

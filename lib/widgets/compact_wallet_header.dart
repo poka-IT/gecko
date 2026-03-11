@@ -41,121 +41,126 @@ class CompactWalletHeader extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(8, kToolbarHeight, 12, 8),
           decoration: BoxDecoration(color: backgroundColor),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back button or avatar
-              if (showBackButton)
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.of(context).pop(),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                  iconSize: 24,
-                )
-              else
-                DatapodAvatar(address: address, size: 32),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Back button or avatar
+                  if (showBackButton)
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.of(context).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      iconSize: 24,
+                    )
+                  else
+                    DatapodAvatar(address: address, size: 32),
 
-              const SizedBox(width: 12),
-              // Essential information (left side) - takes 2/3 of available space
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Truncated address with smart truncation
-                    GestureDetector(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: address));
-                        SnackbarService.showAddressCopied(context);
-                      },
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          return buildSmartAddressText(
-                            address: address,
-                            maxWidth: constraints.maxWidth,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    // Compact balance
-                    Balance(address: address, size: 15),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Identity and status (right side) - max 1/3 of available space
-              Expanded(
-                flex: 1,
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
-                    final identityNameAsync = ref.watch(hybridIdentityNameProvider(address));
-
-                    if (idtyStatusAsync.hasValue && identityNameAsync.hasValue) {
-                      final idtyStatus = idtyStatusAsync.value!;
-                      final identityName = identityNameAsync.value;
-
-                      if (idtyStatus != IdtyStatus.none &&
-                          idtyStatus != IdtyStatus.unknown &&
-                          identityName != null &&
-                          identityName.isNotEmpty) {
-                        final isCreated = IdentityUtils.isCreatedStatus(idtyStatus);
-                        final displayName = IdentityUtils.getDisplayName(identityName, idtyStatus) ?? identityName;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Identity name - larger and more prominent with proper truncation
-                            Text(
-                              displayName,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: isCreated ? FontWeight.w500 : FontWeight.w600,
-                                fontStyle: isCreated ? FontStyle.italic : FontStyle.normal,
-                                color: isCreated
-                                    ? Theme.of(context).colorScheme.onSurfaceVariant
-                                    : Theme.of(context).colorScheme.onSurface,
-                              ),
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                            const SizedBox(height: 4),
-                            // Status badge - more prominent
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                IdentityStatusHelper.getStatusText(idtyStatus),
+                  const SizedBox(width: 12),
+                  // Essential information (left side) - takes 2/3 of available space
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Truncated address with smart truncation
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: address));
+                            SnackbarService.showAddressCopied(context);
+                          },
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return buildSmartAddressText(
+                                address: address,
+                                maxWidth: constraints.maxWidth,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: IdentityStatusHelper.getStatusColor(idtyStatus),
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
+                              );
+                            },
+                          ),
+                        ),
+                        // Compact balance
+                        Balance(address: address, size: 15),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Identity and status (right side) - max 1/3 of available space
+                  Expanded(
+                    flex: 1,
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final idtyStatusAsync = ref.watch(hybridIdtyStatusProvider(address));
+                        final identityNameAsync = ref.watch(hybridIdentityNameProvider(address));
+
+                        if (idtyStatusAsync.hasValue && identityNameAsync.hasValue) {
+                          final idtyStatus = idtyStatusAsync.value!;
+                          final identityName = identityNameAsync.value;
+
+                          if (idtyStatus != IdtyStatus.none &&
+                              idtyStatus != IdtyStatus.unknown &&
+                              identityName != null &&
+                              identityName.isNotEmpty) {
+                            final isCreated = IdentityUtils.isCreatedStatus(idtyStatus);
+                            final displayName = IdentityUtils.getDisplayName(identityName, idtyStatus) ?? identityName;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Identity name - larger and more prominent with proper truncation
+                                Text(
+                                  displayName,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: isCreated ? FontWeight.w500 : FontWeight.w600,
+                                    fontStyle: isCreated ? FontStyle.italic : FontStyle.normal,
+                                    color: isCreated
+                                        ? Theme.of(context).colorScheme.onSurfaceVariant
+                                        : Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(height: 4),
+                                // Status badge - more prominent
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    IdentityStatusHelper.getStatusText(idtyStatus),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: IdentityStatusHelper.getStatusColor(idtyStatus),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
               ),
-              const SizedBox(width: 16),
-            ],
+            ),
           ),
         ),
       ),

@@ -7,6 +7,7 @@ import 'package:gecko/widgets/certs_list.dart';
 import 'package:gecko/widgets/certs_counter.dart';
 import 'package:accordion/accordion.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/distance_quality_section.dart';
 
 class CertificationsScreen extends StatefulWidget {
@@ -33,91 +34,95 @@ class _CertificationsScreenState extends State<CertificationsScreen> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('certificationsOf'.tr(args: [widget.username])),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Distance & Quality section (fixed at top, not collapsible)
-            DistanceQualitySection(address: widget.address),
+        child: ResponsiveCenter(
+          maxWidth: 600,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              // Distance & Quality section (fixed at top, not collapsible)
+              DistanceQualitySection(address: widget.address),
 
-            // Certifications accordion (takes remaining space)
-            Expanded(
-              child: Accordion(
-                paddingListTop: scaleSize(4),
-                paddingListBottom: scaleSize(0),
-                paddingListHorizontal: 0,
-                maxOpenSections: 1,
-                headerBackgroundColorOpened: Colors.transparent,
-                scaleWhenAnimating: false,
-                openAndCloseAnimation: true,
-                headerPadding: EdgeInsets.zero,
-                sectionOpeningHapticFeedback: SectionHapticFeedback.heavy,
-                sectionClosingHapticFeedback: SectionHapticFeedback.light,
-                children: [
-                  AccordionSection(
-                    isOpen: _isReceivedOpen,
-                    leftIcon: const SizedBox.shrink(),
-                    headerBackgroundColor: context.colorScheme.surface,
-                    headerBackgroundColorOpened: context.colorScheme.surface,
-                    contentBackgroundColor: context.colorScheme.surface,
-                    rightIcon: const SizedBox.shrink(),
-                    onOpenSection: () => setState(() {
-                      _isReceivedOpen = true;
-                      _isSentOpen = false;
-                    }),
-                    onCloseSection: () => setState(() {
-                      _isReceivedOpen = false;
-                    }),
-                    header: _buildModernHeader(
-                      context: context,
-                      title: 'received'.tr(),
-                      icon: Icons.call_received,
-                      address: widget.address,
-                      isReceived: true,
+              // Certifications accordion (takes remaining space)
+              Expanded(
+                child: Accordion(
+                  paddingListTop: scaleSize(4),
+                  paddingListBottom: scaleSize(0),
+                  paddingListHorizontal: 0,
+                  maxOpenSections: 1,
+                  headerBackgroundColorOpened: Colors.transparent,
+                  scaleWhenAnimating: false,
+                  openAndCloseAnimation: true,
+                  headerPadding: EdgeInsets.zero,
+                  sectionOpeningHapticFeedback: SectionHapticFeedback.heavy,
+                  sectionClosingHapticFeedback: SectionHapticFeedback.light,
+                  children: [
+                    AccordionSection(
                       isOpen: _isReceivedOpen,
+                      leftIcon: const SizedBox.shrink(),
+                      headerBackgroundColor: context.colorScheme.surface,
+                      headerBackgroundColorOpened: context.colorScheme.surface,
+                      contentBackgroundColor: context.colorScheme.surface,
+                      rightIcon: const SizedBox.shrink(),
+                      onOpenSection: () => setState(() {
+                        _isReceivedOpen = true;
+                        _isSentOpen = false;
+                      }),
+                      onCloseSection: () => setState(() {
+                        _isReceivedOpen = false;
+                      }),
+                      header: _buildModernHeader(
+                        context: context,
+                        title: 'received'.tr(),
+                        icon: Icons.call_received,
+                        address: widget.address,
+                        isReceived: true,
+                        isOpen: _isReceivedOpen,
+                      ),
+                      content: Container(
+                        color: context.colorScheme.surface,
+                        constraints: BoxConstraints(maxHeight: availableHeight * 0.65),
+                        child: CertsList(address: widget.address, direction: CertDirection.received),
+                      ),
+                      contentHorizontalPadding: 0,
+                      contentBorderWidth: 0,
+                      paddingBetweenOpenSections: scaleSize(2),
                     ),
-                    content: Container(
-                      color: context.colorScheme.surface,
-                      constraints: BoxConstraints(maxHeight: availableHeight * 0.65),
-                      child: CertsList(address: widget.address, direction: CertDirection.received),
-                    ),
-                    contentHorizontalPadding: 0,
-                    contentBorderWidth: 0,
-                    paddingBetweenOpenSections: scaleSize(2),
-                  ),
-                  AccordionSection(
-                    isOpen: _isSentOpen,
-                    leftIcon: const SizedBox.shrink(),
-                    headerBackgroundColor: context.colorScheme.surface,
-                    headerBackgroundColorOpened: context.colorScheme.surface,
-                    contentBackgroundColor: context.colorScheme.surface,
-                    rightIcon: const SizedBox.shrink(),
-                    onOpenSection: () => setState(() {
-                      _isSentOpen = true;
-                      _isReceivedOpen = false;
-                    }),
-                    onCloseSection: () => setState(() {
-                      _isSentOpen = false;
-                    }),
-                    header: _buildModernHeader(
-                      context: context,
-                      title: 'sent'.tr(),
-                      icon: Icons.call_made,
-                      address: widget.address,
-                      isReceived: false,
+                    AccordionSection(
                       isOpen: _isSentOpen,
+                      leftIcon: const SizedBox.shrink(),
+                      headerBackgroundColor: context.colorScheme.surface,
+                      headerBackgroundColorOpened: context.colorScheme.surface,
+                      contentBackgroundColor: context.colorScheme.surface,
+                      rightIcon: const SizedBox.shrink(),
+                      onOpenSection: () => setState(() {
+                        _isSentOpen = true;
+                        _isReceivedOpen = false;
+                      }),
+                      onCloseSection: () => setState(() {
+                        _isSentOpen = false;
+                      }),
+                      header: _buildModernHeader(
+                        context: context,
+                        title: 'sent'.tr(),
+                        icon: Icons.call_made,
+                        address: widget.address,
+                        isReceived: false,
+                        isOpen: _isSentOpen,
+                      ),
+                      content: Container(
+                        color: context.colorScheme.surface,
+                        constraints: BoxConstraints(maxHeight: availableHeight * 0.65),
+                        child: CertsList(address: widget.address, direction: CertDirection.sent),
+                      ),
+                      contentHorizontalPadding: 0,
+                      contentBorderWidth: 0,
+                      paddingBetweenOpenSections: scaleSize(2),
                     ),
-                    content: Container(
-                      color: context.colorScheme.surface,
-                      constraints: BoxConstraints(maxHeight: availableHeight * 0.65),
-                      child: CertsList(address: widget.address, direction: CertDirection.sent),
-                    ),
-                    contentHorizontalPadding: 0,
-                    contentBorderWidth: 0,
-                    paddingBetweenOpenSections: scaleSize(2),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

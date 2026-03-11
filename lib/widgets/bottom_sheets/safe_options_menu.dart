@@ -13,6 +13,7 @@ void showSafeOptionsMenu(BuildContext context) {
     context: context,
     backgroundColor: Colors.transparent,
     useSafeArea: true,
+    constraints: const BoxConstraints(maxWidth: 600),
     builder: (BuildContext context) {
       final bottomPadding = MediaQuery.of(context).padding.bottom;
       return Container(

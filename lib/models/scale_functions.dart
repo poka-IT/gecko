@@ -5,7 +5,9 @@ double scaleSize(double size) {
   // Use view size instead of MediaQuery to avoid scaling changes when keyboard shows/hides
   final view = View.of(homeContext);
   final viewSize = view.physicalSize / view.devicePixelRatio;
-  final scale = viewSize.width / 375;
+  // Cap the reference width to prevent oversized elements on desktop/wide screens
+  final effectiveWidth = viewSize.width.clamp(0.0, 500.0);
+  final scale = effectiveWidth / 375;
   return size * scale.clamp(0.8, 1.3);
 }
 

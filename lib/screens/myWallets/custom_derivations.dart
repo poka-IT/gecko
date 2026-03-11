@@ -10,6 +10,7 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class CustomDerivation extends ConsumerStatefulWidget {
@@ -48,8 +49,10 @@ class _CustomDerivationState extends ConsumerState<CustomDerivation> {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('createCustomDerivation'.tr()),
-      body: Center(
-        child: SafeArea(
+      body: SafeArea(
+        child: ResponsiveCenter(
+          maxWidth: 600,
+          padding: EdgeInsets.zero,
           child: Column(
             children: <Widget>[
               const Spacer(),

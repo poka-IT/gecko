@@ -138,44 +138,49 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
         ),
         width: size.width,
         height: scaleSize(67),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildNavItem(
-              key: keyAppBarHome,
-              icon: Icons.home_outlined,
-              isSelected: false,
-              onTap: () {
-                Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
-              },
-            ),
-            _buildNavItem(
-              key: keyAppBarQrcode,
-              imagePath: 'assets/qrcode-scan.png',
-              isSelected: widget.actualRoute == 'scan',
-              onTap: () async {
-                final scanQr = ref.read(qrScanProvider);
-                await scanQr(context);
-              },
-            ),
-            _buildNavItem(
-              key: keyAppBarSafe,
-              imagePath: 'assets/wallet.png',
-              isSelected: lockAction,
-              isDisabled: lockAction,
-              onTap: lockAction
-                  ? null
-                  : () async {
-                      if (!await PinCodeService.askPinCode(canSwitch: true)) return;
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(
+                  key: keyAppBarHome,
+                  icon: Icons.home_outlined,
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
+                  },
+                ),
+                _buildNavItem(
+                  key: keyAppBarQrcode,
+                  imagePath: 'assets/qrcode-scan.png',
+                  isSelected: widget.actualRoute == 'scan',
+                  onTap: () async {
+                    final scanQr = ref.read(qrScanProvider);
+                    await scanQr(context);
+                  },
+                ),
+                _buildNavItem(
+                  key: keyAppBarSafe,
+                  imagePath: 'assets/wallet.png',
+                  isSelected: lockAction,
+                  isDisabled: lockAction,
+                  onTap: lockAction
+                      ? null
+                      : () async {
+                          if (!await PinCodeService.askPinCode(canSwitch: true)) return;
 
-                      Navigator.pushNamedAndRemoveUntil(
-                        homeContext,
-                        RouteNames.myWallets,
-                        ModalRoute.withName(RouteNames.home),
-                      );
-                    },
+                          Navigator.pushNamedAndRemoveUntil(
+                            homeContext,
+                            RouteNames.myWallets,
+                            ModalRoute.withName(RouteNames.home),
+                          );
+                        },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

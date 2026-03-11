@@ -46,6 +46,7 @@ void paymentPopup({required String toAddress, required String? username, WalletE
       borderRadius: BorderRadius.only(topRight: Radius.circular(16), topLeft: Radius.circular(16)),
     ),
     isScrollControlled: true,
+    constraints: const BoxConstraints(maxWidth: 600),
     context: homeContext,
     builder: (BuildContext context) {
       return PaymentPopupWidget(toAddress: toAddress, username: username, fromWallet: fromWallet);

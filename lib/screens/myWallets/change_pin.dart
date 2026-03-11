@@ -7,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/screens/myWallets/confirm_change_pin.dart';
 import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -50,7 +51,8 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
       appBar: GeckoAppBar(widget.walletName),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
+          child: ResponsiveCenter(
+            maxWidth: 500,
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

@@ -12,6 +12,7 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 
 class SwitchSafe extends ConsumerStatefulWidget {
@@ -88,81 +89,85 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
       backgroundColor: context.colorScheme.surface,
       appBar: AppBar(toolbarHeight: scaleSize(57), title: Text('selectMySafe'.tr())),
       body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 160),
-            SafeCarousel(
-              allSafes: allSafes,
-              currentSafeIndex: currentSafeIndex,
-              carouselController: buttonCarouselController,
-              onPageChanged: (index, reason) {
-                setState(() {
-                  if (index < allSafes.length) {
-                    // Regular safe selected
-                    currentSafeIndex = index;
-                    currentSafe = allSafes[index].number;
-                  } else {
-                    // Placeholder selected - keep current safe but update index
-                    currentSafeIndex = index;
-                  }
-                });
-              },
-              onSafeCreated: () => _reloadSafes(),
-              onSafeImported: () => _reloadSafes(),
-              showCreatePlaceholder: hasNonLegacySafes,
-              height: 210,
-              isCompact: false,
-            ),
-            // Always show pagination dots if there are multiple items (safes + placeholder)
-            if (allSafes.length + (hasNonLegacySafes ? 1 : 0) > 1)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(allSafes.length + (hasNonLegacySafes ? 1 : 0), (index) {
-                  return GestureDetector(
-                    onTap: () => buttonCarouselController.animateToPage(index),
-                    child: Container(
-                      width: 12.0,
-                      height: 12.0,
-                      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
-                            .withValues(alpha: currentSafeIndex == index ? 0.9 : 0.4),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            const SizedBox(height: 60),
-            // Only show button if a real safe is selected (not placeholder)
-            if (currentSafeIndex < allSafes.length)
-              Container(
-                width: 300,
-                height: 50,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                child: PrimaryButton(
-                  label: 'openThisSafe'.tr(),
-                  onPressed: () async {
-                    await ref.read(walletActionsProvider.notifier).switchSafe(currentSafe);
-                    PinCodeService.pinCode = '';
-                    await ref.read(biometricProvider.notifier).refresh();
-                    if (!await PinCodeService.askPinCode(canSwitch: true)) return;
-
-                    // Pop back to the existing WalletsHome which has already rebuilt
-                    // with new safe data via switchSafe(). The fade animation in
-                    // _WalletsHomeContent handles the visual transition.
-                    if (context.mounted) {
-                      Navigator.pop(context);
+        child: ResponsiveCenter(
+          maxWidth: 600,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 160),
+              SafeCarousel(
+                allSafes: allSafes,
+                currentSafeIndex: currentSafeIndex,
+                carouselController: buttonCarouselController,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    if (index < allSafes.length) {
+                      // Regular safe selected
+                      currentSafeIndex = index;
+                      currentSafe = allSafes[index].number;
+                    } else {
+                      // Placeholder selected - keep current safe but update index
+                      currentSafeIndex = index;
                     }
-                  },
-                  child: Text(
-                    'openThisSafe'.tr(),
-                    style: TextStyle(fontSize: 18, color: context.colorScheme.surface, fontWeight: FontWeight.w600),
+                  });
+                },
+                onSafeCreated: () => _reloadSafes(),
+                onSafeImported: () => _reloadSafes(),
+                showCreatePlaceholder: hasNonLegacySafes,
+                height: 210,
+                isCompact: false,
+              ),
+              // Always show pagination dots if there are multiple items (safes + placeholder)
+              if (allSafes.length + (hasNonLegacySafes ? 1 : 0) > 1)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(allSafes.length + (hasNonLegacySafes ? 1 : 0), (index) {
+                    return GestureDetector(
+                      onTap: () => buttonCarouselController.animateToPage(index),
+                      child: Container(
+                        width: 12.0,
+                        height: 12.0,
+                        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
+                              .withValues(alpha: currentSafeIndex == index ? 0.9 : 0.4),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              const SizedBox(height: 60),
+              // Only show button if a real safe is selected (not placeholder)
+              if (currentSafeIndex < allSafes.length)
+                Container(
+                  width: 300,
+                  height: 50,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  child: PrimaryButton(
+                    label: 'openThisSafe'.tr(),
+                    onPressed: () async {
+                      await ref.read(walletActionsProvider.notifier).switchSafe(currentSafe);
+                      PinCodeService.pinCode = '';
+                      await ref.read(biometricProvider.notifier).refresh();
+                      if (!await PinCodeService.askPinCode(canSwitch: true)) return;
+
+                      // Pop back to the existing WalletsHome which has already rebuilt
+                      // with new safe data via switchSafe(). The fade animation in
+                      // _WalletsHomeContent handles the visual transition.
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text(
+                      'openThisSafe'.tr(),
+                      style: TextStyle(fontSize: 18, color: context.colorScheme.surface, fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ),
-              ),
-            const SizedBox(height: 40),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

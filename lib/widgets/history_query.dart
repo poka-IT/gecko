@@ -293,30 +293,31 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
 
   Widget _buildEmptyStateView(BuildContext context) {
     return Center(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: scaleSize(32)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: scaleSize(80)),
-            // Large image representing empty wallet
-            Container(
-              padding: EdgeInsets.all(scaleSize(16)),
-              child: Image.asset(
-                context.isDarkTheme ? 'assets/empty_wallet_dark.png' : 'assets/empty_wallet_light.png',
-                width: 260,
-                fit: BoxFit.contain,
+      child: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(32), vertical: scaleSize(24)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Large image representing empty wallet
+              Container(
+                padding: EdgeInsets.all(scaleSize(16)),
+                child: Image.asset(
+                  context.isDarkTheme ? 'assets/empty_wallet_dark.png' : 'assets/empty_wallet_light.png',
+                  width: 260,
+                  fit: BoxFit.contain,
+                ),
               ),
-            ),
-            ScaledSizedBox(height: 4),
-            // Main message
-            Text(
-              "noDataToDisplay".tr(),
-              style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: context.colorScheme.onSurface),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: scaleSize(120)),
-          ],
+              ScaledSizedBox(height: 4),
+              // Main message
+              Text(
+                "noDataToDisplay".tr(),
+                style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: context.colorScheme.onSurface),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

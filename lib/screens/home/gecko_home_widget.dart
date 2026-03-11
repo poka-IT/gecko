@@ -35,47 +35,52 @@ class GeckoHomeWidget extends ConsumerWidget {
                   children: <Widget>[
                     Positioned(top: statusBarHeight + scaleSize(10), left: scaleSize(15), child: IconHomeSettings()),
                     Align(
-                      child: AnimatedHeaderImage(isEasterEggActive: isEasterEggActive, height: scaleSize(165)),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: AnimatedHeaderImage(isEasterEggActive: isEasterEggActive, height: scaleSize(165)),
+                      ),
                     ),
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 15),
+                  padding: const EdgeInsets.only(top: 15, left: 16, right: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 350),
-                        child: DefaultTextStyle(
-                          textAlign: TextAlign.center,
-                          style: scaledTextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            shadows: <Shadow>[
-                              const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
-                              const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
-                            ],
-                          ),
-                          child: Consumer(
-                            builder: (context, ref, _) {
-                              final homeMessage = ref.watch(homeMessageProvider);
-                              final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+                      Flexible(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 500),
+                          child: DefaultTextStyle(
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              shadows: <Shadow>[
+                                const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
+                                const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
+                              ],
+                            ),
+                            child: Consumer(
+                              builder: (context, ref, _) {
+                                final homeMessage = ref.watch(homeMessageProvider);
+                                final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
 
-                              return GestureDetector(
-                                onTap: () {
-                                  // Easter egg: only trigger when message is "noLizard"
-                                  if (homeMessage == "noLizard".tr()) {
-                                    homeMessageNotifier.showWisdomOfTheDay(context);
-                                  }
-                                },
-                                child: AnimatedFadeOutIn<String>(
-                                  data: homeMessage,
-                                  duration: const Duration(milliseconds: 200),
-                                  builder: (value) => Text(value),
-                                ),
-                              );
-                            },
+                                return GestureDetector(
+                                  onTap: () {
+                                    // Easter egg: only trigger when message is "noLizard"
+                                    if (homeMessage == "noLizard".tr()) {
+                                      homeMessageNotifier.showWisdomOfTheDay(context);
+                                    }
+                                  },
+                                  child: AnimatedFadeOutIn<String>(
+                                    data: homeMessage,
+                                    duration: const Duration(milliseconds: 200),
+                                    builder: (value) => Text(value),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),

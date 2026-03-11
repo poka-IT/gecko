@@ -115,51 +115,56 @@ class WalletHeaderContent extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(color: isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary),
           padding: EdgeInsets.only(left: scaleSize(16), right: scaleSize(16), bottom: scaleSize(16)),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _AvatarWithProfileLink(
-                address: address,
-                isOwner: isOwner,
-                customImagePath: customImagePath,
-                defaultImagePath: defaultImagePath,
-                identityName: displayName,
-              ),
-              ScaledSizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center, // Center vertically within fixed height
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(child: WalletHeaderAddress(address: address)),
-                    ScaledSizedBox(height: 6),
-                    // Use a placeholder if balance is not yet available
-                    if (walletBalance != null)
-                      Flexible(child: Balance(address: address, size: 18))
-                    else
-                      Flexible(
-                        child: Container(
-                          height: scaleSize(22),
-                          width: scaleSize(120),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _AvatarWithProfileLink(
+                    address: address,
+                    isOwner: isOwner,
+                    customImagePath: customImagePath,
+                    defaultImagePath: defaultImagePath,
+                    identityName: displayName,
+                  ),
+                  ScaledSizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center, // Center vertically within fixed height
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(child: WalletHeaderAddress(address: address)),
+                        ScaledSizedBox(height: 6),
+                        // Use a placeholder if balance is not yet available
+                        if (walletBalance != null)
+                          Flexible(child: Balance(address: address, size: 18))
+                        else
+                          Flexible(
+                            child: Container(
+                              height: scaleSize(22),
+                              width: scaleSize(120),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ScaledSizedBox(height: 6),
+                        Flexible(
+                          child: WalletHeaderIdentitySection(
+                            address: address,
+                            idtyStatus: idtyStatus,
+                            identityName: displayName ?? ' ',
                           ),
                         ),
-                      ),
-                    ScaledSizedBox(height: 6),
-                    Flexible(
-                      child: WalletHeaderIdentitySection(
-                        address: address,
-                        idtyStatus: idtyStatus,
-                        identityName: displayName ?? ' ',
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -12,6 +12,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gif_view/gif_view.dart';
 
@@ -81,7 +82,7 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
     if (!_scrollController.hasClients) return;
 
     // Only show indicator if there's meaningful scroll content (more than 10 pixels)
-    final bool isScrollable = _scrollController.position.maxScrollExtent > 10;
+    final bool isScrollable = _scrollController.position.maxScrollExtent > 50;
     if (_showScrollIndicator != isScrollable) {
       setState(() {
         _showScrollIndicator = isScrollable;
@@ -124,34 +125,38 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
         body: SafeArea(
           child: Stack(
             children: [
-              SingleChildScrollView(
-                controller: _scrollController,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      ScaledSizedBox(height: isTall ? 25 : 5),
-                      BuildText(
-                        text: widget.fromRestore
-                            ? "yourSafeAndWalletWereRestoredSuccessfully".tr()
-                            : "yourSafeAndWalletWereCreatedSuccessfully".tr(),
-                      ),
-                      ScaledSizedBox(height: isTall ? 15 : 5),
-                      GifView(
-                        image: AssetImage('assets/onBoarding/gecko-clin.gif'),
-                        height: scaleSize(isTall ? 330 : 280),
-                      ),
-                      // We need this invisible second gif to preload the gif, otherwise it will glitch on loop
-                      Image.asset('assets/onBoarding/gecko-clin.gif', height: 0),
+              ResponsiveCenter(
+                maxWidth: 500,
+                padding: EdgeInsets.zero,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        ScaledSizedBox(height: isTall ? 25 : 5),
+                        BuildText(
+                          text: widget.fromRestore
+                              ? "yourSafeAndWalletWereRestoredSuccessfully".tr()
+                              : "yourSafeAndWalletWereCreatedSuccessfully".tr(),
+                        ),
+                        ScaledSizedBox(height: isTall ? 15 : 5),
+                        GifView(
+                          image: AssetImage('assets/onBoarding/gecko-clin.gif'),
+                          height: scaleSize(isTall ? 330 : 280),
+                        ),
+                        // We need this invisible second gif to preload the gif, otherwise it will glitch on loop
+                        Image.asset('assets/onBoarding/gecko-clin.gif', height: 0),
 
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
-                        child: finishButton(context, widget.isLegacyMode),
-                      ),
-                      ScaledSizedBox(height: isTall ? 40 : 5),
-                    ],
+                        Container(
+                          padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                          child: finishButton(context, widget.isLegacyMode),
+                        ),
+                        ScaledSizedBox(height: isTall ? 40 : 5),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -293,6 +298,7 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        constraints: const BoxConstraints(maxWidth: 600),
         builder: (context) => Container(
           decoration: BoxDecoration(
             color: context.colorScheme.surface,

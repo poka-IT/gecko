@@ -153,6 +153,11 @@ class HistoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Fallback: wraps buildItems in a Column for backward compatibility
-    return Column(children: buildItems(context));
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 700),
+        child: Column(children: buildItems(context)),
+      ),
+    );
   }
 }

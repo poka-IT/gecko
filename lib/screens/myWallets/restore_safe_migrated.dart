@@ -12,6 +12,7 @@ import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/routes.dart';
 
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class RestoreSafeMigrated extends ConsumerWidget {
@@ -33,175 +34,182 @@ class RestoreSafeMigrated extends ConsumerWidget {
         appBar: GeckoAppBar('restoreASafe'.tr()),
         body: SafeArea(
           child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                ScaledSizedBox(height: isTall ? 20 : 3),
-                // Bubble speak widget - implement or import as needed
-                Text('toRestoreEnterMnemonic'.tr(), style: scaledTextStyle(fontSize: 16)),
-                ScaledSizedBox(height: isTall ? 20 : 5),
-                // Responsive mnemonic input grid
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final textScaler = MediaQuery.textScalerOf(context);
-                    final isTextScaled = textScaler.scale(1.0) > 1.3;
+            child: ResponsiveCenter(
+              maxWidth: 500,
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: <Widget>[
+                  ScaledSizedBox(height: isTall ? 20 : 3),
+                  // Bubble speak widget - implement or import as needed
+                  Text('toRestoreEnterMnemonic'.tr(), style: scaledTextStyle(fontSize: 16)),
+                  ScaledSizedBox(height: isTall ? 20 : 5),
+                  // Responsive mnemonic input grid
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final textScaler = MediaQuery.textScalerOf(context);
+                      final isTextScaled = textScaler.scale(1.0) > 1.3;
 
-                    // Calculate optimal layout
-                    final horizontalPadding = scaleSize(32);
-                    final availableWidth = constraints.maxWidth - horizontalPadding;
-                    final spacing = scaleSize(8);
+                      // Calculate optimal layout
+                      final horizontalPadding = scaleSize(32);
+                      final availableWidth = constraints.maxWidth - horizontalPadding;
+                      final spacing = scaleSize(8);
 
-                    int cellsPerRow;
-                    if (isTextScaled) {
-                      cellsPerRow = 3;
-                    } else if (availableWidth < scaleSize(300)) {
-                      cellsPerRow = 2;
-                    } else {
-                      cellsPerRow = 4;
-                    }
+                      int cellsPerRow;
+                      if (isTextScaled) {
+                        cellsPerRow = 3;
+                      } else if (availableWidth < scaleSize(300)) {
+                        cellsPerRow = 2;
+                      } else {
+                        cellsPerRow = 4;
+                      }
 
-                    final cellWidth = (availableWidth - (spacing * (cellsPerRow - 1))) / cellsPerRow;
-                    final cellHeight = scaleSize(isTextScaled ? 60 : 52);
+                      final cellWidth = (availableWidth - (spacing * (cellsPerRow - 1))) / cellsPerRow;
+                      final cellHeight = scaleSize(isTextScaled ? 60 : 52);
 
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding / 2),
-                      child: Wrap(
-                        spacing: spacing,
-                        runSpacing: scaleSize(isTall ? 10 : 6),
-                        alignment: WrapAlignment.center,
-                        children: controllers
-                            .asMap()
-                            .entries
-                            .map(
-                              (entry) => _buildMnemonicCell(
-                                context,
-                                ref,
-                                entry.value,
-                                entry.key,
-                                cellWidth: cellWidth,
-                                cellHeight: cellHeight,
-                              ),
-                            )
-                            .toList(),
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding / 2),
+                        child: Wrap(
+                          spacing: spacing,
+                          runSpacing: scaleSize(isTall ? 10 : 6),
+                          alignment: WrapAlignment.center,
+                          children: controllers
+                              .asMap()
+                              .entries
+                              .map(
+                                (entry) => _buildMnemonicCell(
+                                  context,
+                                  ref,
+                                  entry.value,
+                                  entry.key,
+                                  cellWidth: cellWidth,
+                                  cellHeight: cellHeight,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Validation state and continue button
+                  if (mnemonicInput.isComplete && mnemonicInput.isValid)
+                    Container(
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                          child: ElevatedButton(
+                            key: keyGoNext,
+                            style:
+                                ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: context.colorScheme.primary,
+                                  elevation: 0,
+                                  padding: EdgeInsets.symmetric(vertical: scaleSize(16), horizontal: scaleSize(24)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  minimumSize: Size(scaleSize(280), scaleSize(56)),
+                                ).copyWith(
+                                  elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                                    if (states.contains(WidgetState.pressed)) return 0;
+                                    return 8;
+                                  }),
+                                  shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
+                                ),
+                            onPressed: () async {
+                              final validatedMnemonic = await ref
+                                  .read(mnemonicInputProvider.notifier)
+                                  .getValidatedMnemonic();
+
+                              if (validatedMnemonic != null) {
+                                // Set the mnemonic in the state for the next screen
+                                await ref
+                                    .read(mnemonicStateProvider.notifier)
+                                    .setMnemonic(validatedMnemonic.displayMnemonic);
+
+                                // Clear input and navigate
+                                ref.read(clearMnemonicInputProvider)();
+
+                                await AppNavigator.pushWithFader(
+                                  context,
+                                  skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
+                                  arguments: OnboardingStepsSevenToNineArguments(
+                                    scanDerivation: true,
+                                    fromRestore: true,
+                                  ),
+                                  isFast: true,
+                                );
+                              }
+                            },
+                            child: Text(
+                              'restoreAWallet'.tr(),
+                              style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
+                          ),
+                        ),
                       ),
-                    );
-                  },
-                ),
+                    ),
 
-                // Validation state and continue button
-                if (mnemonicInput.isComplete && mnemonicInput.isValid)
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                  // Paste from clipboard option
+                  ScaledSizedBox(height: 20),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
                     child: Align(
                       alignment: Alignment.center,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                      child: SizedBox(
+                        height: scaleSize(50),
                         child: ElevatedButton(
-                          key: keyGoNext,
+                          key: keyPastMnemonic,
                           style:
                               ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: context.colorScheme.primary,
+                                foregroundColor: Colors.black,
+                                backgroundColor: context.colorScheme.secondary,
                                 elevation: 0,
-                                padding: EdgeInsets.symmetric(vertical: scaleSize(16), horizontal: scaleSize(24)),
+                                padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                minimumSize: Size(scaleSize(280), scaleSize(56)),
+                                minimumSize: Size(scaleSize(120), scaleSize(48)),
                               ).copyWith(
                                 elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
                                   if (states.contains(WidgetState.pressed)) return 0;
-                                  return 8;
+                                  return 4;
                                 }),
-                                shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.2)),
+                                shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
                               ),
                           onPressed: () async {
-                            final validatedMnemonic = await ref
-                                .read(mnemonicInputProvider.notifier)
-                                .getValidatedMnemonic();
-
-                            if (validatedMnemonic != null) {
-                              // Set the mnemonic in the state for the next screen
-                              await ref
-                                  .read(mnemonicStateProvider.notifier)
-                                  .setMnemonic(validatedMnemonic.displayMnemonic);
-
-                              // Clear input and navigate
-                              ref.read(clearMnemonicInputProvider)();
-
-                              await AppNavigator.pushWithFader(
-                                context,
-                                skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
-                                arguments: OnboardingStepsSevenToNineArguments(scanDerivation: true, fromRestore: true),
-                                isFast: true,
-                              );
+                            final success = await ref.read(pasteMnemonicProvider)();
+                            if (!success) {
+                              // Show error if paste failed
+                              await badMnemonicPopup(context);
                             }
                           },
-                          child: Text(
-                            'restoreAWallet'.tr(),
-                            style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.content_paste_go,
+                                size: scaleSize(18),
+                                color: Colors.black.withValues(alpha: 0.7),
+                              ),
+                              SizedBox(width: scaleSize(6)),
+                              Flexible(
+                                child: Text(
+                                  'pasteFromClipboard'.tr(),
+                                  textAlign: TextAlign.center,
+                                  style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.3),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
-
-                // Paste from clipboard option
-                ScaledSizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: SizedBox(
-                      height: scaleSize(50),
-                      child: ElevatedButton(
-                        key: keyPastMnemonic,
-                        style:
-                            ElevatedButton.styleFrom(
-                              foregroundColor: Colors.black,
-                              backgroundColor: context.colorScheme.secondary,
-                              elevation: 0,
-                              padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              minimumSize: Size(scaleSize(120), scaleSize(48)),
-                            ).copyWith(
-                              elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                                if (states.contains(WidgetState.pressed)) return 0;
-                                return 4;
-                              }),
-                              shadowColor: WidgetStateProperty.all(Colors.black.withValues(alpha: 0.15)),
-                            ),
-                        onPressed: () async {
-                          final success = await ref.read(pasteMnemonicProvider)();
-                          if (!success) {
-                            // Show error if paste failed
-                            await badMnemonicPopup(context);
-                          }
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.content_paste_go,
-                              size: scaleSize(18),
-                              color: Colors.black.withValues(alpha: 0.7),
-                            ),
-                            SizedBox(width: scaleSize(6)),
-                            Flexible(
-                              child: Text(
-                                'pasteFromClipboard'.tr(),
-                                textAlign: TextAlign.center,
-                                style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, height: 1.3),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                ScaledSizedBox(height: 40),
-              ],
+                  ScaledSizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         ),

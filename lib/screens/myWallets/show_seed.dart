@@ -15,6 +15,7 @@ import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/mnemonic_display.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -41,7 +42,8 @@ class ShowSeed extends ConsumerWidget {
       appBar: GeckoAppBar('myMnemonic'.tr()),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
+          child: ResponsiveCenter(
+            maxWidth: 500,
             padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
             child: Column(
               children: <Widget>[
@@ -287,6 +289,7 @@ class PrintWallet extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        backgroundColor: context.colorScheme.surface,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -299,7 +302,18 @@ class PrintWallet extends StatelessWidget {
           toolbarHeight: scaleSize(57),
           title: Text('printMyMnemonic'.tr(), style: scaledTextStyle(fontWeight: FontWeight.w600)),
         ),
-        body: PdfPreview(canDebug: false, canChangeOrientation: false, build: (format) => printWallet(sentence)),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: PdfPreview(
+              canDebug: false,
+              canChangeOrientation: false,
+              scrollViewDecoration: BoxDecoration(color: context.colorScheme.surface),
+              previewPageMargin: const EdgeInsets.all(8),
+              build: (format) => printWallet(sentence),
+            ),
+          ),
+        ),
       ),
     );
   }

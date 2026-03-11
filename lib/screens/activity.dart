@@ -54,7 +54,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
       hasIdentity: idtyStatusValue.hasIdentity,
       isOwner: ref.read(isOwnerProvider(widget.address)),
       walletName: ref.read(squidServiceProvider).walletNameIndexer[widget.address],
-      balance: balanceResult.transferableBalance,
+      balance: balanceResult.total,
       certsReceived: certData.receivedCount,
       certsSent: certData.sentCount,
     );
@@ -72,7 +72,14 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
             body: Column(
               children: [
                 _buildFixedHeader(),
-                const Expanded(child: Center(child: CircularProgressIndicator())),
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 700),
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+                ),
               ],
             ),
           );
@@ -85,12 +92,17 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
                 _buildFixedHeader(),
                 Expanded(
                   child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 42),
-                      child: Text(
-                        'errorLoadingWalletData'.tr(),
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(fontSize: 16),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 700),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 42),
+                          child: Text(
+                            'errorLoadingWalletData'.tr(),
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: 16),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -114,7 +126,12 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
 
           // Transaction history takes remaining space
           Expanded(
-            child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: HistoryQuery(address: widget.address, transactionData: widget.transactionData),
+              ),
+            ),
           ),
         ],
       ),

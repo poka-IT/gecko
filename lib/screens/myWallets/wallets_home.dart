@@ -206,7 +206,11 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
 
     final screenWidth = MediaQuery.of(context).size.width;
     int nTule;
-    if (screenWidth >= 700) {
+    if (screenWidth >= 1200) {
+      nTule = 6;
+    } else if (screenWidth >= 900) {
+      nTule = 5;
+    } else if (screenWidth >= 700) {
       nTule = 4;
     } else if (screenWidth >= 450) {
       nTule = 3;
@@ -388,83 +392,90 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
         body: FadeTransition(
           opacity: _fadeAnimation,
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
-                  // Identity wallet section
-                  if (idtyWallet != null)
-                    SliverToBoxAdapter(
-                      child: Consumer(
-                        builder: (context, ref, child) {
-                          // Get the latest wallet data to ensure avatar updates are reflected
-                          final latestIdtyWallet = ref.watch(walletByAddressProvider(idtyWallet.address)) ?? idtyWallet;
-                          return DragTuleAction(
-                            wallet: latestIdtyWallet,
-                            child: WalletTileMembre(wallet: latestIdtyWallet, attachTutorialKey: false),
-                          );
-                        },
-                      ),
-                    ),
-                  // Regular wallets - manual grid using Column/Row
-                  SliverToBoxAdapter(
-                    key: keyListWallets,
-                    child: Builder(
-                      builder: (context) {
-                        // Calculate tile size once, outside of any complex layout
-                        final screenWidth = MediaQuery.of(context).size.width;
-                        final availableWidth = screenWidth - 10; // Account for horizontal padding (5px each side)
-                        final tileWidth = (availableWidth / nTule) - 0.1; // Slight reduction to prevent overflow
-                        final tileHeight = tileWidth;
-
-                        // Create list of all items including add button
-                        final allItems = <Widget>[
-                          for (var i = 0; i < frozenWalletsWithoutIdty.length; i++)
-                            DragTuleAction(
-                              key: ValueKey(
-                                'wallet_container_${frozenWalletsWithoutIdty[i].address}_${widget.safeFingerprint}_$i',
-                              ),
-                              wallet: frozenWalletsWithoutIdty[i],
-                              child: WalletTile(
-                                repository: frozenWalletsWithoutIdty[i],
-                                tutorialKey: i == targetWalletIndex ? tutorialKey : null,
-                                uniqueId: 'grid_${widget.safeFingerprint}_$i',
-                                currentSafe: currentSafe.number,
-                                hasIdentityWallet: idtyWallet != null,
-                              ),
-                            ),
-                          if (ref.read(durtProvider).isConnected && frozenWalletsWithoutIdty.length < maxWalletsInSafe)
-                            const AddNewDerivationButton(),
-                        ];
-
-                        // Build rows manually using Expanded to avoid overflow
-                        final rows = <Widget>[];
-                        for (int i = 0; i < allItems.length; i += nTule) {
-                          final rowItems = <Widget>[];
-                          for (int j = 0; j < nTule; j++) {
-                            if (i + j < allItems.length) {
-                              rowItems.add(
-                                Expanded(
-                                  child: SizedBox(height: tileHeight, child: allItems[i + j]),
-                                ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1400),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: CustomScrollView(
+                    slivers: <Widget>[
+                      SliverToBoxAdapter(child: ScaledSizedBox(height: 12)),
+                      // Identity wallet section
+                      if (idtyWallet != null)
+                        SliverToBoxAdapter(
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              // Get the latest wallet data to ensure avatar updates are reflected
+                              final latestIdtyWallet =
+                                  ref.watch(walletByAddressProvider(idtyWallet.address)) ?? idtyWallet;
+                              return DragTuleAction(
+                                wallet: latestIdtyWallet,
+                                child: WalletTileMembre(wallet: latestIdtyWallet, attachTutorialKey: false),
                               );
-                            } else {
-                              rowItems.add(Expanded(child: SizedBox(height: tileHeight)));
-                            }
-                          }
-                          rows.add(Row(children: rowItems));
-                        }
+                            },
+                          ),
+                        ),
+                      // Regular wallets - manual grid using Column/Row
+                      SliverToBoxAdapter(
+                        key: keyListWallets,
+                        child: Builder(
+                          builder: (context) {
+                            // Calculate tile size once, outside of any complex layout
+                            final screenWidth = MediaQuery.of(context).size.width;
+                            final availableWidth = screenWidth - 10; // Account for horizontal padding (5px each side)
+                            final tileWidth = (availableWidth / nTule) - 0.1; // Slight reduction to prevent overflow
+                            final tileHeight = tileWidth;
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          child: Column(children: rows),
-                        );
-                      },
-                    ),
+                            // Create list of all items including add button
+                            final allItems = <Widget>[
+                              for (var i = 0; i < frozenWalletsWithoutIdty.length; i++)
+                                DragTuleAction(
+                                  key: ValueKey(
+                                    'wallet_container_${frozenWalletsWithoutIdty[i].address}_${widget.safeFingerprint}_$i',
+                                  ),
+                                  wallet: frozenWalletsWithoutIdty[i],
+                                  child: WalletTile(
+                                    repository: frozenWalletsWithoutIdty[i],
+                                    tutorialKey: i == targetWalletIndex ? tutorialKey : null,
+                                    uniqueId: 'grid_${widget.safeFingerprint}_$i',
+                                    currentSafe: currentSafe.number,
+                                    hasIdentityWallet: idtyWallet != null,
+                                  ),
+                                ),
+                              if (ref.read(durtProvider).isConnected &&
+                                  frozenWalletsWithoutIdty.length < maxWalletsInSafe)
+                                const AddNewDerivationButton(),
+                            ];
+
+                            // Build rows manually using Expanded to avoid overflow
+                            final rows = <Widget>[];
+                            for (int i = 0; i < allItems.length; i += nTule) {
+                              final rowItems = <Widget>[];
+                              for (int j = 0; j < nTule; j++) {
+                                if (i + j < allItems.length) {
+                                  rowItems.add(
+                                    Expanded(
+                                      child: SizedBox(height: tileHeight, child: allItems[i + j]),
+                                    ),
+                                  );
+                                } else {
+                                  rowItems.add(Expanded(child: SizedBox(height: tileHeight)));
+                                }
+                              }
+                              rows.add(Row(children: rowItems));
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5),
+                              child: Column(children: rows),
+                            );
+                          },
+                        ),
+                      ),
+                      const SliverToBoxAdapter(child: SafeOptionsButtons()),
+                    ],
                   ),
-                  const SliverToBoxAdapter(child: SafeOptionsButtons()),
-                ],
+                ),
               ),
             ),
           ),

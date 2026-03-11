@@ -41,14 +41,16 @@ class SafeOptions extends ConsumerWidget {
           child: ResponsiveCenter(
             maxWidth: 600,
             padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                ScaledSizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.only(left: scaleSize(16)),
-                  child: SafeOptionsContent(),
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ScaledSizedBox(height: 20),
+                  Padding(
+                    padding: EdgeInsets.only(left: scaleSize(16)),
+                    child: SafeOptionsContent(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

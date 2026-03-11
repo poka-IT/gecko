@@ -100,79 +100,102 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
             titleBuilder: (uname) => uname == null ? 'seeAWallet'.tr() : 'memberAccountOf'.tr(args: [uname]),
           ),
           body: SafeArea(
-            child: Column(
-              children: [
-                // Header spans full width (has internal centering)
-                WalletHeader(address: address),
-                ScaledSizedBox(height: 20),
-                Expanded(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final aspectRatio = constraints.maxHeight / constraints.maxWidth;
+                final isCompact = aspectRatio < 1.3;
+                final scaleFactor = isCompact ? (aspectRatio / 1.3).clamp(0.75, 1.0) : 1.0;
+                final btnSize = buttonSize * scaleFactor;
+                final gap = isCompact ? 6.0 : scaleSize(20);
+
+                return Column(
+                  children: [
+                    if (isCompact)
+                      SizedBox(
+                        width: double.infinity,
+                        child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(
+                            width: constraints.maxWidth / scaleFactor,
+                            child: WalletHeader(address: address),
+                          ),
+                        ),
+                      )
+                    else
+                      WalletHeader(address: address),
+                    SizedBox(height: gap),
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Column(
                             children: [
-                              _buildActionButton(
-                                context: context,
-                                key: keyViewActivity,
-                                icon: 'assets/walletOptions/clock.png',
-                                label: "displayNActivity".tr(),
-                                onTap: () async {
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) =>
-                                          ActivityScreen(address: address),
-                                      transitionDuration: const Duration(milliseconds: 300),
-                                      reverseTransitionDuration: const Duration(milliseconds: 300),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                        const begin = Offset(1.0, 0.0);
-                                        const end = Offset.zero;
-                                        const curve = Curves.easeInOut;
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildActionButton(
+                                    context: context,
+                                    key: keyViewActivity,
+                                    icon: 'assets/walletOptions/clock.png',
+                                    label: "displayNActivity".tr(),
+                                    size: btnSize,
+                                    onTap: () async {
+                                      Navigator.push(
+                                        context,
+                                        PageRouteBuilder(
+                                          pageBuilder: (context, animation, secondaryAnimation) =>
+                                              ActivityScreen(address: address),
+                                          transitionDuration: const Duration(milliseconds: 300),
+                                          reverseTransitionDuration: const Duration(milliseconds: 300),
+                                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                            const begin = Offset(1.0, 0.0);
+                                            const end = Offset.zero;
+                                            const curve = Curves.easeInOut;
 
-                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-                                        return SlideTransition(position: animation.drive(tween), child: child);
-                                      },
-                                    ),
-                                  );
-                                },
+                                            return SlideTransition(position: animation.drive(tween), child: child);
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  Consumer(
+                                    builder: (context, ref, _) {
+                                      ref.watch(blockHeightProvider);
+                                      return _buildCertificationSection(ref, scaleFactor);
+                                    },
+                                  ),
+                                  _buildActionButton(
+                                    context: context,
+                                    key: keyCopyAddress,
+                                    icon: 'assets/copy_key.png',
+                                    label: "copyAddress".tr(),
+                                    size: btnSize,
+                                    onTap: () {
+                                      Clipboard.setData(ClipboardData(text: address));
+                                      SnackbarService.showAddressCopied(context);
+                                    },
+                                  ),
+                                ],
                               ),
-                              Consumer(
-                                builder: (context, ref, _) {
-                                  ref.watch(blockHeightProvider);
-                                  return _buildCertificationSection(ref);
-                                },
-                              ),
-                              _buildActionButton(
-                                context: context,
-                                key: keyCopyAddress,
-                                icon: 'assets/copy_key.png',
-                                label: "copyAddress".tr(),
-                                onTap: () {
-                                  Clipboard.setData(ClipboardData(text: address));
-                                  SnackbarService.showAddressCopied(context);
-                                },
+                              const Spacer(),
+                              Column(
+                                children: [
+                                  _buildTransferButton(ref, scaleFactor),
+                                  SizedBox(height: isCompact ? 4 : scaleSize(isTall ? 40 : 7)),
+                                ],
                               ),
                             ],
                           ),
-                          const Spacer(),
-                          // Fixed bottom: transfer button
-                          Column(
-                            children: [
-                              _buildTransferButton(ref),
-                              ScaledSizedBox(height: isTall ? 40 : 7),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         );
@@ -186,13 +209,14 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
     required String label,
     required VoidCallback onTap,
     required Key key,
+    double size = buttonSize,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          height: scaleSize(buttonSize),
-          width: scaleSize(buttonSize),
+          height: scaleSize(size),
+          width: scaleSize(size),
           decoration: BoxDecoration(
             color: context.colorScheme.secondary,
             shape: BoxShape.circle,
@@ -204,10 +228,10 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
             color: Colors.transparent,
             child: InkWell(
               key: key,
-              borderRadius: BorderRadius.circular(buttonSize / 2),
+              borderRadius: BorderRadius.circular(size / 2),
               onTap: onTap,
               child: Padding(
-                padding: EdgeInsets.all(scaleSize(15)),
+                padding: EdgeInsets.all(scaleSize(size * 0.2)),
                 child: Image.asset(icon, color: context.colorScheme.onSurface),
               ),
             ),
@@ -223,7 +247,8 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
     );
   }
 
-  Widget _buildTransferButton(WidgetRef ref) {
+  Widget _buildTransferButton(WidgetRef ref, [double scaleFactor = 1.0]) {
+    final btnSize = (buttonSize + 5) * scaleFactor;
     return Consumer(
       builder: (context, ref, _) {
         // Watch block height to trigger rebuilds when connection changes
@@ -232,8 +257,8 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              height: scaleSize(buttonSize + 5),
-              width: scaleSize(buttonSize + 5),
+              height: scaleSize(btnSize),
+              width: scaleSize(btnSize),
               decoration: BoxDecoration(
                 color: context.colorScheme.primary,
                 shape: BoxShape.circle,
@@ -248,10 +273,10 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     key: keyPay,
-                    borderRadius: BorderRadius.circular((buttonSize + 5) / 2),
+                    borderRadius: BorderRadius.circular(btnSize / 2),
                     onTap: ref.read(durtProvider).isConnected ? () => _handleTransfer(ref) : null,
                     child: Padding(
-                      padding: EdgeInsets.all(scaleSize(15)),
+                      padding: EdgeInsets.all(scaleSize(btnSize * 0.19)),
                       child: Image.asset('assets/vector_white.png', color: Colors.white),
                     ),
                   ),
@@ -274,7 +299,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   }
 
   /// Build the certification section with optional multi-account dropdown
-  Widget _buildCertificationSection(WidgetRef ref) {
+  Widget _buildCertificationSection(WidgetRef ref, [double scaleFactor = 1.0]) {
     final certStateAsync = ref.watch(certStateProvider(address));
 
     return certStateAsync.when(
@@ -289,8 +314,9 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
             // Clamp values to prevent errors
             final clampedValue = value.clamp(0.0, 1.0);
 
+            final certBtnSize = buttonSize * scaleFactor;
             return SizedBox(
-              width: scaleSize(buttonSize + 20), // Extra width for certification text
+              width: scaleSize(certBtnSize + 20), // Extra width for certification text
               child: Opacity(
                 opacity: clampedValue,
                 child: Transform.scale(
@@ -305,7 +331,7 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
                               CertStateWidget(certState: certState, address: address),
                             ],
                           )
-                        : SizedBox(width: scaleSize(buttonSize), height: scaleSize(buttonSize + 20)),
+                        : SizedBox(width: scaleSize(certBtnSize), height: scaleSize(certBtnSize + 20)),
                   ),
                 ),
               ),

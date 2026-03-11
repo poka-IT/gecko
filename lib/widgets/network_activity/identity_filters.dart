@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -140,155 +141,167 @@ class _IdentityFiltersState extends ConsumerState<IdentityFilters> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      constraints: const BoxConstraints(maxWidth: 600),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           // Don't use Consumer here - we manage state locally
 
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.8, // 80% of screen height
-            decoration: BoxDecoration(
-              color: context.colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2)),
-              ],
-            ),
-            child: Column(
-              children: [
-                // Handle bar for dragging
-                Container(
-                  margin: EdgeInsets.only(top: scaleSize(12)),
-                  width: scaleSize(40),
-                  height: scaleSize(4),
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+          return CallbackShortcuts(
+            bindings: <ShortcutActivator, VoidCallback>{
+              const SingleActivator(LogicalKeyboardKey.enter): () {
+                _applyFilters();
+                Navigator.pop(context);
+              },
+            },
+            child: Focus(
+              autofocus: true,
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.8, // 80% of screen height
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surface,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2)),
+                  ],
                 ),
-
-                // Header
-                Padding(
-                  padding: EdgeInsets.all(scaleSize(16)),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'filterIdentities'.tr(),
-                          style: scaledTextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: context.colorScheme.onSurface,
-                          ),
-                        ),
+                child: Column(
+                  children: [
+                    // Handle bar for dragging
+                    Container(
+                      margin: EdgeInsets.only(top: scaleSize(12)),
+                      width: scaleSize(40),
+                      height: scaleSize(4),
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.close, size: scaleSize(24)),
-                        style: IconButton.styleFrom(
-                          backgroundColor: context.colorScheme.surfaceContainer,
-                          foregroundColor: context.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Scrollable content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Name search
-                        _buildSimpleNameFilter(context, setModalState),
-                        SizedBox(height: scaleSize(16)),
-
-                        // Status filters
-                        _buildSimpleStatusFilters(context, setModalState),
-                        SizedBox(height: scaleSize(16)),
-
-                        // Date range
-                        _buildSimpleDateRange(context, setModalState),
-                        SizedBox(height: scaleSize(16)),
-
-                        // Bottom padding to ensure content is not hidden behind sticky buttons
-                        SizedBox(height: scaleSize(100)),
-                      ],
                     ),
-                  ),
-                ),
 
-                // Sticky action buttons at bottom
-                Container(
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surface,
-                    border: Border(
-                      top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  padding: EdgeInsets.fromLTRB(
-                    scaleSize(16),
-                    scaleSize(16),
-                    scaleSize(16),
-                    scaleSize(16) + MediaQuery.of(context).padding.bottom,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () {
-                            _resetFilters();
-                            Navigator.pop(context);
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: context.colorScheme.onSurfaceVariant,
-                            padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: Text(
-                            'clearAll'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: context.colorScheme.onSurfaceVariant,
+                    // Header
+                    Padding(
+                      padding: EdgeInsets.all(scaleSize(16)),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'filterIdentities'.tr(),
+                              style: scaledTextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: context.colorScheme.onSurface,
+                              ),
                             ),
                           ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Icon(Icons.close, size: scaleSize(24)),
+                            style: IconButton.styleFrom(
+                              backgroundColor: context.colorScheme.surfaceContainer,
+                              foregroundColor: context.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Scrollable content
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Name search
+                            _buildSimpleNameFilter(context, setModalState),
+                            SizedBox(height: scaleSize(16)),
+
+                            // Status filters
+                            _buildSimpleStatusFilters(context, setModalState),
+                            SizedBox(height: scaleSize(16)),
+
+                            // Date range
+                            _buildSimpleDateRange(context, setModalState),
+                            SizedBox(height: scaleSize(16)),
+
+                            // Bottom padding to ensure content is not hidden behind sticky buttons
+                            SizedBox(height: scaleSize(100)),
+                          ],
                         ),
                       ),
-                      SizedBox(width: scaleSize(12)),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Apply all filters before closing
-                            _applyFilters();
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: context.colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 2,
-                            padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
-                          ),
-                          child: Text(
-                            'done'.tr(),
-                            style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
-                          ),
+                    ),
+
+                    // Sticky action buttons at bottom
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surface,
+                        border: Border(
+                          top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, -2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                      padding: EdgeInsets.fromLTRB(
+                        scaleSize(16),
+                        scaleSize(16),
+                        scaleSize(16),
+                        scaleSize(16) + MediaQuery.of(context).padding.bottom,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () {
+                                _resetFilters();
+                                Navigator.pop(context);
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: context.colorScheme.onSurfaceVariant,
+                                padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text(
+                                'clearAll'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: context.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: scaleSize(12)),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                // Apply all filters before closing
+                                _applyFilters();
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.colorScheme.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 2,
+                                padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
+                              ),
+                              child: Text(
+                                'done'.tr(),
+                                style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },

@@ -68,72 +68,77 @@ class CreateSafePlaceholder extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-          title: Text(
-            'addNewSafe'.tr(),
-            style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: context.colorScheme.onSurface),
-            textAlign: TextAlign.center,
-          ),
-          content: SizedBox(
-            width: 320, // Fixed width to give more space
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'chooseAction'.tr(),
-                  style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant),
-                  textAlign: TextAlign.center,
-                ),
-                ScaledSizedBox(height: 20),
-                // Use Column instead of Row for better spacing
-                Column(
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              title: Text(
+                'addNewSafe'.tr(),
+                style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: context.colorScheme.onSurface),
+                textAlign: TextAlign.center,
+              ),
+              content: SizedBox(
+                width: 320, // Fixed width to give more space
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _navigateToCreateSafe(context);
-                        },
-                        icon: Icon(Icons.add, size: scaleSize(20)),
-                        label: Text(
-                          'createSafe'.tr(),
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.colorScheme.primary,
-                          foregroundColor: context.colorScheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
+                    Text(
+                      'chooseAction'.tr(),
+                      style: scaledTextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant),
+                      textAlign: TextAlign.center,
                     ),
-                    ScaledSizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _navigateToImportSafe(context);
-                        },
-                        icon: Icon(Icons.download, size: scaleSize(20)),
-                        label: Text(
-                          'importSafe'.tr(),
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    ScaledSizedBox(height: 20),
+                    // Use Column instead of Row for better spacing
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _navigateToCreateSafe(context);
+                            },
+                            icon: Icon(Icons.add, size: scaleSize(20)),
+                            label: Text(
+                              'createSafe'.tr(),
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.colorScheme.primary,
+                              foregroundColor: context.colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.colorScheme.surfaceContainer,
-                          foregroundColor: context.colorScheme.onSurfaceVariant,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ScaledSizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _navigateToImportSafe(context);
+                            },
+                            icon: Icon(Icons.download, size: scaleSize(20)),
+                            label: Text(
+                              'importSafe'.tr(),
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.colorScheme.surfaceContainer,
+                              foregroundColor: context.colorScheme.onSurfaceVariant,
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         );

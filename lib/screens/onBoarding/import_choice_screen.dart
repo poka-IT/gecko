@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 /// Screen allowing users to choose between importing a mnemonic or legacy Cesium wallet
@@ -18,51 +19,58 @@ class ImportChoiceScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar('importWallet'.tr()),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(scaleSize(20)),
-        child: Column(
-          children: [
-            // Main recommended option - Recovery phrase
-            _buildMainImportCard(context),
+      body: ResponsiveCenter(
+        maxWidth: 500,
+        padding: EdgeInsets.zero,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(scaleSize(20)),
+          child: Column(
+            children: [
+              // Main recommended option - Recovery phrase
+              _buildMainImportCard(context),
 
-            ScaledSizedBox(height: 40),
+              ScaledSizedBox(height: 40),
 
-            // Bottom info text
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
-              child: Text(
-                'importChoiceInfo'.tr(),
-                style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
-                textAlign: TextAlign.center,
+              // Bottom info text
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+                child: Text(
+                  'importChoiceInfo'.tr(),
+                  style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
 
-            if (enableLegacyLogin) ...[
-              ScaledSizedBox(height: 30),
+              if (enableLegacyLogin) ...[
+                ScaledSizedBox(height: 30),
 
-              // Divider with "or" text
-              Row(
-                children: [
-                  Expanded(child: Divider(color: context.colorScheme.onSurface.withValues(alpha: 0.2))),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                    child: Text(
-                      'or'.tr(),
-                      style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+                // Divider with "or" text
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: context.colorScheme.onSurface.withValues(alpha: 0.2))),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                      child: Text(
+                        'or'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 12,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
+                      ),
                     ),
-                  ),
-                  Expanded(child: Divider(color: context.colorScheme.onSurface.withValues(alpha: 0.2))),
-                ],
-              ),
+                    Expanded(child: Divider(color: context.colorScheme.onSurface.withValues(alpha: 0.2))),
+                  ],
+                ),
 
-              ScaledSizedBox(height: 20),
+                ScaledSizedBox(height: 20),
 
-              // Discrete legacy option - just a small text link
-              _buildLegacyOption(context),
+                // Discrete legacy option - just a small text link
+                _buildLegacyOption(context),
+              ],
+
+              ScaledSizedBox(height: 30),
             ],
-
-            ScaledSizedBox(height: 30),
-          ],
+          ),
         ),
       ),
     );
@@ -240,156 +248,169 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: context.colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Row(
-        children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.orange, size: scaleSize(28)),
-          ScaledSizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'legacyWarningTitle'.tr(),
-              style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.colorScheme.onSurface),
-            ),
-          ),
-        ],
-      ),
-      contentPadding: EdgeInsets.fromLTRB(scaleSize(20), scaleSize(16), scaleSize(20), scaleSize(20)),
-      insetPadding: EdgeInsets.symmetric(horizontal: scaleSize(24), vertical: scaleSize(24)),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Warning message
-            Container(
-              padding: EdgeInsets.all(scaleSize(14)),
-              decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                'legacyWarningMessage'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 14,
-                  color: context.colorScheme.onSurface.withValues(alpha: 0.9),
-                  height: 1.5,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: AlertDialog(
+          backgroundColor: context.colorScheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: scaleSize(28)),
+              ScaledSizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'legacyWarningTitle'.tr(),
+                  style: scaledTextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: context.colorScheme.onSurface,
+                  ),
                 ),
               ),
-            ),
-
-            ScaledSizedBox(height: 16),
-
-            // Recommendation
-            Row(
+            ],
+          ),
+          contentPadding: EdgeInsets.fromLTRB(scaleSize(20), scaleSize(16), scaleSize(20), scaleSize(20)),
+          insetPadding: EdgeInsets.symmetric(horizontal: scaleSize(24), vertical: scaleSize(24)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.lightbulb_outline, color: context.colorScheme.primary, size: scaleSize(20)),
-                ScaledSizedBox(width: 10),
-                Expanded(
+                // Warning message
+                Container(
+                  padding: EdgeInsets.all(scaleSize(14)),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  ),
                   child: Text(
-                    'legacyRecommendation'.tr(),
+                    'legacyWarningMessage'.tr(),
                     style: scaledTextStyle(
-                      fontSize: 13,
-                      color: context.colorScheme.primary,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                      color: context.colorScheme.onSurface.withValues(alpha: 0.9),
+                      height: 1.5,
                     ),
+                  ),
+                ),
+
+                ScaledSizedBox(height: 16),
+
+                // Recommendation
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.lightbulb_outline, color: context.colorScheme.primary, size: scaleSize(20)),
+                    ScaledSizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'legacyRecommendation'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 13,
+                          color: context.colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                ScaledSizedBox(height: 20),
+
+                // Main CTA - Create new safe
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final navigator = Navigator.of(context);
+                      navigator.pop(); // Close the dialog
+                      navigator.pushReplacementNamed(RouteNames.onboardingStepOne); // Replace with safe creation flow
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.colorScheme.primary,
+                      padding: EdgeInsets.symmetric(vertical: scaleSize(14)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text(
+                      'legacyCreateNewSafe'.tr(),
+                      style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                  ),
+                ),
+
+                ScaledSizedBox(height: 16),
+
+                // Ignore button with triple-click
+                Center(
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: _handleIgnoreClick,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(10)),
+                          decoration: BoxDecoration(
+                            color: _hasStartedClicking
+                                ? Colors.red.withValues(alpha: 0.1)
+                                : context.colorScheme.onSurface.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _hasStartedClicking
+                                  ? Colors.red.withValues(alpha: 0.3)
+                                  : context.colorScheme.onSurface.withValues(alpha: 0.1),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'legacyIgnoreRecommendation'.tr(),
+                                style: scaledTextStyle(
+                                  fontSize: 12,
+                                  color: _hasStartedClicking
+                                      ? Colors.red.withValues(alpha: 0.8)
+                                      : context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
+                              ),
+                              if (_hasStartedClicking) ...[
+                                ScaledSizedBox(width: 8),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(2)),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '$_clicksRemaining',
+                                    style: scaledTextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (_hasStartedClicking) ...[
+                        ScaledSizedBox(height: 6),
+                        Text(
+                          'legacyClicksRemaining'.tr(args: [_clicksRemaining.toString()]),
+                          style: scaledTextStyle(
+                            fontSize: 10,
+                            color: Colors.red.withValues(alpha: 0.7),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
             ),
-
-            ScaledSizedBox(height: 20),
-
-            // Main CTA - Create new safe
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final navigator = Navigator.of(context);
-                  navigator.pop(); // Close the dialog
-                  navigator.pushReplacementNamed(RouteNames.onboardingStepOne); // Replace with safe creation flow
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.colorScheme.primary,
-                  padding: EdgeInsets.symmetric(vertical: scaleSize(14)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: Text(
-                  'legacyCreateNewSafe'.tr(),
-                  style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
-                ),
-              ),
-            ),
-
-            ScaledSizedBox(height: 16),
-
-            // Ignore button with triple-click
-            Center(
-              child: Column(
-                children: [
-                  GestureDetector(
-                    onTap: _handleIgnoreClick,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(10)),
-                      decoration: BoxDecoration(
-                        color: _hasStartedClicking
-                            ? Colors.red.withValues(alpha: 0.1)
-                            : context.colorScheme.onSurface.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: _hasStartedClicking
-                              ? Colors.red.withValues(alpha: 0.3)
-                              : context.colorScheme.onSurface.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'legacyIgnoreRecommendation'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: 12,
-                              color: _hasStartedClicking
-                                  ? Colors.red.withValues(alpha: 0.8)
-                                  : context.colorScheme.onSurface.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          if (_hasStartedClicking) ...[
-                            ScaledSizedBox(width: 8),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(2)),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '$_clicksRemaining',
-                                style: scaledTextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (_hasStartedClicking) ...[
-                    ScaledSizedBox(height: 6),
-                    Text(
-                      'legacyClicksRemaining'.tr(args: [_clicksRemaining.toString()]),
-                      style: scaledTextStyle(
-                        fontSize: 10,
-                        color: Colors.red.withValues(alpha: 0.7),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

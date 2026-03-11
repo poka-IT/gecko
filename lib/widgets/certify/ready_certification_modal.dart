@@ -42,76 +42,79 @@ class ReadyCertificationModal extends ConsumerWidget {
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Success icon
-            Container(
-              width: scaleSize(80),
-              height: scaleSize(80),
-              decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
-              child: Icon(Icons.notifications_active, size: scaleSize(48), color: Colors.green.shade700),
-            ),
-            ScaledSizedBox(height: 20),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Success icon
+              Container(
+                width: scaleSize(80),
+                height: scaleSize(80),
+                decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
+                child: Icon(Icons.notifications_active, size: scaleSize(48), color: Colors.green.shade700),
+              ),
+              ScaledSizedBox(height: 20),
 
-            // Title
-            Text(
-              'certificationReady'.tr(),
-              style: scaledTextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green.shade700),
-              textAlign: TextAlign.center,
-            ),
-            ScaledSizedBox(height: 12),
+              // Title
+              Text(
+                'certificationReady'.tr(),
+                style: scaledTextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                textAlign: TextAlign.center,
+              ),
+              ScaledSizedBox(height: 12),
 
-            // Message
-            Text(
-              'certificationReadyFor'.tr(args: [displayName]),
-              style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
-              textAlign: TextAlign.center,
-            ),
-            ScaledSizedBox(height: 24),
+              // Message
+              Text(
+                'certificationReadyFor'.tr(args: [displayName]),
+                style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                textAlign: TextAlign.center,
+              ),
+              ScaledSizedBox(height: 24),
 
-            // Actions - Main buttons (stacked vertically to avoid overflow)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+              // Actions - Main buttons (stacked vertically to avoid overflow)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onCertify();
+                  },
+                  child: Text('certify'.tr(), style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                 ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  onCertify();
-                },
-                child: Text('certify'.tr(), style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
-            ),
-            ScaledSizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: scaleSize(12))),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  onViewQueue();
-                },
-                child: Text('viewQueue'.tr(), style: scaledTextStyle(fontSize: 15)),
+              ScaledSizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: scaleSize(12))),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onViewQueue();
+                  },
+                  child: Text('viewQueue'.tr(), style: scaledTextStyle(fontSize: 15)),
+                ),
               ),
-            ),
-            ScaledSizedBox(height: 12),
+              ScaledSizedBox(height: 12),
 
-            // Remind later - secondary action
-            TextButton(
-              onPressed: () {
-                ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).dismiss();
-                onDismiss();
-                Navigator.of(context).pop();
-              },
-              child: Text('remindLater'.tr(), style: scaledTextStyle(color: Colors.grey[600])),
-            ),
-          ],
+              // Remind later - secondary action
+              TextButton(
+                onPressed: () {
+                  ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).dismiss();
+                  onDismiss();
+                  Navigator.of(context).pop();
+                },
+                child: Text('remindLater'.tr(), style: scaledTextStyle(color: Colors.grey[600])),
+              ),
+            ],
+          ),
         ),
       ),
     );

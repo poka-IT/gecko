@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -189,266 +190,294 @@ class _TransactionFiltersState extends ConsumerState<TransactionFilters> {
       backgroundColor: Colors.transparent,
       isDismissible: true, // Allow dismissal by tapping outside
       enableDrag: true, // Allow drag to dismiss
+      constraints: const BoxConstraints(maxWidth: 600),
       builder: (context) => StatefulBuilder(
-        builder: (modalContext, setModalState) => Container(
-          height: MediaQuery.of(modalContext).size.height * 0.8, // 80% of screen height
-          decoration: BoxDecoration(
-            color: modalContext.colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2)),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Handle bar for dragging
-              Container(
-                margin: EdgeInsets.only(top: scaleSize(12)),
-                width: scaleSize(40),
-                height: scaleSize(4),
-                decoration: BoxDecoration(
-                  color: modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+        builder: (modalContext, setModalState) => CallbackShortcuts(
+          bindings: <ShortcutActivator, VoidCallback>{
+            const SingleActivator(LogicalKeyboardKey.enter): () {
+              _applyAdvancedFiltersFromModal(
+                addressText: modalAddressController.text,
+                commentText: modalCommentController.text,
+                minAmountText: modalMinAmountController.text,
+                maxAmountText: modalMaxAmountController.text,
+                fromAddressText: modalFromAddressController.text,
+                toAddressText: modalToAddressController.text,
+                startDate: modalStartDate,
+                endDate: modalEndDate,
+                exactMatchAddress: modalExactMatchAddress,
+                exactMatchComment: modalExactMatchComment,
+                exactMatchDirection: modalExactMatchDirection,
+              );
+              Navigator.pop(modalContext);
+            },
+          },
+          child: Focus(
+            autofocus: true,
+            child: Container(
+              height: MediaQuery.of(modalContext).size.height * 0.8, // 80% of screen height
+              decoration: BoxDecoration(
+                color: modalContext.colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2)),
+                ],
               ),
-
-              // Header
-              Padding(
-                padding: EdgeInsets.all(scaleSize(16)),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'advancedFilters'.tr(),
-                        style: scaledTextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: modalContext.colorScheme.onSurface,
-                        ),
-                      ),
+              child: Column(
+                children: [
+                  // Handle bar for dragging
+                  Container(
+                    margin: EdgeInsets.only(top: scaleSize(12)),
+                    width: scaleSize(40),
+                    height: scaleSize(4),
+                    decoration: BoxDecoration(
+                      color: modalContext.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(modalContext),
-                      icon: Icon(Icons.close, size: scaleSize(24)),
-                      style: IconButton.styleFrom(
-                        backgroundColor: modalContext.colorScheme.surfaceContainer,
-                        foregroundColor: modalContext.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Scrollable content
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Address search for account mode OR direction filters for network mode
-                      if (widget.mode == FilterMode.account) ...[
-                        _buildFilterFieldModal(
-                          modalContext,
-                          setModalState,
-                          label: 'searchAddressOrName'.tr(),
-                          controller: modalAddressController,
-                          hintText: 'enterAddressOrName'.tr(),
-                          icon: Icons.person_search,
-                          isExactMatch: modalExactMatchAddress,
-                          onExactMatchChanged: () {
-                            setModalState(() {
-                              modalExactMatchAddress = !modalExactMatchAddress;
-                            });
-                          },
-                        ),
-                        SizedBox(height: scaleSize(16)),
-                      ] else if (widget.mode == FilterMode.network) ...[
-                        _buildFilterFieldModal(
-                          modalContext,
-                          setModalState,
-                          label: 'fromAddressOrName'.tr(),
-                          controller: modalFromAddressController,
-                          hintText: 'enterFromAddressOrName'.tr(),
-                          icon: Icons.call_made,
-                          isExactMatch: modalExactMatchDirection,
-                          onExactMatchChanged: () {
-                            setModalState(() {
-                              modalExactMatchDirection = !modalExactMatchDirection;
-                            });
-                          },
-                        ),
-                        SizedBox(height: scaleSize(16)),
-                        _buildFilterFieldModal(
-                          modalContext,
-                          setModalState,
-                          label: 'toAddressOrName'.tr(),
-                          controller: modalToAddressController,
-                          hintText: 'enterToAddressOrName'.tr(),
-                          icon: Icons.call_received,
-                          isExactMatch: modalExactMatchDirection,
-                          onExactMatchChanged: () {
-                            setModalState(() {
-                              modalExactMatchDirection = !modalExactMatchDirection;
-                            });
-                          },
-                        ),
-                        SizedBox(height: scaleSize(16)),
-                      ],
-
-                      // Comment search
-                      _buildFilterFieldModal(
-                        modalContext,
-                        setModalState,
-                        label: 'searchComment'.tr(),
-                        controller: modalCommentController,
-                        hintText: widget.mode == FilterMode.network
-                            ? 'commentFilterDisabledNetwork'.tr()
-                            : 'enterCommentKeywords'.tr(),
-                        icon: Icons.comment_outlined,
-                        isExactMatch: modalExactMatchComment,
-                        onExactMatchChanged: widget.mode == FilterMode.network
-                            ? null
-                            : () {
-                                setModalState(() {
-                                  modalExactMatchComment = !modalExactMatchComment;
-                                });
-                              },
-                        enabled: widget.mode != FilterMode.network,
-                      ),
-
-                      SizedBox(height: scaleSize(16)),
-
-                      // Date range
-                      _buildDateRangeFilterModalWithState(
-                        modalContext,
-                        setModalState,
-                        startDate: modalStartDate,
-                        endDate: modalEndDate,
-                        onStartDateChanged: (date) {
-                          setModalState(() {
-                            modalStartDate = date;
-                          });
-                        },
-                        onEndDateChanged: (date) {
-                          setModalState(() {
-                            modalEndDate = date;
-                          });
-                        },
-                      ),
-
-                      SizedBox(height: scaleSize(16)),
-
-                      // Amount range
-                      _buildAmountRangeFilterModalWithControllers(
-                        modalContext,
-                        setModalState,
-                        minController: modalMinAmountController,
-                        maxController: modalMaxAmountController,
-                      ),
-
-                      SizedBox(height: scaleSize(16)),
-
-                      // Bottom padding to ensure content is not hidden behind sticky buttons
-                      SizedBox(height: scaleSize(100)),
-                    ],
                   ),
-                ),
-              ),
 
-              // Sticky action buttons at bottom
-              Container(
-                decoration: BoxDecoration(
-                  color: modalContext.colorScheme.surface,
-                  border: Border(
-                    top: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.2), width: 1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, -2)),
-                  ],
-                ),
-                padding: EdgeInsets.fromLTRB(
-                  scaleSize(16),
-                  scaleSize(16),
-                  scaleSize(16),
-                  scaleSize(16) + MediaQuery.of(modalContext).padding.bottom,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () {
-                          // Clear all modal controllers
-                          modalAddressController.clear();
-                          modalCommentController.clear();
-                          modalMinAmountController.clear();
-                          modalMaxAmountController.clear();
-                          modalFromAddressController.clear();
-                          modalToAddressController.clear();
-                          setModalState(() {
-                            modalStartDate = null;
-                            modalEndDate = null;
-                            modalExactMatchAddress = false;
-                            modalExactMatchComment = false;
-                            modalExactMatchDirection = false;
-                          });
-                          // Apply the cleared filters
-                          _clearAllFilters();
-                          Navigator.pop(modalContext);
-                        },
-                        style: TextButton.styleFrom(
-                          foregroundColor: modalContext.colorScheme.onSurfaceVariant,
-                          padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text(
-                          'clearAll'.tr(),
-                          style: scaledTextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: modalContext.colorScheme.onSurfaceVariant,
+                  // Header
+                  Padding(
+                    padding: EdgeInsets.all(scaleSize(16)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'advancedFilters'.tr(),
+                            style: scaledTextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: modalContext.colorScheme.onSurface,
+                            ),
                           ),
                         ),
-                      ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(modalContext),
+                          icon: Icon(Icons.close, size: scaleSize(24)),
+                          style: IconButton.styleFrom(
+                            backgroundColor: modalContext.colorScheme.surfaceContainer,
+                            foregroundColor: modalContext.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: scaleSize(12)),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Apply filters using modal controller values
-                          _applyAdvancedFiltersFromModal(
-                            addressText: modalAddressController.text,
-                            commentText: modalCommentController.text,
-                            minAmountText: modalMinAmountController.text,
-                            maxAmountText: modalMaxAmountController.text,
-                            fromAddressText: modalFromAddressController.text,
-                            toAddressText: modalToAddressController.text,
+                  ),
+
+                  // Scrollable content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Address search for account mode OR direction filters for network mode
+                          if (widget.mode == FilterMode.account) ...[
+                            _buildFilterFieldModal(
+                              modalContext,
+                              setModalState,
+                              label: 'searchAddressOrName'.tr(),
+                              controller: modalAddressController,
+                              hintText: 'enterAddressOrName'.tr(),
+                              icon: Icons.person_search,
+                              isExactMatch: modalExactMatchAddress,
+                              onExactMatchChanged: () {
+                                setModalState(() {
+                                  modalExactMatchAddress = !modalExactMatchAddress;
+                                });
+                              },
+                            ),
+                            SizedBox(height: scaleSize(16)),
+                          ] else if (widget.mode == FilterMode.network) ...[
+                            _buildFilterFieldModal(
+                              modalContext,
+                              setModalState,
+                              label: 'fromAddressOrName'.tr(),
+                              controller: modalFromAddressController,
+                              hintText: 'enterFromAddressOrName'.tr(),
+                              icon: Icons.call_made,
+                              isExactMatch: modalExactMatchDirection,
+                              onExactMatchChanged: () {
+                                setModalState(() {
+                                  modalExactMatchDirection = !modalExactMatchDirection;
+                                });
+                              },
+                            ),
+                            SizedBox(height: scaleSize(16)),
+                            _buildFilterFieldModal(
+                              modalContext,
+                              setModalState,
+                              label: 'toAddressOrName'.tr(),
+                              controller: modalToAddressController,
+                              hintText: 'enterToAddressOrName'.tr(),
+                              icon: Icons.call_received,
+                              isExactMatch: modalExactMatchDirection,
+                              onExactMatchChanged: () {
+                                setModalState(() {
+                                  modalExactMatchDirection = !modalExactMatchDirection;
+                                });
+                              },
+                            ),
+                            SizedBox(height: scaleSize(16)),
+                          ],
+
+                          // Comment search
+                          _buildFilterFieldModal(
+                            modalContext,
+                            setModalState,
+                            label: 'searchComment'.tr(),
+                            controller: modalCommentController,
+                            hintText: widget.mode == FilterMode.network
+                                ? 'commentFilterDisabledNetwork'.tr()
+                                : 'enterCommentKeywords'.tr(),
+                            icon: Icons.comment_outlined,
+                            isExactMatch: modalExactMatchComment,
+                            onExactMatchChanged: widget.mode == FilterMode.network
+                                ? null
+                                : () {
+                                    setModalState(() {
+                                      modalExactMatchComment = !modalExactMatchComment;
+                                    });
+                                  },
+                            enabled: widget.mode != FilterMode.network,
+                          ),
+
+                          SizedBox(height: scaleSize(16)),
+
+                          // Date range
+                          _buildDateRangeFilterModalWithState(
+                            modalContext,
+                            setModalState,
                             startDate: modalStartDate,
                             endDate: modalEndDate,
-                            exactMatchAddress: modalExactMatchAddress,
-                            exactMatchComment: modalExactMatchComment,
-                            exactMatchDirection: modalExactMatchDirection,
-                          );
-                          Navigator.pop(modalContext);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: modalContext.colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 2,
-                          padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          shadowColor: modalContext.colorScheme.primary.withValues(alpha: 0.3),
-                        ),
-                        child: Text(
-                          'done'.tr(),
-                          style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
-                        ),
+                            onStartDateChanged: (date) {
+                              setModalState(() {
+                                modalStartDate = date;
+                              });
+                            },
+                            onEndDateChanged: (date) {
+                              setModalState(() {
+                                modalEndDate = date;
+                              });
+                            },
+                          ),
+
+                          SizedBox(height: scaleSize(16)),
+
+                          // Amount range
+                          _buildAmountRangeFilterModalWithControllers(
+                            modalContext,
+                            setModalState,
+                            minController: modalMinAmountController,
+                            maxController: modalMaxAmountController,
+                          ),
+
+                          SizedBox(height: scaleSize(16)),
+
+                          // Bottom padding to ensure content is not hidden behind sticky buttons
+                          SizedBox(height: scaleSize(100)),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+
+                  // Sticky action buttons at bottom
+                  Container(
+                    decoration: BoxDecoration(
+                      color: modalContext.colorScheme.surface,
+                      border: Border(
+                        top: BorderSide(color: modalContext.colorScheme.outline.withValues(alpha: 0.2), width: 1),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.fromLTRB(
+                      scaleSize(16),
+                      scaleSize(16),
+                      scaleSize(16),
+                      scaleSize(16) + MediaQuery.of(modalContext).padding.bottom,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () {
+                              // Clear all modal controllers
+                              modalAddressController.clear();
+                              modalCommentController.clear();
+                              modalMinAmountController.clear();
+                              modalMaxAmountController.clear();
+                              modalFromAddressController.clear();
+                              modalToAddressController.clear();
+                              setModalState(() {
+                                modalStartDate = null;
+                                modalEndDate = null;
+                                modalExactMatchAddress = false;
+                                modalExactMatchComment = false;
+                                modalExactMatchDirection = false;
+                              });
+                              // Apply the cleared filters
+                              _clearAllFilters();
+                              Navigator.pop(modalContext);
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: modalContext.colorScheme.onSurfaceVariant,
+                              padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Text(
+                              'clearAll'.tr(),
+                              style: scaledTextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: modalContext.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: scaleSize(12)),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Apply filters using modal controller values
+                              _applyAdvancedFiltersFromModal(
+                                addressText: modalAddressController.text,
+                                commentText: modalCommentController.text,
+                                minAmountText: modalMinAmountController.text,
+                                maxAmountText: modalMaxAmountController.text,
+                                fromAddressText: modalFromAddressController.text,
+                                toAddressText: modalToAddressController.text,
+                                startDate: modalStartDate,
+                                endDate: modalEndDate,
+                                exactMatchAddress: modalExactMatchAddress,
+                                exactMatchComment: modalExactMatchComment,
+                                exactMatchDirection: modalExactMatchDirection,
+                              );
+                              Navigator.pop(modalContext);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: modalContext.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 2,
+                              padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shadowColor: modalContext.colorScheme.primary.withValues(alpha: 0.3),
+                            ),
+                            child: Text(
+                              'done'.tr(),
+                              style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

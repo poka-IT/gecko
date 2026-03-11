@@ -209,29 +209,32 @@ class TransactionTile extends StatelessWidget {
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: EdgeInsets.all(scaleSize(20)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.comment_outlined, size: scaleSize(20), color: context.colorScheme.primary),
-                  ScaledSizedBox(width: 8),
-                  Text('comment'.tr(), style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                ],
-              ),
-              ScaledSizedBox(height: 16),
-              SelectableText(
-                comment,
-                style: scaledTextStyle(
-                  fontSize: 15,
-                  color: context.colorScheme.onSurface.withValues(alpha: 0.85),
-                  height: 1.4,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: EdgeInsets.all(scaleSize(20)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.comment_outlined, size: scaleSize(20), color: context.colorScheme.primary),
+                    ScaledSizedBox(width: 8),
+                    Text('comment'.tr(), style: scaledTextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                  ],
                 ),
-              ),
-            ],
+                ScaledSizedBox(height: 16),
+                SelectableText(
+                  comment,
+                  style: scaledTextStyle(
+                    fontSize: 15,
+                    color: context.colorScheme.onSurface.withValues(alpha: 0.85),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

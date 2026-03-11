@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -89,121 +90,139 @@ Future<bool> showConfirmationDialog({
       var isChecked = checkboxLabel == null;
       return StatefulBuilder(
         builder: (context, setDialogState) {
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            elevation: 0,
-            child: Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: homeContext.colorScheme.surface,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(color: iconColorToShow.withValues(alpha: 0.1), blurRadius: 20, offset: Offset(0, 10)),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: iconColorToShow.withValues(alpha: 0.1), shape: BoxShape.circle),
-                    child: iconToShow,
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    dialogTitle,
-                    style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 16),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: message.split('\n\n').map((text) {
-                      final bool isBold = text.startsWith('**') && text.endsWith('**');
-                      final String cleanText = isBold ? text.substring(2, text.length - 2) : text;
-
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 8),
-                        child: TextMarkDown(
-                          cleanText,
-                          style: scaledTextStyle(
-                            fontSize: 15,
-                            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                          ),
-                          textAlign: WrapAlignment.center,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  if (checkboxLabel != null) ...[
-                    SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () => setDialogState(() => isChecked = !isChecked),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: Checkbox(
-                              value: isChecked,
-                              onChanged: (v) => setDialogState(() => isChecked = v ?? false),
-                              activeColor: iconColorToShow,
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(child: Text(checkboxLabel, style: scaledTextStyle(fontSize: 13))),
-                        ],
-                      ),
+          return CallbackShortcuts(
+            bindings: <ShortcutActivator, VoidCallback>{
+              const SingleActivator(LogicalKeyboardKey.enter): () {
+                if (isChecked && !hideConfirmButton) {
+                  Navigator.of(homeContext).pop(true);
+                }
+              },
+            },
+            child: Focus(
+              autofocus: true,
+              child: Dialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                elevation: 0,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: homeContext.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(color: iconColorToShow.withValues(alpha: 0.1), blurRadius: 20, offset: Offset(0, 10)),
+                      ],
                     ),
-                  ],
-                  SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      if (type != ConfirmationDialogType.error && !hideCancelButton) ...[
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => Navigator.of(homeContext).pop(false),
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: Text(
-                              cancelText ?? 'cancel'.tr(),
-                              style: scaledTextStyle(
-                                fontSize: 15,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w600,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: iconColorToShow.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: iconToShow,
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          dialogTitle,
+                          style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 16),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: message.split('\n\n').map((text) {
+                            final bool isBold = text.startsWith('**') && text.endsWith('**');
+                            final String cleanText = isBold ? text.substring(2, text.length - 2) : text;
+
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 8),
+                              child: TextMarkDown(
+                                cleanText,
+                                style: scaledTextStyle(
+                                  fontSize: 15,
+                                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                                ),
+                                textAlign: WrapAlignment.center,
                               ),
+                            );
+                          }).toList(),
+                        ),
+                        if (checkboxLabel != null) ...[
+                          SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () => setDialogState(() => isChecked = !isChecked),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: isChecked,
+                                    onChanged: (v) => setDialogState(() => isChecked = v ?? false),
+                                    activeColor: iconColorToShow,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(child: Text(checkboxLabel, style: scaledTextStyle(fontSize: 13))),
+                              ],
                             ),
                           ),
+                        ],
+                        SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            if (type != ConfirmationDialogType.error && !hideCancelButton) ...[
+                              Expanded(
+                                child: TextButton(
+                                  onPressed: () => Navigator.of(homeContext).pop(false),
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: Text(
+                                    cancelText ?? 'cancel'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: 15,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                            ],
+                            if (!hideConfirmButton) ...[
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: isChecked ? () => Navigator.of(homeContext).pop(true) : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: iconColorToShow,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: iconColorToShow.withValues(alpha: 0.3),
+                                    disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
+                                    elevation: 0,
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: Text(
+                                    confirmTextToShow,
+                                    style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
-                        SizedBox(width: 16),
                       ],
-                      if (!hideConfirmButton) ...[
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: isChecked ? () => Navigator.of(homeContext).pop(true) : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: iconColorToShow,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: iconColorToShow.withValues(alpha: 0.3),
-                              disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
-                              elevation: 0,
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: Text(
-                              confirmTextToShow,
-                              style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
           );

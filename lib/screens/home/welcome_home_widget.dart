@@ -12,10 +12,162 @@ import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 
+/// Desktop breakpoint width (same as gecko_home_widget.dart)
+const double _desktopWelcomeBreakpoint = 900;
+
 /// Welcome screen widget displayed when no wallets exist
 class WelcomeHomeWidget extends StatelessWidget {
   const WelcomeHomeWidget({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    if (screenWidth >= _desktopWelcomeBreakpoint) {
+      return _DesktopWelcomeWidget();
+    }
+
+    return _MobileWelcomeWidget();
+  }
+}
+
+// ─────────────────────────── Desktop Layout ───────────────────────────
+
+class _DesktopWelcomeWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final imageCache = ImageCacheService();
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: const Alignment(-0.3, -0.5),
+          radius: 1.8,
+          colors: [
+            context.colorScheme.primary.withValues(alpha: 0.12),
+            context.colorScheme.surface,
+            context.colorScheme.surface,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        child: Stack(
+          children: [
+            // Settings button top-left
+            Positioned(top: scaleSize(10), left: scaleSize(15), child: IconHomeSettings()),
+            // Full-height column: header at top, gecko+buttons at center-bottom
+            Align(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  children: [
+                    // Header image — pinned at top
+                    Image(image: imageCache.getImageProvider('assets/home/header.png'), height: scaleSize(150)),
+                    const SizedBox(height: 8),
+                    // App description
+                    Text(
+                      "fastAppDescription".tr(args: [Durt.i.network.symbol]),
+                      textAlign: TextAlign.center,
+                      style: scaledTextStyle(
+                        color: context.colorScheme.onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    // Gecko + bubble — directly above buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image(
+                          image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'),
+                          height: scaleSize(150),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: BubbleSpeakWithTail(text: "noLizard".tr()),
+                        ),
+                      ],
+                    ),
+                    // Buttons
+                    _buildButtons(context),
+                    const TestWalletButton(),
+                    const Spacer(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButtons(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+      child: Column(
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 380, minHeight: scaleSize(55)),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                key: keyOnboardingNewSafe,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: context.colorScheme.primary,
+                  elevation: 4,
+                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => Navigator.pushNamed(context, RouteNames.onboardingStepOne),
+                child: Text(
+                  'createWallet'.tr(),
+                  style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+          ScaledSizedBox(height: scaleSize(14)),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 380, minHeight: scaleSize(55)),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                key: keyRestoreSafe,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(width: scaleSize(3), color: context.colorScheme.primary),
+                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  if (ImportChoiceScreen.enableLegacyLogin) {
+                    Navigator.pushNamed(context, RouteNames.importChoice);
+                  } else {
+                    Navigator.pushNamed(context, RouteNames.restoreSafe);
+                  }
+                },
+                child: Text(
+                  "restoreWallet".tr(),
+                  style: scaledTextStyle(fontSize: 20, color: context.colorScheme.primary, fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────── Mobile Layout (original) ───────────────────────────
+
+class _MobileWelcomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;

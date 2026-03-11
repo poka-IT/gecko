@@ -4,12 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/screens/home/desktop_home_widget.dart';
 import 'package:gecko/widgets/optimized_background.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/buttons/home_buttons.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
+
+/// Desktop breakpoint width
+const double _desktopBreakpoint = 900;
 
 /// Home screen widget displayed when wallets exist
 class GeckoHomeWidget extends ConsumerWidget {
@@ -20,6 +24,13 @@ class GeckoHomeWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Use desktop dashboard layout on wide screens
+    if (screenWidth >= _desktopBreakpoint) {
+      return DesktopHomeWidget(isEasterEggActive: isEasterEggActive, onEasterEggStateChange: onEasterEggStateChange);
+    }
+
     final statusBarHeight = MediaQuery.of(context).padding.top;
     return EasterEggDetector(
       onPlayingStateChanged: onEasterEggStateChange,

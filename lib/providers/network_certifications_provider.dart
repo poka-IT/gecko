@@ -89,6 +89,15 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
       decode: (json) => NetworkCertificationsState.fromJson(jsonDecode(json) as Map<String, dynamic>),
     );
 
+    // React to Squid connection changes: reload + resubscribe when connected
+    ref.listen(squidConnectionStatusProvider, (previous, next) {
+      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
+        log.i('🔄 Squid connected - loading network certifications');
+        loadCertifications();
+        _subscribeToNetworkCertifications();
+      }
+    });
+
     // Start initial load asynchronously
     Future.microtask(() {
       loadCertifications();

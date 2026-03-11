@@ -89,6 +89,15 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
       decode: (json) => NetworkIdentitiesState.fromJson(jsonDecode(json) as Map<String, dynamic>),
     );
 
+    // React to Squid connection changes: reload + resubscribe when connected
+    ref.listen(squidConnectionStatusProvider, (previous, next) {
+      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
+        log.i('🔄 Squid connected - loading network identities');
+        loadIdentities();
+        _subscribeToNetworkIdentities();
+      }
+    });
+
     Future.microtask(() {
       loadIdentities();
       _subscribeToNetworkIdentities();

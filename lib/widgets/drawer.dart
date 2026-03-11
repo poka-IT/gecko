@@ -29,7 +29,7 @@ class MainDrawer extends ConsumerWidget {
     return SafeArea(
       top: false,
       child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.67,
+        width: (MediaQuery.of(context).size.width * 0.67).clamp(0, 320),
         child: Drawer(
           backgroundColor: context.colorScheme.surface,
           child: Column(

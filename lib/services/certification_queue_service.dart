@@ -86,7 +86,12 @@ class CertificationQueueService {
     const blockTimeSeconds = 6;
 
     // Start from when the issuer can next certify
+    // If nextIssuableBlock is in the past, use current block as base
+    // (the first cert will execute "now", so subsequent ones wait from now)
     int baseBlock = nextIssuableBlock ?? currentBlockNumber;
+    if (baseBlock < currentBlockNumber) {
+      baseBlock = currentBlockNumber;
+    }
 
     // Add (position - 1) certification periods for queue position
     // Position 1 = ready at nextIssuableBlock

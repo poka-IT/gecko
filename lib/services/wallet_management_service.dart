@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
@@ -39,36 +40,49 @@ class WalletManagementService {
       return '';
     }
 
-    CroppedFile? croppedFile = await ImageCropper().cropImage(
-      sourcePath: imageFile.path,
-      uiSettings: [
-        AndroidUiSettings(
-          hideBottomControls: true,
-          toolbarTitle: 'cropImage'.tr(),
-          toolbarColor: Colors.deepOrange,
-          toolbarWidgetColor: Colors.white,
-          statusBarLight: false,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: true,
-          cropStyle: CropStyle.circle,
-          aspectRatioPresets: [CropAspectRatioPreset.square],
-        ),
-        IOSUiSettings(
-          title: 'cropImage'.tr(),
-          cropStyle: CropStyle.circle,
-          aspectRatioPresets: [CropAspectRatioPreset.square],
-          minimumAspectRatio: 1.0,
-        ),
-      ],
-    );
-
-    if (croppedFile == null) {
-      log.w('No image selected after cropping.');
-      return '';
+    CroppedFile? croppedFile;
+    if (Platform.isAndroid || Platform.isIOS) {
+      try {
+        croppedFile = await ImageCropper().cropImage(
+          sourcePath: imageFile.path,
+          uiSettings: [
+            AndroidUiSettings(
+              hideBottomControls: true,
+              toolbarTitle: 'cropImage'.tr(),
+              toolbarColor: Colors.deepOrange,
+              toolbarWidgetColor: Colors.white,
+              statusBarLight: false,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: true,
+              cropStyle: CropStyle.circle,
+              aspectRatioPresets: [CropAspectRatioPreset.square],
+            ),
+            IOSUiSettings(
+              title: 'cropImage'.tr(),
+              cropStyle: CropStyle.circle,
+              aspectRatioPresets: [CropAspectRatioPreset.square],
+              minimumAspectRatio: 1.0,
+            ),
+          ],
+        );
+      } on MissingPluginException catch (e) {
+        log.w('ImageCropper plugin unavailable on this platform, using original image instead: $e');
+      }
+    } else {
+      log.i('Image cropping is not supported on desktop, using original image.');
     }
 
     final avatarUuid = const Uuid().v4();
-    final newPath = "${avatarsDirectory.path}/$walletAddress-$avatarUuid";
+    final sourcePath = croppedFile?.path ?? imageFile.path;
+    final sourceExtension = XFile(sourcePath).name.split('.').length > 1
+        ? '.${XFile(sourcePath).name.split('.').last}'
+        : '';
+    final newPath = "${avatarsDirectory.path}/$walletAddress-$avatarUuid$sourceExtension";
+
+    if (croppedFile == null && (Platform.isAndroid || Platform.isIOS)) {
+      log.w('No image selected after cropping.');
+      return '';
+    }
 
     try {
       final walletService = ref.read(walletServiceProvider);
@@ -87,8 +101,9 @@ class WalletManagementService {
         }
       }
 
-      // Move cropped file to new location
-      await File(croppedFile.path).rename(newPath);
+      // Move processed file to avatar storage, or copy the original file on platforms
+      // where cropping is unavailable.
+      await File(sourcePath).copy(newPath);
 
       // Update wallet data
       walletData.imagePath = newPath;

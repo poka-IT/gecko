@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:durt2/durt2.dart' as d;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -14,21 +16,25 @@ import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/network_activity_provider.dart';
 import 'package:gecko/providers/network_certifications_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/network_identities_provider.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/providers/safe_data_provider.dart';
+import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
-import 'package:gecko/routes.dart';
+import 'package:gecko/screens/myWallets/switch_safe.dart';
 import 'package:gecko/screens/profile_view.dart';
-import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
+import 'package:gecko/widgets/bottom_sheets/safe_options_menu.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
+import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/identity_display_item.dart';
@@ -52,15 +58,26 @@ class DesktopHomeWidget extends ConsumerStatefulWidget {
 class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late List<ScrollController> _scrollControllers;
+  late TextEditingController _desktopSearchController;
+  late FocusNode _desktopSearchFocusNode;
+  late FocusNode _desktopHomeFocusNode;
+  late ScrollController _desktopSearchScrollController;
+  int _highlightedSearchIndex = -1;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _scrollControllers = List.generate(3, (_) => ScrollController());
+    _desktopSearchController = TextEditingController();
+    _desktopSearchFocusNode = FocusNode();
+    _desktopHomeFocusNode = FocusNode(debugLabel: 'desktop_home_shortcuts');
+    _desktopSearchScrollController = ScrollController();
     for (final sc in _scrollControllers) {
       sc.addListener(_onScroll);
     }
+    _desktopSearchController.addListener(_onDesktopSearchChanged);
+    _desktopSearchFocusNode.addListener(_onDesktopSearchFocusChanged);
   }
 
   @override
@@ -69,8 +86,29 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       sc.removeListener(_onScroll);
       sc.dispose();
     }
+    _desktopSearchController.removeListener(_onDesktopSearchChanged);
+    _desktopSearchController.dispose();
+    _desktopSearchFocusNode.removeListener(_onDesktopSearchFocusChanged);
+    _desktopSearchFocusNode.dispose();
+    _desktopHomeFocusNode.dispose();
+    _desktopSearchScrollController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _onDesktopSearchChanged() {
+    ref.read(searchTextProvider.notifier).set(_desktopSearchController.text);
+    if (_highlightedSearchIndex != -1) {
+      setState(() {
+        _highlightedSearchIndex = -1;
+      });
+    } else {
+      setState(() {});
+    }
+  }
+
+  void _onDesktopSearchFocusChanged() {
+    setState(() {});
   }
 
   void _onScroll() {
@@ -91,6 +129,142 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     }
   }
 
+  Future<void> _openQrScanner(BuildContext context) async {
+    final scanQr = ref.read(qrScanProvider);
+    await scanQr(context);
+  }
+
+  void _openSafeSwitcher(BuildContext context) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
+  }
+
+  void _openSafeOptions(BuildContext context) {
+    showSafeOptionsMenu(context);
+  }
+
+  void _focusDesktopSearch() {
+    if (!_desktopSearchFocusNode.hasFocus) {
+      _desktopSearchFocusNode.requestFocus();
+    }
+    if (_desktopSearchController.text.isNotEmpty) {
+      _desktopSearchController.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _desktopSearchController.text.length,
+      );
+    }
+  }
+
+  void _focusDesktopHomeShell() {
+    if (!_desktopHomeFocusNode.hasFocus) {
+      _desktopHomeFocusNode.requestFocus();
+    }
+  }
+
+  List<_DesktopSearchSuggestion> _buildSearchSuggestions({
+    required List<d.IdentitySuggestion> identities,
+    required List<d.WalletEntity> addresses,
+  }) {
+    final seen = <String>{};
+    final suggestions = <_DesktopSearchSuggestion>[];
+
+    for (final wallet in addresses) {
+      if (seen.add(wallet.address)) {
+        suggestions.add(
+          _DesktopSearchSuggestion(
+            address: wallet.address,
+            username: wallet.name,
+            type: _DesktopSearchSuggestionType.address,
+          ),
+        );
+      }
+    }
+
+    for (final identity in identities) {
+      if (seen.add(identity.address)) {
+        suggestions.add(
+          _DesktopSearchSuggestion(
+            address: identity.address,
+            username: identity.name,
+            type: _DesktopSearchSuggestionType.identity,
+          ),
+        );
+      }
+    }
+
+    return suggestions;
+  }
+
+  void _moveSearchHighlight(int delta, int suggestionCount) {
+    if (suggestionCount == 0) return;
+    setState(() {
+      final nextIndex = _highlightedSearchIndex + delta;
+      if (nextIndex < 0) {
+        _highlightedSearchIndex = suggestionCount - 1;
+      } else if (nextIndex >= suggestionCount) {
+        _highlightedSearchIndex = 0;
+      } else {
+        _highlightedSearchIndex = nextIndex;
+      }
+    });
+
+    final targetOffset = (_highlightedSearchIndex * 76).toDouble();
+    if (_desktopSearchScrollController.hasClients) {
+      _desktopSearchScrollController.animateTo(
+        targetOffset.clamp(0, _desktopSearchScrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  void _openSearchSuggestion(BuildContext context, _DesktopSearchSuggestion suggestion) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ProfileViewScreen(address: suggestion.address, username: suggestion.username),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 200),
+      ),
+    );
+  }
+
+  KeyEventResult _handleDesktopSearchKeyEvent(
+    BuildContext context,
+    KeyEvent event,
+    List<_DesktopSearchSuggestion> suggestions,
+  ) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.arrowDown:
+        _moveSearchHighlight(1, suggestions.length);
+        return KeyEventResult.handled;
+      case LogicalKeyboardKey.arrowUp:
+        _moveSearchHighlight(-1, suggestions.length);
+        return KeyEventResult.handled;
+      case LogicalKeyboardKey.enter:
+        if (suggestions.isEmpty) return KeyEventResult.ignored;
+        final index = _highlightedSearchIndex >= 0 ? _highlightedSearchIndex : 0;
+        _openSearchSuggestion(context, suggestions[index]);
+        return KeyEventResult.handled;
+      case LogicalKeyboardKey.escape:
+        _desktopSearchFocusNode.unfocus();
+        setState(() {
+          _highlightedSearchIndex = -1;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _focusDesktopHomeShell();
+        });
+        return KeyEventResult.handled;
+      default:
+        return KeyEventResult.ignored;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final showImage = ref.watch(backgroundImageProvider);
@@ -100,50 +274,74 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     final view = View.of(context);
     final screenSize = view.physicalSize / view.devicePixelRatio;
 
-    return EasterEggDetector(
-      onPlayingStateChanged: widget.onEasterEggStateChange,
-      child: Stack(
-        children: [
-          // Background layer
-          Positioned(
-            top: 0,
-            left: 0,
-            width: screenSize.width,
-            height: screenSize.height,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: const Alignment(-1, -1),
-                  end: const Alignment(1, 1),
-                  colors: [
-                    context.colorScheme.surface,
-                    Color.lerp(context.colorScheme.surface, context.colorScheme.primary, 0.06)!,
-                    context.colorScheme.surface,
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-                image: showImage
-                    ? DecorationImage(
-                        opacity: 0.15,
-                        image: imageCache.getImageProvider("assets/home/background.jpg"),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+    return Shortcuts(
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.keyK, meta: true): _FocusDesktopSearchIntent(),
+        SingleActivator(LogicalKeyboardKey.keyK, control: true): _FocusDesktopSearchIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _FocusDesktopSearchIntent: CallbackAction<_FocusDesktopSearchIntent>(
+            onInvoke: (intent) {
+              _focusDesktopSearch();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _focusDesktopHomeShell,
+          child: Focus(
+            autofocus: true,
+            focusNode: _desktopHomeFocusNode,
+            child: EasterEggDetector(
+              onPlayingStateChanged: widget.onEasterEggStateChange,
+              child: Stack(
+                children: [
+                  // Background layer
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    width: screenSize.width,
+                    height: screenSize.height,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: const Alignment(-1, -1),
+                          end: const Alignment(1, 1),
+                          colors: [
+                            context.colorScheme.surface,
+                            Color.lerp(context.colorScheme.surface, context.colorScheme.primary, 0.06)!,
+                            context.colorScheme.surface,
+                          ],
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
+                        image: showImage
+                            ? DecorationImage(
+                                opacity: 0.15,
+                                image: imageCache.getImageProvider("assets/home/background.jpg"),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                  // Content
+                  SafeArea(
+                    child: Row(
+                      children: [
+                        // Left panel: Branding + Actions + Wallets + Network status
+                        Expanded(flex: 3, child: _buildLeftPanel(context, ref)),
+                        // Right panel: Network activity (full height)
+                        Expanded(flex: 2, child: _buildActivityPanel(context, ref)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          // Content
-          SafeArea(
-            child: Row(
-              children: [
-                // Left panel: Branding + Actions + Wallets + Network status
-                Expanded(flex: 3, child: _buildLeftPanel(context, ref)),
-                // Right panel: Network activity (full height)
-                Expanded(flex: 2, child: _buildActivityPanel(context, ref)),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -164,6 +362,16 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                   Stack(
                     children: [
                       Positioned(top: scaleSize(10), left: 0, child: IconHomeSettings()),
+                      Positioned(
+                        top: scaleSize(62),
+                        left: scaleSize(4),
+                        child: _buildTopShortcutButton(
+                          context: context,
+                          icon: Icons.qr_code_scanner_rounded,
+                          tooltip: 'scanQRCode'.tr(),
+                          onTap: () => _openQrScanner(context),
+                        ),
+                      ),
                       Align(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 500),
@@ -209,8 +417,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Horizontal action buttons
-                  _buildHorizontalButtons(context, ref),
+                  _buildDesktopSearchSection(context, ref),
                   const SizedBox(height: 20),
                   // Total balance
                   _buildTotalBalanceCard(context, ref),
@@ -236,84 +443,345 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     return Padding(padding: const EdgeInsets.fromLTRB(0, 12, 16, 12), child: _buildNetworkActivityFeed(context, ref));
   }
 
-  Widget _buildHorizontalButtons(BuildContext context, WidgetRef ref) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildCircleButton(
-          context: context,
-          icon: 'assets/home/loupe.png',
-          label: 'searchWallet'.tr(),
-          onTap: () => Navigator.pushNamed(context, RouteNames.search),
+  Widget _buildTopShortcutButton({
+    required BuildContext context,
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Ink(
+            width: scaleSize(44),
+            height: scaleSize(44),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.82),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 14, offset: const Offset(0, 5)),
+              ],
+            ),
+            child: Icon(icon, size: scaleSize(22), color: context.colorScheme.onSurface),
+          ),
         ),
-        ScaledSizedBox(width: 30),
-        _buildCircleButton(
-          context: context,
-          icon: 'assets/home/wallet.png',
-          label: 'manageWallets'.tr(),
-          onTap: () async {
-            if (!await PinCodeService.askPinCode(canSwitch: true)) return;
-            Navigator.pushNamed(context, RouteNames.myWallets);
-          },
-        ),
-        ScaledSizedBox(width: 30),
-        _buildCircleButton(
-          context: context,
-          icon: 'assets/home/qrcode.png',
-          label: 'scanQRCode'.tr(),
-          onTap: () async {
-            final scanQr = ref.read(qrScanProvider);
-            await scanQr(context);
-          },
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildCircleButton({
-    required BuildContext context,
-    required String icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    final size = scaleSize(60);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: context.colorScheme.primary,
-            boxShadow: [
-              BoxShadow(
-                color: context.colorScheme.primary.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+  Widget _buildDesktopSearchSection(BuildContext context, WidgetRef ref) {
+    final query = _desktopSearchController.text.trim();
+    final isFocused = _desktopSearchFocusNode.hasFocus;
+    final addressResultsAsync = ref.watch(searchResultsProvider);
+    final identityResultsAsync = query.length >= 2
+        ? ref.watch(searchIdentityProvider(query))
+        : const AsyncValue<List<d.IdentitySuggestion>>.data([]);
+
+    final addressResults = switch (addressResultsAsync) {
+      AsyncData(:final value) =>
+        value
+            .map(
+              (wallet) => d.WalletEntity.create(
+                address: wallet.address,
+                name: wallet.username,
+                keyPairType: d.Durt.defaultKeyPairType,
               ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: onTap,
-              child: Padding(padding: EdgeInsets.all(scaleSize(14)), child: Image.asset(icon)),
+            )
+            .toList(),
+      _ => const <d.WalletEntity>[],
+    };
+    final identityResults = switch (identityResultsAsync) {
+      AsyncData(:final value) => value.cast<d.IdentitySuggestion>(),
+      _ => const <d.IdentitySuggestion>[],
+    };
+    final suggestions = query.length >= 2
+        ? _buildSearchSuggestions(identities: identityResults, addresses: addressResults)
+        : const <_DesktopSearchSuggestion>[];
+    final hasSuggestions = suggestions.isNotEmpty;
+    final isLoading = query.length >= 2 && (addressResultsAsync.isLoading || identityResultsAsync.isLoading);
+    final showDropdown = isFocused && query.length >= 2;
+
+    if (_highlightedSearchIndex >= suggestions.length && _highlightedSearchIndex != -1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _highlightedSearchIndex = suggestions.isEmpty ? -1 : 0;
+          });
+        }
+      });
+    }
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 640),
+      child: Column(
+        children: [
+          Focus(
+            onKeyEvent: (node, event) => _handleDesktopSearchKeyEvent(context, event, suggestions),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    context.colorScheme.surface.withValues(alpha: 0.96),
+                    context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.86),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(showDropdown ? 26 : 24),
+                border: Border.all(
+                  color: isFocused
+                      ? context.colorScheme.primary.withValues(alpha: 0.35)
+                      : context.colorScheme.outline.withValues(alpha: 0.1),
+                  width: isFocused ? 1.2 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isFocused
+                        ? context.colorScheme.primary.withValues(alpha: 0.12)
+                        : Colors.black.withValues(alpha: 0.06),
+                    blurRadius: isFocused ? 24 : 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(Icons.search_rounded, color: context.colorScheme.primary, size: 22),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: TextField(
+                            controller: _desktopSearchController,
+                            focusNode: _desktopSearchFocusNode,
+                            autofocus: false,
+                            maxLines: 1,
+                            textInputAction: TextInputAction.search,
+                            onTapOutside: (_) {
+                              _desktopSearchFocusNode.unfocus();
+                              _focusDesktopHomeShell();
+                            },
+                            onSubmitted: (_) {
+                              if (suggestions.isEmpty) return;
+                              final index = _highlightedSearchIndex >= 0 ? _highlightedSearchIndex : 0;
+                              _openSearchSuggestion(context, suggestions[index]);
+                            },
+                            decoration: InputDecoration(
+                              isDense: true,
+                              hintText: 'desktopSearchIdentityPlaceholder'.tr(),
+                              hintStyle: scaledTextStyle(
+                                fontSize: 15,
+                                color: context.colorScheme.onSurface.withValues(alpha: 0.38),
+                              ),
+                              border: InputBorder.none,
+                            ),
+                            style: scaledTextStyle(
+                              fontSize: 15,
+                              color: context.colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (_desktopSearchController.text.isNotEmpty)
+                          IconButton(
+                            onPressed: () {
+                              _desktopSearchController.clear();
+                              _desktopSearchFocusNode.requestFocus();
+                            },
+                            splashRadius: 18,
+                            icon: Icon(Icons.close_rounded, size: 20, color: context.colorScheme.onSurfaceVariant),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '↑↓',
+                              style: scaledTextStyle(
+                                fontSize: 11,
+                                color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 160),
+                    child: !showDropdown
+                        ? const SizedBox.shrink()
+                        : Container(
+                            key: ValueKey('${query}_${suggestions.length}_$isLoading'),
+                            constraints: const BoxConstraints(maxHeight: 320),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+                              ),
+                            ),
+                            child: isLoading
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 18),
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.2,
+                                          color: context.colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : !hasSuggestions
+                                ? Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 18),
+                                    child: Text(
+                                      'noResult'.tr(),
+                                      textAlign: TextAlign.center,
+                                      style: scaledTextStyle(
+                                        fontSize: 12,
+                                        color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  )
+                                : ListView.separated(
+                                    controller: _desktopSearchScrollController,
+                                    shrinkWrap: true,
+                                    padding: const EdgeInsets.all(10),
+                                    itemCount: suggestions.length,
+                                    separatorBuilder: (_, _) => const SizedBox(height: 6),
+                                    itemBuilder: (context, index) {
+                                      final suggestion = suggestions[index];
+                                      return _buildDesktopSearchSuggestionTile(
+                                        context,
+                                        suggestion: suggestion,
+                                        isHighlighted: index == _highlightedSearchIndex,
+                                        onTap: () => _openSearchSuggestion(context, suggestion),
+                                      );
+                                    },
+                                  ),
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        ScaledSizedBox(height: 6),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: scaledTextStyle(
-            color: context.colorScheme.onSurface.withValues(alpha: 0.8),
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopSearchSuggestionTile(
+    BuildContext context, {
+    required _DesktopSearchSuggestion suggestion,
+    required bool isHighlighted,
+    required VoidCallback onTap,
+  }) {
+    final title = suggestion.username?.isNotEmpty == true ? suggestion.username! : getShortPubkey(suggestion.address);
+    final subtitle = suggestion.username?.isNotEmpty == true ? getShortPubkey(suggestion.address) : suggestion.address;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: isHighlighted
+                ? context.colorScheme.primary.withValues(alpha: 0.1)
+                : context.colorScheme.surface.withValues(alpha: 0.68),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isHighlighted
+                  ? context.colorScheme.primary.withValues(alpha: 0.22)
+                  : context.colorScheme.outline.withValues(alpha: 0.05),
+            ),
+          ),
+          child: Row(
+            children: [
+              DatapodAvatar(address: suggestion.address, size: 38, name: suggestion.username),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            title,
+                            overflow: TextOverflow.ellipsis,
+                            style: scaledTextStyle(
+                              fontSize: 13,
+                              color: context.colorScheme.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: suggestion.type == _DesktopSearchSuggestionType.identity
+                                ? context.colorScheme.primary.withValues(alpha: 0.12)
+                                : context.colorScheme.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            suggestion.type == _DesktopSearchSuggestionType.identity
+                                ? 'desktopIdentityShortLabel'.tr()
+                                : 'desktopWalletShortLabel'.tr(),
+                            style: scaledTextStyle(
+                              fontSize: 10,
+                              color: suggestion.type == _DesktopSearchSuggestionType.identity
+                                  ? context.colorScheme.primary
+                                  : context.colorScheme.onSurface.withValues(alpha: 0.7),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      overflow: TextOverflow.ellipsis,
+                      style: scaledTextStyle(
+                        fontSize: 10.5,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.46),
+                        fontFamily: 'Monospace',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Balance(address: suggestion.address, size: 12, color: context.colorScheme.onSurface),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -900,11 +1368,25 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   // ─── Wallet Overview Card ───
 
   Widget _buildWalletOverview(BuildContext context, WidgetRef ref) {
-    final walletsState = ref.watch(walletsListProvider);
+    final walletService = ref.watch(walletServiceProvider);
+    final currentSafeNumber = ref.watch(currentSafeNumberProvider);
+    final allSafes = walletService.safeBox.getAll()..sort((a, b) => a.number.compareTo(b.number));
+    final safeGroups = allSafes
+        .map((safe) {
+          final query = walletService.walletBox.query()
+            ..link(WalletEntity_.safe, SafeEntity_.number.equals(safe.number));
+          final wallets = query.build().find()..sort((a, b) => a.number.compareTo(b.number));
+          return _DesktopSafeWalletGroup(safe: safe, wallets: wallets, isCurrent: safe.number == currentSafeNumber);
+        })
+        .where((group) => group.wallets.isNotEmpty)
+        .toList(growable: false);
+    final totalWallets = safeGroups.fold<int>(0, (sum, group) => sum + group.wallets.length);
+    final hasSingleSafe = safeGroups.length <= 1;
+    final hasSingleWallet = totalWallets == 1;
 
     return _buildGlassCard(
       context,
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -920,20 +1402,27 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               Text(
                 'myWalletsTitle'.tr(),
                 style: scaledTextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: context.colorScheme.onSurface.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
-              Text(
-                '${walletsState.wallets.length}',
-                style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '$totalWallets',
+                  style: scaledTextStyle(fontSize: 11, color: context.colorScheme.primary, fontWeight: FontWeight.w700),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          if (walletsState.wallets.isEmpty)
+          const SizedBox(height: 10),
+          if (safeGroups.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
@@ -943,82 +1432,429 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                 ),
               ),
             )
+          else if (hasSingleWallet)
+            _buildSingleWalletOverview(context, ref, safeGroups.single, safeGroups.single.wallets.single)
+          else if (hasSingleSafe)
+            _buildSingleSafeWalletList(context, ref, safeGroups.single)
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: walletsState.wallets.length,
-              separatorBuilder: (_, _) =>
-                  Divider(color: context.colorScheme.outline.withValues(alpha: 0.06), height: 1),
-              itemBuilder: (context, index) {
-                final wallet = walletsState.wallets[index];
-                return _buildWalletRow(context, ref, wallet);
-              },
-            ),
+            _buildMultiSafeWalletList(context, ref, safeGroups),
+          if (safeGroups.isNotEmpty) ...[const SizedBox(height: 14), _buildSecondarySafeActions(context, safeGroups)],
         ],
       ),
     );
   }
 
-  Widget _buildWalletRow(BuildContext context, WidgetRef ref, d.WalletEntity wallet) {
-    final idtyStatus = ref.watch(safeWalletIdtyStatusProvider(wallet.address));
+  Widget _buildSingleWalletOverview(
+    BuildContext context,
+    WidgetRef ref,
+    _DesktopSafeWalletGroup group,
+    d.WalletEntity wallet,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            context.colorScheme.primary.withValues(alpha: 0.12),
+            context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.95),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSafeHeader(context, group, compact: true),
+          const SizedBox(height: 12),
+          _buildWalletRow(context, ref, wallet, isPrimary: true, isOnlyWallet: true),
+        ],
+      ),
+    );
+  }
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(6),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProfileViewScreen(address: wallet.address, username: wallet.name),
+  Widget _buildSingleSafeWalletList(BuildContext context, WidgetRef ref, _DesktopSafeWalletGroup group) {
+    return Column(
+      children: [
+        _buildSafeHeader(context, group, compact: true),
+        const SizedBox(height: 10),
+        for (final wallet in group.wallets)
+          _buildWalletRow(context, ref, wallet, isPrimary: _isPrimaryWallet(group.wallets, wallet)),
+      ],
+    );
+  }
+
+  Widget _buildMultiSafeWalletList(BuildContext context, WidgetRef ref, List<_DesktopSafeWalletGroup> groups) {
+    return Column(
+      children: [
+        for (var i = 0; i < groups.length; i++) ...[
+          _buildSafeSection(context, ref, groups[i]),
+          if (i != groups.length - 1) const SizedBox(height: 14),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSafeSection(BuildContext context, WidgetRef ref, _DesktopSafeWalletGroup group) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: group.isCurrent
+              ? context.colorScheme.primary.withValues(alpha: 0.16)
+              : context.colorScheme.outline.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildSafeHeader(context, group),
+          const SizedBox(height: 10),
+          for (final wallet in group.wallets)
+            _buildWalletRow(context, ref, wallet, isPrimary: _isPrimaryWallet(group.wallets, wallet)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSafeHeader(BuildContext context, _DesktopSafeWalletGroup group, {bool compact = false}) {
+    final safeLabel = WalletNameService.displayName(group.safe.name);
+    return Row(
+      children: [
+        Container(
+          width: compact ? 38 : 34,
+          height: compact ? 38 : 34,
+          decoration: BoxDecoration(
+            color: group.isCurrent
+                ? context.colorScheme.primary.withValues(alpha: 0.14)
+                : context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(12),
           ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
-        child: Row(
-          children: [
-            SizedBox(
-              width: scaleSize(28),
-              height: scaleSize(28),
-              child: ClipOval(
-                child:
-                    wallet.imagePath != null && wallet.imagePath!.isNotEmpty && !wallet.imagePath!.startsWith('assets/')
-                    ? CachedAvatarImage(imagePath: wallet.imagePath!, fit: BoxFit.cover, isCircular: false)
-                    : Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
+          child: Icon(
+            Icons.inventory_2_outlined,
+            color: group.isCurrent ? context.colorScheme.primary : context.colorScheme.onSurface.withValues(alpha: 0.7),
+            size: compact ? 20 : 18,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                safeLabel,
+                overflow: TextOverflow.ellipsis,
+                style: scaledTextStyle(
+                  fontSize: compact ? 14 : 13,
+                  color: context.colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
+              const SizedBox(height: 2),
+              Text(
+                group.wallets.length > 1
+                    ? 'desktopWalletsCountLabel'.tr(args: ['${group.wallets.length}'])
+                    : 'desktopWalletCountLabel'.tr(args: ['${group.wallets.length}']),
+                style: scaledTextStyle(fontSize: 10.5, color: context.colorScheme.onSurface.withValues(alpha: 0.46)),
+              ),
+            ],
+          ),
+        ),
+        if (group.isCurrent)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            decoration: BoxDecoration(
+              color: context.colorScheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  NameByAddress(
-                    wallet: wallet,
-                    size: 12,
-                    color: context.colorScheme.onSurface,
+            child: Text(
+              'identityActive'.tr(),
+              style: scaledTextStyle(fontSize: 10, color: context.colorScheme.primary, fontWeight: FontWeight.w700),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSecondarySafeActions(BuildContext context, List<_DesktopSafeWalletGroup> groups) {
+    final currentGroup = groups.firstWhere((group) => group.isCurrent, orElse: () => groups.first);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  WalletNameService.displayName(currentGroup.safe.name),
+                  overflow: TextOverflow.ellipsis,
+                  style: scaledTextStyle(
+                    fontSize: 12,
+                    color: context.colorScheme.onSurface.withValues(alpha: 0.68),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Text(
+                '#${currentGroup.safe.number}',
+                style: scaledTextStyle(fontSize: 10.5, color: context.colorScheme.onSurface.withValues(alpha: 0.42)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSecondaryActionButton(
+                  context,
+                  icon: Icons.swap_horiz_rounded,
+                  label: 'changeSafe'.tr(),
+                  onTap: () => _openSafeSwitcher(context),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildSecondaryActionButton(
+                  context,
+                  icon: Icons.tune_rounded,
+                  label: 'manageSafe'.tr(),
+                  onTap: () => _openSafeOptions(context),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecondaryActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.72)),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: scaledTextStyle(
+                    fontSize: 11,
+                    color: context.colorScheme.onSurface.withValues(alpha: 0.72),
                     fontWeight: FontWeight.w600,
                   ),
-                  Row(
-                    children: [
-                      if (idtyStatus != null && idtyStatus != d.IdtyStatus.none)
-                        Padding(padding: const EdgeInsets.only(right: 4), child: _buildIdtyStatusDot(idtyStatus)),
-                      Text(
-                        getShortPubkey(wallet.address),
-                        style: scaledTextStyle(
-                          fontSize: 9,
-                          color: context.colorScheme.onSurface.withValues(alpha: 0.4),
-                          fontFamily: 'Monospace',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isPrimaryWallet(List<d.WalletEntity> wallets, d.WalletEntity wallet) {
+    if (wallets.isEmpty) return false;
+    final primary = wallets.firstWhere((candidate) => candidate.derivation == null, orElse: () => wallets.first);
+    return primary.address == wallet.address;
+  }
+
+  Widget _buildWalletRow(
+    BuildContext context,
+    WidgetRef ref,
+    d.WalletEntity wallet, {
+    bool isPrimary = false,
+    bool isOnlyWallet = false,
+  }) {
+    final idtyStatus = ref.watch(safeWalletIdtyStatusProvider(wallet.address));
+    final dragState = ref.watch(dragDropProvider);
+    final isDraggingAnotherWallet = dragState.dragAddress != null && dragState.dragAddress!.address != wallet.address;
+    final isHoveredTarget = dragState.lastFlyBy?.address == wallet.address && isDraggingAnotherWallet;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: DragTuleAction(
+        wallet: wallet,
+        desktopMode: true,
+        desktopChildBuilder: (dragHandle) => Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfileViewScreen(address: wallet.address, username: wallet.name),
+                ),
+              );
+            },
+            child: Ink(
+              padding: EdgeInsets.symmetric(horizontal: isOnlyWallet ? 12 : 10, vertical: isOnlyWallet ? 12 : 10),
+              decoration: BoxDecoration(
+                gradient: isHoveredTarget
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          context.colorScheme.primary.withValues(alpha: 0.2),
+                          context.colorScheme.surface.withValues(alpha: 0.95),
+                        ],
+                      )
+                    : isPrimary
+                    ? LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          context.colorScheme.primary.withValues(alpha: 0.14),
+                          context.colorScheme.surface.withValues(alpha: 0.88),
+                        ],
+                      )
+                    : null,
+                color: (isHoveredTarget || isPrimary) ? null : context.colorScheme.surface.withValues(alpha: 0.74),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isHoveredTarget
+                      ? context.colorScheme.primary.withValues(alpha: 0.3)
+                      : isPrimary
+                      ? context.colorScheme.primary.withValues(alpha: 0.18)
+                      : context.colorScheme.outline.withValues(alpha: 0.05),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: scaleSize(34),
+                    height: scaleSize(34),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+                    ),
+                    child: ClipOval(
+                      child:
+                          wallet.imagePath != null &&
+                              wallet.imagePath!.isNotEmpty &&
+                              !wallet.imagePath!.startsWith('assets/')
+                          ? CachedAvatarImage(imagePath: wallet.imagePath!, fit: BoxFit.cover, isCircular: false)
+                          : Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: NameByAddress(
+                                wallet: wallet,
+                                size: isOnlyWallet ? 13 : 12.5,
+                                color: context.colorScheme.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (isPrimary) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: context.colorScheme.primary.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  'walletNameMain'.tr(),
+                                  style: scaledTextStyle(
+                                    fontSize: 9.5,
+                                    color: context.colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            if (idtyStatus != null && idtyStatus != d.IdtyStatus.none)
+                              Padding(padding: const EdgeInsets.only(right: 5), child: _buildIdtyStatusDot(idtyStatus)),
+                            Expanded(
+                              child: Text(
+                                getShortPubkey(wallet.address),
+                                style: scaledTextStyle(
+                                  fontSize: 9.5,
+                                  color: context.colorScheme.onSurface.withValues(alpha: 0.42),
+                                  fontFamily: 'Monospace',
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (isDraggingAnotherWallet && !isHoveredTarget)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Icon(
+                        Icons.arrow_downward_rounded,
+                        size: 16,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.22),
+                      ),
+                    ),
+                  if (isHoveredTarget)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.primary.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'pay'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 9.5,
+                            color: context.colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  Balance(address: wallet.address, size: 12, color: context.colorScheme.onSurface),
+                  const SizedBox(width: 8),
+                  dragHandle,
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, size: 14, color: context.colorScheme.onSurface.withValues(alpha: 0.22)),
                 ],
               ),
             ),
-            Balance(address: wallet.address, size: 12, color: context.colorScheme.onSurface),
-            const SizedBox(width: 2),
-            Icon(Icons.chevron_right, size: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.2)),
-          ],
+          ),
         ),
       ),
     );
@@ -1164,4 +2000,26 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       ),
     );
   }
+}
+
+enum _DesktopSearchSuggestionType { address, identity }
+
+class _FocusDesktopSearchIntent extends Intent {
+  const _FocusDesktopSearchIntent();
+}
+
+class _DesktopSearchSuggestion {
+  const _DesktopSearchSuggestion({required this.address, required this.username, required this.type});
+
+  final String address;
+  final String? username;
+  final _DesktopSearchSuggestionType type;
+}
+
+class _DesktopSafeWalletGroup {
+  const _DesktopSafeWalletGroup({required this.safe, required this.wallets, required this.isCurrent});
+
+  final d.SafeEntity safe;
+  final List<d.WalletEntity> wallets;
+  final bool isCurrent;
 }

@@ -1,5 +1,11 @@
 {
     "searchWallet": "Rechercher un\nportefeuille",
+    "desktopSearchIdentityPlaceholder": "Rechercher une identité",
+    "desktopIdentityShortLabel": "ID",
+    "desktopWalletShortLabel": "G1",
+    "desktopWalletCountLabel": "{} portefeuille",
+    "desktopWalletsCountLabel": "{} portefeuilles",
+    "desktopDragToPayTooltip": "Glisser vers un autre portefeuille pour payer",
     "manageWallets": "Gérer mes\nportefeuilles",
     "scanQRCode": "Scanner un\nQR code",
     "scanMnemonic": "Scanner la phrase",

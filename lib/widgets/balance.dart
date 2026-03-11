@@ -33,7 +33,7 @@ class Balance extends ConsumerWidget {
             shimmerHeight: scaleSize(size * 1.2),
             shimmerColor: finalColor,
             child: safeBalance != null
-                ? BalanceDisplay(value: safeBalance.transferableBalance, size: size, color: finalColor)
+                ? BalanceDisplay(value: safeBalance.total, size: size, color: finalColor)
                 : const SizedBox.shrink(),
           );
         }
@@ -43,8 +43,7 @@ class Balance extends ConsumerWidget {
 
         return balanceStream.when(
           data: (walletBalance) {
-            final transferableBalance = walletBalance.transferableBalance;
-            return BalanceDisplay(value: transferableBalance, size: size, color: finalColor);
+            return BalanceDisplay(value: walletBalance.total, size: size, color: finalColor);
           },
           loading: () => ShimmerPlaceholder(width: scaleSize(60), height: scaleSize(size * 1.2), baseColor: finalColor),
           error: (error, stack) {

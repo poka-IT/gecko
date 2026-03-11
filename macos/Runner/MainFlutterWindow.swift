@@ -19,29 +19,29 @@ class MainFlutterWindow: NSWindow {
   }
   
   private func configureWindow() {
-    // Set default window size to 700x800
-    let defaultSize = NSSize(width: 440, height: 800)
-    
-    // Center the window on screen
-    if let screen = NSScreen.main {
-      let screenFrame = screen.visibleFrame
-      let x = (screenFrame.width - defaultSize.width) / 2 + screenFrame.minX
-      let y = (screenFrame.height - defaultSize.height) / 2 + screenFrame.minY
-      let windowFrame = NSRect(x: x, y: y, width: defaultSize.width, height: defaultSize.height)
-      self.setFrame(windowFrame, display: true, animate: false)
-    } else {
-      // Fallback if no screen available
-      let windowFrame = NSRect(x: 100, y: 100, width: defaultSize.width, height: defaultSize.height)
-      self.setFrame(windowFrame, display: true, animate: false)
-    }
-    
     // Set minimum window size (allows resizing but not smaller than this)
     self.minSize = NSSize(width: 300, height: 700)
-    
+
     // Configure window properties
     self.isRestorable = true  // Remember window state between launches
+    self.setFrameAutosaveName("GeckoMainWindow")  // Persist window frame in NSUserDefaults
     self.title = "Ğecko"     // Set window title
-    
+
+    // Only set default size on first launch (no saved frame yet)
+    if !self.setFrameUsingName("GeckoMainWindow") {
+      let defaultSize = NSSize(width: 440, height: 800)
+      if let screen = NSScreen.main {
+        let screenFrame = screen.visibleFrame
+        let x = (screenFrame.width - defaultSize.width) / 2 + screenFrame.minX
+        let y = (screenFrame.height - defaultSize.height) / 2 + screenFrame.minY
+        let windowFrame = NSRect(x: x, y: y, width: defaultSize.width, height: defaultSize.height)
+        self.setFrame(windowFrame, display: true, animate: false)
+      } else {
+        let windowFrame = NSRect(x: 100, y: 100, width: defaultSize.width, height: defaultSize.height)
+        self.setFrame(windowFrame, display: true, animate: false)
+      }
+    }
+
     // Make sure the window is properly displayed
     self.makeKeyAndOrderFront(nil)
   }

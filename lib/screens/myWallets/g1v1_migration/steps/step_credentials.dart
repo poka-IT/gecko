@@ -351,7 +351,7 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
 
       case MigrationAccountType.alreadyMigrated:
         final migration = flowState.migrationFromData!;
-        final dateStr = DateFormat.yMMMd(context.locale.toString()).format(migration.migrationDate);
+        final dateStr = DateFormat.yMMMd(safeLocale(context.locale.languageCode)).format(migration.migrationDate);
         return Card(
           color: Colors.orange.shade50,
           elevation: 0,

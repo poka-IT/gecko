@@ -40,6 +40,7 @@ import 'package:gecko/services/log_collection_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/services/empty_string_asset_loader.dart';
 import 'package:gecko/services/eo_locale_delegate.dart';
+import 'package:gecko/services/eo_date_symbols.dart';
 import 'package:gecko/utils.dart' show safeLocale;
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
@@ -53,6 +54,9 @@ Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await EasyLocalization.ensureInitialized();
+
+  // Register Esperanto date symbols (not in CLDR/intl package)
+  registerEsperantoDateSymbols();
 
   // Initialize storage service
   final storageService = StorageInitService();

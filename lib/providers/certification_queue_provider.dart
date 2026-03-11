@@ -200,6 +200,14 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       }
     });
 
+    // Notify if any certification is ready at startup (before sync)
+    if (queue.hasReadyCertification) {
+      final readyCert = queue.nextReadyCertification;
+      if (readyCert != null) {
+        ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).notify(readyCert);
+      }
+    }
+
     // Sync with CesiumPlus in background (don't block UI)
     _syncWithCesiumPlus(queue);
 

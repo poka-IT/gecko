@@ -9,6 +9,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils/flower_power_colors.dart';
@@ -75,12 +76,12 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
             color: Colors.black.withValues(alpha: 0.1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
                 spreadRadius: 0,
               ),
-              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 1, offset: const Offset(0, 1)),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 1, offset: const Offset(0, 1)),
             ],
           ),
           child: ClipOval(
@@ -108,6 +109,12 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
     required Widget child,
     required String label,
   }) {
+    final showImage = ref.watch(backgroundImageProvider);
+    final labelColor = showImage ? Colors.white : context.colorScheme.onSurface;
+    final labelShadows = showImage
+        ? [Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))]
+        : <Shadow>[];
+
     return Column(
       children: <Widget>[
         _buildFlowerPowerButton(baseColor: baseColor, offset: offset, onTap: onTap, child: child),
@@ -115,12 +122,7 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
         Text(
           label,
           textAlign: TextAlign.center,
-          style: scaledTextStyle(
-            color: Colors.white,
-            fontSize: 12.5,
-            fontWeight: FontWeight.w500,
-            shadows: [Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
-          ),
+          style: scaledTextStyle(color: labelColor, fontSize: 12.5, fontWeight: FontWeight.w500, shadows: labelShadows),
         ),
       ],
     );
@@ -182,6 +184,7 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
 
     // Wide screen: 3 buttons in a row inside a glass container, anchored to bottom
     if (isWide) {
+      final showImage = ref.watch(backgroundImageProvider);
       return SizedBox.expand(
         child: Column(
           children: [
@@ -190,9 +193,15 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
               constraints: const BoxConstraints(maxWidth: 640),
               padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 40),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
+                color: showImage
+                    ? Colors.black.withValues(alpha: 0.35)
+                    : context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(
+                  color: showImage
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : context.colorScheme.outline.withValues(alpha: 0.15),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

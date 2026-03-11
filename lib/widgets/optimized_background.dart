@@ -32,11 +32,28 @@ class OptimizedBackground extends ConsumerWidget {
             height: screenSize.height,
             child: Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [context.colorScheme.secondary.withValues(alpha: 0.9), context.colorScheme.secondary],
-                ),
+                gradient: showImage
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [context.colorScheme.secondary.withValues(alpha: 0.9), context.colorScheme.secondary],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: context.colorScheme.brightness == Brightness.dark
+                            ? [
+                                context.colorScheme.tertiary,
+                                Color.lerp(context.colorScheme.tertiary, context.colorScheme.surface, 0.7)!,
+                                context.colorScheme.surface,
+                              ]
+                            : [
+                                context.colorScheme.primary,
+                                Color.lerp(context.colorScheme.primary, context.colorScheme.surfaceContainer, 0.6)!,
+                                context.colorScheme.surfaceContainer,
+                              ],
+                        stops: const [0.0, 0.4, 1.0],
+                      ),
                 image: showImage
                     ? DecorationImage(
                         opacity: 0.8,

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 
+import 'package:gecko/extensions.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/screens/home/desktop_home_widget.dart';
 import 'package:gecko/widgets/optimized_background.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
@@ -32,6 +34,16 @@ class GeckoHomeWidget extends ConsumerWidget {
     }
 
     final statusBarHeight = MediaQuery.of(context).padding.top;
+    final showImage = ref.watch(backgroundImageProvider);
+    final useWhiteText = showImage || context.colorScheme.brightness == Brightness.light;
+    final textColor = useWhiteText ? Colors.white : context.colorScheme.onSurface;
+    final textShadows = useWhiteText
+        ? <Shadow>[
+            const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
+            const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
+          ]
+        : <Shadow>[];
+
     return EasterEggDetector(
       onPlayingStateChanged: onEasterEggStateChange,
       child: OptimizedBackground(
@@ -64,13 +76,10 @@ class GeckoHomeWidget extends ConsumerWidget {
                           child: DefaultTextStyle(
                             textAlign: TextAlign.center,
                             style: scaledTextStyle(
-                              color: Colors.white,
+                              color: textColor,
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              shadows: <Shadow>[
-                                const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
-                                const Shadow(offset: Offset(0, 0), blurRadius: 20, color: Colors.black),
-                              ],
+                              shadows: textShadows,
                             ),
                             child: Consumer(
                               builder: (context, ref, _) {
@@ -99,18 +108,20 @@ class GeckoHomeWidget extends ConsumerWidget {
                   ),
                 ),
                 ScaledSizedBox(height: 15),
-                // Empty expanded to maintain layout structure
+                // Gradient overlay only when background image is shown
                 Expanded(
                   flex: 1,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.9)],
-                      ),
-                    ),
-                  ),
+                  child: showImage
+                      ? Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.9)],
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),

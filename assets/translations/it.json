@@ -714,6 +714,8 @@
     "returnToHome": "Torna alla Home",
     "sendErrorReports": "Inviare rapporti di errore",
     "sendErrorReportsDescription": "Aiutare a migliorare Gecko inviando rapporti di crash anonimi",
+    "showBackgroundImage": "Immagine di sfondo della home",
+    "showBackgroundImageDescription": "Mostrare l'immagine di sfondo nella schermata iniziale",
     "revokeAdhesion": "Revocazione adesione",
     "revokeMyIdentity": "Revocare la mia identità",
     "revoked": "Revocata",

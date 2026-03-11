@@ -148,10 +148,10 @@ class TransactionDisplayItem {
     final displayUsername = fromUsername != null && toUsername != null
         ? '$fromUsername → $toUsername'
         : fromUsername != null
-        ? '$fromUsername → ${toAddress.substring(0, 8)}...'
+        ? '$fromUsername → ${getShortPubkey(toAddress)}'
         : toUsername != null
-        ? '${fromAddress.substring(0, 8)}... → $toUsername'
-        : '${fromAddress.substring(0, 8)}... → ${toAddress.substring(0, 8)}...';
+        ? '${getShortPubkey(fromAddress)} → $toUsername'
+        : '${getShortPubkey(fromAddress)} → ${getShortPubkey(toAddress)}';
 
     return TransactionDisplayItem(
       address: fromAddress,

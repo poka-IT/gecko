@@ -1,10 +1,12 @@
 import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/screens/home/test_wallet_button.dart';
 import 'package:gecko/screens/onBoarding/import_choice_screen.dart';
@@ -16,92 +18,121 @@ import 'package:gecko/widgets/buttons/home_settings_button.dart';
 const double _desktopWelcomeBreakpoint = 900;
 
 /// Welcome screen widget displayed when no wallets exist
-class WelcomeHomeWidget extends StatelessWidget {
+class WelcomeHomeWidget extends ConsumerWidget {
   const WelcomeHomeWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final showImage = ref.watch(backgroundImageProvider);
 
     if (screenWidth >= _desktopWelcomeBreakpoint) {
-      return _DesktopWelcomeWidget();
+      return _DesktopWelcomeWidget(showBackgroundImage: showImage);
     }
 
-    return _MobileWelcomeWidget();
+    return _MobileWelcomeWidget(showBackgroundImage: showImage);
   }
 }
 
 // ─────────────────────────── Desktop Layout ───────────────────────────
 
 class _DesktopWelcomeWidget extends StatelessWidget {
+  final bool showBackgroundImage;
+
+  const _DesktopWelcomeWidget({required this.showBackgroundImage});
+
   @override
   Widget build(BuildContext context) {
     final imageCache = ImageCacheService();
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: const Alignment(-0.3, -0.5),
-          radius: 1.8,
-          colors: [
-            context.colorScheme.primary.withValues(alpha: 0.12),
-            context.colorScheme.surface,
-            context.colorScheme.surface,
-          ],
-          stops: const [0.0, 0.5, 1.0],
+    // Get fixed screen dimensions for background
+    final view = View.of(context);
+    final screenSize = view.physicalSize / view.devicePixelRatio;
+
+    return Stack(
+      children: [
+        // Background layer
+        Positioned(
+          top: 0,
+          left: 0,
+          width: screenSize.width,
+          height: screenSize.height,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: const Alignment(-1, -1),
+                end: const Alignment(1, 1),
+                colors: [
+                  context.colorScheme.surface,
+                  Color.lerp(context.colorScheme.surface, context.colorScheme.primary, 0.06)!,
+                  context.colorScheme.surface,
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+              image: showBackgroundImage
+                  ? DecorationImage(
+                      opacity: 0.15,
+                      image: imageCache.getImageProvider("assets/home/background.jpg"),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Stack(
-          children: [
-            // Settings button top-left
-            Positioned(top: scaleSize(10), left: scaleSize(15), child: IconHomeSettings()),
-            // Full-height column: header at top, gecko+buttons at center-bottom
-            Align(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Column(
-                  children: [
-                    // Header image — pinned at top
-                    Image(image: imageCache.getImageProvider('assets/home/header.png'), height: scaleSize(150)),
-                    const SizedBox(height: 8),
-                    // App description
-                    Text(
-                      "fastAppDescription".tr(args: [Durt.i.network.symbol]),
-                      textAlign: TextAlign.center,
-                      style: scaledTextStyle(
-                        color: context.colorScheme.onSurface,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+
+        // Content
+        SafeArea(
+          child: Stack(
+            children: [
+              // Settings button top-left
+              Positioned(top: scaleSize(10), left: scaleSize(15), child: IconHomeSettings()),
+              // Full-height column: header at top, gecko+buttons at center-bottom
+              Align(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: Column(
+                    children: [
+                      // Header image — pinned at top
+                      Image(image: imageCache.getImageProvider('assets/home/header.png'), height: scaleSize(150)),
+                      const SizedBox(height: 8),
+                      // App description
+                      Text(
+                        "fastAppDescription".tr(args: [Durt.i.network.symbol]),
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(
+                          color: context.colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    // Gecko + bubble — directly above buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image(
-                          image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'),
-                          height: scaleSize(150),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: BubbleSpeakWithTail(text: "noLizard".tr()),
-                        ),
-                      ],
-                    ),
-                    // Buttons
-                    _buildButtons(context),
-                    const TestWalletButton(),
-                    const Spacer(),
-                  ],
+                      const Spacer(),
+                      // Gecko + bubble — directly above buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Image(
+                            image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'),
+                            height: scaleSize(150),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: BubbleSpeakWithTail(text: "noLizard".tr()),
+                          ),
+                        ],
+                      ),
+                      // Buttons
+                      _buildButtons(context),
+                      const TestWalletButton(),
+                      const Spacer(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -168,6 +199,10 @@ class _DesktopWelcomeWidget extends StatelessWidget {
 // ─────────────────────────── Mobile Layout (original) ───────────────────────────
 
 class _MobileWelcomeWidget extends StatelessWidget {
+  final bool showBackgroundImage;
+
+  const _MobileWelcomeWidget({required this.showBackgroundImage});
+
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
@@ -188,10 +223,13 @@ class _MobileWelcomeWidget extends StatelessWidget {
             height: screenSize.height,
             child: Container(
               decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: imageCache.getImageProvider("assets/home/background.jpg"),
-                  fit: BoxFit.cover,
-                ),
+                color: showBackgroundImage ? null : context.colorScheme.secondary,
+                image: showBackgroundImage
+                    ? DecorationImage(
+                        image: imageCache.getImageProvider("assets/home/background.jpg"),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
             ),
           ),

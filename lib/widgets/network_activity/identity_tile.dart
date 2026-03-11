@@ -20,7 +20,7 @@ class IdentityTile extends StatelessWidget {
     // Substitute with "Infinite Name" when identity status is created (Unconfirmed)
     final isCreated = IdentityUtils.isCreatedStatusString(identity.status);
     final displayName = identity.name.isEmpty
-        ? (identity.accountId ?? "Unknown").substring(0, 8)
+        ? getShortPubkey(identity.accountId ?? '')
         : IdentityUtils.getDisplayNameFromString(identity.name, identity.status);
     const double avatarSize = 45;
 

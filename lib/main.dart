@@ -43,6 +43,8 @@ import 'package:gecko/services/empty_string_asset_loader.dart';
 import 'package:gecko/services/eo_locale_delegate.dart';
 import 'package:gecko/services/eo_date_symbols.dart';
 import 'package:gecko/utils.dart' show safeLocale;
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:gecko/services/eo_timeago_messages.dart';
 
 import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
@@ -65,6 +67,13 @@ Future<void> main() async {
 
   // Register Esperanto date symbols (not in CLDR/intl package)
   registerEsperantoDateSymbols();
+
+  // Register timeago locales for relative time display
+  timeago.setLocaleMessages('fr', timeago.FrMessages());
+  timeago.setLocaleMessages('es', timeago.EsMessages());
+  timeago.setLocaleMessages('it', timeago.ItMessages());
+  timeago.setLocaleMessages('de', timeago.DeMessages());
+  timeago.setLocaleMessages('eo', EoMessages());
 
   // Initialize storage service
   final storageService = StorageInitService();

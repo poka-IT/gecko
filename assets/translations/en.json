@@ -708,6 +708,8 @@
     "returnToHome": "Return to Home",
     "sendErrorReports": "Send error reports",
     "sendErrorReportsDescription": "Help improve Gecko by sending anonymous crash reports",
+    "showBackgroundImage": "Home background image",
+    "showBackgroundImageDescription": "Display the background image on the home screen",
     "revokeAdhesion": "Adhesion revocation",
     "revokeMyIdentity": "Revoke my identity",
     "revoked": "Revoked",

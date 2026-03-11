@@ -189,12 +189,12 @@ class CertificationDisplayItem {
 
   /// Get display name for issuer (name if available, otherwise truncated account ID)
   String get issuerDisplayName {
-    return issuerName ?? '${issuerAccountId.substring(0, 8)}...';
+    return issuerName ?? getShortPubkey(issuerAccountId);
   }
 
   /// Get display name for receiver (name if available, otherwise truncated account ID)
   String get receiverDisplayName {
-    return receiverName ?? '${receiverAccountId.substring(0, 8)}...';
+    return receiverName ?? getShortPubkey(receiverAccountId);
   }
 
   /// Get a formatted display text for the certification relationship

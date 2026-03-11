@@ -8,6 +8,8 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/network_activity_provider.dart';
@@ -28,9 +30,12 @@ import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
 import 'package:gecko/widgets/name_by_address.dart';
-import 'package:gecko/widgets/transaction_tile.dart';
-import 'package:gecko/widgets/network_activity/identity_tile.dart';
-import 'package:gecko/widgets/network_activity/certification_tile.dart';
+import 'package:gecko/models/transaction_display_item.dart';
+import 'package:gecko/models/identity_display_item.dart';
+import 'package:gecko/models/certification_display_item.dart';
+import 'package:gecko/utils/identity_utils.dart';
+import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 /// Desktop home layout for wide screens (>= 900px)
 /// Two-panel layout: branding + activity on left, dashboard on right
@@ -88,31 +93,57 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   @override
   Widget build(BuildContext context) {
+    final showImage = ref.watch(backgroundImageProvider);
+    final imageCache = ImageCacheService();
+
+    // Get fixed screen dimensions for background
+    final view = View.of(context);
+    final screenSize = view.physicalSize / view.devicePixelRatio;
+
     return EasterEggDetector(
       onPlayingStateChanged: widget.onEasterEggStateChange,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: const Alignment(-0.3, -0.5),
-            radius: 1.8,
-            colors: [
-              context.colorScheme.primary.withValues(alpha: 0.12),
-              context.colorScheme.surface,
-              context.colorScheme.surface,
-            ],
-            stops: const [0.0, 0.5, 1.0],
+      child: Stack(
+        children: [
+          // Background layer
+          Positioned(
+            top: 0,
+            left: 0,
+            width: screenSize.width,
+            height: screenSize.height,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: const Alignment(-1, -1),
+                  end: const Alignment(1, 1),
+                  colors: [
+                    context.colorScheme.surface,
+                    Color.lerp(context.colorScheme.surface, context.colorScheme.primary, 0.06)!,
+                    context.colorScheme.surface,
+                  ],
+                  stops: const [0.0, 0.5, 1.0],
+                ),
+                image: showImage
+                    ? DecorationImage(
+                        opacity: 0.15,
+                        image: imageCache.getImageProvider("assets/home/background.jpg"),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              // Left panel: Branding + Actions + Wallets + Network status
-              Expanded(flex: 3, child: _buildLeftPanel(context, ref)),
-              // Right panel: Network activity (full height)
-              Expanded(flex: 2, child: _buildActivityPanel(context, ref)),
-            ],
+          // Content
+          SafeArea(
+            child: Row(
+              children: [
+                // Left panel: Branding + Actions + Wallets + Network status
+                Expanded(flex: 3, child: _buildLeftPanel(context, ref)),
+                // Right panel: Network activity (full height)
+                Expanded(flex: 2, child: _buildActivityPanel(context, ref)),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -124,57 +155,76 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          // Settings button + Gecko mascot at the very top
-          Stack(
-            children: [
-              Positioned(top: scaleSize(10), left: 0, child: IconHomeSettings()),
-              Align(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: AnimatedHeaderImage(isEasterEggActive: widget.isEasterEggActive, height: scaleSize(120)),
-                ),
-              ),
-            ],
-          ),
-          // Message just below gecko
-          Padding(
-            padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
-            child: DefaultTextStyle(
-              textAlign: TextAlign.center,
-              style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w700),
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final homeMessage = ref.watch(homeMessageProvider);
-                  final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
-                  return GestureDetector(
-                    onTap: () {
-                      if (homeMessage == "noLizard".tr()) {
-                        homeMessageNotifier.showWisdomOfTheDay(context);
-                      }
-                    },
-                    child: AnimatedFadeOutIn<String>(
-                      data: homeMessage,
-                      duration: const Duration(milliseconds: 200),
-                      builder: (value) => Text(value),
+          // Scrollable content area
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Settings button + Gecko mascot at the very top
+                  Stack(
+                    children: [
+                      Positioned(top: scaleSize(10), left: 0, child: IconHomeSettings()),
+                      Align(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 500),
+                          child: AnimatedHeaderImage(
+                            isEasterEggActive: widget.isEasterEggActive,
+                            height: scaleSize(120),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Message just below gecko — fixed height to prevent layout shifts
+                  SizedBox(
+                    height: scaleSize(40),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
+                      child: DefaultTextStyle(
+                        textAlign: TextAlign.center,
+                        style: scaledTextStyle(
+                          color: context.colorScheme.onSurface,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        child: Consumer(
+                          builder: (context, ref, _) {
+                            final homeMessage = ref.watch(homeMessageProvider);
+                            final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+                            return GestureDetector(
+                              onTap: () {
+                                if (homeMessage == "noLizard".tr()) {
+                                  homeMessageNotifier.showWisdomOfTheDay(context);
+                                }
+                              },
+                              child: AnimatedFadeOutIn<String>(
+                                data: homeMessage,
+                                duration: const Duration(milliseconds: 200),
+                                builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 20),
+                  // Horizontal action buttons
+                  _buildHorizontalButtons(context, ref),
+                  const SizedBox(height: 20),
+                  // Total balance
+                  _buildTotalBalanceCard(context, ref),
+                  const SizedBox(height: 10),
+                  // Wallet list — takes its natural height
+                  _buildWalletOverview(context, ref),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          // Horizontal action buttons
-          _buildHorizontalButtons(context, ref),
-          const SizedBox(height: 20),
-          // Total balance
-          _buildTotalBalanceCard(context, ref),
+          // Network status — always pinned at bottom
           const SizedBox(height: 10),
-          // Wallet list (flexible, adapts to content)
-          Flexible(child: _buildWalletOverview(context, ref)),
-          const SizedBox(height: 10),
-          // Network status
           _buildNetworkStatusCard(context, ref),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -374,19 +424,14 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       return _buildEmptyState(context, Icons.swap_horiz, 'noNetworkActivity'.tr());
     }
 
-    return ListView.builder(
+    return ListView.separated(
       controller: _scrollControllers[0],
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       itemCount: activityState.transactions.length,
+      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
       itemBuilder: (context, index) {
-        final transaction = activityState.transactions[index];
-        return TransactionTile(
-          key: Key("desktop_tx_$index"),
-          keyID: index,
-          avatarSize: scaleSize(32),
-          transaction: transaction,
-          context: context,
-        );
+        final tx = activityState.transactions[index];
+        return _buildCompactTransactionTile(context, tx);
       },
     );
   }
@@ -401,12 +446,13 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       return _buildEmptyState(context, Icons.person_outline, 'noIdentityActivity'.tr());
     }
 
-    return ListView.builder(
+    return ListView.separated(
       controller: _scrollControllers[1],
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       itemCount: identitiesState.identities.length,
+      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
       itemBuilder: (context, index) {
-        return IdentityTile(key: Key("desktop_idty_$index"), identity: identitiesState.identities[index]);
+        return _buildCompactIdentityTile(context, identitiesState.identities[index]);
       },
     );
   }
@@ -421,12 +467,13 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       return _buildEmptyState(context, Icons.verified_outlined, 'noCertificationActivity'.tr());
     }
 
-    return ListView.builder(
+    return ListView.separated(
       controller: _scrollControllers[2],
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       itemCount: certsState.certifications.length,
+      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
       itemBuilder: (context, index) {
-        return CertificationTile(key: Key("desktop_cert_$index"), certification: certsState.certifications[index]);
+        return _buildCompactCertificationTile(context, certsState.certifications[index]);
       },
     );
   }
@@ -441,6 +488,343 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           Text(
             message,
             style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _relativeTime(BuildContext context, DateTime dateTime) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return timeago.format(dateTime, locale: locale);
+  }
+
+  // ─── Helpers ───
+
+  /// Wraps a child widget to navigate to a profile on tap, with pointer cursor.
+  Widget _buildClickableProfile(
+    BuildContext context, {
+    required String address,
+    String? username,
+    required Widget child,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ProfileViewScreen(address: address, username: username?.isNotEmpty == true ? username : null),
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  // ─── Compact Desktop Tiles ───
+
+  Widget _buildCompactTransactionTile(BuildContext context, TransactionDisplayItem tx) {
+    final isReceived = tx.isReceived;
+    final amount = isReceived ? tx.amount : tx.amount * BigInt.from(-1);
+    final amountColor = isReceived ? context.colorScheme.primary : Colors.blue;
+
+    // Universal dividend tile
+    if (tx.type == TransactionType.universalDividend) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(Icons.water_drop, size: 16, color: context.colorScheme.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                tx.udCount > 1 ? 'universalDividendCompact'.tr(args: ['${tx.udCount}']) : 'universalDividend'.tr(),
+                style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: context.colorScheme.onSurface),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            BalanceDisplay(value: tx.udCount > 1 ? tx.amount : amount, size: 13, color: context.colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              _relativeTime(context, tx.transactionTime),
+              style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Migration tile
+    if (tx.type == TransactionType.identityMigrationFrom || tx.type == TransactionType.identityMigrationTo) {
+      final isMigFrom = tx.type == TransactionType.identityMigrationFrom;
+      return _buildClickableProfile(
+        context,
+        address: tx.address,
+        username: tx.username,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Icon(
+                Icons.swap_horiz,
+                size: 16,
+                color: isMigFrom ? context.colorScheme.secondary : context.colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isMigFrom ? 'identityMigratedFrom'.tr() : 'identityMigratedTo'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    if (tx.username != null && tx.username!.isNotEmpty)
+                      Text(
+                        tx.username!,
+                        style: scaledTextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: context.colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+              ),
+              Text(
+                _relativeTime(context, tx.transactionTime),
+                style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Normal transfer tile
+    final String? username = tx.username == '' ? null : tx.username;
+
+    return _buildClickableProfile(
+      context,
+      address: tx.address,
+      username: username,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            // Small avatar
+            DatapodAvatar(address: tx.address, size: 28, name: username),
+            const SizedBox(width: 8),
+            // Name/address
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    username ?? getShortPubkey(tx.address),
+                    style: scaledTextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: context.colorScheme.onSurface,
+                      fontFamily: username == null ? 'monospace' : null,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (tx.comment != null && tx.comment!.isNotEmpty)
+                    Text(
+                      tx.comment!,
+                      style: scaledTextStyle(
+                        fontSize: 11,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontStyle: FontStyle.italic,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Amount + time
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                BalanceDisplay(value: amount, size: 13, color: amountColor),
+                const SizedBox(height: 2),
+                Text(
+                  _relativeTime(context, tx.transactionTime),
+                  style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactIdentityTile(BuildContext context, IdentityDisplayItem identity) {
+    final isCreated = IdentityUtils.isCreatedStatusString(identity.status);
+    final displayName = identity.name.isEmpty
+        ? getShortPubkey(identity.accountId ?? '')
+        : IdentityUtils.getDisplayNameFromString(identity.name, identity.status);
+
+    return _buildClickableProfile(
+      context,
+      address: identity.relevantAccountId!,
+      username: identity.name.isNotEmpty ? identity.name : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            // Avatar
+            DatapodAvatar(
+              address: identity.relevantAccountId!,
+              size: 28,
+              name: identity.name.isNotEmpty ? identity.name : null,
+            ),
+            const SizedBox(width: 8),
+            // Name + status description
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    style: scaledTextStyle(
+                      fontSize: 13,
+                      fontWeight: isCreated ? FontWeight.w500 : FontWeight.w600,
+                      fontStyle: isCreated ? FontStyle.italic : FontStyle.normal,
+                      color: isCreated ? context.colorScheme.onSurfaceVariant : context.colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(identity.getStatusIcon(), size: 12, color: identity.getStatusColor()),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          identity.displayStatus,
+                          style: scaledTextStyle(
+                            fontSize: 11,
+                            color: identity.getStatusColor(),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Time
+            Text(
+              _relativeTime(context, identity.timestamp),
+              style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactCertificationTile(BuildContext context, CertificationDisplayItem cert) {
+    final statusColor = cert.getStatusColor();
+    final issuerName = cert.issuerName ?? getShortPubkey(cert.issuerAccountId);
+    final receiverName = cert.receiverName ?? getShortPubkey(cert.receiverAccountId);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          // Status indicator dot
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor),
+          ),
+          const SizedBox(width: 8),
+          // Issuer (clickable)
+          Expanded(
+            child: _buildClickableProfile(
+              context,
+              address: cert.issuerAccountId,
+              username: cert.issuerName,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DatapodAvatar(address: cert.issuerAccountId, size: 20, name: issuerName),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      issuerName,
+                      style: scaledTextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: context.colorScheme.onSurface,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Arrow (centered, fixed width)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Icon(Icons.arrow_forward, size: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+          ),
+          // Receiver (clickable)
+          Expanded(
+            child: _buildClickableProfile(
+              context,
+              address: cert.receiverAccountId,
+              username: cert.receiverName,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DatapodAvatar(address: cert.receiverAccountId, size: 20, name: receiverName),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      receiverName,
+                      style: scaledTextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: context.colorScheme.onSurface,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Expiration + time
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _relativeTime(context, cert.timestamp),
+                style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+              ),
+              if (cert.expirationText != null && !cert.isExpired)
+                Text(cert.expirationText!, style: scaledTextStyle(fontSize: 10, color: Colors.orange)),
+            ],
           ),
         ],
       ),
@@ -560,17 +944,16 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               ),
             )
           else
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: walletsState.wallets.length,
-                separatorBuilder: (_, _) =>
-                    Divider(color: context.colorScheme.outline.withValues(alpha: 0.06), height: 1),
-                itemBuilder: (context, index) {
-                  final wallet = walletsState.wallets[index];
-                  return _buildWalletRow(context, ref, wallet);
-                },
-              ),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: walletsState.wallets.length,
+              separatorBuilder: (_, _) =>
+                  Divider(color: context.colorScheme.outline.withValues(alpha: 0.06), height: 1),
+              itemBuilder: (context, index) {
+                final wallet = walletsState.wallets[index];
+                return _buildWalletRow(context, ref, wallet);
+              },
             ),
         ],
       ),

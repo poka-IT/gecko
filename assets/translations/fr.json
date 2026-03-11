@@ -528,6 +528,8 @@
     "retry": "Réessayer",
     "sendErrorReports": "Envoyer les rapports d'erreurs",
     "sendErrorReportsDescription": "Aider à améliorer Gecko en envoyant des rapports de crash anonymes",
+    "showBackgroundImage": "Image de fond sur l'accueil",
+    "showBackgroundImageDescription": "Afficher l'image de fond sur l'écran d'accueil",
     "advancedFilters": "Filtres avancés",
     "searchAddressOrName": "Rechercher par adresse ou identité",
     "enterAddressOrName": "Saisir adresse ou nom d'identité",

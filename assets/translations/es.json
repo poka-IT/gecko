@@ -713,6 +713,8 @@
     "returnToHome": "Volver al Inicio",
     "sendErrorReports": "Enviar informes de errores",
     "sendErrorReportsDescription": "Ayudar a mejorar Gecko enviando informes de fallos anónimos",
+    "showBackgroundImage": "Imagen de fondo del inicio",
+    "showBackgroundImageDescription": "Mostrar la imagen de fondo en la pantalla de inicio",
     "revokeAdhesion": "Revocación de adhesión",
     "revokeMyIdentity": "Revocar mi identidad",
     "revoked": "Revocada",

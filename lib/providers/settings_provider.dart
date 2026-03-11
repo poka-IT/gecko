@@ -54,6 +54,35 @@ class UniversalDividendsToggleNotifier extends Notifier<bool> {
   }
 }
 
+/// Provider for managing the home background image visibility setting.
+final backgroundImageProvider = NotifierProvider<BackgroundImageNotifier, bool>(BackgroundImageNotifier.new);
+
+/// Notifier for the background image toggle.
+class BackgroundImageNotifier extends Notifier<bool> {
+  static const String _storageKey = 'showBackgroundImage';
+
+  @override
+  bool build() {
+    try {
+      final configBox = ref.read(configBoxProvider);
+      final storedValue = configBox.getValue(_storageKey, defaultValue: 'true');
+      return storedValue == 'true';
+    } catch (e) {
+      return true;
+    }
+  }
+
+  void toggle() {
+    state = !state;
+    try {
+      final configBox = ref.read(configBoxProvider);
+      configBox.putValue(_storageKey, state.toString());
+    } catch (e) {
+      log.e('Error saving background image setting: $e');
+    }
+  }
+}
+
 /// Provider for settings-related operations like cache management.
 ///
 /// This provider offers functionality to clear various application caches

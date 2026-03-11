@@ -19,6 +19,7 @@ import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType, SslConfigSer
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Consumer;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
@@ -53,6 +54,13 @@ const bool showVersionOverlay = true; // Set to false to hide version overlay in
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  // Configure desktop window size before anything else
+  final isDesktop = !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
+  if (isDesktop) {
+    await windowManager.ensureInitialized();
+  }
+
   await EasyLocalization.ensureInitialized();
 
   // Register Esperanto date symbols (not in CLDR/intl package)
@@ -105,14 +113,15 @@ Future<void> main() async {
 
   final enableSentry = configBox.get('sentryEnabled') ?? true;
 
+  // Lock orientation on mobile, configure window on desktop
+  if (Platform.isAndroid || Platform.isIOS) {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
+
   if (kReleaseMode && enableSentry) {
     await SentryService.init(
       dsn: 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110',
       appRunner: () async {
-        // Only lock orientation on mobile platforms
-        if (Platform.isAndroid || Platform.isIOS) {
-          await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-        }
         runApp(
           EasyLocalization(
             supportedLocales: const [
@@ -131,15 +140,12 @@ Future<void> main() async {
             child: const Gecko(),
           ),
         );
+        if (isDesktop) await _showDesktopWindow();
       },
     );
   } else {
     log.w('Sentry disabled');
 
-    // Only lock orientation on mobile platforms
-    if (Platform.isAndroid || Platform.isIOS) {
-      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    }
     runApp(
       EasyLocalization(
         supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'), Locale('eo'), Locale('de')],
@@ -151,6 +157,35 @@ Future<void> main() async {
         child: const Gecko(),
       ),
     );
+    if (isDesktop) await _showDesktopWindow();
+  }
+}
+
+Future<void> _showDesktopWindow() async {
+  const defaultSize = Size(1185, 845);
+
+  // Restore saved window size, or use default
+  final savedWidth = configBox.get('windowWidth') as double?;
+  final savedHeight = configBox.get('windowHeight') as double?;
+  final size = (savedWidth != null && savedHeight != null) ? Size(savedWidth, savedHeight) : defaultSize;
+
+  final windowOptions = WindowOptions(size: size, center: true, title: 'Ğecko', titleBarStyle: TitleBarStyle.normal);
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
+
+  // Listen for resize to persist window size
+  windowManager.addListener(_WindowSizeListener());
+}
+
+class _WindowSizeListener extends WindowListener {
+  @override
+  void onWindowResize() {
+    windowManager.getSize().then((size) {
+      configBox.put('windowWidth', size.width);
+      configBox.put('windowHeight', size.height);
+    });
   }
 }
 

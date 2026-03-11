@@ -108,7 +108,11 @@ Future<void> main() async {
   if (kReleaseMode && enableSentry) {
     await SentryService.init(
       dsn: 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110',
-      appRunner: () => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
+      appRunner: () async {
+        // Only lock orientation on mobile platforms
+        if (Platform.isAndroid || Platform.isIOS) {
+          await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+        }
         runApp(
           EasyLocalization(
             supportedLocales: const [
@@ -127,24 +131,26 @@ Future<void> main() async {
             child: const Gecko(),
           ),
         );
-      }),
+      },
     );
   } else {
     log.w('Sentry disabled');
 
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-      runApp(
-        EasyLocalization(
-          supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'), Locale('eo'), Locale('de')],
-          path: 'assets/translations',
-          assetLoader: const EmptyStringAssetLoader(),
-          fallbackLocale: const Locale('en'),
-          useFallbackTranslations: true,
-          startLocale: startLocale,
-          child: const Gecko(),
-        ),
-      );
-    });
+    // Only lock orientation on mobile platforms
+    if (Platform.isAndroid || Platform.isIOS) {
+      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    }
+    runApp(
+      EasyLocalization(
+        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'), Locale('eo'), Locale('de')],
+        path: 'assets/translations',
+        assetLoader: const EmptyStringAssetLoader(),
+        fallbackLocale: const Locale('en'),
+        useFallbackTranslations: true,
+        startLocale: startLocale,
+        child: const Gecko(),
+      ),
+    );
   }
 }
 

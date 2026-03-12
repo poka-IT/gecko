@@ -71,7 +71,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   String get _searchShortcutLabel {
     if (!kIsWeb && Platform.isMacOS) {
-      return 'Cmd+K';
+      return '⌘K';
     }
     return 'Ctrl+K';
   }

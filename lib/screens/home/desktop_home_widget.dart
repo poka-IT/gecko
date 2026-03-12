@@ -1505,8 +1505,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                   Text(
                     _relativeTime(context, tx.transactionTime),
                     style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
                   ),
                 ],
               ),

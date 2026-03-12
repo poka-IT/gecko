@@ -419,33 +419,53 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned(top: scaleSize(2), left: 0, child: IconHomeSettings()),
-                      Positioned(
-                        top: scaleSize(52),
-                        left: scaleSize(2),
-                        child: _buildTopShortcutButton(
-                          context: context,
-                          icon: Icons.qr_code_scanner_rounded,
-                          tooltip: 'scanQRCode'.tr(),
-                          onTap: () => _openQrScanner(context),
-                        ),
-                      ),
-                      Align(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 560),
-                          child: Transform.translate(
-                            offset: Offset(0, -scaleSize(38)),
-                            child: AnimatedHeaderImage(
-                              isEasterEggActive: widget.isEasterEggActive,
-                              height: scaleSize(126),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final headerHeight = (constraints.maxWidth * 0.24).clamp(scaleSize(88), scaleSize(126));
+                      final headerLift = (headerHeight * 0.18).clamp(0.0, scaleSize(26));
+                      final topBleedCompensation = scaleSize(18);
+                      final desiredOffset = headerLift + topBleedCompensation;
+                      final reservedHeight = (headerHeight - desiredOffset + scaleSize(12)).clamp(
+                        scaleSize(72),
+                        headerHeight,
+                      );
+                      final safeOffset = (headerHeight - reservedHeight).clamp(0.0, desiredOffset);
+
+                      return SizedBox(
+                        height: reservedHeight,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(top: scaleSize(2), left: 0, child: IconHomeSettings()),
+                            Positioned(
+                              top: scaleSize(52),
+                              left: scaleSize(2),
+                              child: _buildTopShortcutButton(
+                                context: context,
+                                icon: Icons.qr_code_scanner_rounded,
+                                tooltip: 'scanQRCode'.tr(),
+                                onTap: () => _openQrScanner(context),
+                              ),
                             ),
-                          ),
+                            Positioned.fill(
+                              child: Align(
+                                alignment: Alignment.topCenter,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 560),
+                                  child: Transform.translate(
+                                    offset: Offset(0, -safeOffset),
+                                    child: AnimatedHeaderImage(
+                                      isEasterEggActive: widget.isEasterEggActive,
+                                      height: headerHeight,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                   SizedBox(
                     height: scaleSize(42),
@@ -849,16 +869,11 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   Widget _buildNetworkActivityFeed(BuildContext context, WidgetRef ref) {
     final network = ref.watch(networkProvider);
     final networkLabel = network.name.toUpperCase();
-    final txState = ref.watch(networkActivityProvider);
-    final identityState = ref.watch(networkIdentitiesProvider);
-    final certState = ref.watch(networkCertificationsProvider);
-    final activeCertifications = certState.certifications.where((certification) => certification.isActive).toList();
     final totalsAsync = ref.watch(networkTotalsProvider);
     final connectionStatus = ref.watch(connectionStatusProvider);
     final isConnected = connectionStatus == d.ConnectionStatus.connected;
-    final fallbackTxCount = _formatPagedMetric(txState.transactions.length, txState.hasNextPage);
-    final fallbackIdentityCount = _formatPagedMetric(identityState.identities.length, identityState.hasNextPage);
-    final fallbackCertCount = _formatPagedMetric(activeCertifications.length, certState.hasNextPage);
+    // Show "–" instead of "0" when not connected to avoid misleading values
+    String resolveCount(String Function() connected) => isConnected ? connected() : '–';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -867,21 +882,27 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           context,
           networkLabel: networkLabel,
           isConnected: isConnected,
-          txCount: totalsAsync.when(
-            data: (totals) => _formatExactMetric(totals.transactions, fallbackTxCount),
-            loading: () => fallbackTxCount,
-            error: (_, _) => fallbackTxCount,
+          txCount: resolveCount(
+            () => totalsAsync.when(
+              data: (totals) => _formatExactMetric(totals.transactions),
+              loading: () => '–',
+              error: (_, _) => '–',
+            ),
           ),
-          identityCount: totalsAsync.when(
-            data: (totals) => _formatExactMetric(totals.identities, fallbackIdentityCount),
-            loading: () => fallbackIdentityCount,
-            error: (_, _) => fallbackIdentityCount,
+          identityCount: resolveCount(
+            () => totalsAsync.when(
+              data: (totals) => _formatExactMetric(totals.identities),
+              loading: () => '–',
+              error: (_, _) => '–',
+            ),
           ),
-          identityDetails: _buildIdentityMetricDetails(totalsAsync),
-          certCount: totalsAsync.when(
-            data: (totals) => _formatExactMetric(totals.certifications, fallbackCertCount),
-            loading: () => fallbackCertCount,
-            error: (_, _) => fallbackCertCount,
+          identityDetails: isConnected ? _buildIdentityMetricDetails(totalsAsync) : const [],
+          certCount: resolveCount(
+            () => totalsAsync.when(
+              data: (totals) => _formatExactMetric(totals.certifications),
+              loading: () => '–',
+              error: (_, _) => '–',
+            ),
           ),
         ),
         const SizedBox(height: 14),
@@ -984,43 +1005,72 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicatorAnimation: TabIndicatorAnimation.elastic,
-              dividerColor: Colors.transparent,
-              indicator: UnderlineTabIndicator(
-                borderRadius: BorderRadius.circular(999),
-                borderSide: BorderSide(color: context.colorScheme.primary.withValues(alpha: 0.95), width: 3),
-                insets: const EdgeInsets.fromLTRB(24, 0, 24, 6),
-              ),
-              indicatorPadding: EdgeInsets.zero,
-              labelColor: context.colorScheme.onSurface,
-              unselectedLabelColor: context.colorScheme.onSurface.withValues(alpha: 0.55),
-              labelStyle: scaledTextStyle(fontSize: 11.5, fontWeight: FontWeight.w700),
-              unselectedLabelStyle: scaledTextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
-              splashBorderRadius: BorderRadius.circular(16),
-              overlayColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
-                  return context.colorScheme.primary.withValues(alpha: 0.05);
-                }
-                if (states.contains(WidgetState.pressed)) {
-                  return context.colorScheme.primary.withValues(alpha: 0.08);
-                }
-                return Colors.transparent;
-              }),
-              tabs: [
-                _buildActivityTab(context, Icons.swap_horiz_rounded, 'transactions'.tr(), count: txCount),
-                _buildActivityTab(context, Icons.person_rounded, 'identities'.tr(), count: identityCount),
-                _buildActivityTab(context, Icons.verified_rounded, 'certifications'.tr(), count: certCount),
-              ],
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final perTabWidth = (constraints.maxWidth - 16) / 3;
+              final useCompactTabs = perTabWidth < 179;
+
+              return Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  tabAlignment: TabAlignment.fill,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorAnimation: TabIndicatorAnimation.elastic,
+                  dividerColor: Colors.transparent,
+                  indicator: UnderlineTabIndicator(
+                    borderRadius: BorderRadius.circular(999),
+                    borderSide: BorderSide(color: context.colorScheme.primary.withValues(alpha: 0.95), width: 3),
+                    insets: const EdgeInsets.fromLTRB(24, 0, 24, 6),
+                  ),
+                  indicatorPadding: EdgeInsets.zero,
+                  labelColor: context.colorScheme.onSurface,
+                  unselectedLabelColor: context.colorScheme.onSurface.withValues(alpha: 0.55),
+                  labelStyle: scaledTextStyle(fontSize: useCompactTabs ? 10.5 : 11.5, fontWeight: FontWeight.w700),
+                  unselectedLabelStyle: scaledTextStyle(
+                    fontSize: useCompactTabs ? 10.5 : 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  splashBorderRadius: BorderRadius.circular(16),
+                  overlayColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
+                      return context.colorScheme.primary.withValues(alpha: 0.05);
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return context.colorScheme.primary.withValues(alpha: 0.08);
+                    }
+                    return Colors.transparent;
+                  }),
+                  tabs: [
+                    _buildActivityTab(
+                      context,
+                      Icons.swap_horiz_rounded,
+                      'transactions'.tr(),
+                      count: txCount,
+                      compact: useCompactTabs,
+                    ),
+                    _buildActivityTab(
+                      context,
+                      Icons.person_rounded,
+                      'identities'.tr(),
+                      count: identityCount,
+                      compact: useCompactTabs,
+                    ),
+                    _buildActivityTab(
+                      context,
+                      Icons.verified_rounded,
+                      'certifications'.tr(),
+                      count: certCount,
+                      compact: useCompactTabs,
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           if (identityDetails.isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -1061,13 +1111,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
-  String _formatPagedMetric(int loadedCount, bool hasNextPage) {
-    if (loadedCount == 0) return '0';
-    return hasNextPage ? '$loadedCount+' : '$loadedCount';
-  }
-
-  String _formatExactMetric(int totalCount, String fallback) {
-    if (totalCount <= 0) return fallback;
+  String _formatExactMetric(int totalCount) {
+    if (totalCount <= 0) return '–';
     return '$totalCount';
   }
 
@@ -1084,16 +1129,23 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
-  Widget _buildActivityTab(BuildContext context, IconData icon, String label, {required String count}) {
-    return Tab(
-      height: 58,
-      child: SizedBox.expand(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+  Widget _buildActivityTab(
+    BuildContext context,
+    IconData icon,
+    String label, {
+    required String count,
+    required bool compact,
+  }) {
+    final tabChild = SizedBox.expand(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (compact)
+                Icon(icon, size: 18)
+              else
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -1103,21 +1155,33 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                     Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  count,
-                  overflow: TextOverflow.ellipsis,
-                  style: scaledTextStyle(
-                    fontSize: 10,
-                    color: context.colorScheme.onSurface.withValues(alpha: 0.46),
-                    fontWeight: FontWeight.w700,
-                  ),
+              const SizedBox(height: 2),
+              Text(
+                count,
+                overflow: TextOverflow.ellipsis,
+                style: scaledTextStyle(
+                  fontSize: 10,
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.46),
+                  fontWeight: FontWeight.w700,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
+    );
+
+    return Tab(
+      height: 58,
+      child: compact
+          ? Tooltip(
+              message: label,
+              waitDuration: const Duration(milliseconds: 80),
+              preferBelow: true,
+              verticalOffset: 24,
+              child: tabChild,
+            )
+          : tabChild,
     );
   }
 
@@ -1237,6 +1301,28 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
+  Widget _buildCompactProfileLabel(
+    BuildContext context, {
+    required String text,
+    required bool isAddressLabel,
+    required TextStyle style,
+    TextAlign textAlign = TextAlign.start,
+  }) {
+    final label = Text(text, style: style, overflow: TextOverflow.ellipsis, textAlign: textAlign, maxLines: 1);
+
+    if (!isAddressLabel) {
+      return label;
+    }
+
+    return Tooltip(
+      message: text,
+      waitDuration: const Duration(milliseconds: 80),
+      preferBelow: true,
+      verticalOffset: 24,
+      child: label,
+    );
+  }
+
   // ─── Compact Desktop Tiles ───
 
   Widget _buildCompactTransactionTile(BuildContext context, TransactionDisplayItem tx) {
@@ -1324,6 +1410,111 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
     // Normal transfer tile
     final String? username = tx.username == '' ? null : tx.username;
+    final fromAddress = tx.fromAddress ?? tx.address;
+    final toAddress = tx.toAddress ?? tx.address;
+    final fromLabel = (tx.fromUsername?.isNotEmpty == true) ? tx.fromUsername! : getShortPubkey(fromAddress);
+    final toLabel = (tx.toUsername?.isNotEmpty == true) ? tx.toUsername! : getShortPubkey(toAddress);
+    final hasNetworkEndpoints = tx.fromAddress != null || tx.toAddress != null;
+
+    if (hasNetworkEndpoints) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            DatapodAvatar(address: fromAddress, size: 28, name: tx.fromUsername),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildClickableProfile(
+                          context,
+                          address: fromAddress,
+                          username: tx.fromUsername,
+                          child: _buildCompactProfileLabel(
+                            context,
+                            text: fromLabel,
+                            isAddressLabel: tx.fromUsername == null,
+                            style: scaledTextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: context.colorScheme.onSurface,
+                              fontFamily: tx.fromUsername == null ? 'monospace' : null,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 26,
+                        child: Center(
+                          child: Icon(
+                            Icons.arrow_forward,
+                            size: 12,
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildClickableProfile(
+                          context,
+                          address: toAddress,
+                          username: tx.toUsername,
+                          child: _buildCompactProfileLabel(
+                            context,
+                            text: toLabel,
+                            isAddressLabel: tx.toUsername == null,
+                            style: scaledTextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: context.colorScheme.onSurface,
+                              fontFamily: tx.toUsername == null ? 'monospace' : null,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (tx.comment != null && tx.comment!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        tx.comment!,
+                        style: scaledTextStyle(
+                          fontSize: 11,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 120,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  BalanceDisplay(value: amount, size: 13, color: amountColor),
+                  const SizedBox(height: 2),
+                  Text(
+                    _relativeTime(context, tx.transactionTime),
+                    style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return _buildClickableProfile(
       context,
@@ -1333,23 +1524,22 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            // Small avatar
             DatapodAvatar(address: tx.address, size: 28, name: username),
             const SizedBox(width: 8),
-            // Name/address
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    username ?? getShortPubkey(tx.address),
+                  _buildCompactProfileLabel(
+                    context,
+                    text: username ?? getShortPubkey(tx.address),
+                    isAddressLabel: username == null,
                     style: scaledTextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: context.colorScheme.onSurface,
                       fontFamily: username == null ? 'monospace' : null,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                   if (tx.comment != null && tx.comment!.isNotEmpty)
                     Text(
@@ -1366,7 +1556,6 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               ),
             ),
             const SizedBox(width: 8),
-            // Amount + time
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -1410,15 +1599,16 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    displayName,
+                  _buildCompactProfileLabel(
+                    context,
+                    text: displayName,
+                    isAddressLabel: identity.name.isEmpty,
                     style: scaledTextStyle(
                       fontSize: 13,
                       fontWeight: isCreated ? FontWeight.w500 : FontWeight.w600,
                       fontStyle: isCreated ? FontStyle.italic : FontStyle.normal,
                       color: isCreated ? context.colorScheme.onSurfaceVariant : context.colorScheme.onSurface,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -1457,108 +1647,113 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     final statusColor = cert.getStatusColor();
     final issuerName = cert.issuerName ?? getShortPubkey(cert.issuerAccountId);
     final receiverName = cert.receiverName ?? getShortPubkey(cert.receiverAccountId);
-    const timeColumnWidth = 210.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final timeColumnWidth = (constraints.maxWidth * 0.22).clamp(112.0, 168.0);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          // Status indicator dot
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildClickableProfile(
-                    context,
-                    address: cert.issuerAccountId,
-                    username: cert.issuerName,
-                    child: Row(
-                      children: [
-                        DatapodAvatar(address: cert.issuerAccountId, size: 20, name: issuerName),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            issuerName,
-                            style: scaledTextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: context.colorScheme.onSurface,
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildClickableProfile(
+                        context,
+                        address: cert.issuerAccountId,
+                        username: cert.issuerName,
+                        child: Row(
+                          children: [
+                            DatapodAvatar(address: cert.issuerAccountId, size: 20, name: issuerName),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildCompactProfileLabel(
+                                context,
+                                text: issuerName,
+                                isAddressLabel: cert.issuerName == null,
+                                style: scaledTextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: context.colorScheme.onSurface,
+                                ),
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                SizedBox(
-                  width: 40,
-                  child: Center(
-                    child: Icon(
-                      Icons.arrow_forward,
-                      size: 12,
-                      color: context.colorScheme.onSurface.withValues(alpha: 0.4),
+                    SizedBox(
+                      width: 32,
+                      child: Center(
+                        child: Icon(
+                          Icons.arrow_forward,
+                          size: 12,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: _buildClickableProfile(
-                    context,
-                    address: cert.receiverAccountId,
-                    username: cert.receiverName,
-                    child: Row(
-                      children: [
-                        DatapodAvatar(address: cert.receiverAccountId, size: 20, name: receiverName),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            receiverName,
-                            style: scaledTextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: context.colorScheme.onSurface,
+                    Expanded(
+                      child: _buildClickableProfile(
+                        context,
+                        address: cert.receiverAccountId,
+                        username: cert.receiverName,
+                        child: Row(
+                          children: [
+                            DatapodAvatar(address: cert.receiverAccountId, size: 20, name: receiverName),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildCompactProfileLabel(
+                                context,
+                                text: receiverName,
+                                isAddressLabel: cert.receiverName == null,
+                                style: scaledTextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: context.colorScheme.onSurface,
+                                ),
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: timeColumnWidth,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _relativeTime(context, cert.timestamp),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: timeColumnWidth,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _relativeTime(context, cert.timestamp),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+                    ),
+                    if (cert.expirationText != null && !cert.isExpired)
+                      Text(
+                        cert.expirationText!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: scaledTextStyle(fontSize: 10, color: Colors.orange),
+                      ),
+                  ],
                 ),
-                if (cert.expirationText != null && !cert.isExpired)
-                  Text(
-                    cert.expirationText!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: scaledTextStyle(fontSize: 10, color: Colors.orange),
-                  ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1602,6 +1797,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   // ─── Total Balance Card ───
 
   Widget _buildTotalBalanceCard(BuildContext context, WidgetRef ref) {
+    final connectionStatus = ref.watch(connectionStatusProvider);
+    final isConnected = connectionStatus == d.ConnectionStatus.connected;
     final currentSafe = ref.watch(currentSafeNumberProvider);
     final safeData = ref.watch(safeOnChainDataProvider(currentSafe));
 
@@ -1614,6 +1811,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           for (final balance in data.balances.values) {
             total += balance.transferableBalance;
           }
+          // Don't show "0" balance when not connected — it's misleading
+          final showPlaceholder = !isConnected && total == BigInt.zero;
           return Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -1628,24 +1827,47 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               ),
               const SizedBox(width: 10),
               Flexible(
-                child: BalanceDisplay(
-                  value: total,
-                  size: 20,
-                  color: context.colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                ),
+                child: showPlaceholder
+                    ? Text(
+                        '–',
+                        style: scaledTextStyle(
+                          fontSize: 20,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.3),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : BalanceDisplay(
+                        value: total,
+                        size: 20,
+                        color: context.colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
               ),
             ],
           );
         },
-        loading: () => SizedBox(
-          height: 24,
-          child: Center(
-            child: CircularProgressIndicator(
-              color: context.colorScheme.onSurface.withValues(alpha: 0.5),
-              strokeWidth: 2,
+        loading: () => Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              'soldeTotal'.tr(),
+              style: scaledTextStyle(
+                fontSize: 12,
+                color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
+            const SizedBox(width: 10),
+            Text(
+              '–',
+              style: scaledTextStyle(
+                fontSize: 20,
+                color: context.colorScheme.onSurface.withValues(alpha: 0.3),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         error: (_, _) =>
             Text('errorLoadingWalletData'.tr(), style: scaledTextStyle(fontSize: 12, color: Colors.red[300]!)),
@@ -1741,16 +1963,9 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            context.colorScheme.primary.withValues(alpha: 0.12),
-            context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.95),
-          ],
-        ),
+        color: context.colorScheme.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.12)),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1997,37 +2212,26 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             child: Ink(
               padding: EdgeInsets.symmetric(horizontal: isOnlyWallet ? 12 : 10, vertical: isOnlyWallet ? 12 : 10),
               decoration: BoxDecoration(
-                gradient: isHoveredTarget
-                    ? LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          context.colorScheme.primary.withValues(alpha: 0.2),
-                          context.colorScheme.surface.withValues(alpha: 0.95),
-                        ],
-                      )
+                color: isHoveredTarget
+                    ? context.colorScheme.primary.withValues(alpha: 0.08)
                     : isPrimary
-                    ? LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          context.colorScheme.primary.withValues(alpha: 0.14),
-                          context.colorScheme.surface.withValues(alpha: 0.88),
-                        ],
-                      )
-                    : null,
-                color: (isHoveredTarget || isPrimary) ? null : context.colorScheme.surface.withValues(alpha: 0.74),
+                    ? context.colorScheme.primary.withValues(alpha: 0.06)
+                    : context.colorScheme.surface.withValues(alpha: 0.74),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isHoveredTarget
-                      ? context.colorScheme.primary.withValues(alpha: 0.3)
-                      : isPrimary
-                      ? context.colorScheme.primary.withValues(alpha: 0.18)
-                      : context.colorScheme.outline.withValues(alpha: 0.05),
-                ),
+                border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.05)),
               ),
               child: Row(
                 children: [
+                  if (isPrimary || isHoveredTarget)
+                    Container(
+                      width: 3,
+                      height: 32,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.primary.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   Container(
                     width: scaleSize(34),
                     height: scaleSize(34),

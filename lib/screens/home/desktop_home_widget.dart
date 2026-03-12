@@ -1,8 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io' show Platform;
+
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,7 +65,16 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   late FocusNode _desktopSearchFocusNode;
   late FocusNode _desktopHomeFocusNode;
   late ScrollController _desktopSearchScrollController;
+  final EasterEggController _easterEggController = EasterEggController();
+  int _activeActivityTabIndex = 0;
   int _highlightedSearchIndex = -1;
+
+  String get _searchShortcutLabel {
+    if (!kIsWeb && Platform.isMacOS) {
+      return 'Cmd+K';
+    }
+    return 'Ctrl+K';
+  }
 
   @override
   void initState() {
@@ -73,6 +85,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     _desktopSearchFocusNode = FocusNode();
     _desktopHomeFocusNode = FocusNode(debugLabel: 'desktop_home_shortcuts');
     _desktopSearchScrollController = ScrollController();
+    _tabController.addListener(_handleActivityTabChange);
     for (final sc in _scrollControllers) {
       sc.addListener(_onScroll);
     }
@@ -92,8 +105,17 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     _desktopSearchFocusNode.dispose();
     _desktopHomeFocusNode.dispose();
     _desktopSearchScrollController.dispose();
+    _tabController.removeListener(_handleActivityTabChange);
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _handleActivityTabChange() {
+    if (_tabController.indexIsChanging || _activeActivityTabIndex != _tabController.index) {
+      setState(() {
+        _activeActivityTabIndex = _tabController.index;
+      });
+    }
   }
 
   void _onDesktopSearchChanged() {
@@ -142,22 +164,28 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     showSafeOptionsMenu(context);
   }
 
-  void _focusDesktopSearch() {
-    if (!_desktopSearchFocusNode.hasFocus) {
-      _desktopSearchFocusNode.requestFocus();
-    }
-    if (_desktopSearchController.text.isNotEmpty) {
-      _desktopSearchController.selection = TextSelection(
-        baseOffset: 0,
-        extentOffset: _desktopSearchController.text.length,
-      );
-    }
-  }
-
   void _focusDesktopHomeShell() {
     if (!_desktopHomeFocusNode.hasFocus) {
       _desktopHomeFocusNode.requestFocus();
     }
+  }
+
+  KeyEventResult _handleDesktopHomeKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent || _desktopSearchFocusNode.hasFocus) {
+      return KeyEventResult.ignored;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      _easterEggController.addInput(TapSide.left);
+      return KeyEventResult.handled;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _easterEggController.addInput(TapSide.right);
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
   }
 
   List<_DesktopSearchSuggestion> _buildSearchSuggestions({
@@ -218,16 +246,24 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   void _openSearchSuggestion(BuildContext context, _DesktopSearchSuggestion suggestion) {
+    _pushDesktopProfileRoute(context, address: suggestion.address, username: suggestion.username);
+  }
+
+  void _pushDesktopProfileRoute(BuildContext context, {required String address, String? username}) {
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            ProfileViewScreen(address: suggestion.address, username: suggestion.username),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 200),
+            ProfileViewScreen(address: address, username: username?.isNotEmpty == true ? username : null),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+          return FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(curved), child: child),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 220),
+        reverseTransitionDuration: const Duration(milliseconds: 180),
       ),
     );
   }
@@ -269,77 +305,103 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   Widget build(BuildContext context) {
     final showImage = ref.watch(backgroundImageProvider);
     final imageCache = ImageCacheService();
-
-    // Get fixed screen dimensions for background
     final view = View.of(context);
     final screenSize = view.physicalSize / view.devicePixelRatio;
 
-    return Shortcuts(
-      shortcuts: const <ShortcutActivator, Intent>{
-        SingleActivator(LogicalKeyboardKey.keyK, meta: true): _FocusDesktopSearchIntent(),
-        SingleActivator(LogicalKeyboardKey.keyK, control: true): _FocusDesktopSearchIntent(),
-      },
-      child: Actions(
-        actions: <Type, Action<Intent>>{
-          _FocusDesktopSearchIntent: CallbackAction<_FocusDesktopSearchIntent>(
-            onInvoke: (intent) {
-              _focusDesktopSearch();
-              return null;
-            },
-          ),
-        },
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: _focusDesktopHomeShell,
-          child: Focus(
-            autofocus: true,
-            focusNode: _desktopHomeFocusNode,
-            child: EasterEggDetector(
-              onPlayingStateChanged: widget.onEasterEggStateChange,
-              child: Stack(
-                children: [
-                  // Background layer
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    width: screenSize.width,
-                    height: screenSize.height,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: const Alignment(-1, -1),
-                          end: const Alignment(1, 1),
-                          colors: [
-                            context.colorScheme.surface,
-                            Color.lerp(context.colorScheme.surface, context.colorScheme.primary, 0.06)!,
-                            context.colorScheme.surface,
-                          ],
-                          stops: const [0.0, 0.5, 1.0],
-                        ),
-                        image: showImage
-                            ? DecorationImage(
-                                opacity: 0.15,
-                                image: imageCache.getImageProvider("assets/home/background.jpg"),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _focusDesktopHomeShell,
+      child: Focus(
+        autofocus: true,
+        focusNode: _desktopHomeFocusNode,
+        onKeyEvent: _handleDesktopHomeKeyEvent,
+        child: EasterEggDetector(
+          controller: _easterEggController,
+          onPlayingStateChanged: widget.onEasterEggStateChange,
+          child: Stack(
+            children: [
+              // Background layer
+              Positioned(
+                top: 0,
+                left: 0,
+                width: screenSize.width,
+                height: screenSize.height,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: const Alignment(-0.9, -1),
+                      end: const Alignment(1, 1),
+                      colors: [
+                        context.colorScheme.surface,
+                        Color.lerp(context.colorScheme.surface, context.colorScheme.primary, 0.08)!,
+                        Color.lerp(context.colorScheme.surface, context.colorScheme.secondary, 0.05)!,
+                        context.colorScheme.surface,
+                      ],
+                      stops: const [0.0, 0.42, 0.74, 1.0],
+                    ),
+                    image: showImage
+                        ? DecorationImage(
+                            opacity: 0.11,
+                            image: imageCache.getImageProvider("assets/home/background.jpg"),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: -80,
+                right: -40,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 320,
+                    height: 320,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          context.colorScheme.primary.withValues(alpha: 0.10),
+                          context.colorScheme.primary.withValues(alpha: 0.0),
+                        ],
                       ),
                     ),
                   ),
-                  // Content
-                  SafeArea(
-                    child: Row(
-                      children: [
-                        // Left panel: Branding + Actions + Wallets + Network status
-                        Expanded(flex: 3, child: _buildLeftPanel(context, ref)),
-                        // Right panel: Network activity (full height)
-                        Expanded(flex: 2, child: _buildActivityPanel(context, ref)),
-                      ],
+                ),
+              ),
+              Positioned(
+                bottom: -120,
+                left: -60,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 360,
+                    height: 360,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          context.colorScheme.secondary.withValues(alpha: 0.07),
+                          context.colorScheme.secondary.withValues(alpha: 0.0),
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+              // Content
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(flex: 11, child: _buildLeftPanel(context, ref)),
+                      const SizedBox(width: 18),
+                      Expanded(flex: 9, child: _buildActivityPanel(context, ref)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -349,22 +411,21 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   // ─────────────────────────── Left Panel ───────────────────────────
 
   Widget _buildLeftPanel(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return _buildPanelShell(
+      context,
       child: Column(
         children: [
-          // Scrollable content area
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Settings button + Gecko mascot at the very top
                   Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      Positioned(top: scaleSize(10), left: 0, child: IconHomeSettings()),
+                      Positioned(top: scaleSize(2), left: 0, child: IconHomeSettings()),
                       Positioned(
-                        top: scaleSize(62),
-                        left: scaleSize(4),
+                        top: scaleSize(52),
+                        left: scaleSize(2),
                         child: _buildTopShortcutButton(
                           context: context,
                           icon: Icons.qr_code_scanner_rounded,
@@ -374,20 +435,22 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                       ),
                       Align(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 500),
-                          child: AnimatedHeaderImage(
-                            isEasterEggActive: widget.isEasterEggActive,
-                            height: scaleSize(120),
+                          constraints: const BoxConstraints(maxWidth: 560),
+                          child: Transform.translate(
+                            offset: Offset(0, -scaleSize(38)),
+                            child: AnimatedHeaderImage(
+                              isEasterEggActive: widget.isEasterEggActive,
+                              height: scaleSize(126),
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  // Message just below gecko — fixed height to prevent layout shifts
                   SizedBox(
-                    height: scaleSize(40),
+                    height: scaleSize(42),
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
+                      padding: const EdgeInsets.only(top: 2, left: 24, right: 24),
                       child: DefaultTextStyle(
                         textAlign: TextAlign.center,
                         style: scaledTextStyle(
@@ -416,22 +479,18 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   _buildDesktopSearchSection(context, ref),
-                  const SizedBox(height: 20),
-                  // Total balance
+                  const SizedBox(height: 16),
                   _buildTotalBalanceCard(context, ref),
-                  const SizedBox(height: 10),
-                  // Wallet list — takes its natural height
+                  const SizedBox(height: 12),
                   _buildWalletOverview(context, ref),
                 ],
               ),
             ),
           ),
-          // Network status — always pinned at bottom
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           _buildNetworkStatusCard(context, ref),
-          const SizedBox(height: 8),
         ],
       ),
     );
@@ -440,7 +499,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   // ─── Activity Panel (right, full height) ───
 
   Widget _buildActivityPanel(BuildContext context, WidgetRef ref) {
-    return Padding(padding: const EdgeInsets.fromLTRB(0, 12, 16, 12), child: _buildNetworkActivityFeed(context, ref));
+    return _buildPanelShell(context, child: _buildNetworkActivityFeed(context, ref));
   }
 
   Widget _buildTopShortcutButton({
@@ -615,10 +674,10 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              '↑↓',
+                              _searchShortcutLabel,
                               style: scaledTextStyle(
                                 fontSize: 11,
-                                color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                                color: context.colorScheme.onSurface.withValues(alpha: 0.52),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -790,95 +849,287 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   Widget _buildNetworkActivityFeed(BuildContext context, WidgetRef ref) {
     final network = ref.watch(networkProvider);
     final networkLabel = network.name.toUpperCase();
+    final txState = ref.watch(networkActivityProvider);
+    final identityState = ref.watch(networkIdentitiesProvider);
+    final certState = ref.watch(networkCertificationsProvider);
+    final activeCertifications = certState.certifications.where((certification) => certification.isActive).toList();
+    final totalsAsync = ref.watch(networkTotalsProvider);
+    final connectionStatus = ref.watch(connectionStatusProvider);
+    final isConnected = connectionStatus == d.ConnectionStatus.connected;
+    final fallbackTxCount = _formatPagedMetric(txState.transactions.length, txState.hasNextPage);
+    final fallbackIdentityCount = _formatPagedMetric(identityState.identities.length, identityState.hasNextPage);
+    final fallbackCertCount = _formatPagedMetric(activeCertifications.length, certState.hasNextPage);
 
-    return _buildGlassCard(
-      context,
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          // Network label header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
-            child: Row(
-              children: [
-                Icon(Icons.public, size: 16, color: context.colorScheme.primary.withValues(alpha: 0.7)),
-                const SizedBox(width: 6),
-                Text(
-                  'networkActivity'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: 13,
-                    color: context.colorScheme.onSurface.withValues(alpha: 0.8),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    networkLabel,
-                    style: scaledTextStyle(
-                      fontSize: 10,
-                      color: context.colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildActivityControlsBar(
+          context,
+          networkLabel: networkLabel,
+          isConnected: isConnected,
+          txCount: totalsAsync.when(
+            data: (totals) => _formatExactMetric(totals.transactions, fallbackTxCount),
+            loading: () => fallbackTxCount,
+            error: (_, _) => fallbackTxCount,
           ),
-          const SizedBox(height: 4),
-          // Tab bar
-          TabBar(
-            controller: _tabController,
-            indicatorColor: context.colorScheme.primary,
-            labelColor: context.colorScheme.primary,
-            unselectedLabelColor: context.colorScheme.onSurface.withValues(alpha: 0.5),
-            labelStyle: scaledTextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-            unselectedLabelStyle: scaledTextStyle(fontSize: 11, fontWeight: FontWeight.w400),
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerHeight: 0.5,
-            dividerColor: context.colorScheme.outline.withValues(alpha: 0.1),
-            tabs: [
-              Tab(
-                height: 42,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.swap_horiz, size: 16), const SizedBox(width: 4), Text('transactions'.tr())],
+          identityCount: totalsAsync.when(
+            data: (totals) => _formatExactMetric(totals.identities, fallbackIdentityCount),
+            loading: () => fallbackIdentityCount,
+            error: (_, _) => fallbackIdentityCount,
+          ),
+          identityDetails: _buildIdentityMetricDetails(totalsAsync),
+          certCount: totalsAsync.when(
+            data: (totals) => _formatExactMetric(totals.certifications, fallbackCertCount),
+            loading: () => fallbackCertCount,
+            error: (_, _) => fallbackCertCount,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Expanded(
+          child: _buildGlassCard(
+            context,
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            child: _buildAnimatedActivityTabContent(context, ref),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivityControlsBar(
+    BuildContext context, {
+    required String networkLabel,
+    required bool isConnected,
+    required String txCount,
+    required String identityCount,
+    required List<_ActivityMetricDetail> identityDetails,
+    required String certCount,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            context.colorScheme.surface.withValues(alpha: 0.96),
+            context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.82),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 18, offset: const Offset(0, 10)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'networkActivity'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 16,
+                        color: context.colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      networkLabel,
+                      style: scaledTextStyle(
+                        fontSize: 10.5,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Tab(
-                height: 42,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.person, size: 16), const SizedBox(width: 4), Text('identities'.tr())],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isConnected ? Colors.green.withValues(alpha: 0.10) : Colors.orange.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-              ),
-              Tab(
-                height: 42,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.verified, size: 16), const SizedBox(width: 4), Text('certifications'.tr())],
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isConnected ? Colors.green : Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      isConnected ? 'connectedToNode'.tr(args: [networkLabel]) : 'connecting'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 10,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.72),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          // Tab content
-          Expanded(
-            child: TabBarView(
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TabBar(
               controller: _tabController,
-              children: [
-                _buildTransactionsTab(context, ref),
-                _buildIdentitiesTab(context, ref),
-                _buildCertificationsTab(context, ref),
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorAnimation: TabIndicatorAnimation.elastic,
+              dividerColor: Colors.transparent,
+              indicator: UnderlineTabIndicator(
+                borderRadius: BorderRadius.circular(999),
+                borderSide: BorderSide(color: context.colorScheme.primary.withValues(alpha: 0.95), width: 3),
+                insets: const EdgeInsets.fromLTRB(24, 0, 24, 6),
+              ),
+              indicatorPadding: EdgeInsets.zero,
+              labelColor: context.colorScheme.onSurface,
+              unselectedLabelColor: context.colorScheme.onSurface.withValues(alpha: 0.55),
+              labelStyle: scaledTextStyle(fontSize: 11.5, fontWeight: FontWeight.w700),
+              unselectedLabelStyle: scaledTextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+              splashBorderRadius: BorderRadius.circular(16),
+              overlayColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
+                  return context.colorScheme.primary.withValues(alpha: 0.05);
+                }
+                if (states.contains(WidgetState.pressed)) {
+                  return context.colorScheme.primary.withValues(alpha: 0.08);
+                }
+                return Colors.transparent;
+              }),
+              tabs: [
+                _buildActivityTab(context, Icons.swap_horiz_rounded, 'transactions'.tr(), count: txCount),
+                _buildActivityTab(context, Icons.person_rounded, 'identities'.tr(), count: identityCount),
+                _buildActivityTab(context, Icons.verified_rounded, 'certifications'.tr(), count: certCount),
               ],
             ),
           ),
+          if (identityDetails.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: identityDetails.map((detail) => _buildIdentityDetailChip(context, detail)).toList(),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildIdentityDetailChip(BuildContext context, _ActivityMetricDetail detail) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: scaledTextStyle(
+            fontSize: 10,
+            color: context.colorScheme.onSurface.withValues(alpha: 0.62),
+            fontWeight: FontWeight.w600,
+          ),
+          children: [
+            TextSpan(text: '${detail.label}: '),
+            TextSpan(
+              text: detail.value,
+              style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface, fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatPagedMetric(int loadedCount, bool hasNextPage) {
+    if (loadedCount == 0) return '0';
+    return hasNextPage ? '$loadedCount+' : '$loadedCount';
+  }
+
+  String _formatExactMetric(int totalCount, String fallback) {
+    if (totalCount <= 0) return fallback;
+    return '$totalCount';
+  }
+
+  List<_ActivityMetricDetail> _buildIdentityMetricDetails(AsyncValue<NetworkTotals> totalsAsync) {
+    return totalsAsync.when(
+      data: (totals) => [
+        _ActivityMetricDetail(label: 'member'.tr(), value: '${totals.memberIdentities}'),
+        _ActivityMetricDetail(label: 'unconfirmed'.tr(), value: '${totals.unconfirmedIdentities}'),
+        _ActivityMetricDetail(label: 'unvalidated'.tr(), value: '${totals.unvalidatedIdentities}'),
+        _ActivityMetricDetail(label: 'identityExpired'.tr(), value: '${totals.expiredIdentities}'),
+      ],
+      loading: () => const [],
+      error: (_, _) => const [],
+    );
+  }
+
+  Widget _buildActivityTab(BuildContext context, IconData icon, String label, {required String count}) {
+    return Tab(
+      height: 58,
+      child: SizedBox.expand(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 16),
+                    const SizedBox(width: 8),
+                    Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  count,
+                  overflow: TextOverflow.ellipsis,
+                  style: scaledTextStyle(
+                    fontSize: 10,
+                    color: context.colorScheme.onSurface.withValues(alpha: 0.46),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedActivityTabContent(BuildContext context, WidgetRef ref) {
+    final currentIndex = _activeActivityTabIndex;
+    return IndexedStack(
+      index: currentIndex.clamp(0, 2),
+      children: [
+        _buildTransactionsTab(context, ref),
+        _buildIdentitiesTab(context, ref),
+        _buildCertificationsTab(context, ref),
+      ],
     );
   }
 
@@ -927,8 +1178,9 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   Widget _buildCertificationsTab(BuildContext context, WidgetRef ref) {
     final certsState = ref.watch(networkCertificationsProvider);
+    final activeCertifications = certsState.certifications.where((certification) => certification.isActive).toList();
 
-    if (certsState.certifications.isEmpty) {
+    if (activeCertifications.isEmpty) {
       if (certsState.isLoading) {
         return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
       }
@@ -938,10 +1190,10 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     return ListView.separated(
       controller: _scrollControllers[2],
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: certsState.certifications.length,
+      itemCount: activeCertifications.length,
       separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
       itemBuilder: (context, index) {
-        return _buildCompactCertificationTile(context, certsState.certifications[index]);
+        return _buildCompactCertificationTile(context, activeCertifications[index]);
       },
     );
   }
@@ -979,13 +1231,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                ProfileViewScreen(address: address, username: username?.isNotEmpty == true ? username : null),
-          ),
-        ),
+        onTap: () => _pushDesktopProfileRoute(context, address: address, username: username),
         child: child,
       ),
     );
@@ -1211,6 +1457,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     final statusColor = cert.getStatusColor();
     final issuerName = cert.issuerName ?? getShortPubkey(cert.issuerAccountId);
     final receiverName = cert.receiverName ?? getShortPubkey(cert.receiverAccountId);
+    const timeColumnWidth = 210.0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1223,76 +1470,92 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor),
           ),
           const SizedBox(width: 8),
-          // Issuer (clickable)
           Expanded(
-            child: _buildClickableProfile(
-              context,
-              address: cert.issuerAccountId,
-              username: cert.issuerName,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DatapodAvatar(address: cert.issuerAccountId, size: 20, name: issuerName),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      issuerName,
-                      style: scaledTextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: context.colorScheme.onSurface,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildClickableProfile(
+                    context,
+                    address: cert.issuerAccountId,
+                    username: cert.issuerName,
+                    child: Row(
+                      children: [
+                        DatapodAvatar(address: cert.issuerAccountId, size: 20, name: issuerName),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            issuerName,
+                            style: scaledTextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: context.colorScheme.onSurface,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          // Arrow (centered, fixed width)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Icon(Icons.arrow_forward, size: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
-          ),
-          // Receiver (clickable)
-          Expanded(
-            child: _buildClickableProfile(
-              context,
-              address: cert.receiverAccountId,
-              username: cert.receiverName,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DatapodAvatar(address: cert.receiverAccountId, size: 20, name: receiverName),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      receiverName,
-                      style: scaledTextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: context.colorScheme.onSurface,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(
+                  width: 40,
+                  child: Center(
+                    child: Icon(
+                      Icons.arrow_forward,
+                      size: 12,
+                      color: context.colorScheme.onSurface.withValues(alpha: 0.4),
                     ),
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: _buildClickableProfile(
+                    context,
+                    address: cert.receiverAccountId,
+                    username: cert.receiverName,
+                    child: Row(
+                      children: [
+                        DatapodAvatar(address: cert.receiverAccountId, size: 20, name: receiverName),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            receiverName,
+                            style: scaledTextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: context.colorScheme.onSurface,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 6),
-          // Expiration + time
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _relativeTime(context, cert.timestamp),
-                style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
-              ),
-              if (cert.expirationText != null && !cert.isExpired)
-                Text(cert.expirationText!, style: scaledTextStyle(fontSize: 10, color: Colors.orange)),
-            ],
+          const SizedBox(width: 12),
+          SizedBox(
+            width: timeColumnWidth,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _relativeTime(context, cert.timestamp),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+                ),
+                if (cert.expirationText != null && !cert.isExpired)
+                  Text(
+                    cert.expirationText!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: scaledTextStyle(fontSize: 10, color: Colors.orange),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1303,9 +1566,34 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     return Container(
       padding: padding ?? const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainer.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            context.colorScheme.surface.withValues(alpha: 0.92),
+            context.colorScheme.surfaceContainer.withValues(alpha: 0.68),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 18, offset: const Offset(0, 10)),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildPanelShell(BuildContext context, {required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface.withValues(alpha: 0.58),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 32, offset: const Offset(0, 18)),
+        ],
       ),
       child: child,
     );
@@ -1704,12 +1992,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProfileViewScreen(address: wallet.address, username: wallet.name),
-                ),
-              );
+              _pushDesktopProfileRoute(context, address: wallet.address, username: wallet.name);
             },
             child: Ink(
               padding: EdgeInsets.symmetric(horizontal: isOnlyWallet ? 12 : 10, vertical: isOnlyWallet ? 12 : 10),
@@ -2004,16 +2287,19 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
 enum _DesktopSearchSuggestionType { address, identity }
 
-class _FocusDesktopSearchIntent extends Intent {
-  const _FocusDesktopSearchIntent();
-}
-
 class _DesktopSearchSuggestion {
   const _DesktopSearchSuggestion({required this.address, required this.username, required this.type});
 
   final String address;
   final String? username;
   final _DesktopSearchSuggestionType type;
+}
+
+class _ActivityMetricDetail {
+  final String label;
+  final String value;
+
+  const _ActivityMetricDetail({required this.label, required this.value});
 }
 
 class _DesktopSafeWalletGroup {

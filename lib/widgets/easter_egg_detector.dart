@@ -8,6 +8,24 @@ import 'package:gecko/providers/home_providers.dart';
 
 enum TapSide { left, right }
 
+class EasterEggController {
+  void Function(TapSide side)? _inputHandler;
+
+  void _attach(void Function(TapSide side) handler) {
+    _inputHandler = handler;
+  }
+
+  void _detach(void Function(TapSide side) handler) {
+    if (_inputHandler == handler) {
+      _inputHandler = null;
+    }
+  }
+
+  void addInput(TapSide side) {
+    _inputHandler?.call(side);
+  }
+}
+
 class TapEvent {
   final DateTime time;
   final TapSide side;
@@ -19,12 +37,14 @@ class EasterEggDetector extends ConsumerStatefulWidget {
   final Widget child;
   final VoidCallback? onEasterEggTriggered;
   final ValueChanged<bool> onPlayingStateChanged;
+  final EasterEggController? controller;
 
   const EasterEggDetector({
     super.key,
     required this.child,
     this.onEasterEggTriggered,
     required this.onPlayingStateChanged,
+    this.controller,
   });
 
   @override
@@ -55,10 +75,12 @@ class _EasterEggDetectorState extends ConsumerState<EasterEggDetector> {
     super.initState();
     _audioPlayer = AudioPlayer();
     _karaokeService.loadLyrics();
+    widget.controller?._attach(_handleCornerTap);
   }
 
   @override
   void dispose() {
+    widget.controller?._detach(_handleCornerTap);
     _audioPlayer?.dispose();
     _karaokeService.dispose();
     super.dispose();

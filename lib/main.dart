@@ -50,6 +50,7 @@ import 'package:gecko/widgets/global_offline_overlay.dart';
 import 'package:gecko/widgets/bottom_app_bar.dart';
 import 'package:gecko/widgets/sentry_context_provider.dart';
 import 'package:gecko/widgets/certify/ready_certification_listener.dart';
+import 'package:gecko/widgets/global_search_shortcut_scope.dart';
 
 const bool showVersionOverlay = true; // Set to false to hide version overlay in production
 
@@ -273,12 +274,14 @@ class Gecko extends StatelessWidget {
 
                     // Add the global bottom app bar as an overlay
                     // Wrap with ReadyCertificationListener to handle certification ready notifications globally
-                    return ReadyCertificationListener(
-                      child: Stack(
-                        children: [
-                          GlobalOfflineOverlay(child: finalChild),
-                          Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
-                        ],
+                    return GlobalSearchShortcutScope(
+                      child: ReadyCertificationListener(
+                        child: Stack(
+                          children: [
+                            GlobalOfflineOverlay(child: finalChild),
+                            Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                          ],
+                        ),
                       ),
                     );
                   },

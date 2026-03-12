@@ -6,15 +6,20 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers/network_activity_provider.dart';
+import 'package:gecko/providers/network_certifications_provider.dart';
+import 'package:gecko/providers/network_identities_provider.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/squid_cache_buster.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/services/storage_init_service.dart';
 import 'package:gecko/services/wisdom_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:graphql_flutter/graphql_flutter.dart' show FetchPolicy, QueryOptions, gql;
 import 'package:hive_flutter/hive_flutter.dart';
 
 /// Provider for AppInfoService
@@ -121,6 +126,101 @@ class HomeMessageNotifier extends Notifier<String> {
 
 /// Provider for home message state
 final homeMessageProvider = NotifierProvider<HomeMessageNotifier, String>(HomeMessageNotifier.new);
+
+class NetworkTotals {
+  final int transactions;
+  final int certifications;
+  final int memberIdentities;
+  final int unconfirmedIdentities;
+  final int unvalidatedIdentities;
+  final int expiredIdentities;
+
+  const NetworkTotals({
+    required this.transactions,
+    required this.certifications,
+    required this.memberIdentities,
+    required this.unconfirmedIdentities,
+    required this.unvalidatedIdentities,
+    required this.expiredIdentities,
+  });
+
+  const NetworkTotals.empty()
+    : this(
+        transactions: 0,
+        certifications: 0,
+        memberIdentities: 0,
+        unconfirmedIdentities: 0,
+        unvalidatedIdentities: 0,
+        expiredIdentities: 0,
+      );
+
+  int get identities => memberIdentities + unconfirmedIdentities + unvalidatedIdentities;
+}
+
+/// Fetches exact network totals from Squid using GraphQL connection totalCount,
+/// independent from the paginated lists currently loaded in UI providers.
+final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
+  ref.watch(networkProvider);
+  ref.watch(squidCacheBusterProvider);
+  ref.watch(networkActivityProvider.select((state) => state.lastActivityId));
+  ref.watch(networkIdentitiesProvider.select((state) => state.lastActivityId));
+  ref.watch(networkCertificationsProvider.select((state) => state.lastActivityId));
+
+  final squidStatus = ref.watch(squidConnectionStatusProvider);
+  if (squidStatus != d.ConnectionStatus.connected) {
+    return const NetworkTotals.empty();
+  }
+
+  const document = r'''
+    query GetNetworkTotals {
+      transfers(first: 1) {
+        totalCount
+      }
+      memberIdentities: identities(first: 1, filter: {status: {equalTo: "Member"}}) {
+        totalCount
+      }
+      unconfirmedIdentities: identities(first: 1, filter: {status: {equalTo: "Unconfirmed"}}) {
+        totalCount
+      }
+      unvalidatedIdentities: identities(first: 1, filter: {status: {equalTo: "Unvalidated"}}) {
+        totalCount
+      }
+      expiredIdentities: identities(first: 1, filter: {status: {equalTo: "NotMember"}}) {
+        totalCount
+      }
+      certs(first: 1, filter: {isActive: {equalTo: true}}) {
+        totalCount
+      }
+    }
+  ''';
+
+  final result = await d.SquidService.client.query(
+    QueryOptions(document: gql(document), fetchPolicy: FetchPolicy.networkOnly),
+  );
+
+  if (result.hasException) {
+    throw result.exception!;
+  }
+
+  final data = result.data;
+  if (data == null) {
+    return const NetworkTotals.empty();
+  }
+
+  int readTotal(String key) {
+    final section = data[key] as Map<String, dynamic>?;
+    return (section?['totalCount'] as int?) ?? 0;
+  }
+
+  return NetworkTotals(
+    transactions: readTotal('transfers'),
+    certifications: readTotal('certs'),
+    memberIdentities: readTotal('memberIdentities'),
+    unconfirmedIdentities: readTotal('unconfirmedIdentities'),
+    unvalidatedIdentities: readTotal('unvalidatedIdentities'),
+    expiredIdentities: readTotal('expiredIdentities'),
+  );
+});
 
 /// App initialization state
 class AppInitState {

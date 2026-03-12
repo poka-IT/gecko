@@ -106,13 +106,15 @@ class CertificationTile extends StatelessWidget {
                       ),
                     ),
 
-                    // Arrow
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: scaleSize(8)),
-                      child: Icon(
-                        Icons.arrow_forward,
-                        size: scaleSize(16),
-                        color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                    // Fixed middle column keeps the arrow aligned across rows
+                    SizedBox(
+                      width: scaleSize(32),
+                      child: Center(
+                        child: Icon(
+                          Icons.arrow_forward,
+                          size: scaleSize(16),
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                     ),
 

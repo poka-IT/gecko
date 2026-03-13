@@ -27,9 +27,10 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
+import 'package:gecko/widgets/desktop/desktop_drag_info_bar.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/balance_display.dart';
-import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/widgets/desktop/modals/safe_options_modal.dart';
 import 'package:gecko/widgets/desktop/modals/settings_modal.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
@@ -165,70 +166,6 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     await scanQr(context);
   }
 
-  void _openSafeOptions(BuildContext context) {
-    final groups = ref.read(safeWalletGroupsProvider);
-
-    if (groups.length <= 1) {
-      // Single safe: open directly
-      showDesktopSafeOptionsModal(context, ref);
-      return;
-    }
-
-    // Multiple safes: show picker popup
-    final renderBox = context.findRenderObject() as RenderBox?;
-    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox?;
-    if (renderBox == null || overlay == null) return;
-
-    final position = renderBox.localToGlobal(Offset.zero, ancestor: overlay);
-    final size = renderBox.size;
-
-    showMenu<int>(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy + size.height,
-        overlay.size.width - position.dx - size.width,
-        0,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      items: groups.map((group) {
-        final name = WalletNameService.displayName(group.safe.name);
-        return PopupMenuItem<int>(
-          value: group.safe.number,
-          child: Row(
-            children: [
-              Icon(
-                group.isCurrent ? Icons.lock_rounded : Icons.lock_outline_rounded,
-                size: 18,
-                color: group.isCurrent
-                    ? context.colorScheme.primary
-                    : context.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontWeight: group.isCurrent ? FontWeight.w600 : FontWeight.normal,
-                    color: group.isCurrent ? context.colorScheme.primary : null,
-                  ),
-                ),
-              ),
-              Text(
-                '${group.wallets.length}',
-                style: TextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    ).then((safeNumber) {
-      if (safeNumber != null) {
-        showDesktopSafeOptionsModal(context, ref, safeNumber: safeNumber);
-      }
-    });
-  }
-
   void _focusDesktopHomeShell() {
     if (!_desktopHomeFocusNode.hasFocus) {
       _desktopHomeFocusNode.requestFocus();
@@ -316,7 +253,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   void _pushDesktopProfileRoute(BuildContext context, {required String address, String? username}) {
-    showDesktopProfileModal(context, address: address, username: username?.isNotEmpty == true ? username : null);
+    NavigationService.openProfile(context, address: address, username: username?.isNotEmpty == true ? username : null);
   }
 
   KeyEventResult _handleDesktopSearchKeyEvent(
@@ -470,6 +407,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                   ),
                 ),
               ),
+              const DesktopDragInfoBar(),
             ],
           ),
         ),
@@ -2260,6 +2198,23 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           ),
         const SizedBox(width: 4),
         _buildAddDerivationButton(context, ref, safeNumber: group.safe.number),
+        const SizedBox(width: 2),
+        SizedBox(
+          width: 28,
+          height: 28,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => showDesktopSafeOptionsModal(context, ref, safeNumber: group.safe.number),
+              child: Icon(
+                Icons.settings_rounded,
+                size: 16,
+                color: context.colorScheme.onSurface.withValues(alpha: 0.45),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -2349,12 +2304,6 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       spacing: 8,
       runSpacing: 8,
       children: [
-        _buildSecondaryActionButton(
-          context,
-          icon: Icons.tune_rounded,
-          label: 'manageSafe'.tr(),
-          onTap: () => _openSafeOptions(context),
-        ),
         _buildSecondaryActionButton(
           context,
           icon: Icons.add_circle_outline_rounded,

@@ -12,10 +12,8 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/search_provider.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
-import 'package:gecko/widgets/desktop/desktop_utils.dart';
-import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -409,23 +407,7 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
       return;
     }
 
-    // On desktop, open the profile modal instead of pushing a full-screen page
-    if (isDesktopLayout(navigatorContext)) {
-      await showDesktopProfileModal(navigatorContext, address: address, username: username);
-      return;
-    }
-
-    await Navigator.of(navigatorContext, rootNavigator: true).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            ProfileViewScreen(address: address, username: username),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 200),
-      ),
-    );
+    NavigationService.openProfile(navigatorContext, address: address, username: username);
   }
 
   void _close({bool clearSearch = true}) {
@@ -517,17 +499,7 @@ class _WalletResultTile extends ConsumerWidget {
           () {
             ref.read(searchTextProvider.notifier).clear();
             Navigator.of(context, rootNavigator: true).pop();
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    ProfileViewScreen(address: wallet.address, username: wallet.username),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
-                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                  child: child,
-                ),
-                transitionDuration: const Duration(milliseconds: 200),
-              ),
-            );
+            NavigationService.openProfile(context, address: wallet.address, username: wallet.username);
           },
     );
   }
@@ -561,17 +533,7 @@ class _IdentityResultTile extends ConsumerWidget {
           () {
             ref.read(searchTextProvider.notifier).clear();
             Navigator.of(context, rootNavigator: true).pop();
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    ProfileViewScreen(address: identity.address, username: identity.name),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
-                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                  child: child,
-                ),
-                transitionDuration: const Duration(milliseconds: 200),
-              ),
-            );
+            NavigationService.openProfile(context, address: identity.address, username: identity.name);
           },
     );
   }

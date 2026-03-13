@@ -61,134 +61,137 @@ class _WalletNameEditDialogState extends ConsumerState<_WalletNameEditDialog> {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: context.colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: context.colorScheme.primary.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Icon
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
                 color: context.colorScheme.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-              child: Icon(Icons.edit_rounded, color: context.colorScheme.primary, size: 32),
-            ),
-            const SizedBox(height: 20),
-
-            // Title
-            Text(
-              'chooseWalletName'.tr(),
-              style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-
-            // Text field
-            TextField(
-              onChanged: (value) => _validateName(value),
-              textAlign: TextAlign.center,
-              autofocus: true,
-              controller: widget.walletNameController,
-              style: scaledTextStyle(fontSize: 16),
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: context.colorScheme.outline),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.red, width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                hintText: 'enterWalletName'.tr(),
-                hintStyle: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
-                errorText: validationState.errorMessage,
+                child: Icon(Icons.edit_rounded, color: context.colorScheme.primary, size: 32),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-            // Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Cancel button
-                Expanded(
-                  child: TextButton(
-                    key: keyCancel,
-                    onPressed: () => Navigator.of(context).pop(null),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text(
-                      "cancel".tr(),
-                      style: scaledTextStyle(fontSize: 15, color: Colors.grey[600], fontWeight: FontWeight.w600),
+              // Title
+              Text(
+                'chooseWalletName'.tr(),
+                style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+
+              // Text field
+              TextField(
+                onChanged: (value) => _validateName(value),
+                textAlign: TextAlign.center,
+                autofocus: true,
+                controller: widget.walletNameController,
+                style: scaledTextStyle(fontSize: 16),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colorScheme.outline),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.red, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  hintText: 'enterWalletName'.tr(),
+                  hintStyle: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+                  errorText: validationState.errorMessage,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Cancel button
+                  Expanded(
+                    child: TextButton(
+                      key: keyCancel,
+                      onPressed: () => Navigator.of(context).pop(null),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        "cancel".tr(),
+                        style: scaledTextStyle(fontSize: 15, color: Colors.grey[600], fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
+                  const SizedBox(width: 16),
 
-                // Validate button
-                Expanded(
-                  child: ElevatedButton(
-                    key: keyInfoPopup,
-                    onPressed: validationState.isValid
-                        ? () async {
-                            try {
-                              await WalletManagementService.renameWallet(
-                                widget.wallet,
-                                widget.walletNameController.text,
-                                ref: ref,
-                              );
-                              if (context.mounted) {
-                                Navigator.pop(context, widget.walletNameController.text);
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error renaming wallet: ${e.toString()}'),
-                                    backgroundColor: Colors.red,
-                                  ),
+                  // Validate button
+                  Expanded(
+                    child: ElevatedButton(
+                      key: keyInfoPopup,
+                      onPressed: validationState.isValid
+                          ? () async {
+                              try {
+                                await WalletManagementService.renameWallet(
+                                  widget.wallet,
+                                  widget.walletNameController.text,
+                                  ref: ref,
                                 );
+                                if (context.mounted) {
+                                  Navigator.pop(context, widget.walletNameController.text);
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error renaming wallet: ${e.toString()}'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             }
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: validationState.isValid ? context.colorScheme.primary : Colors.grey,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: validationState.isValid ? context.colorScheme.primary : Colors.grey,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text("validate".tr(), style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     ),
-                    child: Text("validate".tr(), style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -5,13 +5,10 @@ import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
-import 'package:gecko/widgets/desktop/desktop_utils.dart';
-import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
-import 'package:gecko/widgets/page_route_no_transition.dart';
 
 class TransactionTile extends StatelessWidget {
   const TransactionTile({
@@ -30,16 +27,7 @@ class TransactionTile extends StatelessWidget {
   final String? viewingAddress;
 
   void _openProfile(BuildContext context, {required String address, String? username}) {
-    if (isDesktopLayout(context)) {
-      showDesktopProfileModal(context, address: address, username: username);
-    } else {
-      Navigator.push(
-        context,
-        PageNoTransit(
-          builder: (context) => ProfileViewScreen(address: address, username: username, fromAddress: viewingAddress),
-        ),
-      );
-    }
+    NavigationService.openProfile(context, address: address, username: username, fromAddress: viewingAddress);
   }
 
   @override

@@ -6,7 +6,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 
 import 'package:gecko/providers/search_provider.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -95,22 +95,7 @@ class SearchResult extends ConsumerWidget {
       dense: false,
       isThreeLine: false,
       onTap: () {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) {
-              return ProfileViewScreen(address: g1Wallet.address, username: g1Wallet.username);
-            },
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              // Fast fade transition to reduce visual jarring
-              return FadeTransition(
-                opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                child: child,
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 200),
-          ),
-        );
+        NavigationService.openProfile(context, address: g1Wallet.address, username: g1Wallet.username);
       },
     );
   }

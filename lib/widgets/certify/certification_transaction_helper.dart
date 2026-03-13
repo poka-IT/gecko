@@ -8,7 +8,7 @@ import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 
 /// Helper class for executing certification transactions with proper cache management
@@ -79,12 +79,7 @@ class CertificationTransactionHelper {
 
       // Navigate to target's profile if requested (when not already on it)
       if (navigateToTargetProfile && context.mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProfileViewScreen(address: targetAddress, username: targetUsername),
-          ),
-        );
+        NavigationService.openProfileReplacement(context, address: targetAddress, username: targetUsername);
       }
 
       return transactionStream;

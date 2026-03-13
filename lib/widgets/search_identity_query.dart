@@ -7,7 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -105,27 +105,7 @@ class SearchIdentityQuery extends ConsumerWidget {
       dense: !isTall,
       isThreeLine: false,
       onTap: () {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) {
-              return ProfileViewScreen(address: identity.address, username: identity.name);
-            },
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              // Smooth slide transition from right to left
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.easeInOutCubic;
-
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
-
-              return SlideTransition(position: offsetAnimation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 400),
-            reverseTransitionDuration: const Duration(milliseconds: 350),
-          ),
-        );
+        NavigationService.openProfile(context, address: identity.address, username: identity.name);
       },
     );
   }

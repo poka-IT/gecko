@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/routes.dart';
-import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/services/contact_service.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/identicon_service.dart';
 import 'package:gecko/services/qr_scanner_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
@@ -122,14 +122,7 @@ final qrScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
     if (result.isSuccess && result.address != null) {
       // Navigate to wallet view with the scanned address
       Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
-      Navigator.push(
-        homeContext,
-        MaterialPageRoute(
-          builder: (context) {
-            return ProfileViewScreen(address: result.address!, username: null);
-          },
-        ),
-      );
+      NavigationService.openProfile(homeContext, address: result.address!);
     } else if (result.isInvalidAddress) {
       SnackbarService.showError(context, message: 'qrCodeNotAddress'.tr(), duration: 2);
     } else if (result.isError) {

@@ -18,9 +18,10 @@ import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:http/http.dart' as http;
 
 class CesiumProfileScreen extends ConsumerStatefulWidget {
-  const CesiumProfileScreen({super.key, required this.address});
+  const CesiumProfileScreen({super.key, required this.address, this.embeddedMode = false});
 
   final String address;
+  final bool embeddedMode;
 
   @override
   ConsumerState<CesiumProfileScreen> createState() => _CesiumProfileScreenState();
@@ -145,7 +146,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
       log.e('Error saving Cesium+ profile: $e');
       SnackbarService.showError(context, message: 'profileUpdateFailed'.tr());
     } finally {
-      setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -213,7 +214,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
       log.e('Error deleting Cesium+ profile: $e');
       SnackbarService.showError(context, message: 'profileDeleteFailed'.tr());
     } finally {
-      setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -276,6 +277,360 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final body = _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : ResponsiveCenter(
+            maxWidth: 600,
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                if (widget.embeddedMode && _profile != null)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16, top: 8),
+                      child: TextButton.icon(
+                        icon: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 20),
+                        label: Text(
+                          'deleteProfile'.tr(),
+                          style: scaledTextStyle(fontSize: 13, color: Colors.red.shade400),
+                        ),
+                        onPressed: _isSaving ? null : _deleteProfile,
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      scaleSize(16),
+                      scaleSize(16),
+                      scaleSize(16),
+                      scaleSize(80), // Extra padding for sticky button
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Description Card
+                          _buildSectionCard(
+                            title: 'description'.tr(),
+                            icon: Icons.person,
+                            child: TextFormField(
+                              controller: _descriptionController,
+                              maxLines: 4,
+                              maxLength: 500,
+                              decoration: InputDecoration(
+                                hintText: 'descriptionHint'.tr(),
+                                border: const OutlineInputBorder(),
+                                filled: true,
+                                fillColor: context.colorScheme.surfaceContainer,
+                                suffixIcon: _descriptionController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear, size: 20),
+                                        onPressed: () {
+                                          setState(() => _descriptionController.clear());
+                                        },
+                                      )
+                                    : null,
+                              ),
+                              style: scaledTextStyle(fontSize: 14),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+
+                          ScaledSizedBox(height: 20),
+
+                          // City Autocomplete Card
+                          _buildSectionCard(
+                            title: 'city'.tr(),
+                            icon: Icons.location_city,
+                            child: TypeAheadField<Map<String, dynamic>>(
+                              controller: _cityController,
+                              suggestionsCallback: _searchCities,
+                              builder: (context, controller, focusNode) {
+                                return TextFormField(
+                                  controller: controller,
+                                  focusNode: focusNode,
+                                  decoration: InputDecoration(
+                                    hintText: 'cityHint'.tr(),
+                                    prefixIcon: const Icon(Icons.search),
+                                    border: const OutlineInputBorder(),
+                                    filled: true,
+                                    fillColor: context.colorScheme.surfaceContainer,
+                                    suffixIcon: _cityController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(Icons.clear, size: 20),
+                                            onPressed: () {
+                                              setState(() {
+                                                _cityController.clear();
+                                                _selectedLocation = null;
+                                              });
+                                            },
+                                          )
+                                        : null,
+                                  ),
+                                  style: scaledTextStyle(fontSize: 14),
+                                  onChanged: (_) => setState(() {}),
+                                );
+                              },
+                              hideOnEmpty: true,
+                              hideOnLoading: false,
+                              hideOnSelect: true,
+                              hideOnUnfocus: true,
+                              hideOnError: true,
+                              itemBuilder: (context, city) {
+                                final name = city['display_name'] as String;
+                                return ListTile(
+                                  leading: const Icon(Icons.location_on),
+                                  title: Text(name, style: scaledTextStyle(fontSize: 13)),
+                                );
+                              },
+                              onSelected: (city) {
+                                _cityController.text =
+                                    (city['address']?['city'] ??
+                                        city['address']?['town'] ??
+                                        city['address']?['village'] ??
+                                        city['name']) ??
+                                    '';
+                                _onCitySelected(city);
+                                // Unfocus to prevent auto-refocus after dialog close
+                                FocusScope.of(context).unfocus();
+                              },
+                            ),
+                          ),
+
+                          ScaledSizedBox(height: 20),
+
+                          // Map Card
+                          _buildSectionCard(
+                            title: 'geoCoordinates'.tr(),
+                            icon: Icons.map,
+                            tooltip: 'geoCoordinatesHelp'.tr(),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: scaleSize(200),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: FlutterMap(
+                                    mapController: _mapController,
+                                    options: MapOptions(
+                                      initialCenter: _selectedLocation ?? LatLng(48.8566, 2.3522), // Paris by default
+                                      initialZoom: 5.0,
+                                      onTap: (_, latLng) {
+                                        setState(() {
+                                          _selectedLocation = latLng;
+                                        });
+                                      },
+                                    ),
+                                    children: [
+                                      TileLayer(
+                                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                        userAgentPackageName: 'fr.axiomteam.gecko',
+                                      ),
+                                      if (_selectedLocation != null)
+                                        MarkerLayer(
+                                          markers: [
+                                            Marker(
+                                              point: _selectedLocation!,
+                                              width: scaleSize(40),
+                                              height: scaleSize(40),
+                                              child: Icon(
+                                                Icons.location_on,
+                                                color: Theme.of(context).colorScheme.primary,
+                                                size: scaleSize(40),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                ScaledSizedBox(height: 8),
+                                if (_selectedLocation != null)
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '${'latitude'.tr()}: ${_selectedLocation!.latitude.toStringAsFixed(4)}',
+                                        style: scaledTextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                      ),
+                                      Text(
+                                        '${'longitude'.tr()}: ${_selectedLocation!.longitude.toStringAsFixed(4)}',
+                                        style: scaledTextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.clear, size: 20),
+                                        onPressed: () => setState(() => _selectedLocation = null),
+                                        tooltip: 'Clear location',
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+
+                          ScaledSizedBox(height: 20),
+
+                          // Social Networks Card
+                          _buildSectionCard(
+                            title: 'socialNetworks'.tr(),
+                            icon: Icons.share,
+                            child: Column(
+                              children: [
+                                ..._socials.asMap().entries.map((entry) {
+                                  final index = entry.key;
+                                  final social = entry.value;
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: scaleSize(8)),
+                                    child: Container(
+                                      padding: EdgeInsets.all(scaleSize(12)),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(_getSocialIcon(social.type), size: scaleSize(20)),
+                                          ScaledSizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  social.type,
+                                                  style: scaledTextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                                ),
+                                                Text(
+                                                  social.url,
+                                                  style: scaledTextStyle(fontSize: 11, color: Colors.grey.shade700),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.delete, color: Colors.red.shade400, size: scaleSize(20)),
+                                            onPressed: () => _removeSocial(index),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                ScaledSizedBox(height: 8),
+                                OutlinedButton.icon(
+                                  onPressed: _showAddSocialDialog,
+                                  icon: const Icon(Icons.add),
+                                  label: Text('addSocialNetwork'.tr()),
+                                  style: OutlinedButton.styleFrom(minimumSize: Size(double.infinity, scaleSize(44))),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          ScaledSizedBox(height: 20),
+
+                          // Tags Card
+                          _buildSectionCard(
+                            title: 'tags'.tr(),
+                            icon: Icons.label,
+                            child: Column(
+                              children: [
+                                if (_tags.isNotEmpty)
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: _tags.map((tag) {
+                                      return Chip(
+                                        label: Text(tag, style: scaledTextStyle(fontSize: 12)),
+                                        deleteIcon: Icon(Icons.close, size: scaleSize(18)),
+                                        onDeleted: () => _removeTag(tag),
+                                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                      );
+                                    }).toList(),
+                                  ),
+                                ScaledSizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _tagController,
+                                        decoration: InputDecoration(
+                                          hintText: 'tagHint'.tr(),
+                                          border: const OutlineInputBorder(),
+                                          filled: true,
+                                          fillColor: context.colorScheme.surfaceContainer,
+                                        ),
+                                        style: scaledTextStyle(fontSize: 14),
+                                        onFieldSubmitted: (_) => _addTag(),
+                                      ),
+                                    ),
+                                    ScaledSizedBox(width: 8),
+                                    IconButton(
+                                      icon: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
+                                      iconSize: scaleSize(32),
+                                      onPressed: _addTag,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Sticky Save Button
+                Container(
+                  padding: EdgeInsets.all(scaleSize(16)),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), offset: const Offset(0, -2), blurRadius: 8),
+                    ],
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: scaleSize(50),
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : _saveProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: _isSaving
+                            ? SizedBox(
+                                width: scaleSize(20),
+                                height: scaleSize(20),
+                                child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(
+                                'saveProfile'.tr(),
+                                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+
+    if (widget.embeddedMode) {
+      return body;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('cesiumProfile'.tr()),
@@ -289,348 +644,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ResponsiveCenter(
-              maxWidth: 600,
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.fromLTRB(
-                        scaleSize(16),
-                        scaleSize(16),
-                        scaleSize(16),
-                        scaleSize(80), // Extra padding for sticky button
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Description Card
-                            _buildSectionCard(
-                              title: 'description'.tr(),
-                              icon: Icons.person,
-                              child: TextFormField(
-                                controller: _descriptionController,
-                                maxLines: 4,
-                                maxLength: 500,
-                                decoration: InputDecoration(
-                                  hintText: 'descriptionHint'.tr(),
-                                  border: const OutlineInputBorder(),
-                                  filled: true,
-                                  fillColor: context.colorScheme.surfaceContainer,
-                                  suffixIcon: _descriptionController.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear, size: 20),
-                                          onPressed: () {
-                                            setState(() => _descriptionController.clear());
-                                          },
-                                        )
-                                      : null,
-                                ),
-                                style: scaledTextStyle(fontSize: 14),
-                                onChanged: (_) => setState(() {}),
-                              ),
-                            ),
-
-                            ScaledSizedBox(height: 20),
-
-                            // City Autocomplete Card
-                            _buildSectionCard(
-                              title: 'city'.tr(),
-                              icon: Icons.location_city,
-                              child: TypeAheadField<Map<String, dynamic>>(
-                                controller: _cityController,
-                                suggestionsCallback: _searchCities,
-                                builder: (context, controller, focusNode) {
-                                  return TextFormField(
-                                    controller: controller,
-                                    focusNode: focusNode,
-                                    decoration: InputDecoration(
-                                      hintText: 'cityHint'.tr(),
-                                      prefixIcon: const Icon(Icons.search),
-                                      border: const OutlineInputBorder(),
-                                      filled: true,
-                                      fillColor: context.colorScheme.surfaceContainer,
-                                      suffixIcon: _cityController.text.isNotEmpty
-                                          ? IconButton(
-                                              icon: const Icon(Icons.clear, size: 20),
-                                              onPressed: () {
-                                                setState(() {
-                                                  _cityController.clear();
-                                                  _selectedLocation = null;
-                                                });
-                                              },
-                                            )
-                                          : null,
-                                    ),
-                                    style: scaledTextStyle(fontSize: 14),
-                                    onChanged: (_) => setState(() {}),
-                                  );
-                                },
-                                hideOnEmpty: true,
-                                hideOnLoading: false,
-                                hideOnSelect: true,
-                                hideOnUnfocus: true,
-                                hideOnError: true,
-                                itemBuilder: (context, city) {
-                                  final name = city['display_name'] as String;
-                                  return ListTile(
-                                    leading: const Icon(Icons.location_on),
-                                    title: Text(name, style: scaledTextStyle(fontSize: 13)),
-                                  );
-                                },
-                                onSelected: (city) {
-                                  _cityController.text =
-                                      (city['address']?['city'] ??
-                                          city['address']?['town'] ??
-                                          city['address']?['village'] ??
-                                          city['name']) ??
-                                      '';
-                                  _onCitySelected(city);
-                                  // Unfocus to prevent auto-refocus after dialog close
-                                  FocusScope.of(context).unfocus();
-                                },
-                              ),
-                            ),
-
-                            ScaledSizedBox(height: 20),
-
-                            // Map Card
-                            _buildSectionCard(
-                              title: 'geoCoordinates'.tr(),
-                              icon: Icons.map,
-                              tooltip: 'geoCoordinatesHelp'.tr(),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    height: scaleSize(200),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.grey.shade300),
-                                    ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: FlutterMap(
-                                      mapController: _mapController,
-                                      options: MapOptions(
-                                        initialCenter: _selectedLocation ?? LatLng(48.8566, 2.3522), // Paris by default
-                                        initialZoom: 5.0,
-                                        onTap: (_, latLng) {
-                                          setState(() {
-                                            _selectedLocation = latLng;
-                                          });
-                                        },
-                                      ),
-                                      children: [
-                                        TileLayer(
-                                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                          userAgentPackageName: 'fr.axiomteam.gecko',
-                                        ),
-                                        if (_selectedLocation != null)
-                                          MarkerLayer(
-                                            markers: [
-                                              Marker(
-                                                point: _selectedLocation!,
-                                                width: scaleSize(40),
-                                                height: scaleSize(40),
-                                                child: Icon(
-                                                  Icons.location_on,
-                                                  color: Theme.of(context).colorScheme.primary,
-                                                  size: scaleSize(40),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  ScaledSizedBox(height: 8),
-                                  if (_selectedLocation != null)
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          '${'latitude'.tr()}: ${_selectedLocation!.latitude.toStringAsFixed(4)}',
-                                          style: scaledTextStyle(fontSize: 12, color: Colors.grey.shade700),
-                                        ),
-                                        Text(
-                                          '${'longitude'.tr()}: ${_selectedLocation!.longitude.toStringAsFixed(4)}',
-                                          style: scaledTextStyle(fontSize: 12, color: Colors.grey.shade700),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.clear, size: 20),
-                                          onPressed: () => setState(() => _selectedLocation = null),
-                                          tooltip: 'Clear location',
-                                        ),
-                                      ],
-                                    ),
-                                ],
-                              ),
-                            ),
-
-                            ScaledSizedBox(height: 20),
-
-                            // Social Networks Card
-                            _buildSectionCard(
-                              title: 'socialNetworks'.tr(),
-                              icon: Icons.share,
-                              child: Column(
-                                children: [
-                                  ..._socials.asMap().entries.map((entry) {
-                                    final index = entry.key;
-                                    final social = entry.value;
-                                    return Padding(
-                                      padding: EdgeInsets.only(bottom: scaleSize(8)),
-                                      child: Container(
-                                        padding: EdgeInsets.all(scaleSize(12)),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(_getSocialIcon(social.type), size: scaleSize(20)),
-                                            ScaledSizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    social.type,
-                                                    style: scaledTextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                                  ),
-                                                  Text(
-                                                    social.url,
-                                                    style: scaledTextStyle(fontSize: 11, color: Colors.grey.shade700),
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            IconButton(
-                                              icon: Icon(Icons.delete, color: Colors.red.shade400, size: scaleSize(20)),
-                                              onPressed: () => _removeSocial(index),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                  ScaledSizedBox(height: 8),
-                                  OutlinedButton.icon(
-                                    onPressed: _showAddSocialDialog,
-                                    icon: const Icon(Icons.add),
-                                    label: Text('addSocialNetwork'.tr()),
-                                    style: OutlinedButton.styleFrom(minimumSize: Size(double.infinity, scaleSize(44))),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            ScaledSizedBox(height: 20),
-
-                            // Tags Card
-                            _buildSectionCard(
-                              title: 'tags'.tr(),
-                              icon: Icons.label,
-                              child: Column(
-                                children: [
-                                  if (_tags.isNotEmpty)
-                                    Wrap(
-                                      spacing: 8,
-                                      runSpacing: 8,
-                                      children: _tags.map((tag) {
-                                        return Chip(
-                                          label: Text(tag, style: scaledTextStyle(fontSize: 12)),
-                                          deleteIcon: Icon(Icons.close, size: scaleSize(18)),
-                                          onDeleted: () => _removeTag(tag),
-                                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ScaledSizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextFormField(
-                                          controller: _tagController,
-                                          decoration: InputDecoration(
-                                            hintText: 'tagHint'.tr(),
-                                            border: const OutlineInputBorder(),
-                                            filled: true,
-                                            fillColor: context.colorScheme.surfaceContainer,
-                                          ),
-                                          style: scaledTextStyle(fontSize: 14),
-                                          onFieldSubmitted: (_) => _addTag(),
-                                        ),
-                                      ),
-                                      ScaledSizedBox(width: 8),
-                                      IconButton(
-                                        icon: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
-                                        iconSize: scaleSize(32),
-                                        onPressed: _addTag,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Sticky Save Button
-                  Container(
-                    padding: EdgeInsets.all(scaleSize(16)),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          offset: const Offset(0, -2),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: scaleSize(50),
-                        child: ElevatedButton(
-                          onPressed: _isSaving ? null : _saveProfile,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: _isSaving
-                              ? SizedBox(
-                                  width: scaleSize(20),
-                                  height: scaleSize(20),
-                                  child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                )
-                              : Text(
-                                  'saveProfile'.tr(),
-                                  style: scaledTextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      body: body,
     );
   }
 

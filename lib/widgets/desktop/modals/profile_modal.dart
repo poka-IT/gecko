@@ -6,10 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/desktop/modals/activity_modal.dart';
@@ -98,6 +101,27 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: widget.address));
                   SnackbarService.showAddressCopied(context);
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final isContact = ref.watch(isContactProvider(widget.address));
+                  return _buildActionTile(
+                    context,
+                    icon: isContact ? Icons.add_reaction_rounded : Icons.add_reaction_outlined,
+                    label: isContact ? 'removeContact'.tr() : 'addContact'.tr(),
+                    onTap: () async {
+                      G1WalletsList? existing;
+                      g1WalletsBox.toMap().forEach((key, value) {
+                        if (key == widget.address) existing = value;
+                      });
+                      final toggleContact = ref.read(toggleContactProvider);
+                      await toggleContact(existing ?? G1WalletsList(address: widget.address), context);
+                    },
+                  );
                 },
               ),
             ),

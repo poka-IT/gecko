@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/identity_display_item.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -37,14 +37,10 @@ class IdentityTile extends StatelessWidget {
         child: InkWell(
           onTap: identity.relevantAccountId != null
               ? () {
-                  Navigator.push(
+                  NavigationService.openProfile(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfileViewScreen(
-                        address: identity.relevantAccountId!,
-                        username: identity.name.isNotEmpty ? identity.name : null,
-                      ),
-                    ),
+                    address: identity.relevantAccountId!,
+                    username: identity.name.isNotEmpty ? identity.name : null,
                   );
                 }
               : null,

@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/certs_list.dart';
-import 'package:gecko/widgets/page_route_no_transition.dart';
 
 class CertTile extends StatelessWidget {
   const CertTile({super.key, required this.listCerts});
@@ -37,12 +36,10 @@ class CertTile extends StatelessWidget {
             key: keyTransaction(newKey),
             onTap: cert.address.isNotEmpty
                 ? () {
-                    Navigator.push(
+                    NavigationService.openProfile(
                       context,
-                      PageNoTransit(
-                        builder: (context) =>
-                            ProfileViewScreen(address: cert.address, username: cert.name.isNotEmpty ? cert.name : null),
-                      ),
+                      address: cert.address,
+                      username: cert.name.isNotEmpty ? cert.name : null,
                     );
                   }
                 : null,

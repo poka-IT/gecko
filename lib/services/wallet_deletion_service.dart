@@ -30,8 +30,12 @@ class WalletDeletionService {
   /// - 2: User cancelled
   /// Requires a [ref] to access providers from the widget tree.
   static Future<int> deleteWallet(BuildContext context, WalletEntity wallet, {required riverpod.WidgetRef ref}) async {
-    // Find destination wallet: first wallet that isn't the one being deleted
-    final wallets = ref.read(walletsListProvider).wallets;
+    // Find destination wallet in the SAME safe as the wallet being deleted
+    // (not the active safe, which may differ in desktop mode)
+    final safeNumber = wallet.safe.target?.number;
+    final wallets = safeNumber != null
+        ? ref.read(walletServiceProvider).getWalletDataList(safeNumber)
+        : ref.read(walletsListProvider).wallets;
     final destinationWallet = wallets.where((w) => w.address != wallet.address).firstOrNull;
     final isLastWalletInSafe = destinationWallet == null;
 

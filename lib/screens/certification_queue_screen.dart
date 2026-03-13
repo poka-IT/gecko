@@ -10,15 +10,13 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/certify/certification_transaction_helper.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
-import 'package:gecko/widgets/desktop/desktop_utils.dart';
-import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
 
 class CertificationQueueScreen extends ConsumerStatefulWidget {
   const CertificationQueueScreen({super.key, required this.issuerAddress, this.embeddedMode = false});
@@ -239,16 +237,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
           leading: _buildPositionBadge(cert.position, isReady, isFirst: isFirst),
           title: GestureDetector(
             onTap: () {
-              if (widget.embeddedMode && isDesktopLayout(context)) {
-                showDesktopProfileModal(context, address: cert.receiverAddress, username: displayName);
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileViewScreen(address: cert.receiverAddress, username: displayName),
-                  ),
-                );
-              }
+              NavigationService.openProfile(context, address: cert.receiverAddress, username: displayName);
             },
             child: Text(
               displayName,

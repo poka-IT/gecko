@@ -7,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/security_providers.dart';
+import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -114,16 +115,40 @@ class _ShowSeedContent extends ConsumerWidget {
                   const SizedBox(height: 24),
                   MnemonicDisplayWidget(mnemonicWords: mnemonicWords, isLoading: false, useWordAsKey: true),
                   const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: context.colorScheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 1,
-                    ),
-                    onPressed: () => SnackbarService.copyMnemonicToClipboard(context, displayMnemonic),
-                    icon: const Icon(Icons.copy, size: 18),
-                    label: Text('copy'.tr(), style: scaledTextStyle(fontSize: 13, color: Colors.white)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: context.colorScheme.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 1,
+                        ),
+                        onPressed: () => SnackbarService.copyMnemonicToClipboard(context, displayMnemonic),
+                        icon: const Icon(Icons.copy, size: 18),
+                        label: Text('copy'.tr(), style: scaledTextStyle(fontSize: 13, color: Colors.white)),
+                      ),
+                      const SizedBox(width: 16),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: context.colorScheme.onSurface,
+                          backgroundColor: context.colorScheme.surfaceContainerHigh,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 1,
+                        ),
+                        onPressed: () {
+                          final navigator = Navigator.of(context);
+                          navigator.pop(); // Close the seed modal first
+                          navigator.pushNamed(
+                            RouteNames.printWallet,
+                            arguments: PrintWalletArguments(sentence: displayMnemonic),
+                          );
+                        },
+                        icon: const Icon(Icons.print_rounded, size: 18),
+                        label: Text('print'.tr(), style: scaledTextStyle(fontSize: 13)),
+                      ),
+                    ],
                   ),
                   if (!isEnglish) ...[
                     const SizedBox(height: 20),

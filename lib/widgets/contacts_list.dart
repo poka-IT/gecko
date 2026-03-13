@@ -10,7 +10,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 
 import 'package:gecko/providers/profile_view_providers.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -175,16 +175,10 @@ class ContactsList extends ConsumerWidget {
                             isThreeLine: false,
                             onLongPress: () => _showContactMenu(context, ref, g1Wallet),
                             onTap: () {
-                              Navigator.push(
+                              NavigationService.openProfile(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return ProfileViewScreen(
-                                      address: g1Wallet.address,
-                                      username: ref.read(squidServiceProvider).walletNameIndexer[g1Wallet.address],
-                                    );
-                                  },
-                                ),
+                                address: g1Wallet.address,
+                                username: ref.read(squidServiceProvider).walletNameIndexer[g1Wallet.address],
                               );
                             },
                           ),

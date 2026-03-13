@@ -10,7 +10,7 @@ import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/screens/my_contacts.dart';
 import 'package:gecko/screens/network_activity_screen.dart';
 import 'package:gecko/screens/search_result.dart';
-import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 
@@ -186,21 +186,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             : searchState.canPasteAddress
                             ? () async {
                                 _isNavigating = true; // Set flag before navigation
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) =>
-                                        ProfileViewScreen(address: searchState.pastedAddress, username: null),
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                      // Fast fade transition to reduce visual jarring
-                                      return FadeTransition(
-                                        opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                                        child: child,
-                                      );
-                                    },
-                                    transitionDuration: const Duration(milliseconds: 200),
-                                  ),
-                                );
+                                NavigationService.openProfile(context, address: searchState.pastedAddress);
                               }
                             : null,
                         child: Text(

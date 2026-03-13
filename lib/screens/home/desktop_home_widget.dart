@@ -185,7 +185,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       barrierDismissible: true,
       barrierColor: Colors.transparent,
       transitionDuration: Duration.zero,
-      pageBuilder: (context, _, __) => const GlobalSearchPaletteDialog(),
+      pageBuilder: (context, animation, secondaryAnimation) => const GlobalSearchPaletteDialog(),
     ).whenComplete(() {
       _isSearchPaletteOpen = false;
     });
@@ -206,8 +206,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       return KeyEventResult.handled;
     }
 
-    // K — open global search palette
-    if (event.logicalKey == LogicalKeyboardKey.keyK) {
+    // K or F — open global search palette
+    if (event.logicalKey == LogicalKeyboardKey.keyK || event.logicalKey == LogicalKeyboardKey.keyF) {
       _openGlobalSearchPalette();
       return KeyEventResult.handled;
     }
@@ -1336,15 +1336,9 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               fontWeight: FontWeight.w600,
             ),
           ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            switchInCurve: Curves.easeOut,
-            switchOutCurve: Curves.easeIn,
-            child: Text(
-              detail.value,
-              key: ValueKey('${detail.label}_${detail.value}'),
-              style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface, fontWeight: FontWeight.w800),
-            ),
+          Text(
+            detail.value,
+            style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface, fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -1922,6 +1916,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   Widget _buildGlassCard(BuildContext context, {required Widget child, EdgeInsets? padding}) {
     return Container(
+      clipBehavior: Clip.hardEdge,
       padding: padding ?? const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(

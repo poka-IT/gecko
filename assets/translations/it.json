@@ -914,5 +914,6 @@
     "keyboardShortcutClose": "Chiudi / deseleziona",
     "keyboardShortcutNavigateResults": "Naviga nei risultati",
     "keyboardShortcutOpenResult": "Apri risultato selezionato",
-    "keyboardShortcutHelp": "Mostra questo aiuto"
+    "keyboardShortcutHelp": "Mostra questo aiuto",
+    "keyboardShortcutDisco": "Modalità disco"
 }

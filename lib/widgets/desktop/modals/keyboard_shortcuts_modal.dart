@@ -1,7 +1,4 @@
-import 'dart:io' show Platform;
-
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
@@ -20,18 +17,14 @@ Future<void> showKeyboardShortcutsModal(BuildContext context) {
 class _KeyboardShortcutsContent extends StatelessWidget {
   const _KeyboardShortcutsContent();
 
-  String get _metaKey {
-    if (!kIsWeb && Platform.isMacOS) return '⌘';
-    return 'Ctrl';
-  }
-
   @override
   Widget build(BuildContext context) {
     final groups = [
       _ShortcutGroup(
         title: 'keyboardShortcutsNavigation'.tr(),
         shortcuts: [
-          _ShortcutEntry(keys: [_metaKey, 'K'], description: 'keyboardShortcutSearch'.tr()),
+          _ShortcutEntry(keys: ['K'], description: 'keyboardShortcutSearch'.tr()),
+          _ShortcutEntry(keys: ['F'], description: 'keyboardShortcutSearch'.tr()),
           _ShortcutEntry(keys: ['/'], description: 'keyboardShortcutFocusSearch'.tr()),
           _ShortcutEntry(keys: ['C'], description: 'keyboardShortcutContacts'.tr()),
           _ShortcutEntry(keys: ['Esc'], description: 'keyboardShortcutClose'.tr()),
@@ -48,6 +41,7 @@ class _KeyboardShortcutsContent extends StatelessWidget {
         title: 'keyboardShortcutsOther'.tr(),
         shortcuts: [
           _ShortcutEntry(keys: ['H'], description: 'keyboardShortcutHelp'.tr()),
+          _ShortcutEntry(keys: ['←', '←', '→', '→', '→'], description: 'keyboardShortcutDisco'.tr(), isSequence: true),
         ],
       ),
     ];
@@ -99,14 +93,16 @@ class _KeyboardShortcutsContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               for (int i = 0; i < shortcut.keys.length; i++) ...[
-                if (i > 0)
+                if (i > 0 && !shortcut.isSequence)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
                       '+',
                       style: TextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.35)),
                     ),
-                  ),
+                  )
+                else if (i > 0)
+                  const SizedBox(width: 4),
                 _buildKeyBadge(context, shortcut.keys[i]),
               ],
             ],
@@ -150,6 +146,7 @@ class _ShortcutGroup {
 class _ShortcutEntry {
   final List<String> keys;
   final String description;
+  final bool isSequence;
 
-  const _ShortcutEntry({required this.keys, required this.description});
+  const _ShortcutEntry({required this.keys, required this.description, this.isSequence = false});
 }

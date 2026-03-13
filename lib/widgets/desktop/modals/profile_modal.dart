@@ -198,31 +198,76 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
       }
     });
 
+    // No cert area if we have no member wallets
+    final memberWallets = allMemberWalletsAsync.asData?.value;
+    final hasMemberWallet = memberWallets != null && memberWallets.isNotEmpty;
+
     final certStateAsync = ref.watch(certStateProvider(widget.address));
+    final certState = certStateAsync.asData?.value;
+    final isLoading = certState == null && !certStateAsync.hasError;
+    final isNone = certState != null && certState.status == CertStatus.none;
 
-    return certStateAsync.when(
-      data: (certState) {
-        if (certState == null || certState.status == CertStatus.none) {
-          return const SizedBox.shrink();
-        }
+    // AnimatedSize smoothly handles height transitions (loading→content, content→none)
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: isNone || certStateAsync.hasError || !hasMemberWallet
+          ? const SizedBox.shrink()
+          : AnimatedSwitcher(
+              duration: const Duration(milliseconds: 250),
+              child: isLoading
+                  ? _buildCertPlaceholder(context)
+                  : Container(
+                      key: ValueKey('cert_${certState!.status}'),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.06)),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildCertWalletDropdown(ref),
+                          CertStateWidget(certState: certState, address: widget.address),
+                        ],
+                      ),
+                    ),
+            ),
+    );
+  }
 
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.06)),
+  Widget _buildCertPlaceholder(BuildContext context) {
+    return Container(
+      key: const ValueKey('cert_loading'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.04)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: context.colorScheme.onSurface.withValues(alpha: 0.06),
+              shape: BoxShape.circle,
+            ),
           ),
-          child: Column(
-            children: [
-              _buildCertWalletDropdown(ref),
-              CertStateWidget(certState: certState, address: widget.address),
-            ],
+          const SizedBox(width: 12),
+          Container(
+            height: 14,
+            width: 120,
+            decoration: BoxDecoration(
+              color: context.colorScheme.onSurface.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(7),
+            ),
           ),
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
+        ],
+      ),
     );
   }
 
@@ -231,58 +276,54 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
     final identityWalletsAsync = ref.watch(allSafesIdentityWalletsProvider);
     final selectedAddress = ref.watch(selectedCertificationWalletProvider);
 
-    return identityWalletsAsync.when(
-      data: (wallets) {
-        if (wallets.length <= 1) return const SizedBox.shrink();
+    // Keep last known wallets to avoid flicker during refresh
+    final wallets = identityWalletsAsync.asData?.value;
+    if (wallets == null || wallets.length <= 1) return const SizedBox.shrink();
 
-        if (selectedAddress == null && wallets.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ref.read(selectedCertificationWalletProvider.notifier).set(wallets.first.address);
-          });
-        }
+    if (selectedAddress == null && wallets.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedCertificationWalletProvider.notifier).set(wallets.first.address);
+      });
+    }
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.15)),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.account_circle, size: 16, color: context.colorScheme.primary),
+            const SizedBox(width: 6),
+            DropdownButton<String>(
+              value: selectedAddress ?? wallets.first.address,
+              isDense: true,
+              underline: const SizedBox.shrink(),
+              style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface),
+              dropdownColor: context.colorScheme.surfaceContainer,
+              items: wallets.map((w) {
+                return DropdownMenuItem<String>(
+                  value: w.address,
+                  child: Text(
+                    WalletNameService.isDefault(w.name)
+                        ? getShortPubkey(w.address)
+                        : (w.name ?? getShortPubkey(w.address)),
+                    style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface),
+                  ),
+                );
+              }).toList(),
+              onChanged: (v) {
+                if (v != null) ref.read(selectedCertificationWalletProvider.notifier).set(v);
+              },
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.account_circle, size: 16, color: context.colorScheme.primary),
-                const SizedBox(width: 6),
-                DropdownButton<String>(
-                  value: selectedAddress ?? wallets.first.address,
-                  isDense: true,
-                  underline: const SizedBox.shrink(),
-                  style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface),
-                  dropdownColor: context.colorScheme.surfaceContainer,
-                  items: wallets.map((w) {
-                    return DropdownMenuItem<String>(
-                      value: w.address,
-                      child: Text(
-                        WalletNameService.isDefault(w.name)
-                            ? getShortPubkey(w.address)
-                            : (w.name ?? getShortPubkey(w.address)),
-                        style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (v) {
-                    if (v != null) ref.read(selectedCertificationWalletProvider.notifier).set(v);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, _) => const SizedBox.shrink(),
+          ],
+        ),
+      ),
     );
   }
 

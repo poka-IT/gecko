@@ -907,5 +907,6 @@
     "keyboardShortcutClose": "Fermer / défocaliser",
     "keyboardShortcutNavigateResults": "Naviguer dans les résultats",
     "keyboardShortcutOpenResult": "Ouvrir le résultat sélectionné",
-    "keyboardShortcutHelp": "Afficher cette aide"
+    "keyboardShortcutHelp": "Afficher cette aide",
+    "keyboardShortcutDisco": "Mode disco"
 }

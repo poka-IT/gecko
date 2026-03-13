@@ -184,7 +184,8 @@ final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
 
   final squidStatus = ref.watch(squidConnectionStatusProvider);
   if (squidStatus != d.ConnectionStatus.connected) {
-    return const NetworkTotals.empty();
+    // Return cached result if available, otherwise empty
+    return _lastTotalsResult ?? const NetworkTotals.empty();
   }
 
   const document = r'''

@@ -887,5 +887,6 @@
     "keyboardShortcutClose": "Schließen / Fokus entfernen",
     "keyboardShortcutNavigateResults": "Ergebnisse durchblättern",
     "keyboardShortcutOpenResult": "Ausgewähltes Ergebnis öffnen",
-    "keyboardShortcutHelp": "Diese Hilfe anzeigen"
+    "keyboardShortcutHelp": "Diese Hilfe anzeigen",
+    "keyboardShortcutDisco": "Disco-Modus"
 }

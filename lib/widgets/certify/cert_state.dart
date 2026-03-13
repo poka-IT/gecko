@@ -22,26 +22,21 @@ class CertStateWidget extends ConsumerWidget {
     // Get the effective certification wallet (issuer)
     final issuerWalletAsync = ref.watch(effectiveCertificationWalletProvider);
 
-    return issuerWalletAsync.when(
-      data: (issuerWallet) {
-        if (issuerWallet == null) {
-          return _buildLegacyWidget(context, ref);
-        }
+    // Keep last known data to avoid flicker during provider refresh
+    final issuerWallet = issuerWalletAsync.asData?.value;
+    if (issuerWallet == null) {
+      return _buildLegacyWidget(context, ref);
+    }
 
-        final issuerAddress = issuerWallet.address;
-        final buttonStateAsync = ref.watch(
-          certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: address)),
-        );
+    final issuerAddress = issuerWallet.address;
+    final buttonStateAsync = ref.watch(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: address)));
 
-        return buttonStateAsync.when(
-          data: (buttonState) => _buildFromButtonState(context, ref, buttonState, issuerAddress),
-          loading: () => _buildLegacyWidget(context, ref),
-          error: (_, _) => _buildLegacyWidget(context, ref),
-        );
-      },
-      loading: () => _buildLegacyWidget(context, ref),
-      error: (_, _) => _buildLegacyWidget(context, ref),
-    );
+    final buttonState = buttonStateAsync.asData?.value;
+    if (buttonState == null) {
+      return _buildLegacyWidget(context, ref);
+    }
+
+    return _buildFromButtonState(context, ref, buttonState, issuerAddress);
   }
 
   Widget _buildFromButtonState(BuildContext context, WidgetRef ref, CertButtonState buttonState, String issuerAddress) {
@@ -144,17 +139,11 @@ class CertStateWidget extends ConsumerWidget {
     final certExistsAsync = ref.watch(certificationExistsProvider(address));
     final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
 
-    return certExistsAsync.when(
-      data: (certExists) {
-        return idtyStatusAsync.when(
-          data: (idtyStatus) => CertifyButton(address, isRenewal: certExists, idtyStatus: idtyStatus),
-          loading: () => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
-          error: (_, _) => CertifyButton(address, isRenewal: certExists, idtyStatus: IdtyStatus.unknown),
-        );
-      },
-      loading: () => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
-      error: (_, _) => CertifyButton(address, isRenewal: false, idtyStatus: IdtyStatus.unknown),
-    );
+    // Use last known values to avoid flicker during refresh
+    final certExists = certExistsAsync.asData?.value ?? false;
+    final idtyStatus = idtyStatusAsync.asData?.value ?? IdtyStatus.unknown;
+
+    return CertifyButton(address, isRenewal: certExists, idtyStatus: idtyStatus);
   }
 
   String formatDuration(Duration duration) {

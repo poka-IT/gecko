@@ -913,5 +913,6 @@
     "keyboardShortcutClose": "Close / unfocus",
     "keyboardShortcutNavigateResults": "Navigate results",
     "keyboardShortcutOpenResult": "Open selected result",
-    "keyboardShortcutHelp": "Show this help"
+    "keyboardShortcutHelp": "Show this help",
+    "keyboardShortcutDisco": "Disco mode"
 }

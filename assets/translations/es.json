@@ -913,5 +913,6 @@
     "keyboardShortcutClose": "Cerrar / desenfocar",
     "keyboardShortcutNavigateResults": "Navegar por los resultados",
     "keyboardShortcutOpenResult": "Abrir resultado seleccionado",
-    "keyboardShortcutHelp": "Mostrar esta ayuda"
+    "keyboardShortcutHelp": "Mostrar esta ayuda",
+    "keyboardShortcutDisco": "Modo disco"
 }

@@ -34,9 +34,10 @@ class _GlobalSearchShortcutScopeState extends State<GlobalSearchShortcutScope> {
       return false;
     }
 
+    final hasModifier = HardwareKeyboard.instance.isMetaPressed || HardwareKeyboard.instance.isControlPressed;
     final isSearchShortcut =
-        event.logicalKey == LogicalKeyboardKey.keyK &&
-        (HardwareKeyboard.instance.isMetaPressed || HardwareKeyboard.instance.isControlPressed);
+        (event.logicalKey == LogicalKeyboardKey.keyK && hasModifier) ||
+        (event.logicalKey == LogicalKeyboardKey.keyF && hasModifier);
 
     if (isSearchShortcut) {
       _openPalette();

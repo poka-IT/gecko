@@ -10,6 +10,7 @@ import 'package:gecko/services/sentry_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:gecko/widgets/desktop/modals/qr_scanner_modal.dart';
 
 /// Service for handling QR code scanning operations.
 ///
@@ -220,79 +221,21 @@ class QrScannerService {
         return QrScanResult.error('Scanner failed to initialize: ${e.toString()}');
       }
     } else {
-      // For desktop platforms, use the mobile_scanner plugin
-      final controller = MobileScannerController();
-      QrScanResult? qrResult;
-      controller.barcodes.listen((event) {
-        if (event.barcodes.isNotEmpty && event.barcodes.first.rawValue != null) {
-          controller.pause();
-          qrResult = _processScannedContent(event.barcodes.first.rawValue!);
-          if (qrResult?.isSuccess == true) {
-            controller.stop();
-            // ignore: use_build_context_synchronously
-            Navigator.pop(homeContext);
-          }
-        } else {
-          controller.start();
-        }
-      });
-
+      // For desktop platforms, use a compact modal with the camera feed
       // ignore: use_build_context_synchronously
-      await Navigator.push(
-        // ignore: use_build_context_synchronously
-        homeContext,
-        MaterialPageRoute(
-          builder: (context) => MobileScanner(
-            controller: controller,
-            overlayBuilder: (context, constraints) => Column(
-              children: [
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const SizedBox(width: 20),
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(25),
-                          onTap: () {
-                            Navigator.pop(homeContext);
-                          },
-                          onHover: (isHovering) {
-                            // Hover effect handled by InkWell
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(25),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
-                            ),
-                            child: Icon(Icons.arrow_back, color: Colors.white.withValues(alpha: 0.7), size: 24),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      final result = await showDesktopQrScannerModal(homeContext);
 
-      return qrResult ?? QrScanResult.cancelled();
+      if (result == null || result.isCancelled) {
+        return QrScanResult.cancelled();
+      }
+
+      // The modal returns a raw QrScanResult.success with the unvalidated content.
+      // Process it through our address/pubkey validation.
+      if (result.isSuccess && result.address != null) {
+        return _processScannedContent(result.address!);
+      }
+
+      return result;
     }
   }
 

@@ -642,6 +642,7 @@
     "pinSecurityUnlocksIn": "",
     "pinSecurityWarningMessage": "",
     "pinSecurityWarningTitle": "",
+    "pointCameraAtQrCode": "Richten Sie Ihre Kamera auf einen QR-Code",
     "printMyMnemonic": "Meine Wiederherstellungsphrase ausdrucken",
     "profileDeleteFailed": "Fehler beim Löschen des Profils",
     "profileDeleted": "Profil erfolgreich gelöscht",

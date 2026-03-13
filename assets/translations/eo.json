@@ -657,6 +657,7 @@
     "pinSecurityUnlocksIn": "Malŝloso post: {}",
     "pinSecurityTooManyAttempts": "Tro da malĝustaj provoj. Reprovu post {}.",
     "pinSecurityWarningTitle": "⚠️ Averto pri sekureco",
+    "pointCameraAtQrCode": "Direktu vian kameron al QR-kodo",
     "pinSecurityWarningMessage": "Restas al vi {} provoj antaŭ ol tiu ĉi kofro estos definitive forigita el tiu ĉi aparato.",
     "pinSecurityFinalWarning": "🚨 LASTA AVERTO: restas nur {} provo(j)!",
     "pinSecuritySafeDeleted": "Kofro forigita",

@@ -667,6 +667,7 @@
     "pinSecurityUnlocksIn": "Desbloqueo en: {}",
     "pinSecurityWarningMessage": "Te quedan {} intentos antes de que esta bóveda sea eliminada definitivamente de este dispositivo.",
     "pinSecurityWarningTitle": "⚠️ Advertencia de seguridad",
+    "pointCameraAtQrCode": "Apunte su cámara a un código QR",
     "printMyMnemonic": "Imprimir mi frase semilla",
     "profileDeleteFailed": "Error al eliminar el perfil",
     "profileDeleted": "Perfil eliminado con éxito",

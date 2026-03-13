@@ -662,6 +662,7 @@
     "pinSecurityUnlocksIn": "Unlocks in: {}",
     "pinSecurityWarningMessage": "You have {} attempts remaining before this safe is permanently deleted from this device.",
     "pinSecurityWarningTitle": "⚠️ Security Warning",
+    "pointCameraAtQrCode": "Point your camera at a QR code",
     "printMyMnemonic": "Print my mnemonic sentence",
     "profileDeleteFailed": "Failed to delete profile",
     "profileDeleted": "Profile successfully deleted",

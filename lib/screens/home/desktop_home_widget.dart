@@ -381,20 +381,25 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                     builder: (context, constraints) {
                       final canShowContacts = constraints.maxWidth >= 1200;
                       final showContactsColumn = canShowContacts && _isContactsPanelOpen;
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (showContactsColumn) ...[
-                            Expanded(flex: 3, child: _buildContactsColumn(context, ref)),
-                            const SizedBox(width: 18),
-                          ],
-                          Expanded(
-                            flex: showContactsColumn ? 5 : 11,
-                            child: _buildLeftPanel(context, ref, canShowContacts: canShowContacts),
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1600),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (showContactsColumn) ...[
+                                Expanded(flex: 3, child: _buildContactsColumn(context, ref)),
+                                const SizedBox(width: 18),
+                              ],
+                              Expanded(
+                                flex: showContactsColumn ? 5 : 11,
+                                child: _buildLeftPanel(context, ref, canShowContacts: canShowContacts),
+                              ),
+                              const SizedBox(width: 18),
+                              Expanded(flex: showContactsColumn ? 4 : 9, child: _buildActivityPanel(context, ref)),
+                            ],
                           ),
-                          const SizedBox(width: 18),
-                          Expanded(flex: showContactsColumn ? 4 : 9, child: _buildActivityPanel(context, ref)),
-                        ],
+                        ),
                       );
                     },
                   ),

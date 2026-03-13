@@ -668,6 +668,7 @@
     "pinSecurityUnlocksIn": "Si sblocca tra: {}",
     "pinSecurityWarningMessage": "Ti rimangono {} tentativi prima che questa cassaforte venga eliminata definitivamente da questo dispositivo.",
     "pinSecurityWarningTitle": "⚠️ Avviso di sicurezza",
+    "pointCameraAtQrCode": "Puntare la fotocamera verso un codice QR",
     "printMyMnemonic": "Stampare la mia frase di ripristino",
     "profileDeleteFailed": "Errore nell'eliminazione del profilo",
     "profileDeleted": "Profilo eliminato con successo",

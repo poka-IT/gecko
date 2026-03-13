@@ -677,6 +677,7 @@
     "pinSecurityUnlocksIn": "Déverrouillage dans : {}",
     "pinSecurityTooManyAttempts": "Trop de tentatives incorrectes. Réessayez dans {}.",
     "pinSecurityWarningTitle": "⚠️ Avertissement de sécurité",
+    "pointCameraAtQrCode": "Pointez votre caméra vers un QR code",
     "pinSecurityWarningMessage": "Il vous reste {} tentatives avant que ce coffre soit définitivement supprimé de cet appareil.",
     "pinSecurityFinalWarning": "🚨 DERNIER AVERTISSEMENT : Plus que {} tentative(s) !",
     "pinSecuritySafeDeleted": "Coffre supprimé",

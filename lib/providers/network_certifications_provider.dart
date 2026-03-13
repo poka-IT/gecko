@@ -75,6 +75,7 @@ class NetworkCertificationsState {
 /// Notifier for managing network-wide certification activity
 class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState> {
   StreamSubscription<String?>? _networkCertificationsSubscription;
+  bool _isLoadingGuard = false;
 
   @override
   NetworkCertificationsState build() {
@@ -98,10 +99,14 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
       }
     });
 
-    // Start initial load asynchronously
+    // Only start initial load if Squid is already connected;
+    // otherwise the squidConnectionStatusProvider listener handles it.
     Future.microtask(() {
-      loadCertifications();
-      _subscribeToNetworkCertifications();
+      final status = ref.read(squidConnectionStatusProvider);
+      if (status == d.ConnectionStatus.connected) {
+        loadCertifications();
+        _subscribeToNetworkCertifications();
+      }
     });
 
     // Start with isLoading: true to avoid flash of "no data" before loading starts
@@ -198,11 +203,23 @@ class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState>
 
   /// Load the first page of network certifications
   Future<void> loadCertifications() async {
+    // Prevent concurrent loads
+    if (_isLoadingGuard) return;
+    _isLoadingGuard = true;
+
+    try {
+      await _loadCertificationsInner();
+    } finally {
+      _isLoadingGuard = false;
+    }
+  }
+
+  Future<void> _loadCertificationsInner() async {
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
 
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      state = state.copyWith(error: 'No network connection');
+      state = state.copyWith(isLoading: false, error: 'No network connection');
       return;
     }
 

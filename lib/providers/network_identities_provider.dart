@@ -75,6 +75,7 @@ class NetworkIdentitiesState {
 /// Notifier for managing network-wide identity activity
 class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
   StreamSubscription<String?>? _networkIdentitiesSubscription;
+  bool _isLoadingGuard = false;
 
   @override
   NetworkIdentitiesState build() {
@@ -98,9 +99,14 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
       }
     });
 
+    // Only start initial load if Squid is already connected;
+    // otherwise the squidConnectionStatusProvider listener handles it.
     Future.microtask(() {
-      loadIdentities();
-      _subscribeToNetworkIdentities();
+      final status = ref.read(squidConnectionStatusProvider);
+      if (status == d.ConnectionStatus.connected) {
+        loadIdentities();
+        _subscribeToNetworkIdentities();
+      }
     });
 
     // Start with isLoading: true to avoid flash of "no data" before loading starts
@@ -195,11 +201,23 @@ class NetworkIdentitiesNotifier extends Notifier<NetworkIdentitiesState> {
 
   /// Load the first page of network identities
   Future<void> loadIdentities() async {
+    // Prevent concurrent loads
+    if (_isLoadingGuard) return;
+    _isLoadingGuard = true;
+
+    try {
+      await _loadIdentitiesInner();
+    } finally {
+      _isLoadingGuard = false;
+    }
+  }
+
+  Future<void> _loadIdentitiesInner() async {
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
 
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      state = state.copyWith(error: 'No network connection');
+      state = state.copyWith(isLoading: false, error: 'No network connection');
       return;
     }
 

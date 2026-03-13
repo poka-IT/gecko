@@ -78,6 +78,7 @@ class NetworkActivityState {
 /// Notifier for managing network-wide transaction history with UD support
 class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
   StreamSubscription<String?>? _networkActivitySubscription;
+  bool _isLoadingGuard = false;
 
   @override
   NetworkActivityState build() {
@@ -107,10 +108,14 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
       }
     });
 
-    // Start initial load asynchronously
+    // Only start initial load if Squid is already connected;
+    // otherwise the squidConnectionStatusProvider listener handles it.
     Future.microtask(() {
-      loadTransactions();
-      _subscribeToNetworkActivity();
+      final status = ref.read(squidConnectionStatusProvider);
+      if (status == d.ConnectionStatus.connected) {
+        loadTransactions();
+        _subscribeToNetworkActivity();
+      }
     });
 
     // Start with isLoading: true to avoid flash of "no data" before loading starts
@@ -212,6 +217,18 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
 
   /// Load the first page of network transactions
   Future<void> loadTransactions() async {
+    // Prevent concurrent loads
+    if (_isLoadingGuard) return;
+    _isLoadingGuard = true;
+
+    try {
+      await _loadTransactionsInner();
+    } finally {
+      _isLoadingGuard = false;
+    }
+  }
+
+  Future<void> _loadTransactionsInner() async {
     // Check if we have Squid connection
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
 

@@ -45,8 +45,11 @@ import 'package:gecko/models/identity_display_item.dart';
 import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:gecko/widgets/desktop/modals/legacy_import_modal.dart';
 import 'package:gecko/widgets/desktop/modals/onboarding_modal.dart';
 import 'package:gecko/widgets/desktop/modals/restore_modal.dart';
+import 'package:gecko/screens/onBoarding/import_choice_screen.dart';
+import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/screens/home/test_wallet_button.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -2049,6 +2052,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                   style: scaledTextStyle(fontSize: 11, color: context.colorScheme.primary, fontWeight: FontWeight.w700),
                 ),
               ),
+              const SizedBox(width: 6),
+              _buildAddDerivationButton(context, ref),
             ],
           ),
           const SizedBox(height: 10),
@@ -2202,12 +2207,61 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
+  Widget _buildAddDerivationButton(BuildContext context, WidgetRef ref) {
+    final derivationState = ref.watch(derivationStateProvider);
+    final walletsState = ref.watch(walletsListProvider);
+
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: derivationState.isLoading
+              ? null
+              : () async {
+                  if (!await PinCodeService.askPinCode()) return;
+                  final lastNum = walletsState.wallets.isNotEmpty ? walletsState.wallets.last.number : -1;
+                  final name = WalletNameService.defaultN(lastNum + 2);
+                  await ref.read(walletActionsProvider.notifier).generateNewDerivation(name);
+                },
+          child: derivationState.isLoading
+              ? Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: context.colorScheme.primary),
+                )
+              : Icon(Icons.add_rounded, size: 18, color: context.colorScheme.primary),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSecondarySafeActions(BuildContext context, List<_DesktopSafeWalletGroup> groups) {
-    return _buildSecondaryActionButton(
-      context,
-      icon: Icons.tune_rounded,
-      label: 'manageSafe'.tr(),
-      onTap: () => _openSafeOptions(context),
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _buildSecondaryActionButton(
+          context,
+          icon: Icons.tune_rounded,
+          label: 'manageSafe'.tr(),
+          onTap: () => _openSafeOptions(context),
+        ),
+        _buildSecondaryActionButton(
+          context,
+          icon: Icons.add_circle_outline_rounded,
+          label: 'addNewSafe'.tr(),
+          onTap: () => showDesktopOnboardingModal(context),
+        ),
+        if (ImportChoiceScreen.enableLegacyLogin)
+          _buildSecondaryActionButton(
+            context,
+            icon: Icons.swap_horiz_rounded,
+            label: 'importLegacyAccount'.tr(),
+            onTap: () => showDesktopLegacyImportModal(context),
+          ),
+      ],
     );
   }
 
@@ -2229,7 +2283,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, size: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.72)),
               const SizedBox(width: 8),

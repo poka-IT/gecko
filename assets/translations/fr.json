@@ -30,6 +30,8 @@
     "fastAppDescription": "L'application de paiement {}\nplus rapide qu'un reptile du Vietnam",
     "createWallet": "Créer un portefeuille",
     "restoreWallet": "Restaurer mes portefeuilles",
+    "exploreNetwork": "Explorer le réseau",
+    "exploreNetworkDescription": "Rechercher des identités et voir l'activité",
     "parameters": "Paramètres",
     "chooseAnotherMnemonic": "Choisir une autre phrase",
     "iNotedMyMnemonic": "J'ai noté ma phrase",

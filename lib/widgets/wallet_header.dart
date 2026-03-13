@@ -14,6 +14,9 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/screens/certifications.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/certifications_modal.dart';
+import 'package:gecko/widgets/desktop/modals/cesium_profile_modal.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/utils/identity_utils.dart';
@@ -194,12 +197,18 @@ class WalletHeaderIdentitySection extends StatelessWidget {
     }
 
     return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        PageNoTransit(
-          builder: (context) => CertificationsScreen(address: address, username: identityName),
-        ),
-      ),
+      onTap: () {
+        if (isDesktopLayout(context)) {
+          showDesktopCertificationsModal(context, address: address, username: identityName);
+        } else {
+          Navigator.push(
+            context,
+            PageNoTransit(
+              builder: (context) => CertificationsScreen(address: address, username: identityName),
+            ),
+          );
+        }
+      },
       child: Container(
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.transparent),
         child: Row(
@@ -548,21 +557,25 @@ class _AvatarWithProfileLink extends ConsumerWidget {
   final String? identityName;
 
   void _openProfile(BuildContext context) {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => CesiumProfileViewScreen(address: address),
-        transitionDuration: const Duration(milliseconds: 300),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOut;
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          return SlideTransition(position: animation.drive(tween), child: child);
-        },
-      ),
-    );
+    if (isDesktopLayout(context)) {
+      showDesktopCesiumProfileModal(context, address: address);
+    } else {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => CesiumProfileViewScreen(address: address),
+          transitionDuration: const Duration(milliseconds: 300),
+          reverseTransitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            return SlideTransition(position: animation.drive(tween), child: child);
+          },
+        ),
+      );
+    }
   }
 
   @override

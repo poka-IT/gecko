@@ -707,6 +707,8 @@
     "restoreASafe": "Restore a safe",
     "restoreThisSafe": "Restore this safe",
     "restoreWallet": "Restore my wallets",
+    "exploreNetwork": "Explore the network",
+    "exploreNetworkDescription": "Search identities and view activity",
     "resultsFor": "Results for ",
     "requiresRestart": "Requires app restart",
     "retry": "Retry",

@@ -14,6 +14,7 @@ import 'package:gecko/screens/home/gecko_home_widget.dart';
 import 'package:gecko/screens/home/welcome_home_widget.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/drawer.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -142,7 +143,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      drawer: MainDrawer(isWalletsExists: isWalletsExists),
+      drawer: isDesktopLayout(context) ? null : MainDrawer(isWalletsExists: isWalletsExists),
       backgroundColor: context.colorScheme.secondary,
       body: SizedBox.expand(
         child: AnimatedSwitcher(

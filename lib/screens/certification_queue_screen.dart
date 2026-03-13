@@ -17,11 +17,14 @@ import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
 
 class CertificationQueueScreen extends ConsumerStatefulWidget {
-  const CertificationQueueScreen({super.key, required this.issuerAddress});
+  const CertificationQueueScreen({super.key, required this.issuerAddress, this.embeddedMode = false});
 
   final String issuerAddress;
+  final bool embeddedMode;
 
   @override
   ConsumerState<CertificationQueueScreen> createState() => _CertificationQueueScreenState();
@@ -42,6 +45,42 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
   @override
   Widget build(BuildContext context) {
     final queueAsync = ref.watch(certificationQueueProvider(widget.issuerAddress));
+
+    final content = ResponsiveCenter(
+      maxWidth: 600,
+      padding: EdgeInsets.zero,
+      child: queueAsync.when(
+        data: (queue) => _buildQueueContent(context, queue),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(child: Text('error'.tr())),
+      ),
+    );
+
+    if (widget.embeddedMode) {
+      return Column(
+        children: [
+          // Sync indicator for embedded mode
+          if (_isSyncing)
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else if (queueAsync.value?.isSynced == false)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8, top: 4),
+                child: IconButton(
+                  icon: const Icon(Icons.sync_problem, color: Colors.orange),
+                  tooltip: 'syncNow'.tr(),
+                  onPressed: () => _showSyncDialog(context),
+                ),
+              ),
+            ),
+          Expanded(child: content),
+        ],
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -66,15 +105,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
             ),
         ],
       ),
-      body: ResponsiveCenter(
-        maxWidth: 600,
-        padding: EdgeInsets.zero,
-        child: queueAsync.when(
-          data: (queue) => _buildQueueContent(context, queue),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('error'.tr())),
-        ),
-      ),
+      body: content,
     );
   }
 
@@ -205,12 +236,18 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: _buildPositionBadge(cert.position, isReady, isFirst: isFirst),
           title: GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileViewScreen(address: cert.receiverAddress, username: displayName),
-              ),
-            ),
+            onTap: () {
+              if (widget.embeddedMode && isDesktopLayout(context)) {
+                showDesktopProfileModal(context, address: cert.receiverAddress, username: displayName);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileViewScreen(address: cert.receiverAddress, username: displayName),
+                  ),
+                );
+              }
+            },
             child: Text(
               displayName,
               style: scaledTextStyle(

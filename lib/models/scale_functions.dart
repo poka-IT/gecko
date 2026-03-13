@@ -8,7 +8,9 @@ double scaleSize(double size) {
   // Cap the reference width to prevent oversized elements on desktop/wide screens
   final effectiveWidth = viewSize.width.clamp(0.0, 500.0);
   final scale = effectiveWidth / 375;
-  return size * scale.clamp(0.8, 1.3);
+  // On desktop (>= 900px), cap scale at 1.0 to keep elements at base size
+  final maxScale = viewSize.width >= 900 ? 1.0 : 1.3;
+  return size * scale.clamp(0.8, maxScale);
 }
 
 TextStyle scaledTextStyle({

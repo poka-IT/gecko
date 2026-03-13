@@ -25,18 +25,18 @@ import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/providers/safe_data_provider.dart';
 import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
-import 'package:gecko/screens/myWallets/switch_safe.dart';
-import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/animated_header_image.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/balance_display.dart';
-import 'package:gecko/widgets/buttons/home_settings_button.dart';
-import 'package:gecko/widgets/bottom_sheets/safe_options_menu.dart';
+import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
+import 'package:gecko/widgets/desktop/modals/safe_options_modal.dart';
+import 'package:gecko/widgets/desktop/modals/settings_modal.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
+import 'package:gecko/widgets/desktop/panels/contacts_panel.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/models/transaction_display_item.dart';
@@ -68,6 +68,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   final EasterEggController _easterEggController = EasterEggController();
   int _activeActivityTabIndex = 0;
   int _highlightedSearchIndex = -1;
+  bool _isContactsPanelOpen = false;
 
   String get _searchShortcutLabel {
     if (!kIsWeb && Platform.isMacOS) {
@@ -156,12 +157,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     await scanQr(context);
   }
 
-  void _openSafeSwitcher(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
-  }
-
   void _openSafeOptions(BuildContext context) {
-    showSafeOptionsMenu(context);
+    showDesktopSafeOptionsModal(context, ref);
   }
 
   void _focusDesktopHomeShell() {
@@ -235,7 +232,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       }
     });
 
-    final targetOffset = (_highlightedSearchIndex * 76).toDouble();
+    // Item height: 10px padding top + 38px avatar + 10px padding bottom + 2px border + 6px separator = 66px
+    final targetOffset = (_highlightedSearchIndex * 66).toDouble();
     if (_desktopSearchScrollController.hasClients) {
       _desktopSearchScrollController.animateTo(
         targetOffset.clamp(0, _desktopSearchScrollController.position.maxScrollExtent),
@@ -250,22 +248,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   void _pushDesktopProfileRoute(BuildContext context, {required String address, String? username}) {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            ProfileViewScreen(address: address, username: username?.isNotEmpty == true ? username : null),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
-          return FadeTransition(
-            opacity: curved,
-            child: ScaleTransition(scale: Tween<double>(begin: 0.985, end: 1).animate(curved), child: child),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 220),
-        reverseTransitionDuration: const Duration(milliseconds: 180),
-      ),
-    );
+    showDesktopProfileModal(context, address: address, username: username?.isNotEmpty == true ? username : null);
   }
 
   KeyEventResult _handleDesktopSearchKeyEvent(
@@ -391,13 +374,26 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(flex: 11, child: _buildLeftPanel(context, ref)),
-                      const SizedBox(width: 18),
-                      Expanded(flex: 9, child: _buildActivityPanel(context, ref)),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final canShowContacts = constraints.maxWidth >= 1200;
+                      final showContactsColumn = canShowContacts && _isContactsPanelOpen;
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (showContactsColumn) ...[
+                            Expanded(flex: 3, child: _buildContactsColumn(context, ref)),
+                            const SizedBox(width: 18),
+                          ],
+                          Expanded(
+                            flex: showContactsColumn ? 5 : 11,
+                            child: _buildLeftPanel(context, ref, canShowContacts: canShowContacts),
+                          ),
+                          const SizedBox(width: 18),
+                          Expanded(flex: showContactsColumn ? 4 : 9, child: _buildActivityPanel(context, ref)),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -408,9 +404,20 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
-  // ─────────────────────────── Left Panel ───────────────────────────
+  // ─── Contacts Column (left, visible >= 1200px) ───
 
-  Widget _buildLeftPanel(BuildContext context, WidgetRef ref) {
+  Widget _buildContactsColumn(BuildContext context, WidgetRef ref) {
+    return _buildPanelShell(
+      context,
+      child: DesktopContactsPanel(
+        onContactTap: (address, username) => _pushDesktopProfileRoute(context, address: address, username: username),
+      ),
+    );
+  }
+
+  // ─────────────────────────── Center Panel ───────────────────────────
+
+  Widget _buildLeftPanel(BuildContext context, WidgetRef ref, {bool canShowContacts = false}) {
     return _buildPanelShell(
       context,
       child: Column(
@@ -436,17 +443,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            Positioned(top: scaleSize(2), left: 0, child: IconHomeSettings()),
-                            Positioned(
-                              top: scaleSize(52),
-                              left: scaleSize(2),
-                              child: _buildTopShortcutButton(
-                                context: context,
-                                icon: Icons.qr_code_scanner_rounded,
-                                tooltip: 'scanQRCode'.tr(),
-                                onTap: () => _openQrScanner(context),
-                              ),
-                            ),
+                            // Header image (background layer — must be first so buttons stay clickable)
                             Positioned.fill(
                               child: Align(
                                 alignment: Alignment.topCenter,
@@ -460,6 +457,30 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                                     ),
                                   ),
                                 ),
+                              ),
+                            ),
+                            // Top-left buttons (above image)
+                            Positioned(
+                              top: scaleSize(2),
+                              left: 0,
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.settings_rounded,
+                                  size: scaleSize(28),
+                                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                                ),
+                                tooltip: 'parameters'.tr(),
+                                onPressed: () => showDesktopSettingsModal(context),
+                              ),
+                            ),
+                            Positioned(
+                              top: scaleSize(52),
+                              left: scaleSize(2),
+                              child: _buildTopShortcutButton(
+                                context: context,
+                                icon: Icons.qr_code_scanner_rounded,
+                                tooltip: 'scanQRCode'.tr(),
+                                onTap: () => _openQrScanner(context),
                               ),
                             ),
                           ],
@@ -500,7 +521,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                     ),
                   ),
                   const SizedBox(height: 18),
-                  _buildDesktopSearchSection(context, ref),
+                  _buildDesktopSearchSection(context, ref, canShowContacts: canShowContacts),
                   const SizedBox(height: 16),
                   _buildTotalBalanceCard(context, ref),
                   const SizedBox(height: 12),
@@ -527,6 +548,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     required IconData icon,
     required String tooltip,
     required VoidCallback onTap,
+    bool isActive = false,
   }) {
     return Tooltip(
       message: tooltip,
@@ -539,21 +561,31 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             width: scaleSize(44),
             height: scaleSize(44),
             decoration: BoxDecoration(
-              color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.82),
+              color: isActive
+                  ? context.colorScheme.primary.withValues(alpha: 0.15)
+                  : context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.82),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+              border: Border.all(
+                color: isActive
+                    ? context.colorScheme.primary.withValues(alpha: 0.4)
+                    : context.colorScheme.outline.withValues(alpha: 0.08),
+              ),
               boxShadow: [
                 BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 14, offset: const Offset(0, 5)),
               ],
             ),
-            child: Icon(icon, size: scaleSize(22), color: context.colorScheme.onSurface),
+            child: Icon(
+              icon,
+              size: scaleSize(22),
+              color: isActive ? context.colorScheme.primary : context.colorScheme.onSurface,
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDesktopSearchSection(BuildContext context, WidgetRef ref) {
+  Widget _buildDesktopSearchSection(BuildContext context, WidgetRef ref, {bool canShowContacts = false}) {
     final query = _desktopSearchController.text.trim();
     final isFocused = _desktopSearchFocusNode.hasFocus;
     final addressResultsAsync = ref.watch(searchResultsProvider);
@@ -595,7 +627,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       });
     }
 
-    return ConstrainedBox(
+    final searchBar = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 640),
       child: Column(
         children: [
@@ -766,6 +798,75 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             ),
           ),
         ],
+      ),
+    );
+
+    if (!canShowContacts) return searchBar;
+
+    return Row(
+      children: [
+        _buildContactsToggleButton(context),
+        const SizedBox(width: 10),
+        Expanded(child: searchBar),
+      ],
+    );
+  }
+
+  Widget _buildContactsToggleButton(BuildContext context) {
+    return Tooltip(
+      message: 'contactsManagement'.tr(),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => setState(() => _isContactsPanelOpen = !_isContactsPanelOpen),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: _isContactsPanelOpen
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        context.colorScheme.primary.withValues(alpha: 0.18),
+                        context.colorScheme.primary.withValues(alpha: 0.10),
+                      ],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        context.colorScheme.surface.withValues(alpha: 0.96),
+                        context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.86),
+                      ],
+                    ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: _isContactsPanelOpen
+                    ? context.colorScheme.primary.withValues(alpha: 0.4)
+                    : context.colorScheme.outline.withValues(alpha: 0.1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _isContactsPanelOpen
+                      ? context.colorScheme.primary.withValues(alpha: 0.10)
+                      : Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Icon(
+              _isContactsPanelOpen ? Icons.people_rounded : Icons.people_outline_rounded,
+              size: 24,
+              color: _isContactsPanelOpen
+                  ? context.colorScheme.primary
+                  : context.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1573,25 +1674,24 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   Widget _buildCompactIdentityTile(BuildContext context, IdentityDisplayItem identity) {
+    final accountId = identity.relevantAccountId;
+    if (accountId == null) return const SizedBox.shrink();
+
     final isCreated = IdentityUtils.isCreatedStatusString(identity.status);
     final displayName = identity.name.isEmpty
-        ? getShortPubkey(identity.accountId ?? '')
+        ? getShortPubkey(accountId)
         : IdentityUtils.getDisplayNameFromString(identity.name, identity.status);
 
     return _buildClickableProfile(
       context,
-      address: identity.relevantAccountId!,
+      address: accountId,
       username: identity.name.isNotEmpty ? identity.name : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
             // Avatar
-            DatapodAvatar(
-              address: identity.relevantAccountId!,
-              size: 28,
-              name: identity.name.isNotEmpty ? identity.name : null,
-            ),
+            DatapodAvatar(address: accountId, size: 28, name: identity.name.isNotEmpty ? identity.name : null),
             const SizedBox(width: 8),
             // Name + status description
             Expanded(
@@ -2082,59 +2182,11 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   Widget _buildSecondarySafeActions(BuildContext context, List<_DesktopSafeWalletGroup> groups) {
-    final currentGroup = groups.firstWhere((group) => group.isCurrent, orElse: () => groups.first);
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surface.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.05)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  WalletNameService.displayName(currentGroup.safe.name),
-                  overflow: TextOverflow.ellipsis,
-                  style: scaledTextStyle(
-                    fontSize: 12,
-                    color: context.colorScheme.onSurface.withValues(alpha: 0.68),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Text(
-                '#${currentGroup.safe.number}',
-                style: scaledTextStyle(fontSize: 10.5, color: context.colorScheme.onSurface.withValues(alpha: 0.42)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSecondaryActionButton(
-                  context,
-                  icon: Icons.swap_horiz_rounded,
-                  label: 'changeSafe'.tr(),
-                  onTap: () => _openSafeSwitcher(context),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildSecondaryActionButton(
-                  context,
-                  icon: Icons.tune_rounded,
-                  label: 'manageSafe'.tr(),
-                  onTap: () => _openSafeOptions(context),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return _buildSecondaryActionButton(
+      context,
+      icon: Icons.tune_rounded,
+      label: 'manageSafe'.tr(),
+      onTap: () => _openSafeOptions(context),
     );
   }
 
@@ -2445,7 +2497,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                     _buildStatusDot(isSquidConnected),
                     const SizedBox(width: 6),
                     Text(
-                      'Indexer',
+                      'indexer'.tr(),
                       style: scaledTextStyle(
                         fontSize: 10,
                         color: context.colorScheme.onSurface.withValues(alpha: 0.5),

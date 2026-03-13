@@ -713,6 +713,8 @@
     "restoreASafe": "Ripristinare una cassaforte",
     "restoreThisSafe": "Ripristinare questa cassaforte",
     "restoreWallet": "Ripristinare i miei portafogli",
+    "exploreNetwork": "Esplora la rete",
+    "exploreNetworkDescription": "Cerca identità e visualizza attività",
     "resultsFor": "Risultati per ",
     "requiresRestart": "Richiede il riavvio dell'applicazione",
     "retry": "Riprovare",

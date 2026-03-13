@@ -24,6 +24,8 @@
     "fastAppDescription": "La pago-aplikaĵo {}\npli rapida ol reptilio el Vjetnamio",
     "createWallet": "Krei monujon",
     "restoreWallet": "Restarigi miajn monujojn",
+    "exploreNetwork": "Esplori la reton",
+    "exploreNetworkDescription": "Serĉi identecojn kaj vidi agadon",
     "parameters": "Parametroj",
     "chooseAnotherMnemonic": "Elekti alian frazon",
     "iNotedMyMnemonic": "Mi notis mian frazon",

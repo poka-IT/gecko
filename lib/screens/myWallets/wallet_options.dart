@@ -36,11 +36,19 @@ import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
 import 'package:gecko/widgets/membership_alert_card.dart';
 import 'package:gecko/widgets/migration_alert_card.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/activity_modal.dart';
+import 'package:gecko/widgets/desktop/modals/certification_queue_modal.dart';
+import 'package:gecko/widgets/desktop/modals/cesium_profile_modal.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
-  const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated}) : super(key: keyMyWallets);
+  const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated, this.embeddedMode = false})
+    : super(key: keyMyWallets);
   final WalletEntity wallet;
   final VoidCallback? onDerivationCreated;
+
+  /// When true, renders without Scaffold/AppBar (for desktop modal).
+  final bool embeddedMode;
 
   @override
   ConsumerState<WalletOptions> createState() => _WalletOptionsState();
@@ -65,9 +73,70 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
     final isAlone = walletsState.wallets.length == 1;
 
+    final body = CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: WalletHeader(
+            address: widget.wallet.address,
+            customImagePath: widget.wallet.imagePath,
+            defaultImagePath: widget.wallet.imagePath,
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  MigrationAlertCard(address: widget.wallet.address),
+                  MembershipAlertCard(address: widget.wallet.address),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ScaledSizedBox(height: 16),
+                        if (isLegacyWallet)
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
+                            padding: EdgeInsets.all(scaleSize(12)),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.warning_amber, color: Colors.orange, size: scaleSize(20)),
+                                ScaledSizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'legacyWalletWarning'.tr(),
+                                    style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        _buildWalletOptionsContent(context, ref, isAlone, currentSafe),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (widget.embeddedMode) {
+      return body;
+    }
+
     return PopScope(
       onPopInvokedWithResult: (_, _) {
-        // Reload wallets from database to catch avatar updates
         ref.read(walletsListProvider.notifier).loadWallets();
       },
       child: Scaffold(
@@ -77,67 +146,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ? ref.read(squidServiceProvider).walletNameIndexer[widget.wallet.address]!
               : currentWalletName,
         ),
-        body: CustomScrollView(
-          slivers: [
-            // Wallet header spans full width (has internal centering)
-            SliverToBoxAdapter(
-              child: WalletHeader(
-                address: widget.wallet.address,
-                customImagePath: widget.wallet.imagePath,
-                defaultImagePath: widget.wallet.imagePath,
-              ),
-            ),
-            // Centered content below the header
-            SliverToBoxAdapter(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Migration alert (shown when identity was migrated away)
-                      MigrationAlertCard(address: widget.wallet.address),
-                      // Membership alert (shown when renewal needed or pending)
-                      MembershipAlertCard(address: widget.wallet.address),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            ScaledSizedBox(height: 16),
-                            if (isLegacyWallet)
-                              Container(
-                                margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                                padding: EdgeInsets.all(scaleSize(12)),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.warning_amber, color: Colors.orange, size: scaleSize(20)),
-                                    ScaledSizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'legacyWalletWarning'.tr(),
-                                        style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            _buildWalletOptionsContent(context, ref, isAlone, currentSafe),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        body: body,
       ),
     );
   }
@@ -208,24 +217,28 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     return InkWell(
       key: keyOpenActivity,
       onTap: () async {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => ActivityScreen(address: widget.wallet.address),
-            transitionDuration: const Duration(milliseconds: 300),
-            reverseTransitionDuration: const Duration(milliseconds: 300),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              // Smooth slide transition from right to left
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.easeInOut;
+        if (widget.embeddedMode && isDesktopLayout(context)) {
+          Navigator.of(context).pop();
+          showDesktopActivityModal(homeContext, address: widget.wallet.address);
+        } else {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => ActivityScreen(address: widget.wallet.address),
+              transitionDuration: const Duration(milliseconds: 300),
+              reverseTransitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
 
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-              return SlideTransition(position: animation.drive(tween), child: child);
-            },
-          ),
-        );
+                return SlideTransition(position: animation.drive(tween), child: child);
+              },
+            ),
+          );
+        }
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -378,7 +391,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             // Cesium+ Profile button
             InkWell(
               onTap: () {
-                Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+                if (widget.embeddedMode && isDesktopLayout(context)) {
+                  Navigator.of(context).pop();
+                  showDesktopCesiumProfileModal(homeContext, address: widget.wallet.address);
+                } else {
+                  Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+                }
               },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
@@ -422,7 +440,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           // Show Cesium+ Profile button while loading
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+              if (widget.embeddedMode && isDesktopLayout(context)) {
+                Navigator.of(context).pop();
+                showDesktopCesiumProfileModal(homeContext, address: widget.wallet.address);
+              } else {
+                Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+              }
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
@@ -462,7 +485,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           // Show Cesium+ Profile button on error
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+              if (widget.embeddedMode && isDesktopLayout(context)) {
+                Navigator.of(context).pop();
+                showDesktopCesiumProfileModal(homeContext, address: widget.wallet.address);
+              } else {
+                Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+              }
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
@@ -687,10 +715,15 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     return InkWell(
       key: keyCertificationQueue,
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
-        );
+        if (widget.embeddedMode && isDesktopLayout(context)) {
+          Navigator.of(context).pop();
+          showDesktopCertificationQueueModal(homeContext, issuerAddress: issuerAddress);
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+          );
+        }
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),

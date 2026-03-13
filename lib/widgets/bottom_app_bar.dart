@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
 
 /// Global widget that shows bottom app bar when appropriate
@@ -20,6 +21,11 @@ class GlobalBottomAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     try {
+      // Never show bottom bar in desktop layout
+      if (isDesktopLayout(context)) {
+        return const SizedBox.shrink();
+      }
+
       final bottomBarState = ref.watch(bottomAppBarProvider);
       if (!bottomBarState.isBottomBarActuallyVisible) {
         return const SizedBox.shrink(); // Hidden
@@ -68,6 +74,11 @@ class PageWithBottomPaddingWrapper extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     try {
+      // No bottom padding needed in desktop layout
+      if (isDesktopLayout(context)) {
+        return child;
+      }
+
       final bottomBarState = ref.watch(bottomAppBarProvider);
 
       // If bottom bar should not be shown, return child as-is

@@ -8,6 +8,8 @@ import 'package:gecko/screens/certification_queue_screen.dart';
 import 'package:gecko/screens/profile_view.dart' show buttonFontSize;
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/profile_action_button.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/certification_queue_modal.dart';
 
 class InQueueButton extends ConsumerWidget {
   const InQueueButton({super.key, required this.pendingCert, required this.issuerAddress});
@@ -23,10 +25,16 @@ class InQueueButton extends ConsumerWidget {
 
     return ProfileActionButton(
       buttonKey: keyInQueue,
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
-      ),
+      onTap: () {
+        if (isDesktopLayout(context)) {
+          showDesktopCertificationQueueModal(context, issuerAddress: issuerAddress);
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+          );
+        }
+      },
       backgroundColor: Colors.blue.shade100,
       label: 'inQueuePosition'.tr(args: [pendingCert.position.toString()]),
       labelStyle: Theme.of(

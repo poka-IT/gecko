@@ -712,6 +712,8 @@
     "restoreASafe": "Restaurar una bóveda",
     "restoreThisSafe": "Restaurar esta bóveda",
     "restoreWallet": "Restaurar mis monederos",
+    "exploreNetwork": "Explorar la red",
+    "exploreNetworkDescription": "Buscar identidades y ver actividad",
     "resultsFor": "Resultados para ",
     "requiresRestart": "Requiere reiniciar la aplicación",
     "retry": "Reintentar",

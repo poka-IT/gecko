@@ -687,6 +687,8 @@
     "restoreASafe": "",
     "restoreThisSafe": "",
     "restoreWallet": "Meine Brieftaschen wiederherstellen",
+    "exploreNetwork": "Netzwerk erkunden",
+    "exploreNetworkDescription": "Identitäten suchen und Aktivität anzeigen",
     "resultsFor": "",
     "requiresRestart": "",
     "retry": "",

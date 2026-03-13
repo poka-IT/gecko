@@ -12,8 +12,9 @@ import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CesiumProfileViewScreen extends ConsumerWidget {
-  const CesiumProfileViewScreen({required this.address, super.key});
+  const CesiumProfileViewScreen({required this.address, this.embeddedMode = false, super.key});
   final String address;
+  final bool embeddedMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,168 +22,174 @@ class CesiumProfileViewScreen extends ConsumerWidget {
     final identityNameAsync = ref.watch(hybridIdentityNameProvider(address));
     final displayName = identityNameAsync.hasValue ? identityNameAsync.value : null;
 
-    return Scaffold(
-      appBar: AppBar(title: Text('viewProfile'.tr())),
-      body: ResponsiveCenter(
-        maxWidth: 600,
-        padding: EdgeInsets.zero,
-        child: profileAsync.when(
-          data: (profile) {
-            if (profile == null) return _buildEmptyState(context);
+    final content = ResponsiveCenter(
+      maxWidth: 600,
+      padding: EdgeInsets.zero,
+      child: profileAsync.when(
+        data: (profile) {
+          if (profile == null) return _buildEmptyState(context);
 
-            try {
-              final description = profile['description']?.toString();
-              final city = profile['city']?.toString();
-              final socials = _parseSocials(profile['socials']);
-              final tags = _parseTags(profile['tags']);
+          try {
+            final description = profile['description']?.toString();
+            final city = profile['city']?.toString();
+            final socials = _parseSocials(profile['socials']);
+            final tags = _parseTags(profile['tags']);
 
-              final hasContent =
-                  (description != null && description.isNotEmpty) ||
-                  (city != null && city.isNotEmpty) ||
-                  socials.isNotEmpty ||
-                  tags.isNotEmpty;
+            final hasContent =
+                (description != null && description.isNotEmpty) ||
+                (city != null && city.isNotEmpty) ||
+                socials.isNotEmpty ||
+                tags.isNotEmpty;
 
-              if (!hasContent) return _buildEmptyState(context);
+            if (!hasContent) return _buildEmptyState(context);
 
-              return SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(16)),
-                child: Column(
-                  children: [
-                    // Header: avatar + name
-                    Center(
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: scaleSize(100),
-                            height: scaleSize(100),
-                            child: ClipOval(
-                              child: DatapodAvatar(address: address, size: 100, name: displayName),
-                            ),
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(16)),
+              child: Column(
+                children: [
+                  // Header: avatar + name
+                  Center(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: scaleSize(100),
+                          height: scaleSize(100),
+                          child: ClipOval(
+                            child: DatapodAvatar(address: address, size: 100, name: displayName),
                           ),
-                          if (displayName != null && displayName.isNotEmpty) ...[
-                            ScaledSizedBox(height: 12),
-                            Text(
-                              displayName,
-                              style: scaledTextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                          ScaledSizedBox(height: 4),
+                        ),
+                        if (displayName != null && displayName.isNotEmpty) ...[
+                          ScaledSizedBox(height: 12),
                           Text(
-                            getShortPubkey(address),
-                            style: scaledTextStyle(
-                              fontSize: 14,
-                              fontFamily: 'Monospace',
-                              color: context.colorScheme.onSurfaceVariant,
-                            ),
+                            displayName,
+                            style: scaledTextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.center,
                           ),
                         ],
+                        ScaledSizedBox(height: 4),
+                        Text(
+                          getShortPubkey(address),
+                          style: scaledTextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Monospace',
+                            color: context.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ScaledSizedBox(height: 24),
+                  // Description
+                  if (description != null && description.isNotEmpty)
+                    _buildSection(
+                      context,
+                      icon: Icons.description_outlined,
+                      title: 'description'.tr(),
+                      child: Text(description, style: scaledTextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
+                    ),
+                  // City
+                  if (city != null && city.isNotEmpty) ...[
+                    ScaledSizedBox(height: 12),
+                    _buildSection(
+                      context,
+                      icon: Icons.location_on_outlined,
+                      title: 'city'.tr(),
+                      child: Text(city, style: scaledTextStyle(fontSize: 14)),
+                    ),
+                  ],
+                  // Tags
+                  if (tags.isNotEmpty) ...[
+                    ScaledSizedBox(height: 12),
+                    _buildSection(
+                      context,
+                      icon: Icons.label_outline,
+                      title: 'tags'.tr(),
+                      child: Wrap(
+                        spacing: scaleSize(6),
+                        runSpacing: scaleSize(4),
+                        children: tags
+                            .map(
+                              (tag) => Chip(
+                                label: Text(tag, style: scaledTextStyle(fontSize: 12)),
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.symmetric(horizontal: scaleSize(4)),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
-                    ScaledSizedBox(height: 24),
-                    // Description
-                    if (description != null && description.isNotEmpty)
-                      _buildSection(
-                        context,
-                        icon: Icons.description_outlined,
-                        title: 'description'.tr(),
-                        child: Text(description, style: scaledTextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
-                      ),
-                    // City
-                    if (city != null && city.isNotEmpty) ...[
-                      ScaledSizedBox(height: 12),
-                      _buildSection(
-                        context,
-                        icon: Icons.location_on_outlined,
-                        title: 'city'.tr(),
-                        child: Text(city, style: scaledTextStyle(fontSize: 14)),
-                      ),
-                    ],
-                    // Tags
-                    if (tags.isNotEmpty) ...[
-                      ScaledSizedBox(height: 12),
-                      _buildSection(
-                        context,
-                        icon: Icons.label_outline,
-                        title: 'tags'.tr(),
-                        child: Wrap(
-                          spacing: scaleSize(6),
-                          runSpacing: scaleSize(4),
-                          children: tags
-                              .map(
-                                (tag) => Chip(
-                                  label: Text(tag, style: scaledTextStyle(fontSize: 12)),
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  visualDensity: VisualDensity.compact,
-                                  padding: EdgeInsets.symmetric(horizontal: scaleSize(4)),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                    ],
-                    // Social links
-                    if (socials.isNotEmpty) ...[
-                      ScaledSizedBox(height: 12),
-                      _buildSection(
-                        context,
-                        icon: Icons.share_outlined,
-                        title: 'socialNetworks'.tr(),
-                        child: Column(
-                          children: socials.map((social) {
-                            return InkWell(
-                              borderRadius: BorderRadius.circular(8),
-                              onTap: () => _confirmAndLaunchUrl(context, social.url),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: scaleSize(6)),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      _getSocialIcon(social.type),
-                                      size: scaleSize(20),
-                                      color: context.colorScheme.onSurfaceVariant,
-                                    ),
-                                    SizedBox(width: scaleSize(10)),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            _getSocialLabel(social.type),
-                                            style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                                          ),
-                                          Text(
-                                            social.url,
-                                            style: scaledTextStyle(fontSize: 12, color: context.colorScheme.primary),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.open_in_new,
-                                      size: scaleSize(16),
-                                      color: context.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
                   ],
-                ),
-              );
-            } catch (_) {
-              return _buildErrorState(context);
-            }
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => _buildErrorState(context),
-        ),
+                  // Social links
+                  if (socials.isNotEmpty) ...[
+                    ScaledSizedBox(height: 12),
+                    _buildSection(
+                      context,
+                      icon: Icons.share_outlined,
+                      title: 'socialNetworks'.tr(),
+                      child: Column(
+                        children: socials.map((social) {
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () => _confirmAndLaunchUrl(context, social.url),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: scaleSize(6)),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    _getSocialIcon(social.type),
+                                    size: scaleSize(20),
+                                    color: context.colorScheme.onSurfaceVariant,
+                                  ),
+                                  SizedBox(width: scaleSize(10)),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _getSocialLabel(social.type),
+                                          style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                        ),
+                                        Text(
+                                          social.url,
+                                          style: scaledTextStyle(fontSize: 12, color: context.colorScheme.primary),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.open_in_new,
+                                    size: scaleSize(16),
+                                    color: context.colorScheme.onSurfaceVariant,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          } catch (_) {
+            return _buildErrorState(context);
+          }
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => _buildErrorState(context),
       ),
+    );
+
+    if (embeddedMode) {
+      return content;
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: Text('viewProfile'.tr())),
+      body: content,
     );
   }
 

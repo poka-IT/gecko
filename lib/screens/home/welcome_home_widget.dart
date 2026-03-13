@@ -13,9 +13,11 @@ import 'package:gecko/screens/onBoarding/import_choice_screen.dart';
 import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
-
-/// Desktop breakpoint width (same as gecko_home_widget.dart)
-const double _desktopWelcomeBreakpoint = 900;
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/legacy_import_modal.dart';
+import 'package:gecko/widgets/desktop/modals/onboarding_modal.dart';
+import 'package:gecko/widgets/desktop/modals/restore_modal.dart';
+import 'package:gecko/widgets/desktop/modals/settings_modal.dart';
 
 /// Welcome screen widget displayed when no wallets exist
 class WelcomeHomeWidget extends ConsumerWidget {
@@ -23,10 +25,9 @@ class WelcomeHomeWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final showImage = ref.watch(backgroundImageProvider);
 
-    if (screenWidth >= _desktopWelcomeBreakpoint) {
+    if (isDesktopLayout(context)) {
       return _DesktopWelcomeWidget(showBackgroundImage: showImage);
     }
 
@@ -44,14 +45,12 @@ class _DesktopWelcomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageCache = ImageCacheService();
-
-    // Get fixed screen dimensions for background
     final view = View.of(context);
     final screenSize = view.physicalSize / view.devicePixelRatio;
 
     return Stack(
       children: [
-        // Background layer
+        // Background
         Positioned(
           top: 0,
           left: 0,
@@ -79,53 +78,95 @@ class _DesktopWelcomeWidget extends StatelessWidget {
             ),
           ),
         ),
+        // Decorative glow
+        Positioned(
+          top: -100,
+          right: -60,
+          child: IgnorePointer(
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    context.colorScheme.primary.withValues(alpha: 0.08),
+                    context.colorScheme.primary.withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
 
         // Content
         SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              // Settings button top-left
-              Positioned(top: scaleSize(10), left: scaleSize(15), child: IconHomeSettings()),
-              // Full-height column: header at top, gecko+buttons at center-bottom
-              Align(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: Column(
-                    children: [
-                      // Header image — pinned at top
-                      Image(image: imageCache.getImageProvider('assets/home/header.png'), height: scaleSize(150)),
-                      const SizedBox(height: 8),
-                      // App description
-                      Text(
-                        "fastAppDescription".tr(args: [Durt.i.network.symbol]),
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(
-                          color: context.colorScheme.onSurface,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
+              // Top bar: settings + network info
+              Padding(
+                padding: const EdgeInsets.fromLTRB(15, 10, 20, 0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.settings_rounded,
+                        size: scaleSize(28),
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
-                      const Spacer(),
-                      // Gecko + bubble — directly above buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      tooltip: 'parameters'.tr(),
+                      onPressed: () => showDesktopSettingsModal(context),
+                    ),
+                    const Spacer(),
+                    _buildNetworkBadge(context),
+                  ],
+                ),
+              ),
+
+              // Main content — centered
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 740),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Image(
-                            image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'),
-                            height: scaleSize(150),
+                          // Header + description
+                          Image(image: imageCache.getImageProvider('assets/home/header.png'), height: 120),
+                          const SizedBox(height: 8),
+                          Text(
+                            "fastAppDescription".tr(args: [Durt.i.network.symbol]),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: context.colorScheme.onSurface,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: BubbleSpeakWithTail(text: "noLizard".tr()),
+                          const SizedBox(height: 12),
+                          // Gecko mascot
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Image(image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'), height: 120),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: BubbleSpeakWithTail(text: "noLizard".tr()),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 32),
+
+                          // Action cards grid — 2x2
+                          _buildActionCardsGrid(context),
+
+                          const TestWalletButton(),
                         ],
                       ),
-                      // Buttons
-                      _buildButtons(context),
-                      const TestWalletButton(),
-                      const Spacer(),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -136,61 +177,184 @@ class _DesktopWelcomeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildButtons(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
-      child: Column(
+  Widget _buildNetworkBadge(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 380, minHeight: scaleSize(55)),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                key: keyOnboardingNewSafe,
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: context.colorScheme.primary,
-                  elevation: 4,
-                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () => Navigator.pushNamed(context, RouteNames.onboardingStepOne),
-                child: Text(
-                  'createWallet'.tr(),
-                  style: scaledTextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: context.colorScheme.primary.withValues(alpha: 0.7),
             ),
           ),
-          ScaledSizedBox(height: scaleSize(14)),
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 380, minHeight: scaleSize(55)),
-            child: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                key: keyRestoreSafe,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(width: scaleSize(3), color: context.colorScheme.primary),
-                  padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  if (ImportChoiceScreen.enableLegacyLogin) {
-                    Navigator.pushNamed(context, RouteNames.importChoice);
-                  } else {
-                    Navigator.pushNamed(context, RouteNames.restoreSafe);
-                  }
-                },
-                child: Text(
-                  "restoreWallet".tr(),
-                  style: scaledTextStyle(fontSize: 20, color: context.colorScheme.primary, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+          const SizedBox(width: 8),
+          Text(
+            Durt.i.network.symbol,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: context.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionCardsGrid(BuildContext context) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      alignment: WrapAlignment.center,
+      children: [
+        _ActionCard(
+          key: keyOnboardingNewSafe,
+          icon: Icons.add_circle_outline_rounded,
+          title: 'createWallet'.tr(),
+          isPrimary: true,
+          onTap: () => showDesktopOnboardingModal(context),
+        ),
+        _ActionCard(
+          key: keyRestoreSafe,
+          icon: Icons.key_rounded,
+          title: 'restoreWallet'.tr(),
+          onTap: () => showDesktopRestoreModal(context),
+        ),
+        if (ImportChoiceScreen.enableLegacyLogin)
+          _ActionCard(
+            icon: Icons.swap_horiz_rounded,
+            title: 'importLegacyAccount'.tr(),
+            subtitle: 'importLegacyDescription'.tr(),
+            onTap: () => showDesktopLegacyImportModal(context),
+          ),
+        _ActionCard(
+          icon: Icons.public_rounded,
+          title: 'exploreNetwork'.tr(),
+          subtitle: 'exploreNetworkDescription'.tr(),
+          onTap: () => Navigator.pushNamed(context, RouteNames.search),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final bool isPrimary;
+  final VoidCallback onTap;
+
+  const _ActionCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.isPrimary = false,
+    required this.onTap,
+  });
+
+  @override
+  State<_ActionCard> createState() => _ActionCardState();
+}
+
+class _ActionCardState extends State<_ActionCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = context.colorScheme.primary;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          width: 220,
+          padding: const EdgeInsets.all(24),
+          // ignore: deprecated_member_use
+          transform: _isHovered ? (Matrix4.identity()..translate(0.0, -3.0)) : Matrix4.identity(),
+          decoration: BoxDecoration(
+            gradient: widget.isPrimary
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [primary, primary.withValues(alpha: 0.85)],
+                  )
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      context.colorScheme.surface.withValues(alpha: 0.92),
+                      context.colorScheme.surfaceContainer.withValues(alpha: 0.68),
+                    ],
+                  ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: widget.isPrimary
+                  ? Colors.white.withValues(alpha: 0.15)
+                  : (_isHovered ? primary.withValues(alpha: 0.3) : context.colorScheme.outline.withValues(alpha: 0.08)),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: widget.isPrimary
+                    ? primary.withValues(alpha: _isHovered ? 0.25 : 0.15)
+                    : Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.04),
+                blurRadius: _isHovered ? 24 : 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: widget.isPrimary ? Colors.white.withValues(alpha: 0.18) : primary.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(widget.icon, size: 28, color: widget.isPrimary ? Colors.white : primary),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                widget.title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: widget.isPrimary ? Colors.white : context.colorScheme.onSurface,
+                ),
+              ),
+              if (widget.subtitle != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  widget.subtitle!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: widget.isPrimary
+                        ? Colors.white.withValues(alpha: 0.75)
+                        : context.colorScheme.onSurface.withValues(alpha: 0.55),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

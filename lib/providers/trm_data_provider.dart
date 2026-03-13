@@ -82,6 +82,19 @@ final currencyDisplayModeProvider = NotifierProvider<CurrencyDisplayModeNotifier
   CurrencyDisplayModeNotifier.new,
 );
 
+/// Bridge durt2's udInfoNotifier into Riverpod reactivity
+final currentUdProvider = Provider<BigInt>((ref) {
+  final storageService = ref.watch(storageServiceProvider);
+  final notifier = storageService.udInfoNotifier;
+
+  // Listen to ValueNotifier changes and invalidate this provider
+  void listener() => ref.invalidateSelf();
+  notifier.addListener(listener);
+  ref.onDispose(() => notifier.removeListener(listener));
+
+  return notifier.value.currentUd;
+});
+
 /// Provider for balance ratio calculation
 final balanceRatioProvider = Provider<BigInt>((ref) {
   final displayMode = ref.watch(currencyDisplayModeProvider);
@@ -104,8 +117,7 @@ BigInt _getBalanceRatio(CurrencyDisplayMode displayMode, TrmData? trmData, Ref r
       // Convert centimes to G1 (1 G1 = 100 centimes)
       return BigInt.from(100);
     case CurrencyDisplayMode.du:
-      final udValue = ref.read(storageServiceProvider).udInfoNotifier.value;
-      return udValue.currentUd;
+      return ref.watch(currentUdProvider);
     case CurrencyDisplayMode.moneyOverMembers:
       // For mM/N display mode: centimes → G1 → M/N → mM/N
       // ratio = moneyOverMembersRatio * 100 / 1000 = moneyOverMembersRatio / 10

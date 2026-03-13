@@ -183,6 +183,14 @@ class BalanceDisplay extends ConsumerWidget {
     // Get balance ratio using the provider
     final ratio = ref.watch(balanceRatioProvider);
 
+    // If ratio is zero (DU data not yet loaded from blockchain), show placeholder
+    if (ratio == BigInt.zero) {
+      return Text(
+        '—',
+        style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
+      );
+    }
+
     // Calculate display value using the ratio
     final double displayValue = value.toDouble() / ratio.toDouble();
 

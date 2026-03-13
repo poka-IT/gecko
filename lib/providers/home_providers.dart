@@ -159,12 +159,21 @@ class NetworkTotals {
 
 /// Fetches exact network totals from Squid using GraphQL connection totalCount,
 /// independent from the paginated lists currently loaded in UI providers.
+/// Throttled: skips re-fetch if last successful fetch was < 10 seconds ago.
+DateTime _lastTotalsFetch = DateTime.fromMillisecondsSinceEpoch(0);
+NetworkTotals? _lastTotalsResult;
+
 final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
   ref.watch(networkProvider);
   ref.watch(squidCacheBusterProvider);
   ref.watch(networkActivityProvider.select((state) => state.lastActivityId));
   ref.watch(networkIdentitiesProvider.select((state) => state.lastActivityId));
   ref.watch(networkCertificationsProvider.select((state) => state.lastActivityId));
+
+  // Throttle: return cached result if last fetch was recent
+  if (_lastTotalsResult != null && DateTime.now().difference(_lastTotalsFetch).inSeconds < 10) {
+    return _lastTotalsResult!;
+  }
 
   final squidStatus = ref.watch(squidConnectionStatusProvider);
   if (squidStatus != d.ConnectionStatus.connected) {
@@ -212,7 +221,7 @@ final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
     return (section?['totalCount'] as int?) ?? 0;
   }
 
-  return NetworkTotals(
+  final totals = NetworkTotals(
     transactions: readTotal('transfers'),
     certifications: readTotal('certs'),
     memberIdentities: readTotal('memberIdentities'),
@@ -220,6 +229,10 @@ final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
     unvalidatedIdentities: readTotal('unvalidatedIdentities'),
     expiredIdentities: readTotal('expiredIdentities'),
   );
+
+  _lastTotalsFetch = DateTime.now();
+  _lastTotalsResult = totals;
+  return totals;
 });
 
 /// App initialization state

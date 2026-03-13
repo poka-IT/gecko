@@ -503,3 +503,32 @@ final isWalletsExistsProvider = Provider<bool>((ref) {
 final currentSafeNumberProvider = Provider<int>((ref) {
   return ref.watch(walletsListProvider).currentSafeNumber;
 });
+
+/// Groups of safes with their wallets, computed from ObjectBox.
+/// Only rebuilds when walletsListProvider changes (wallet structure change),
+/// NOT on every balance/block height update.
+final safeWalletGroupsProvider = Provider<List<SafeWalletGroup>>((ref) {
+  // Watch walletsListProvider to rebuild when wallets change
+  ref.watch(walletsListProvider);
+  final walletService = ref.read(walletServiceProvider);
+  final currentSafe = ref.read(currentSafeNumberProvider);
+
+  final allSafes = walletService.safeBox.getAll()..sort((a, b) => a.number.compareTo(b.number));
+  return allSafes
+      .map((safe) {
+        final query = walletService.walletBox.query()..link(WalletEntity_.safe, SafeEntity_.number.equals(safe.number));
+        final wallets = query.build().find()..sort((a, b) => a.number.compareTo(b.number));
+        return SafeWalletGroup(safe: safe, wallets: wallets, isCurrent: safe.number == currentSafe);
+      })
+      .where((group) => group.wallets.isNotEmpty)
+      .toList(growable: false);
+});
+
+/// Data class for safe + wallets grouping
+class SafeWalletGroup {
+  final d.SafeEntity safe;
+  final List<d.WalletEntity> wallets;
+  final bool isCurrent;
+
+  const SafeWalletGroup({required this.safe, required this.wallets, required this.isCurrent});
+}

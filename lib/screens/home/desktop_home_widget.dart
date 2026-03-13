@@ -3,7 +3,6 @@
 import 'dart:io' show Platform;
 
 import 'package:durt2/durt2.dart' as d;
-import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -130,13 +129,12 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       setState(() {
         _highlightedSearchIndex = -1;
       });
-    } else {
-      setState(() {});
     }
+    // No setState needed — the search section rebuilds via its own ListenableBuilder
   }
 
   void _onDesktopSearchFocusChanged() {
-    setState(() {});
+    // No setState needed — the search section rebuilds via its own ListenableBuilder
   }
 
   void _onScroll() {
@@ -541,7 +539,11 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           ),
         ),
         const SizedBox(height: 18),
-        _buildDesktopSearchSection(context, ref, canShowContacts: canShowContacts),
+        // ListenableBuilder isolates search rebuilds from the rest of the left panel
+        ListenableBuilder(
+          listenable: Listenable.merge([_desktopSearchController, _desktopSearchFocusNode]),
+          builder: (context, _) => _buildDesktopSearchSection(context, ref, canShowContacts: canShowContacts),
+        ),
         const SizedBox(height: 16),
       ],
     );
@@ -1385,91 +1387,19 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     return IndexedStack(
       index: currentIndex.clamp(0, 2),
       children: [
-        _buildTransactionsTab(context, ref),
-        _buildIdentitiesTab(context, ref),
-        _buildCertificationsTab(context, ref),
+        _DesktopTransactionsTab(
+          scrollController: _scrollControllers[0],
+          tileBuilder: (context, tx) => _buildCompactTransactionTile(context, tx),
+        ),
+        _DesktopIdentitiesTab(
+          scrollController: _scrollControllers[1],
+          tileBuilder: (context, identity) => _buildCompactIdentityTile(context, identity),
+        ),
+        _DesktopCertificationsTab(
+          scrollController: _scrollControllers[2],
+          tileBuilder: (context, cert) => _buildCompactCertificationTile(context, cert),
+        ),
       ],
-    );
-  }
-
-  Widget _buildTransactionsTab(BuildContext context, WidgetRef ref) {
-    final activityState = ref.watch(networkActivityProvider);
-
-    if (activityState.transactions.isEmpty) {
-      if (activityState.isLoading) {
-        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
-      }
-      return _buildEmptyState(context, Icons.swap_horiz, 'noNetworkActivity'.tr());
-    }
-
-    return ListView.separated(
-      controller: _scrollControllers[0],
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: activityState.transactions.length,
-      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) {
-        final tx = activityState.transactions[index];
-        return _buildCompactTransactionTile(context, tx);
-      },
-    );
-  }
-
-  Widget _buildIdentitiesTab(BuildContext context, WidgetRef ref) {
-    final identitiesState = ref.watch(networkIdentitiesProvider);
-
-    if (identitiesState.identities.isEmpty) {
-      if (identitiesState.isLoading) {
-        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
-      }
-      return _buildEmptyState(context, Icons.person_outline, 'noIdentityActivity'.tr());
-    }
-
-    return ListView.separated(
-      controller: _scrollControllers[1],
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: identitiesState.identities.length,
-      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) {
-        return _buildCompactIdentityTile(context, identitiesState.identities[index]);
-      },
-    );
-  }
-
-  Widget _buildCertificationsTab(BuildContext context, WidgetRef ref) {
-    final certsState = ref.watch(networkCertificationsProvider);
-    final activeCertifications = certsState.certifications.where((certification) => certification.isActive).toList();
-
-    if (activeCertifications.isEmpty) {
-      if (certsState.isLoading) {
-        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
-      }
-      return _buildEmptyState(context, Icons.verified_outlined, 'noCertificationActivity'.tr());
-    }
-
-    return ListView.separated(
-      controller: _scrollControllers[2],
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: activeCertifications.length,
-      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) {
-        return _buildCompactCertificationTile(context, activeCertifications[index]);
-      },
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context, IconData icon, String message) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 40, color: context.colorScheme.onSurface.withValues(alpha: 0.2)),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -2071,17 +2001,9 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   // ─── Wallet Overview Card ───
 
   Widget _buildWalletOverview(BuildContext context, WidgetRef ref) {
-    final walletService = ref.watch(walletServiceProvider);
-    final currentSafeNumber = ref.watch(currentSafeNumberProvider);
-    final allSafes = walletService.safeBox.getAll()..sort((a, b) => a.number.compareTo(b.number));
-    final safeGroups = allSafes
-        .map((safe) {
-          final query = walletService.walletBox.query()
-            ..link(WalletEntity_.safe, SafeEntity_.number.equals(safe.number));
-          final wallets = query.build().find()..sort((a, b) => a.number.compareTo(b.number));
-          return _DesktopSafeWalletGroup(safe: safe, wallets: wallets, isCurrent: safe.number == currentSafeNumber);
-        })
-        .where((group) => group.wallets.isNotEmpty)
+    final providerGroups = ref.watch(safeWalletGroupsProvider);
+    final safeGroups = providerGroups
+        .map((g) => _DesktopSafeWalletGroup(safe: g.safe, wallets: g.wallets, isCurrent: g.isCurrent))
         .toList(growable: false);
     final totalWallets = safeGroups.fold<int>(0, (sum, group) => sum + group.wallets.length);
     final hasSingleSafe = safeGroups.length <= 1;
@@ -2531,7 +2453,6 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   Widget _buildNetworkStatusCard(BuildContext context, WidgetRef ref) {
     final connectionStatus = ref.watch(connectionStatusProvider);
     final squidStatus = ref.watch(squidConnectionStatusProvider);
-    final blockHeight = ref.watch(blockHeightProvider);
     final isDuniterConnected = connectionStatus == d.ConnectionStatus.connected;
     final isSquidConnected = squidStatus == d.ConnectionStatus.connected;
 
@@ -2614,19 +2535,25 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               ],
             ),
           ),
-          // Block height (right side, vertically centered)
-          if (isDuniterConnected && blockHeight > 0)
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(
-                '#$blockHeight',
-                style: scaledTextStyle(
-                  fontSize: 12,
-                  color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Monospace',
-                ),
-              ),
+          // Block height — isolated Consumer to avoid rebuilding the entire left panel every ~6s
+          if (isDuniterConnected)
+            Consumer(
+              builder: (context, ref, _) {
+                final blockHeight = ref.watch(blockHeightProvider);
+                if (blockHeight <= 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text(
+                    '#$blockHeight',
+                    style: scaledTextStyle(
+                      fontSize: 12,
+                      color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Monospace',
+                    ),
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -2657,4 +2584,104 @@ class _DesktopSafeWalletGroup {
   final d.SafeEntity safe;
   final List<d.WalletEntity> wallets;
   final bool isCurrent;
+}
+
+// ─── Isolated Tab ConsumerWidgets (rebuild only when their own provider changes) ───
+
+class _DesktopTransactionsTab extends ConsumerWidget {
+  final ScrollController scrollController;
+  final Widget Function(BuildContext, TransactionDisplayItem) tileBuilder;
+
+  const _DesktopTransactionsTab({required this.scrollController, required this.tileBuilder});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activityState = ref.watch(networkActivityProvider);
+
+    if (activityState.transactions.isEmpty) {
+      if (activityState.isLoading) {
+        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
+      }
+      return _buildEmptyTabState(context, Icons.swap_horiz, 'noNetworkActivity'.tr());
+    }
+
+    return ListView.separated(
+      controller: scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      itemCount: activityState.transactions.length,
+      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
+      itemBuilder: (context, index) => tileBuilder(context, activityState.transactions[index]),
+    );
+  }
+}
+
+class _DesktopIdentitiesTab extends ConsumerWidget {
+  final ScrollController scrollController;
+  final Widget Function(BuildContext, IdentityDisplayItem) tileBuilder;
+
+  const _DesktopIdentitiesTab({required this.scrollController, required this.tileBuilder});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final identitiesState = ref.watch(networkIdentitiesProvider);
+
+    if (identitiesState.identities.isEmpty) {
+      if (identitiesState.isLoading) {
+        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
+      }
+      return _buildEmptyTabState(context, Icons.person_outline, 'noIdentityActivity'.tr());
+    }
+
+    return ListView.separated(
+      controller: scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      itemCount: identitiesState.identities.length,
+      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
+      itemBuilder: (context, index) => tileBuilder(context, identitiesState.identities[index]),
+    );
+  }
+}
+
+class _DesktopCertificationsTab extends ConsumerWidget {
+  final ScrollController scrollController;
+  final Widget Function(BuildContext, CertificationDisplayItem) tileBuilder;
+
+  const _DesktopCertificationsTab({required this.scrollController, required this.tileBuilder});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final certsState = ref.watch(networkCertificationsProvider);
+    final activeCertifications = certsState.certifications.where((c) => c.isActive).toList();
+
+    if (activeCertifications.isEmpty) {
+      if (certsState.isLoading) {
+        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
+      }
+      return _buildEmptyTabState(context, Icons.verified_outlined, 'noCertificationActivity'.tr());
+    }
+
+    return ListView.separated(
+      controller: scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      itemCount: activeCertifications.length,
+      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
+      itemBuilder: (context, index) => tileBuilder(context, activeCertifications[index]),
+    );
+  }
+}
+
+Widget _buildEmptyTabState(BuildContext context, IconData icon, String message) {
+  return Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 40, color: context.colorScheme.onSurface.withValues(alpha: 0.2)),
+        const SizedBox(height: 8),
+        Text(
+          message,
+          style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+        ),
+      ],
+    ),
+  );
 }

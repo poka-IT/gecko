@@ -120,6 +120,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
 
           // Mettre à jour le PIN dans le provider
           PinCodeService.pinCode = pin;
+          PinCodeService.setAuthenticatedSafe(ref.read(walletServiceProvider).defaultSafeBoxNumber);
 
           // Ré-enrôler la biométrie avec le nouveau PIN si elle était activée
           final biometricState = ref.read(biometricProvider);

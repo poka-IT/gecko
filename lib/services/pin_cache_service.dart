@@ -10,7 +10,19 @@ import 'package:gecko/widgets/desktop/modals/pin_modal.dart';
 class PinCodeService {
   static const String _storageKey = 'isCacheChecked';
 
-  static String pinCode = '';
+  static String _pinCode = '';
+
+  /// The safe number that [_pinCode] was validated against.
+  /// Ensures the cached PIN is only reused for the same safe.
+  static int? _authenticatedSafeNumber;
+
+  /// Get/set the cached PIN code.
+  /// Setting to empty automatically clears the authenticated safe.
+  static String get pinCode => _pinCode;
+  static set pinCode(String value) {
+    _pinCode = value;
+    if (value.isEmpty) _authenticatedSafeNumber = null;
+  }
 
   /// Get the current PIN cache state
   static bool get isEnabled => configBox.get(_storageKey) ?? false;
@@ -40,11 +52,21 @@ class PinCodeService {
     if (actualLock == lockPin) pinCode = '';
   }
 
+  /// Record that the current [pinCode] was authenticated for [safeNumber].
+  static void setAuthenticatedSafe(int safeNumber) {
+    _authenticatedSafeNumber = safeNumber;
+  }
+
   static Future<bool> askPinCode({bool force = false, bool canSwitch = false, d.WalletEntity? wallet}) async {
     final container = ProviderScope.containerOf(homeContext);
     final targetWallet = wallet ?? container.read(walletServiceProvider).defaultWallet;
+    final targetSafeNumber = targetWallet.safe.target?.number;
 
-    if (pinCode.isEmpty || force) {
+    // Force re-auth if the cached PIN belongs to a different safe,
+    // or if we don't know which safe it was validated against.
+    final safeMismatch = pinCode.isNotEmpty && targetSafeNumber != null && _authenticatedSafeNumber != targetSafeNumber;
+
+    if (pinCode.isEmpty || force || safeMismatch) {
       pinCode = '';
 
       // Use desktop modal on wide screens, full-screen route on mobile

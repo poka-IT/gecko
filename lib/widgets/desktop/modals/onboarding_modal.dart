@@ -205,6 +205,7 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
       ref.read(defaultSafeBoxNumberProvider.notifier).refresh();
       await ref.read(biometricProvider.notifier).refresh();
       final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      PinCodeService.setAuthenticatedSafe(currentSafe);
 
       // Import root wallet
       await ref.read(walletServiceProvider).importRootWallet(pinCode: _pinCode);

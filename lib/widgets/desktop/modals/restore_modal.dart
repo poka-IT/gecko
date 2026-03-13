@@ -166,6 +166,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
       ref.read(defaultSafeBoxNumberProvider.notifier).refresh();
       await ref.read(biometricProvider.notifier).refresh();
       final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      PinCodeService.setAuthenticatedSafe(currentSafe);
 
       // Scan derivations for existing wallets (use service directly to avoid
       // navigator side effects from the provider's error/timeout handlers)

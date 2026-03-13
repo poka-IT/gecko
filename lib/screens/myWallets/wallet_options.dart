@@ -191,7 +191,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             child: InkWell(
               onTap: () async {
                 // Ask for PIN code first if needed
-                final pinCodeValid = await PinCodeService.askPinCode();
+                final pinCodeValid = await PinCodeService.askPinCode(wallet: widget.wallet);
 
                 if (pinCodeValid) {
                   final newPath = await WalletManagementService.changeAvatar(
@@ -599,7 +599,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       if (confirmed != true) return;
 
       // Ask for PIN code
-      if (!await PinCodeService.askPinCode()) return;
+      if (!await PinCodeService.askPinCode(wallet: widget.wallet)) return;
 
       // Get legacy wallet information for migration
       final rawSeed = await ref
@@ -646,7 +646,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       if (confirmed != true) return;
 
       // Ask for PIN code
-      if (!await PinCodeService.askPinCode()) return;
+      if (!await PinCodeService.askPinCode(wallet: widget.wallet)) return;
 
       // Get legacy wallet information for migration
       final rawSeed = await ref
@@ -698,7 +698,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     // because we need to re-encrypt the salt and password with the new PIN
 
     // Ask for current PIN first
-    if (!await PinCodeService.askPinCode(force: true)) return;
+    if (!await PinCodeService.askPinCode(force: true, wallet: widget.wallet)) return;
 
     // Capture the old PIN immediately after successful askPinCode, before any async
     // operation that could trigger debounceResetPinCode clearing it.
@@ -914,7 +914,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
     children: [
       InkWell(
         onTap: () async {
-          if (!await PinCodeService.askPinCode()) return;
+          if (!await PinCodeService.askPinCode(wallet: ref.read(firstWalletProvider))) return;
           if (isDesktopLayout(context)) {
             Navigator.of(context).pop();
             showDesktopSafeOptionsModal(homeContext, ref);
@@ -946,7 +946,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       InkWell(
         onTap: () async {
           if (!derivationState.isLoading) {
-            if (!await PinCodeService.askPinCode()) return;
+            if (!await PinCodeService.askPinCode(wallet: ref.read(firstWalletProvider))) return;
             final lastWalletNumber = walletsState.wallets.isNotEmpty ? walletsState.wallets.last.number : -1;
             String newDerivationName = '${'wallet'.tr()} ${lastWalletNumber + 2}';
             await ref.read(walletActionsProvider.notifier).generateNewDerivation(newDerivationName);

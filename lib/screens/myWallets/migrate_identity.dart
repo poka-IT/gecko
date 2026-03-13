@@ -439,7 +439,8 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                             ? () async {
                                 try {
                                   // Demander le code PIN d'abord
-                                  if (!await PinCodeService.askPinCode()) return;
+                                  final fromWallet = ref.read(walletServiceProvider).getWalletData(fromAddress);
+                                  if (!await PinCodeService.askPinCode(wallet: fromWallet)) return;
 
                                   // Capture services before navigation (ref won't be valid after pop)
                                   final walletService = ref.read(walletServiceProvider);

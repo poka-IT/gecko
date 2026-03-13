@@ -63,6 +63,10 @@ class BiometricState {
 class BiometricNotifier extends Notifier<BiometricState> {
   final LocalAuthentication _localAuth = LocalAuthentication();
 
+  /// The safe number currently targeted for biometric operations.
+  /// Set by [refreshForSafe], used by [authenticateWithBiometric] and [enrollBiometric].
+  int? _targetSafeNumber;
+
   @override
   BiometricState build() {
     Future.microtask(() => _initializeBiometric());
@@ -134,8 +138,10 @@ class BiometricNotifier extends Notifier<BiometricState> {
     }
   }
 
-  /// Refresh biometric state
+  /// Refresh biometric state (uses default safe)
   Future<void> refresh() async {
+    _targetSafeNumber = null;
+
     // Force a small delay to ensure storage operations are completed
     await Future.delayed(const Duration(milliseconds: 100));
 
@@ -144,6 +150,39 @@ class BiometricNotifier extends Notifier<BiometricState> {
 
     // Force a complete re-initialization to ensure fresh state
     await _initializeBiometric();
+  }
+
+  /// Refresh biometric state for a specific safe number (not necessarily the default).
+  /// Used when opening the unlock screen for a non-default safe.
+  Future<void> refreshForSafe(int safeNumber) async {
+    _targetSafeNumber = safeNumber;
+    state = state.copyWith(isLoading: true, isInitialized: false, errorMessage: null);
+
+    try {
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      final isAvailable = await _localAuth.canCheckBiometrics;
+      final availableTypes = await _localAuth.getAvailableBiometrics();
+
+      final walletService = ref.read(walletServiceProvider);
+      bool isEnrolled = false;
+      try {
+        walletService.getSafeBox(safeNumber);
+        isEnrolled = await walletService.isBiometricEnrolled(safeNumber);
+      } catch (_) {}
+
+      state = state.copyWith(
+        isDeviceSupported: isDeviceSupported,
+        isAvailable: isAvailable,
+        availableTypes: availableTypes,
+        isEnrolledForCurrentSafe: isEnrolled,
+        isLoading: false,
+        isInitialized: true,
+        errorMessage: null,
+      );
+    } catch (e) {
+      log.e('Error refreshing biometric for safe $safeNumber: $e');
+      state = state.copyWith(isLoading: false, isInitialized: true, errorMessage: e.toString());
+    }
   }
 
   /// Enroll biometric authentication for current safe (temporary implementation)
@@ -166,7 +205,7 @@ class BiometricNotifier extends Notifier<BiometricState> {
       }
 
       // Use Durt2 to securely enroll biometric authentication
-      await ref.read(walletServiceProvider).enableBiometric(pin: pin);
+      await ref.read(walletServiceProvider).enableBiometric(pin: pin, safeBoxNumber: _targetSafeNumber);
 
       // Update state
       state = state.copyWith(isEnrolledForCurrentSafe: true, isLoading: false);
@@ -203,8 +242,8 @@ class BiometricNotifier extends Notifier<BiometricState> {
         );
       }
 
-      // Use Durt2 to securely authenticate with biometric
-      final result = await ref.read(walletServiceProvider).authenticateWithBiometric();
+      // Use Durt2 to securely authenticate with biometric (target safe if set)
+      final result = await ref.read(walletServiceProvider).authenticateWithBiometric(_targetSafeNumber);
 
       state = state.copyWith(isLoading: false);
 

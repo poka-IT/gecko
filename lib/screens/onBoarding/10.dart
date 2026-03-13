@@ -197,6 +197,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
       await ref.read(biometricProvider.notifier).refresh();
       final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      PinCodeService.setAuthenticatedSafe(currentSafe);
 
       // --- Step 2: Import wallets (scan derivations or root import) ---
       if (!_isLegacy) {

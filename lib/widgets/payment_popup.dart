@@ -346,7 +346,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     Navigator.pop(context);
 
     // Get PIN code first (this is usually fast)
-    if (!await PinCodeService.askPinCode()) return;
+    if (!await PinCodeService.askPinCode(wallet: fromWallet)) return;
 
     // Create a StreamController to control the transaction status
     final statusController = StreamController<TransactionStatus>();

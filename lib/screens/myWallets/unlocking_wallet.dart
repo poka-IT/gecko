@@ -73,8 +73,10 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     _initializeSafes();
 
     // Initialize security state and trigger automatic biometric authentication after widget build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _initializeSecurity();
+      // Refresh biometric state for the target safe (may differ from default)
+      await ref.read(biometricProvider.notifier).refreshForSafe(currentSafeNumber);
       _tryAutomaticBiometric();
     });
   }
@@ -232,6 +234,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           await _waitForSystemReady();
 
           pinNotifier.setLoading(false);
+          PinCodeService.setAuthenticatedSafe(currentSafeNumber);
           PinCodeService.debounceResetPinCode();
 
           // ALWAYS return success and let the caller decide navigation
@@ -708,7 +711,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                   // Reset PIN state when changing safes
                   enterPin.clear();
                   pinColor = const Color(0xffF9F9F1);
-                  ref.read(biometricProvider.notifier).refresh();
+                  ref.read(biometricProvider.notifier).refreshForSafe(currentSafeNumber);
 
                   // Update security state for new safe
                   ref.read(pinSecurityProvider.notifier).updateForSafe(currentSafeNumber);

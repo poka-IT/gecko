@@ -98,6 +98,7 @@ class SafeOptionsContent extends ConsumerWidget {
       walletCount = walletsState.wallets.length;
     }
     final isAlone = walletCount == 1;
+    final safeFirstWallet = currentSafe.wallets.isNotEmpty ? currentSafe.wallets.first : null;
 
     return Column(
       spacing: 5,
@@ -105,7 +106,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyShowSeed,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
               showDesktopShowSeedModal(homeContext, walletName: WalletNameService.displayName(currentSafe.name));
@@ -174,7 +175,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyChangePin,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
             final oldPin = PinCodeService.pinCode;
             if (oldPin.isEmpty) return;
             if (isDesktopLayout(context)) {
@@ -250,7 +251,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyRenameSafe,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
               showDesktopRenameSafeModal(
@@ -290,7 +291,7 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyDeleteSafe,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true)) return;
+            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
 
             await safeManager.deleteSafe(context, currentSafe);
           },

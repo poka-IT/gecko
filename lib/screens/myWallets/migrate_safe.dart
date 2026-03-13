@@ -287,7 +287,7 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
 
                           if (!confirmed) return;
 
-                          if (!await PinCodeService.askPinCode()) return;
+                          if (!await PinCodeService.askPinCode(wallet: ref.read(firstWalletProvider))) return;
 
                           Navigator.pushReplacement(
                             // ignore: use_build_context_synchronously

@@ -181,6 +181,7 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
       ref.read(defaultSafeBoxNumberProvider.notifier).refresh();
       await ref.read(biometricProvider.notifier).refresh();
       final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
+      PinCodeService.setAuthenticatedSafe(currentSafe);
 
       // Load wallets
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);

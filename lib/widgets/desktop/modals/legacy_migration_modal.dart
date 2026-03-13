@@ -945,8 +945,8 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     final flowState = ref.read(g1v1MigrationFlowProvider);
     final navigator = Navigator.of(context);
 
-    // 1. Force-ask PIN
-    if (!await PinCodeService.askPinCode(force: true)) return;
+    // 1. Force-ask PIN (target wallet's safe)
+    if (!await PinCodeService.askPinCode(force: true, wallet: flowState.selectedTargetWallet)) return;
     final pinCode = PinCodeService.pinCode;
     if (pinCode.isEmpty) {
       log.e('Migration aborted: PIN was empty immediately after askPinCode');

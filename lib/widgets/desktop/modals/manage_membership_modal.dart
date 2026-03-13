@@ -103,7 +103,7 @@ class _ManageMembershipContent extends ConsumerWidget {
 
         if (!answer) return;
 
-        if (!await PinCodeService.askPinCode()) return;
+        if (!await PinCodeService.askPinCode(wallet: ref.read(walletServiceProvider).getWalletData(address))) return;
 
         final keypair = await ref
             .read(walletServiceProvider)

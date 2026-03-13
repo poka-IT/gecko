@@ -123,7 +123,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
     if (confirmed != true) return;
 
-    if (!await PinCodeService.askPinCode()) return;
+    if (!await PinCodeService.askPinCode(wallet: ref.read(walletServiceProvider).getWalletData(widget.address))) return;
 
     if (!await showMnemonicChallenge(context: context, ref: ref, address: widget.address)) return;
 

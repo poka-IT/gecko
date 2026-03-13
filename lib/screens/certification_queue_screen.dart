@@ -33,6 +33,8 @@ class CertificationQueueScreen extends ConsumerStatefulWidget {
 class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScreen> {
   bool _isSyncing = false;
 
+  d.WalletEntity get _issuerWallet => ref.read(walletServiceProvider).getWalletData(widget.issuerAddress);
+
   @override
   void initState() {
     super.initState();
@@ -195,7 +197,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     // Check if PIN is already cached
     if (PinCodeService.pinCode.isEmpty) {
       // Ask for PIN to sync
-      if (!await PinCodeService.askPinCode()) return;
+      if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
     }
 
     // Sync to CesiumPlus
@@ -454,7 +456,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     if (!confirmed) return;
 
-    if (!await PinCodeService.askPinCode()) return;
+    if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
 
     final identityWallet = await identityWalletFuture;
     if (identityWallet == null) {
@@ -502,7 +504,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     if (!confirmed) return;
 
     // Ask for PIN to sync after removal
-    if (!await PinCodeService.askPinCode()) return;
+    if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
 
     await queueNotifier.removeFromQueue(cert.id);
 
@@ -547,7 +549,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     if (!context.mounted) return;
 
     // Ask for PIN
-    if (!await PinCodeService.askPinCode()) return;
+    if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
 
     final success = await _syncToRemoteWithRefs(walletService, queueNotifier);
 

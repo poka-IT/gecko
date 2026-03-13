@@ -65,7 +65,7 @@ class WalletDeletionService {
 
       // If wallet has balance and there's a destination, transfer funds first
       if (walletBalance.transferableBalance > BigInt.zero && destinationWallet != null) {
-        if (!await PinCodeService.askPinCode()) {
+        if (!await PinCodeService.askPinCode(wallet: wallet)) {
           return 2; // PIN cancelled
         }
 

@@ -207,7 +207,8 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
       if (!context.mounted) return;
 
       // Ask for PIN to sign the sync request
-      if (!await PinCodeService.askPinCode()) return;
+      if (!await PinCodeService.askPinCode(wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress)))
+        return;
 
       // Add to local queue
       final success = await queueNotifier.addToQueue(

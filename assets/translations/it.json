@@ -527,7 +527,7 @@
     "migration_confirm_identity_label": "Identità",
     "migration_confirm_title": "Riepilogo della migrazione",
     "migration_confirm_to": "Verso",
-    "migration_confirm_warning": "Questa operazione è irreversibile. Le tue vecchie credenziali Cesium smetteranno di funzionare dopo la migrazione.",
+    "migration_confirm_warning": "Questa operazione è irreversibile. Il tuo vecchio portafoglio Cesium verrà svuotato: il saldo e l'identità saranno trasferiti alla destinazione scelta.",
     "migration_converting": "Conversione credenziali...",
     "migration_create_new_wallet": "Crea un nuovo portafoglio",
     "migration_create_new_wallet_hint": "Un nuovo portafoglio sarà creato nella tua cassaforte attuale",

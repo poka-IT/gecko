@@ -30,7 +30,8 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/services/pin_cache_service.dart';
-
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/async_elevated_button.dart';
@@ -358,15 +359,28 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       comment: payComment,
     );
 
-    // Navigate immediately to activity screen with loading state
-    Navigator.push(
-      homeContext,
-      MaterialPageRoute(
-        builder: (context) {
-          return ActivityScreen(address: capturedFromWallet.address, transactionData: transactionData);
-        },
-      ),
-    );
+    // Navigate to transaction progress view
+    if (isDesktopLayout(homeContext)) {
+      // Desktop: compact modal showing transaction progress
+      showDesktopTransactionProgressModal(
+        homeContext,
+        transactionStatus: transactionData.status,
+        transType: 'pay',
+        fromAddress: capturedFromWallet.address,
+        toAddress: widget.toAddress,
+        toUsername: widget.username,
+      );
+    } else {
+      // Mobile: full activity screen with transaction data
+      Navigator.push(
+        homeContext,
+        MaterialPageRoute(
+          builder: (context) {
+            return ActivityScreen(address: capturedFromWallet.address, transactionData: transactionData);
+          },
+        ),
+      );
+    }
 
     // Execute heavy operations asynchronously in background
     executeTransactionInBackground(

@@ -872,7 +872,7 @@
     "migration_confirm_to": "Al",
     "migration_confirm_balance_label": "Saldo",
     "migration_confirm_identity_label": "Identeco",
-    "migration_confirm_warning": "Tiu operacio estas neinversigebla. Viaj malnovaj Cesium-identigiloj ĉesos funkcii post la migrado.",
+    "migration_confirm_warning": "Tiu operacio estas neinversigebla. Via malnova Cesium-monujo estos malplenigita: la saldo kaj identeco estos transdonitaj al la elektita celo.",
     "migration_confirm_button": "Konfirmi la migradon",
     "language": "Lingvo",
     "systemLanguage": "Sistemo (aŭtomate)",

@@ -45,6 +45,15 @@ class _DesktopProfileContent extends ConsumerStatefulWidget {
 
 class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> {
   @override
+  void initState() {
+    super.initState();
+    // Reset selected certification wallet when opening a new profile
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(selectedCertificationWalletProvider.notifier).set(null);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
@@ -151,6 +160,20 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
   }
 
   Widget _buildCertificationArea(BuildContext context, WidgetRef ref) {
+    // On desktop, use all-safes provider to find member wallets across all safes.
+    // Auto-select first member wallet so certStateProvider sees it.
+    final allMemberWalletsAsync = ref.watch(allSafesIdentityWalletsProvider);
+    final selectedAddress = ref.watch(selectedCertificationWalletProvider);
+
+    // Auto-select first member wallet if none is selected yet
+    allMemberWalletsAsync.whenData((wallets) {
+      if (wallets.isNotEmpty && selectedAddress == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(selectedCertificationWalletProvider.notifier).set(wallets.first.address);
+        });
+      }
+    });
+
     final certStateAsync = ref.watch(certStateProvider(widget.address));
 
     return certStateAsync.when(
@@ -180,7 +203,8 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
   }
 
   Widget _buildCertWalletDropdown(WidgetRef ref) {
-    final identityWalletsAsync = ref.watch(identityWalletsAsyncProvider);
+    // Desktop: show member wallets from ALL safes
+    final identityWalletsAsync = ref.watch(allSafesIdentityWalletsProvider);
     final selectedAddress = ref.watch(selectedCertificationWalletProvider);
 
     return identityWalletsAsync.when(

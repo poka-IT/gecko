@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
@@ -80,18 +80,12 @@ class MembershipRenewal {
         .getKeyPairFromAddress(address: address, pinCode: PinCodeService.pinCode);
     final transactionStatus = ref.read(duniterServiceProvider).renewMembership(keypair);
 
-    Navigator.push(
+    navigateToTransactionProgress(
       context,
-      MaterialPageRoute(
-        builder: (context) {
-          return TransactionInProgressScreen(
-            transactionStatus: transactionStatus,
-            transType: 'renewMembership',
-            fromAddress: address,
-            toAddress: address,
-          );
-        },
-      ),
+      transactionStatus: transactionStatus,
+      transType: 'renewMembership',
+      fromAddress: address,
+      toAddress: address,
     );
   }
 

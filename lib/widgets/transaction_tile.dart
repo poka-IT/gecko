@@ -9,6 +9,8 @@ import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
 
 class TransactionTile extends StatelessWidget {
@@ -26,6 +28,19 @@ class TransactionTile extends StatelessWidget {
   final TransactionDisplayItem transaction;
   final BuildContext context;
   final String? viewingAddress;
+
+  void _openProfile(BuildContext context, {required String address, String? username}) {
+    if (isDesktopLayout(context)) {
+      showDesktopProfileModal(context, address: address, username: username);
+    } else {
+      Navigator.push(
+        context,
+        PageNoTransit(
+          builder: (context) => ProfileViewScreen(address: address, username: username, fromAddress: viewingAddress),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,15 +79,7 @@ class TransactionTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(scaleSize(12)),
         child: InkWell(
           key: keyTransaction(newKey),
-          onTap: () {
-            Navigator.push(
-              context,
-              PageNoTransit(
-                builder: (context) =>
-                    ProfileViewScreen(address: transaction.address, username: username, fromAddress: viewingAddress),
-              ),
-            );
-          },
+          onTap: () => _openProfile(context, address: transaction.address, username: username),
           borderRadius: BorderRadius.circular(scaleSize(12)),
           child: Padding(
             padding: EdgeInsets.all(scaleSize(12)),
@@ -324,18 +331,7 @@ class TransactionTile extends StatelessWidget {
         color: context.colorScheme.secondaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(scaleSize(12)),
         child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              PageNoTransit(
-                builder: (context) => ProfileViewScreen(
-                  address: transaction.address,
-                  username: transaction.username,
-                  fromAddress: viewingAddress,
-                ),
-              ),
-            );
-          },
+          onTap: () => _openProfile(context, address: transaction.address, username: transaction.username),
           borderRadius: BorderRadius.circular(scaleSize(12)),
           child: Padding(
             padding: EdgeInsets.all(scaleSize(12)),
@@ -430,18 +426,7 @@ class TransactionTile extends StatelessWidget {
         color: context.colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(scaleSize(12)),
         child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              PageNoTransit(
-                builder: (context) => ProfileViewScreen(
-                  address: transaction.address,
-                  username: transaction.username,
-                  fromAddress: viewingAddress,
-                ),
-              ),
-            );
-          },
+          onTap: () => _openProfile(context, address: transaction.address, username: transaction.username),
           borderRadius: BorderRadius.circular(scaleSize(12)),
           child: Padding(
             padding: EdgeInsets.all(scaleSize(12)),

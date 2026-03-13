@@ -14,7 +14,7 @@ import 'package:gecko/services/image_cache_service.dart';
 import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
-import 'package:gecko/widgets/desktop/modals/legacy_import_modal.dart';
+import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
 import 'package:gecko/widgets/desktop/modals/onboarding_modal.dart';
 import 'package:gecko/widgets/desktop/modals/restore_modal.dart';
 import 'package:gecko/widgets/desktop/modals/settings_modal.dart';
@@ -234,7 +234,7 @@ class _DesktopWelcomeWidget extends StatelessWidget {
             icon: Icons.swap_horiz_rounded,
             title: 'importLegacyAccount'.tr(),
             subtitle: 'importLegacyDescription'.tr(),
-            onTap: () => showDesktopLegacyImportModal(context),
+            onTap: () => showDesktopLegacyMigrationModal(context),
           ),
         _ActionCard(
           icon: Icons.public_rounded,

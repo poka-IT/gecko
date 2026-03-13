@@ -17,7 +17,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
 import 'package:gecko/screens/license_page.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/bottom_sheets/mnemonic_challenge_sheet.dart';
 import 'package:gecko/widgets/commons/async_elevated_button.dart';
@@ -27,8 +27,9 @@ import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/wallet_app_bar.dart';
 
 class ConfirmIdentityScreen extends ConsumerStatefulWidget {
-  const ConfirmIdentityScreen({super.key, required this.address});
+  const ConfirmIdentityScreen({super.key, required this.address, this.embeddedMode = false});
   final String address;
+  final bool embeddedMode;
 
   @override
   ConsumerState<ConfirmIdentityScreen> createState() => _ConfirmIdentityScreenState();
@@ -147,18 +148,17 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     });
 
     if (!mounted) return;
+    // Capture parent context before popping, since `context` becomes invalid after pop
+    final parentContext = navigatorState.context;
     navigatorState.pop();
 
     try {
-      await navigatorState.push(
-        MaterialPageRoute(
-          builder: (context) => TransactionInProgressScreen(
-            transactionStatus: broadcastStream,
-            transType: 'comfirmIdty',
-            fromAddress: widget.address,
-            toAddress: widget.address,
-          ),
-        ),
+      await navigateToTransactionProgress(
+        parentContext,
+        transactionStatus: broadcastStream,
+        transType: 'comfirmIdty',
+        fromAddress: widget.address,
+        toAddress: widget.address,
       );
     } finally {
       await invalidateSubscription.cancel();
@@ -170,26 +170,30 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.height < 700;
 
+    final body = ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 500),
+      child: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) => setState(() => _currentPage = index),
+              children: [_buildPage1(context, isSmallScreen), _buildPage2(context, isSmallScreen)],
+            ),
+          ),
+          _buildBottomSection(context, isSmallScreen),
+        ],
+      ),
+    );
+
+    if (widget.embeddedMode) {
+      return Center(child: body);
+    }
+
     return Scaffold(
       appBar: WalletAppBar(address: widget.address, title: 'chooseIdentityName'.tr()),
-      body: ResponsiveCenter(
-        maxWidth: 500,
-        padding: EdgeInsets.zero,
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                children: [_buildPage1(context, isSmallScreen), _buildPage2(context, isSmallScreen)],
-              ),
-            ),
-            // Bottom section with page dots + action button
-            _buildBottomSection(context, isSmallScreen),
-          ],
-        ),
-      ),
+      body: ResponsiveCenter(maxWidth: 500, padding: EdgeInsets.zero, child: body),
     );
   }
 

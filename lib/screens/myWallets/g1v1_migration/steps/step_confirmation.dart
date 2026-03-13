@@ -15,6 +15,8 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
@@ -382,18 +384,29 @@ class StepConfirmation extends ConsumerWidget {
 
     // 9. Replace migration flow with transaction screen
     try {
-      await navigator.pushReplacement(
-        MaterialPageRoute(
-          builder: (context) {
-            return TransactionInProgressScreen(
-              transactionStatus: broadcastStream,
-              transType: hasIdentity ? 'identityMigration' : 'accountMigration',
-              fromAddress: fromAddress,
-              toAddress: targetAddress,
-            );
-          },
-        ),
-      );
+      if (isDesktopLayout(navigator.context)) {
+        navigator.pop();
+        await showDesktopTransactionProgressModal(
+          homeContext,
+          transactionStatus: broadcastStream,
+          transType: hasIdentity ? 'identityMigration' : 'accountMigration',
+          fromAddress: fromAddress,
+          toAddress: targetAddress,
+        );
+      } else {
+        await navigator.pushReplacement(
+          MaterialPageRoute(
+            builder: (context) {
+              return TransactionInProgressScreen(
+                transactionStatus: broadcastStream,
+                transType: hasIdentity ? 'identityMigration' : 'accountMigration',
+                fromAddress: fromAddress,
+                toAddress: targetAddress,
+              );
+            },
+          ),
+        );
+      }
     } finally {
       await invalidateSubscription.cancel();
     }

@@ -1,8 +1,11 @@
+import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/pin_modal.dart';
 
 class PinCodeService {
   static const String _storageKey = 'isCacheChecked';
@@ -37,17 +40,24 @@ class PinCodeService {
     if (actualLock == lockPin) pinCode = '';
   }
 
-  static Future<bool> askPinCode({bool force = false, bool canSwitch = false}) async {
+  static Future<bool> askPinCode({bool force = false, bool canSwitch = false, d.WalletEntity? wallet}) async {
     final container = ProviderScope.containerOf(homeContext);
-    final defaultWallet = container.read(walletServiceProvider).defaultWallet;
+    final targetWallet = wallet ?? container.read(walletServiceProvider).defaultWallet;
 
     if (pinCode.isEmpty || force) {
       pinCode = '';
-      final result = await Navigator.pushNamed(
-        homeContext,
-        RouteNames.unlockingWallet,
-        arguments: UnlockingWalletArguments(wallet: defaultWallet, canSwitch: canSwitch),
-      );
+
+      // Use desktop modal on wide screens, full-screen route on mobile
+      final Object? result;
+      if (isDesktopLayout(homeContext)) {
+        result = await showDesktopPinModal(homeContext, canSwitch: canSwitch, wallet: targetWallet);
+      } else {
+        result = await Navigator.pushNamed(
+          homeContext,
+          RouteNames.unlockingWallet,
+          arguments: UnlockingWalletArguments(wallet: targetWallet, canSwitch: canSwitch),
+        );
+      }
       // Only continue if we actually got a valid PIN back
       if (result == null) return false;
     }

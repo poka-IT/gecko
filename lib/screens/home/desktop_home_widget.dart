@@ -45,7 +45,8 @@ import 'package:gecko/models/identity_display_item.dart';
 import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
-import 'package:gecko/widgets/desktop/modals/legacy_import_modal.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
 import 'package:gecko/widgets/desktop/modals/onboarding_modal.dart';
 import 'package:gecko/widgets/desktop/modals/restore_modal.dart';
 import 'package:gecko/widgets/desktop/modals/wallet_options_modal.dart';
@@ -165,7 +166,67 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   void _openSafeOptions(BuildContext context) {
-    showDesktopSafeOptionsModal(context, ref);
+    final groups = ref.read(safeWalletGroupsProvider);
+
+    if (groups.length <= 1) {
+      // Single safe: open directly
+      showDesktopSafeOptionsModal(context, ref);
+      return;
+    }
+
+    // Multiple safes: show picker popup
+    final renderBox = context.findRenderObject() as RenderBox?;
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (renderBox == null || overlay == null) return;
+
+    final position = renderBox.localToGlobal(Offset.zero, ancestor: overlay);
+    final size = renderBox.size;
+
+    showMenu<int>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy + size.height,
+        overlay.size.width - position.dx - size.width,
+        0,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      items: groups.map((group) {
+        final name = WalletNameService.displayName(group.safe.name);
+        return PopupMenuItem<int>(
+          value: group.safe.number,
+          child: Row(
+            children: [
+              Icon(
+                group.isCurrent ? Icons.lock_rounded : Icons.lock_outline_rounded,
+                size: 18,
+                color: group.isCurrent
+                    ? context.colorScheme.primary
+                    : context.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontWeight: group.isCurrent ? FontWeight.w600 : FontWeight.normal,
+                    color: group.isCurrent ? context.colorScheme.primary : null,
+                  ),
+                ),
+              ),
+              Text(
+                '${group.wallets.length}',
+                style: TextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    ).then((safeNumber) {
+      if (safeNumber != null) {
+        showDesktopSafeOptionsModal(context, ref, safeNumber: safeNumber);
+      }
+    });
   }
 
   void _focusDesktopHomeShell() {
@@ -1931,78 +1992,72 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   Widget _buildTotalBalanceCard(BuildContext context, WidgetRef ref) {
     final connectionStatus = ref.watch(connectionStatusProvider);
     final isConnected = connectionStatus == d.ConnectionStatus.connected;
-    final currentSafe = ref.watch(currentSafeNumberProvider);
-    final safeData = ref.watch(safeOnChainDataProvider(currentSafe));
+    final safeGroups = ref.watch(safeWalletGroupsProvider);
 
-    return _buildGlassCard(
-      context,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: safeData.when(
+    // Sum balances across ALL safes
+    var total = BigInt.zero;
+    var anyLoading = false;
+    var anyError = false;
+
+    for (final group in safeGroups) {
+      final safeData = ref.watch(safeOnChainDataProvider(group.safe.number));
+      safeData.when(
         data: (data) {
-          var total = BigInt.zero;
           for (final balance in data.balances.values) {
             total += balance.transferableBalance;
           }
-          // Don't show "0" balance when not connected — it's misleading
-          final showPlaceholder = !isConnected && total == BigInt.zero;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                'soldeTotal'.tr(),
-                style: scaledTextStyle(
-                  fontSize: 12,
-                  color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Flexible(
-                child: showPlaceholder
-                    ? Text(
-                        '–',
-                        style: scaledTextStyle(
-                          fontSize: 20,
-                          color: context.colorScheme.onSurface.withValues(alpha: 0.3),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : BalanceDisplay(
-                        value: total,
-                        size: 20,
-                        color: context.colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-              ),
-            ],
-          );
         },
-        loading: () => Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              'soldeTotal'.tr(),
-              style: scaledTextStyle(
-                fontSize: 12,
-                color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
+        loading: () => anyLoading = true,
+        error: (_, _) => anyError = true,
+      );
+    }
+
+    final Widget content;
+    if (anyLoading && total == BigInt.zero) {
+      // All safes still loading, show placeholder
+      content = Text(
+        '–',
+        style: scaledTextStyle(
+          fontSize: 20,
+          color: context.colorScheme.onSurface.withValues(alpha: 0.3),
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    } else if (anyError && total == BigInt.zero) {
+      content = Text('errorLoadingWalletData'.tr(), style: scaledTextStyle(fontSize: 12, color: Colors.red[300]!));
+    } else {
+      // Don't show "0" balance when not connected — it's misleading
+      final showPlaceholder = !isConnected && total == BigInt.zero;
+      content = showPlaceholder
+          ? Text(
               '–',
               style: scaledTextStyle(
                 fontSize: 20,
                 color: context.colorScheme.onSurface.withValues(alpha: 0.3),
                 fontWeight: FontWeight.bold,
               ),
+            )
+          : BalanceDisplay(value: total, size: 20, color: context.colorScheme.onSurface, fontWeight: FontWeight.bold);
+    }
+
+    return _buildGlassCard(
+      context,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(
+            'soldeTotal'.tr(),
+            style: scaledTextStyle(
+              fontSize: 12,
+              color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w500,
             ),
-          ],
-        ),
-        error: (_, _) =>
-            Text('errorLoadingWalletData'.tr(), style: scaledTextStyle(fontSize: 12, color: Colors.red[300]!)),
+          ),
+          const SizedBox(width: 10),
+          Flexible(child: content),
+        ],
       ),
     );
   }
@@ -2054,7 +2109,6 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                 ),
               ),
               const SizedBox(width: 6),
-              _buildAddDerivationButton(context, ref),
             ],
           ),
           const SizedBox(height: 10),
@@ -2096,7 +2150,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSafeHeader(context, group, compact: true),
+          _buildSafeHeader(context, ref, group, compact: true),
           const SizedBox(height: 12),
           _buildWalletRow(context, ref, wallet, isPrimary: true, isOnlyWallet: true),
         ],
@@ -2107,7 +2161,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   Widget _buildSingleSafeWalletList(BuildContext context, WidgetRef ref, _DesktopSafeWalletGroup group) {
     return Column(
       children: [
-        _buildSafeHeader(context, group, compact: true),
+        _buildSafeHeader(context, ref, group, compact: true),
         const SizedBox(height: 10),
         for (final wallet in group.wallets)
           _buildWalletRow(context, ref, wallet, isPrimary: _isPrimaryWallet(group.wallets, wallet)),
@@ -2140,7 +2194,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       ),
       child: Column(
         children: [
-          _buildSafeHeader(context, group),
+          _buildSafeHeader(context, ref, group),
           const SizedBox(height: 10),
           for (final wallet in group.wallets)
             _buildWalletRow(context, ref, wallet, isPrimary: _isPrimaryWallet(group.wallets, wallet)),
@@ -2149,7 +2203,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
-  Widget _buildSafeHeader(BuildContext context, _DesktopSafeWalletGroup group, {bool compact = false}) {
+  Widget _buildSafeHeader(BuildContext context, WidgetRef ref, _DesktopSafeWalletGroup group, {bool compact = false}) {
     final safeLabel = WalletNameService.displayName(group.safe.name);
     return Row(
       children: [
@@ -2204,6 +2258,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               style: scaledTextStyle(fontSize: 10, color: context.colorScheme.primary, fontWeight: FontWeight.w700),
             ),
           ),
+        const SizedBox(width: 4),
+        _buildAddDerivationButton(context, ref, safeNumber: group.safe.number),
       ],
     );
   }
@@ -2256,9 +2312,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     });
   }
 
-  Widget _buildAddDerivationButton(BuildContext context, WidgetRef ref) {
+  Widget _buildAddDerivationButton(BuildContext context, WidgetRef ref, {required int safeNumber}) {
     final derivationState = ref.watch(derivationStateProvider);
-    final walletsState = ref.watch(walletsListProvider);
 
     return SizedBox(
       width: 28,
@@ -2270,10 +2325,13 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           onTap: derivationState.isLoading
               ? null
               : () async {
-                  if (!await PinCodeService.askPinCode()) return;
-                  final lastNum = walletsState.wallets.isNotEmpty ? walletsState.wallets.last.number : -1;
+                  final walletService = ref.read(walletServiceProvider);
+                  final wallets = walletService.getWalletDataList(safeNumber);
+                  if (wallets.isEmpty) return;
+                  if (!await PinCodeService.askPinCode(wallet: wallets.first)) return;
+                  final lastNum = wallets.last.number;
                   final name = WalletNameService.defaultN(lastNum + 2);
-                  await ref.read(walletActionsProvider.notifier).generateNewDerivation(name);
+                  await ref.read(walletActionsProvider.notifier).generateNewDerivation(name, safeNumber: safeNumber);
                 },
           child: derivationState.isLoading
               ? Padding(
@@ -2306,9 +2364,13 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         if (ImportChoiceScreen.enableLegacyLogin)
           _buildSecondaryActionButton(
             context,
-            icon: Icons.swap_horiz_rounded,
-            label: 'importLegacyAccount'.tr(),
-            onTap: () => showDesktopLegacyImportModal(context),
+            iconWidget: SvgPicture.asset(
+              'assets/cesium_bw2.svg',
+              height: 16,
+              colorFilter: ColorFilter.mode(context.colorScheme.onSurface.withValues(alpha: 0.72), BlendMode.srcIn),
+            ),
+            label: 'importIdPasswordAccount'.tr(),
+            onTap: () => showDesktopLegacyMigrationModal(context),
           ),
       ],
     );
@@ -2316,7 +2378,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   Widget _buildSecondaryActionButton(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String label,
     required VoidCallback onTap,
   }) {
@@ -2334,7 +2397,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.72)),
+              iconWidget ?? Icon(icon, size: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.72)),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(

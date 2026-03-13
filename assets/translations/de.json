@@ -501,7 +501,7 @@
     "migration_confirm_identity_label": "",
     "migration_confirm_title": "",
     "migration_confirm_to": "",
-    "migration_confirm_warning": "",
+    "migration_confirm_warning": "Dieser Vorgang ist unwiderruflich. Ihre alte Cesium-Brieftasche wird geleert: Guthaben und Identität werden an das gewählte Ziel übertragen.",
     "migration_converting": "",
     "migration_create_new_wallet": "",
     "migration_create_new_wallet_hint": "",

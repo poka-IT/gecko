@@ -10,7 +10,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
@@ -455,16 +455,12 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       });
 
       try {
-        await Navigator.push(
+        await navigateToTransactionProgress(
           context,
-          MaterialPageRoute(
-            builder: (context) => TransactionInProgressScreen(
-              transactionStatus: broadcastStream,
-              transType: migrationData.hasIdentity ? 'identityMigration' : 'accountMigration',
-              fromAddress: migrationData.fromAddress,
-              toAddress: targetWallet.address,
-            ),
-          ),
+          transactionStatus: broadcastStream,
+          transType: migrationData.hasIdentity ? 'identityMigration' : 'accountMigration',
+          fromAddress: migrationData.fromAddress,
+          toAddress: targetWallet.address,
         );
       } finally {
         await stateSubscription.cancel();

@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:durt2/durt2.dart' as d;
+import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +22,11 @@ import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/biometric/biometric_settings_tile.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/change_pin_modal.dart';
+import 'package:gecko/widgets/desktop/modals/migrate_safe_modal.dart';
+import 'package:gecko/widgets/desktop/modals/rename_safe_modal.dart';
+import 'package:gecko/widgets/desktop/modals/show_seed_modal.dart';
 
 class SafeOptions extends ConsumerWidget {
   const SafeOptions({Key? keyMyWallets}) : super(key: keyMyWallets);
@@ -60,7 +67,10 @@ class SafeOptions extends ConsumerWidget {
 }
 
 class SafeOptionsContent extends ConsumerWidget {
-  const SafeOptionsContent({super.key});
+  const SafeOptionsContent({super.key, this.safeNumber});
+
+  /// If provided, show options for this specific safe instead of the default one.
+  final int? safeNumber;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,9 +79,25 @@ class SafeOptionsContent extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final safeManager = ref.read(safeManagerProvider);
-    final walletsState = ref.watch(walletsListProvider);
-    final currentSafe = walletService.defaultSafeBox;
-    final isAlone = walletsState.wallets.length == 1;
+
+    // Resolve the target safe: specific safe number or default
+    final d.SafeEntity currentSafe;
+    final int walletCount;
+    if (safeNumber != null) {
+      final allSafes = walletService.safeBox.getAll();
+      final match = allSafes.where((s) => s.number == safeNumber).firstOrNull;
+      if (match == null) return const SizedBox.shrink();
+      currentSafe = match;
+      final query = walletService.walletBox.query()..link(WalletEntity_.safe, SafeEntity_.number.equals(safeNumber!));
+      final built = query.build();
+      walletCount = built.find().length;
+      built.close();
+    } else {
+      currentSafe = walletService.defaultSafeBox;
+      final walletsState = ref.watch(walletsListProvider);
+      walletCount = walletsState.wallets.length;
+    }
+    final isAlone = walletCount == 1;
 
     return Column(
       spacing: 5,
@@ -80,12 +106,17 @@ class SafeOptionsContent extends ConsumerWidget {
           key: keyShowSeed,
           onTap: () async {
             if (!await PinCodeService.askPinCode(force: true)) return;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ShowSeed(walletName: WalletNameService.displayName(currentSafe.name)),
-              ),
-            );
+            if (isDesktopLayout(context)) {
+              Navigator.of(context).pop();
+              showDesktopShowSeedModal(homeContext, walletName: WalletNameService.displayName(currentSafe.name));
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ShowSeed(walletName: WalletNameService.displayName(currentSafe.name)),
+                ),
+              );
+            }
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -108,7 +139,12 @@ class SafeOptionsContent extends ConsumerWidget {
           key: keyMigrateSafe,
           onTap: ref.read(durtProvider).isConnected
               ? () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const MigrateSafeScreen()));
+                  if (isDesktopLayout(context)) {
+                    Navigator.of(context).pop();
+                    showDesktopMigrateSafeModal(homeContext);
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const MigrateSafeScreen()));
+                  }
                 }
               : null,
           child: Container(
@@ -141,13 +177,22 @@ class SafeOptionsContent extends ConsumerWidget {
             if (!await PinCodeService.askPinCode(force: true)) return;
             final oldPin = PinCodeService.pinCode;
             if (oldPin.isEmpty) return;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    ChangePinScreen(walletName: WalletNameService.displayName(currentSafe.name), oldPin: oldPin),
-              ),
-            );
+            if (isDesktopLayout(context)) {
+              Navigator.of(context).pop();
+              showDesktopChangePinModal(
+                homeContext,
+                walletName: WalletNameService.displayName(currentSafe.name),
+                oldPin: oldPin,
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ChangePinScreen(walletName: WalletNameService.displayName(currentSafe.name), oldPin: oldPin),
+                ),
+              );
+            }
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -206,15 +251,24 @@ class SafeOptionsContent extends ConsumerWidget {
           key: keyRenameSafe,
           onTap: () async {
             if (!await PinCodeService.askPinCode(force: true)) return;
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => RenameSafeScreen(
-                  currentName: WalletNameService.displayName(currentSafe.name),
-                  safeBoxNumber: currentSafe.number,
+            if (isDesktopLayout(context)) {
+              Navigator.of(context).pop();
+              showDesktopRenameSafeModal(
+                homeContext,
+                currentName: WalletNameService.displayName(currentSafe.name),
+                safeBoxNumber: currentSafe.number,
+              );
+            } else {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RenameSafeScreen(
+                    currentName: WalletNameService.displayName(currentSafe.name),
+                    safeBoxNumber: currentSafe.number,
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),

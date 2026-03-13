@@ -8,6 +8,8 @@ import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
+import 'package:gecko/routes.dart';
+import 'package:gecko/services/certification_queue_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 /// Service for handling complex wallet deletion operations
@@ -30,14 +32,15 @@ class WalletDeletionService {
   static Future<int> deleteWallet(BuildContext context, WalletEntity wallet, {required riverpod.WidgetRef ref}) async {
     // Find destination wallet: first wallet that isn't the one being deleted
     final wallets = ref.read(walletsListProvider).wallets;
-    final destinationWallet = wallets.firstWhere((w) => w.address != wallet.address);
+    final destinationWallet = wallets.where((w) => w.address != wallet.address).firstOrNull;
+    final isLastWalletInSafe = destinationWallet == null;
 
     try {
       final walletBalance = await ref.read(storageServiceProvider).getBalance(wallet.address);
 
       // Show confirmation dialog with transfer details
       String confirmationMessage;
-      if (walletBalance.transferableBalance > BigInt.zero) {
+      if (walletBalance.transferableBalance > BigInt.zero && destinationWallet != null) {
         confirmationMessage = 'areYouSureToForgetWalletWithBalance'.tr(
           args: [
             WalletNameService.displayName(wallet.name),
@@ -60,8 +63,8 @@ class WalletDeletionService {
         return 2; // User cancelled
       }
 
-      // If wallet has balance, transfer funds first
-      if (walletBalance.transferableBalance > BigInt.zero) {
+      // If wallet has balance and there's a destination, transfer funds first
+      if (walletBalance.transferableBalance > BigInt.zero && destinationWallet != null) {
         if (!await PinCodeService.askPinCode()) {
           return 2; // PIN cancelled
         }
@@ -80,6 +83,20 @@ class WalletDeletionService {
         }
       }
 
+      // If this is the last wallet in the safe, delegate to SafeManager
+      // which handles safe deletion, navigation, and switching to another safe
+      if (isLastWalletInSafe) {
+        final safe = wallet.safe.target;
+        if (safe != null) {
+          await _cleanupWalletFiles(wallet);
+          // SafeManager.deleteSafe handles everything: deletion, navigation, safe switching
+          // It already showed its own confirmation, but we already confirmed above,
+          // so we call the internal deletion directly
+          await _deleteSafeDirectly(ref, safe, context);
+          return 0;
+        }
+      }
+
       // Delete wallet files and data
       await _cleanupWalletFiles(wallet);
       await ref.read(walletServiceProvider).deleteWallet(wallet.address);
@@ -92,6 +109,51 @@ class WalletDeletionService {
       return 0; // Success
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Delete a safe directly (used when deleting the last wallet of a safe).
+  /// Mirrors SafeManager's post-deletion logic for proper navigation and state cleanup,
+  /// but skips the confirmation dialog (already confirmed by the caller).
+  static Future<void> _deleteSafeDirectly(riverpod.WidgetRef ref, SafeEntity safe, BuildContext context) async {
+    await _performSafeDeletion(ref, safe, context);
+  }
+
+  /// Perform safe deletion with proper navigation handling.
+  /// Mirrors SafeManager.deleteSafe but skips the confirmation dialog.
+  static Future<void> _performSafeDeletion(riverpod.WidgetRef ref, SafeEntity safe, BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final walletService = ref.read(walletServiceProvider);
+
+    // Delete certification queue data
+    final walletsInSafe = walletService.getWalletDataList(safe.number);
+    final addresses = walletsInSafe.map((w) => w.address).toList();
+    await CertificationQueueService.deleteQueuesForAddresses(addresses);
+
+    // Delete the safe
+    await walletService.deleteSafe(safe.number);
+
+    // Clear PIN
+    PinCodeService.pinCode = '';
+
+    // Handle navigation
+    if (walletService.safeBox.isEmpty()) {
+      // No safes left
+      navigator.pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
+      await Future.delayed(const Duration(milliseconds: 50));
+      ref.read(walletActionsProvider.notifier).invalidateProviders();
+      ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(-1);
+      ref.read(walletsListProvider.notifier).clear();
+    } else {
+      // Switch to another safe
+      final remainingSafes = walletService.safeBox.getAll();
+      final newDefaultSafe = remainingSafes.first.number;
+      try {
+        await ref.read(walletActionsProvider.notifier).switchSafe(newDefaultSafe);
+      } catch (e) {
+        ref.read(walletsListProvider.notifier).clear();
+      }
+      navigator.popUntil(ModalRoute.withName(RouteNames.home));
     }
   }
 

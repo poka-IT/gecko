@@ -2,10 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/membership_providers.dart';
 import 'package:gecko/screens/myWallets/manage_membership.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/manage_membership_modal.dart';
 
 class ManageMembershipButton extends ConsumerWidget {
   const ManageMembershipButton({super.key, required this.address});
@@ -26,7 +29,12 @@ class ManageMembershipButton extends ConsumerWidget {
 
     return InkWell(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ManageMembership(address: address)));
+        if (isDesktopLayout(context)) {
+          Navigator.of(context).pop();
+          showDesktopManageMembershipModal(homeContext, address: address);
+        } else {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ManageMembership(address: address)));
+        }
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),

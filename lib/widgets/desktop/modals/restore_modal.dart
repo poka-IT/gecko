@@ -17,6 +17,7 @@ import 'package:gecko/screens/onBoarding/9.dart' show isPinComplex;
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/desktop/desktop_congrats_step.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
@@ -57,6 +58,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
   bool _pinError = false;
   String _pinErrorMessage = '';
   bool _isProcessing = false;
+  bool _biometricSetupAttempted = false;
   late FocusNode _pinFocusNode;
   late TextEditingController _pinTextController;
   late PinInputController _pinController;
@@ -551,10 +553,155 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
   // ─── Step 2: Congrats ───
 
   Widget _buildCongratsStep(BuildContext context) {
+    _triggerBiometricSetup(context);
+
     return DesktopCongratsStep(
       message: 'yourSafeAndWalletWereRestoredSuccessfully'.tr(),
       buttonLabel: 'accessMySafe'.tr(),
       onButtonPressed: () => Navigator.of(context).pop(true),
     );
+  }
+
+  void _triggerBiometricSetup(BuildContext context) {
+    if (_pinCode.isEmpty || _biometricSetupAttempted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final biometricNotifier = ref.read(biometricProvider.notifier);
+      await biometricNotifier.waitForInitialization();
+      final biometricState = ref.read(biometricProvider);
+      if (biometricState.canEnroll && !_biometricSetupAttempted && mounted) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted && !_biometricSetupAttempted) {
+          _handleBiometricSetup(context);
+        }
+      }
+    });
+  }
+
+  Future<void> _handleBiometricSetup(BuildContext context) async {
+    try {
+      _biometricSetupAttempted = true;
+      final shouldSetup = await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        constraints: const BoxConstraints(maxWidth: 600),
+        builder: (context) => Container(
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface,
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Icon(Icons.fingerprint, color: context.colorScheme.primary, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'setupBiometric'.tr(),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: context.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'wouldYouLikeToSetupBiometricAuth'.tr(),
+                    style: TextStyle(fontSize: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.8)),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'setupBiometric'.tr(),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        'skip'.tr(),
+                        style: TextStyle(fontSize: 16, color: context.colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      if (shouldSetup == true && context.mounted) {
+        await _setupBiometricAuthentication(context);
+      }
+    } catch (e) {
+      log.e('Error setting up biometric during restore: $e');
+    }
+  }
+
+  Future<void> _setupBiometricAuthentication(BuildContext context) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text('settingUpBiometric'.tr()),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final biometricNotifier = ref.read(biometricProvider.notifier);
+      final result = await biometricNotifier.enrollBiometric(_pinCode);
+
+      if (context.mounted) {
+        Navigator.pop(context);
+        if (result.success) {
+          SnackbarService.showSuccess(context, message: 'biometricSetupSuccessful'.tr());
+        } else {
+          SnackbarService.showError(context, message: 'biometricSetupFailed'.tr());
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        SnackbarService.showError(context, message: 'Error: $e');
+      }
+    }
   }
 }

@@ -40,6 +40,9 @@ import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/desktop/modals/activity_modal.dart';
 import 'package:gecko/widgets/desktop/modals/certification_queue_modal.dart';
 import 'package:gecko/widgets/desktop/modals/cesium_profile_modal.dart';
+import 'package:gecko/widgets/desktop/modals/confirm_identity_modal.dart';
+import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
+import 'package:gecko/widgets/desktop/modals/safe_options_modal.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated, this.embeddedMode = false})
@@ -420,7 +423,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 ),
               ),
             ),
-            if (!hasIdentity && !isAlone) deleteWallet(context, ref, currentSafe),
+            if (!hasIdentity && (!isAlone || (widget.embeddedMode && isDesktopLayout(context))))
+              deleteWallet(context, ref, currentSafe),
             if (hasIdentity) ManageMembershipButton(address: widget.wallet.address),
             if (hasIdentity) _buildCertificationQueueButton(context, ref),
             if (isAlone)
@@ -546,10 +550,15 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ConfirmIdentityScreen(address: widget.wallet.address)),
-                  );
+                  if (widget.embeddedMode && isDesktopLayout(context)) {
+                    Navigator.of(context).pop();
+                    showDesktopConfirmIdentityModal(homeContext, address: widget.wallet.address);
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ConfirmIdentityScreen(address: widget.wallet.address)),
+                    );
+                  }
                 },
                 child: Text('confirmMyIdentity'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.white)),
               ),
@@ -906,7 +915,12 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       InkWell(
         onTap: () async {
           if (!await PinCodeService.askPinCode()) return;
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const SafeOptions()));
+          if (isDesktopLayout(context)) {
+            Navigator.of(context).pop();
+            showDesktopSafeOptionsModal(homeContext, ref);
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const SafeOptions()));
+          }
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -968,7 +982,12 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       ),
       InkWell(
         onTap: () async {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
+          if (isDesktopLayout(context)) {
+            // On desktop, close modal — safe switching is handled from the desktop home
+            Navigator.of(context).pop();
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
+          }
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
@@ -990,7 +1009,12 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       ),
       InkWell(
         onTap: () async {
-          Navigator.push(homeContext, MaterialPageRoute(builder: (context) => const G1v1MigrationFlow()));
+          if (isDesktopLayout(context)) {
+            Navigator.of(context).pop();
+            showDesktopLegacyMigrationModal(homeContext);
+          } else {
+            Navigator.push(homeContext, MaterialPageRoute(builder: (context) => const G1v1MigrationFlow()));
+          }
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),

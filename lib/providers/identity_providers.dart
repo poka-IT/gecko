@@ -440,7 +440,8 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
   }
 }
 
-/// Provider to get all wallets with identity status for certification dropdown
+/// Provider to get member wallets from the CURRENT safe only.
+/// Used on mobile where certification is scoped to the active safe.
 final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
   // Check if storage is initialized FIRST
   final storageState = ref.watch(storageStateProvider);
@@ -457,13 +458,9 @@ final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) 
   final allSafes = walletService.safeBox.getAll();
   if (allSafes.isEmpty) return [];
 
-  final defaultSafe = allSafes.firstWhere(
-    (safe) => safe.number == defaultSafeNumber,
-    orElse: () => allSafes.first, // Fallback to first safe if default not found
-  );
+  final defaultSafe = allSafes.firstWhere((safe) => safe.number == defaultSafeNumber, orElse: () => allSafes.first);
 
-  // Use direct query instead of defaultSafe.wallets.toList() to avoid
-  // ObjectBox ToMany backlink cache returning stale data.
+  // Use direct query to avoid ObjectBox ToMany backlink cache
   final query = walletService.walletBox.query()
     ..link(WalletEntity_.safe, SafeEntity_.number.equals(defaultSafe.number));
   final wallets = query.build().find();
@@ -482,13 +479,43 @@ final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) 
   return memberWallets;
 });
 
+/// Provider to get member wallets across ALL safes.
+/// Used on desktop where all safes are visible and certification
+/// should work regardless of which safe is currently active.
+final allSafesIdentityWalletsProvider = FutureProvider<List<d.WalletEntity>>((ref) async {
+  final storageState = ref.watch(storageStateProvider);
+  if (storageState == StorageState.notInitialized) {
+    return [];
+  }
+
+  final walletService = ref.watch(walletServiceProvider);
+  final storageService = ref.watch(storageServiceProvider);
+
+  // Watch safe changes to rebuild when safes are added/removed
+  ref.watch(defaultSafeBoxNumberProvider);
+
+  final allWallets = walletService.walletBox.getAll();
+  if (allWallets.isEmpty) return [];
+
+  final memberWallets = <d.WalletEntity>[];
+
+  for (final wallet in allWallets) {
+    final status = await storageService.getIdtyStatus(wallet.address);
+    if (status == d.IdtyStatus.validated) {
+      memberWallets.add(wallet);
+    }
+  }
+
+  return memberWallets;
+});
+
 /// Provider that returns the effective certification wallet:
-/// - If a specific wallet is selected in dev mode, use that
-/// - Otherwise, use the automatic identity wallet selection
+/// - If a specific wallet is selected via dropdown, use that
+/// - Otherwise, use the automatic identity wallet selection from current safe
 final effectiveCertificationWalletProvider = FutureProvider<d.WalletEntity?>((ref) async {
   final selectedAddress = ref.watch(selectedCertificationWalletProvider);
 
-  // If a specific wallet is selected (dev mode), use that
+  // If a specific wallet is selected via dropdown, use that
   if (selectedAddress != null) {
     final walletService = ref.watch(walletServiceProvider);
     final selectedWallet = walletService.walletBox.getAll().where((w) => w.address == selectedAddress).firstOrNull;
@@ -497,6 +524,6 @@ final effectiveCertificationWalletProvider = FutureProvider<d.WalletEntity?>((re
     }
   }
 
-  // Otherwise, use the automatic selection
+  // Otherwise, use the automatic selection from current safe
   return ref.watch(idtyWalletAsyncProvider.future);
 });

@@ -22,7 +22,7 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/services/mnemonic_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:pointycastle/api.dart' show InvalidCipherTextException;
-import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
@@ -472,16 +472,12 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
 
                                   Navigator.pop(context);
                                   try {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => TransactionInProgressScreen(
-                                          transactionStatus: broadcastStream,
-                                          transType: 'identityMigration',
-                                          fromAddress: fromAddress,
-                                          toAddress: toKeypair!.address,
-                                        ),
-                                      ),
+                                    await navigateToTransactionProgress(
+                                      homeContext,
+                                      transactionStatus: broadcastStream,
+                                      transType: 'identityMigration',
+                                      fromAddress: fromAddress,
+                                      toAddress: toKeypair!.address,
                                     );
                                   } finally {
                                     await invalidateSubscription.cancel();

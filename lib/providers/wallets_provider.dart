@@ -286,19 +286,19 @@ class WalletActionsNotifier extends Notifier<void> {
   ///
   /// If [customDerivation] is provided, creates a wallet with that specific derivation number.
   /// Otherwise, generates the next available derivation automatically.
-  Future<void> generateNewDerivation(String name, {int? customDerivation}) async {
+  Future<void> generateNewDerivation(String name, {int? customDerivation, int? safeNumber}) async {
     ref.read(derivationStateProvider.notifier).setLoading(true);
 
     try {
-      final safeNumber = _walletService.defaultSafeBoxNumber;
+      final safeNumber0 = safeNumber ?? _walletService.defaultSafeBoxNumber;
 
       if (customDerivation != null) {
         // Generate wallet with specific derivation number
-        final wallets = ref.read(walletsListProvider).wallets;
+        final wallets = _walletService.getWalletDataList(safeNumber0);
         final newWalletNbr = wallets.isEmpty ? 0 : wallets.last.number + 1;
 
         // Get the mnemonic from the safe
-        final firstWallet = ref.read(firstWalletProvider);
+        final firstWallet = wallets.isNotEmpty ? wallets.first : null;
         if (firstWallet == null) throw Exception('No wallet available');
         final mnemonic = await _walletService.getSeed(address: firstWallet.address, pin: PinCodeService.pinCode);
 
@@ -318,14 +318,14 @@ class WalletActionsNotifier extends Notifier<void> {
           keyPairType: d.Durt.defaultKeyPairType,
         );
 
-        final safe = _walletService.getSafeBox(safeNumber);
+        final safe = _walletService.getSafeBox(safeNumber0);
         newWallet.safe.target = safe;
         await _walletService.walletBox.putAsync(newWallet);
       } else {
         // Generate next available derivation
         final newWallet = await _walletService.generateNextDerivation(
           pinCode: PinCodeService.pinCode,
-          safeBoxNumber: safeNumber,
+          safeBoxNumber: safeNumber0,
           walletName: name,
         );
 
@@ -334,7 +334,7 @@ class WalletActionsNotifier extends Notifier<void> {
       }
 
       // Reload wallets list
-      await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: safeNumber);
+      await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: safeNumber0);
 
       // Invalidate related providers
       invalidateProviders();

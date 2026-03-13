@@ -526,7 +526,7 @@
     "migration_confirm_identity_label": "Identidad",
     "migration_confirm_title": "Resumen de la migración",
     "migration_confirm_to": "Hacia",
-    "migration_confirm_warning": "Esta operación es irreversible. Sus antiguas credenciales Cesium dejarán de funcionar después de la migración.",
+    "migration_confirm_warning": "Esta operación es irreversible. Su antiguo monedero Cesium se vaciará: el saldo y la identidad se transferirán al destino elegido.",
     "migration_converting": "Convirtiendo credenciales...",
     "migration_create_new_wallet": "Crear un nuevo monedero",
     "migration_create_new_wallet_hint": "Se creará un nuevo monedero en su bóveda actual",

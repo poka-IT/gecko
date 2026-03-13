@@ -521,7 +521,7 @@
     "migration_confirm_identity_label": "Identity",
     "migration_confirm_title": "Migration summary",
     "migration_confirm_to": "To",
-    "migration_confirm_warning": "This operation is irreversible. Your old Cesium credentials will stop working after migration.",
+    "migration_confirm_warning": "This operation is irreversible. Your old Cesium wallet will be emptied: the balance and identity will be transferred to the chosen destination.",
     "migration_converting": "Converting credentials...",
     "migration_create_new_wallet": "Create a new wallet",
     "migration_create_new_wallet_hint": "A new wallet will be created in your current safe",

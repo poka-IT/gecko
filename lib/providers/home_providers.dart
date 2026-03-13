@@ -162,13 +162,20 @@ class NetworkTotals {
 /// Throttled: skips re-fetch if last successful fetch was < 10 seconds ago.
 DateTime _lastTotalsFetch = DateTime.fromMillisecondsSinceEpoch(0);
 NetworkTotals? _lastTotalsResult;
+String? _lastTotalsNetwork;
 
 final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
-  ref.watch(networkProvider);
+  final currentNetwork = ref.watch(networkProvider).name;
   ref.watch(squidCacheBusterProvider);
   ref.watch(networkActivityProvider.select((state) => state.lastActivityId));
   ref.watch(networkIdentitiesProvider.select((state) => state.lastActivityId));
   ref.watch(networkCertificationsProvider.select((state) => state.lastActivityId));
+
+  // Reset cache on network switch
+  if (_lastTotalsNetwork != currentNetwork) {
+    _lastTotalsResult = null;
+    _lastTotalsNetwork = currentNetwork;
+  }
 
   // Throttle: return cached result if last fetch was recent
   if (_lastTotalsResult != null && DateTime.now().difference(_lastTotalsFetch).inSeconds < 10) {

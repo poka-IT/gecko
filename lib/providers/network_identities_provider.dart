@@ -303,7 +303,7 @@ class ServerFilteredNetworkIdentitiesNotifier extends Notifier<NetworkIdentities
 
     // Initial load
     Future.microtask(() => _loadNetworkIdentitiesWithFilters());
-    return const NetworkIdentitiesState();
+    return const NetworkIdentitiesState(isLoading: true);
   }
 
   /// Debounce filter updates to avoid excessive API calls

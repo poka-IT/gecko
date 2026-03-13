@@ -903,5 +903,16 @@
     "yourMnemonic": "La tua frase di ripristino",
     "yourPasswordLengthIsX": "La lunghezza della tua password è {}",
     "yourSafeAndWalletWereCreatedSuccessfully": "Fantastico!\n\nCassafforte e primo portafoglio creati con gran successo.\n\nCongratulazioni!",
-    "yourSafeAndWalletWereRestoredSuccessfully": "Fantastico!\n\nCassaforte e portafogli sono stati ripristinati con successo.\n\nCongratulazioni!"
+    "yourSafeAndWalletWereRestoredSuccessfully": "Fantastico!\n\nCassaforte e portafogli sono stati ripristinati con successo.\n\nCongratulazioni!",
+    "keyboardShortcuts": "Scorciatoie da tastiera",
+    "keyboardShortcutsNavigation": "NAVIGAZIONE",
+    "keyboardShortcutsSearchResults": "RISULTATI DI RICERCA",
+    "keyboardShortcutsOther": "ALTRO",
+    "keyboardShortcutSearch": "Apri la palette di ricerca",
+    "keyboardShortcutFocusSearch": "Vai alla barra di ricerca",
+    "keyboardShortcutContacts": "Mostra/nascondi contatti",
+    "keyboardShortcutClose": "Chiudi / deseleziona",
+    "keyboardShortcutNavigateResults": "Naviga nei risultati",
+    "keyboardShortcutOpenResult": "Apri risultato selezionato",
+    "keyboardShortcutHelp": "Mostra questo aiuto"
 }

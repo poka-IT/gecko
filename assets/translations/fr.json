@@ -896,5 +896,16 @@
     "migration_confirm_warning": "Cette opération est irréversible. Votre ancien portefeuille Cesium sera vidé : le solde et l'identité seront transférés vers la destination choisie.",
     "migration_confirm_button": "Confirmer la migration",
     "language": "Langue",
-    "systemLanguage": "Système (auto)"
+    "systemLanguage": "Système (auto)",
+    "keyboardShortcuts": "Raccourcis clavier",
+    "keyboardShortcutsNavigation": "NAVIGATION",
+    "keyboardShortcutsSearchResults": "RÉSULTATS DE RECHERCHE",
+    "keyboardShortcutsOther": "AUTRE",
+    "keyboardShortcutSearch": "Ouvrir la palette de recherche",
+    "keyboardShortcutFocusSearch": "Aller à la barre de recherche",
+    "keyboardShortcutContacts": "Afficher/masquer les contacts",
+    "keyboardShortcutClose": "Fermer / défocaliser",
+    "keyboardShortcutNavigateResults": "Naviguer dans les résultats",
+    "keyboardShortcutOpenResult": "Ouvrir le résultat sélectionné",
+    "keyboardShortcutHelp": "Afficher cette aide"
 }

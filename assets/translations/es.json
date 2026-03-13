@@ -902,5 +902,16 @@
     "yourMnemonic": "Tu frase semilla",
     "yourPasswordLengthIsX": "Tu código PIN tiene {} caracteres",
     "yourSafeAndWalletWereCreatedSuccessfully": "¡Excelente!\n\nTu bóveda y tu primer monedero han sido creados con gran éxito.\n\n¡Felicidades!",
-    "yourSafeAndWalletWereRestoredSuccessfully": "¡Excelente!\n\nTu bóveda y tus monederos han sido restaurados con éxito.\n\n¡Felicidades!"
+    "yourSafeAndWalletWereRestoredSuccessfully": "¡Excelente!\n\nTu bóveda y tus monederos han sido restaurados con éxito.\n\n¡Felicidades!",
+    "keyboardShortcuts": "Atajos de teclado",
+    "keyboardShortcutsNavigation": "NAVEGACIÓN",
+    "keyboardShortcutsSearchResults": "RESULTADOS DE BÚSQUEDA",
+    "keyboardShortcutsOther": "OTRO",
+    "keyboardShortcutSearch": "Abrir paleta de búsqueda",
+    "keyboardShortcutFocusSearch": "Ir a la barra de búsqueda",
+    "keyboardShortcutContacts": "Mostrar/ocultar contactos",
+    "keyboardShortcutClose": "Cerrar / desenfocar",
+    "keyboardShortcutNavigateResults": "Navegar por los resultados",
+    "keyboardShortcutOpenResult": "Abrir resultado seleccionado",
+    "keyboardShortcutHelp": "Mostrar esta ayuda"
 }

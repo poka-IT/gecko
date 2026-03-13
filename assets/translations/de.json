@@ -876,5 +876,16 @@
     "yourMnemonic": "",
     "yourPasswordLengthIsX": "",
     "yourSafeAndWalletWereCreatedSuccessfully": "",
-    "yourSafeAndWalletWereRestoredSuccessfully": ""
+    "yourSafeAndWalletWereRestoredSuccessfully": "",
+    "keyboardShortcuts": "Tastenkürzel",
+    "keyboardShortcutsNavigation": "NAVIGATION",
+    "keyboardShortcutsSearchResults": "SUCHERGEBNISSE",
+    "keyboardShortcutsOther": "SONSTIGES",
+    "keyboardShortcutSearch": "Suchpalette öffnen",
+    "keyboardShortcutFocusSearch": "Zur Suchleiste gehen",
+    "keyboardShortcutContacts": "Kontakte ein-/ausblenden",
+    "keyboardShortcutClose": "Schließen / Fokus entfernen",
+    "keyboardShortcutNavigateResults": "Ergebnisse durchblättern",
+    "keyboardShortcutOpenResult": "Ausgewähltes Ergebnis öffnen",
+    "keyboardShortcutHelp": "Diese Hilfe anzeigen"
 }

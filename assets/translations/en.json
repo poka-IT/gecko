@@ -902,5 +902,16 @@
     "yourSafeAndWalletWereCreatedSuccessfully": "Super!\n\nYour safe and your first portfolio have been created with great success.\n\nCongratulations!",
     "yourSafeAndWalletWereRestoredSuccessfully": "Super!\n\nYour safe and your portfolios have been restored with great success.\n\nCongratulations!",
     "zoomDraw": "Zoom and draw",
-    "zoomToDraw": "Zoom to draw on signature"
+    "zoomToDraw": "Zoom to draw on signature",
+    "keyboardShortcuts": "Keyboard shortcuts",
+    "keyboardShortcutsNavigation": "NAVIGATION",
+    "keyboardShortcutsSearchResults": "SEARCH RESULTS",
+    "keyboardShortcutsOther": "OTHER",
+    "keyboardShortcutSearch": "Open search palette",
+    "keyboardShortcutFocusSearch": "Focus search bar",
+    "keyboardShortcutContacts": "Toggle contacts panel",
+    "keyboardShortcutClose": "Close / unfocus",
+    "keyboardShortcutNavigateResults": "Navigate results",
+    "keyboardShortcutOpenResult": "Open selected result",
+    "keyboardShortcutHelp": "Show this help"
 }

@@ -890,5 +890,16 @@
     "membershipRenewalNotYetAvailable": "La renoviĝo disponeblos ekde la {}.",
     "membershipCannotRenewRevoked": "Via identeco estis nuligita. La renovigo de aliĝo ne eblas.",
     "membershipRenewalUnavailable": "Renovigo nedisponebla",
-    "renewMembershipExpiredConfirm": "Via aliĝo eksvalidiĝis. Ĉu vi certas, ke vi volas renovigi ĝin?"
+    "renewMembershipExpiredConfirm": "Via aliĝo eksvalidiĝis. Ĉu vi certas, ke vi volas renovigi ĝin?",
+    "keyboardShortcuts": "Klavarmallongigoj",
+    "keyboardShortcutsNavigation": "NAVIGADO",
+    "keyboardShortcutsSearchResults": "SERĈREZULTOJ",
+    "keyboardShortcutsOther": "ALIA",
+    "keyboardShortcutSearch": "Malfermi serĉpaletron",
+    "keyboardShortcutFocusSearch": "Iri al la serĉbreto",
+    "keyboardShortcutContacts": "Montri/kaŝi kontaktojn",
+    "keyboardShortcutClose": "Fermi / malfokusigi",
+    "keyboardShortcutNavigateResults": "Navigi tra rezultoj",
+    "keyboardShortcutOpenResult": "Malfermi elektitan rezulton",
+    "keyboardShortcutHelp": "Montri ĉi tiun helpon"
 }

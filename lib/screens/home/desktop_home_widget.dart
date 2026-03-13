@@ -47,6 +47,8 @@ import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gecko/widgets/desktop/modals/keyboard_shortcuts_modal.dart';
+import 'package:gecko/widgets/global_search_palette_dialog.dart';
 import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
 import 'package:gecko/widgets/desktop/modals/onboarding_modal.dart';
 import 'package:gecko/widgets/desktop/modals/restore_modal.dart';
@@ -79,6 +81,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   int _activeActivityTabIndex = 0;
   int _highlightedSearchIndex = -1;
   bool _isContactsPanelOpen = false;
+  bool _isSearchPaletteOpen = false;
 
   String get _searchShortcutLabel {
     if (!kIsWeb && Platform.isMacOS) {
@@ -172,6 +175,22 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     }
   }
 
+  void _openGlobalSearchPalette() {
+    if (_isSearchPaletteOpen || !mounted) return;
+    _isSearchPaletteOpen = true;
+    showGeneralDialog<void>(
+      context: context,
+      useRootNavigator: true,
+      barrierLabel: 'global_search',
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      transitionDuration: Duration.zero,
+      pageBuilder: (context, _, __) => const GlobalSearchPaletteDialog(),
+    ).whenComplete(() {
+      _isSearchPaletteOpen = false;
+    });
+  }
+
   KeyEventResult _handleDesktopHomeKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent || _desktopSearchFocusNode.hasFocus) {
       return KeyEventResult.ignored;
@@ -184,6 +203,30 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
     if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
       _easterEggController.addInput(TapSide.right);
+      return KeyEventResult.handled;
+    }
+
+    // K — open global search palette
+    if (event.logicalKey == LogicalKeyboardKey.keyK) {
+      _openGlobalSearchPalette();
+      return KeyEventResult.handled;
+    }
+
+    // H — open keyboard shortcuts modal
+    if (event.logicalKey == LogicalKeyboardKey.keyH) {
+      showKeyboardShortcutsModal(context);
+      return KeyEventResult.handled;
+    }
+
+    // / — focus search bar
+    if (event.logicalKey == LogicalKeyboardKey.slash) {
+      _desktopSearchFocusNode.requestFocus();
+      return KeyEventResult.handled;
+    }
+
+    // C — toggle contacts panel
+    if (event.logicalKey == LogicalKeyboardKey.keyC) {
+      setState(() => _isContactsPanelOpen = !_isContactsPanelOpen);
       return KeyEventResult.handled;
     }
 
@@ -1075,8 +1118,13 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     final totalsAsync = ref.watch(networkTotalsProvider);
     final connectionStatus = ref.watch(connectionStatusProvider);
     final isConnected = connectionStatus == d.ConnectionStatus.connected;
-    // Show "–" instead of "0" when not connected to avoid misleading values
-    String resolveCount(String Function() connected) => isConnected ? connected() : '–';
+
+    // Keep last known totals during loading/error to avoid flicker
+    final totals = totalsAsync.asData?.value;
+    String resolveCount(String Function(NetworkTotals) fromTotals) {
+      if (totals != null) return fromTotals(totals);
+      return '–';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1085,28 +1133,10 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           context,
           networkLabel: networkLabel,
           isConnected: isConnected,
-          txCount: resolveCount(
-            () => totalsAsync.when(
-              data: (totals) => _formatExactMetric(totals.transactions),
-              loading: () => '–',
-              error: (_, _) => '–',
-            ),
-          ),
-          identityCount: resolveCount(
-            () => totalsAsync.when(
-              data: (totals) => _formatExactMetric(totals.identities),
-              loading: () => '–',
-              error: (_, _) => '–',
-            ),
-          ),
-          identityDetails: isConnected ? _buildIdentityMetricDetails(totalsAsync) : const [],
-          certCount: resolveCount(
-            () => totalsAsync.when(
-              data: (totals) => _formatExactMetric(totals.certifications),
-              loading: () => '–',
-              error: (_, _) => '–',
-            ),
-          ),
+          txCount: resolveCount((t) => _formatExactMetric(t.transactions)),
+          identityCount: resolveCount((t) => _formatExactMetric(t.identities)),
+          identityDetails: _buildIdentityMetricDetails(totals),
+          certCount: resolveCount((t) => _formatExactMetric(t.certifications)),
         ),
         const SizedBox(height: 14),
         Expanded(
@@ -1277,14 +1307,12 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               );
             },
           ),
-          if (identityDetails.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: identityDetails.map((detail) => _buildIdentityDetailChip(context, detail)).toList(),
-            ),
-          ],
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: identityDetails.map((detail) => _buildIdentityDetailChip(context, detail)).toList(),
+          ),
         ],
       ),
     );
@@ -1297,21 +1325,28 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: RichText(
-        text: TextSpan(
-          style: scaledTextStyle(
-            fontSize: 10,
-            color: context.colorScheme.onSurface.withValues(alpha: 0.62),
-            fontWeight: FontWeight.w600,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${detail.label}: ',
+            style: scaledTextStyle(
+              fontSize: 10,
+              color: context.colorScheme.onSurface.withValues(alpha: 0.62),
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          children: [
-            TextSpan(text: '${detail.label}: '),
-            TextSpan(
-              text: detail.value,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: Text(
+              detail.value,
+              key: ValueKey('${detail.label}_${detail.value}'),
               style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface, fontWeight: FontWeight.w800),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1321,17 +1356,14 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     return '$totalCount';
   }
 
-  List<_ActivityMetricDetail> _buildIdentityMetricDetails(AsyncValue<NetworkTotals> totalsAsync) {
-    return totalsAsync.when(
-      data: (totals) => [
-        _ActivityMetricDetail(label: 'member'.tr(), value: '${totals.memberIdentities}'),
-        _ActivityMetricDetail(label: 'unconfirmed'.tr(), value: '${totals.unconfirmedIdentities}'),
-        _ActivityMetricDetail(label: 'unvalidated'.tr(), value: '${totals.unvalidatedIdentities}'),
-        _ActivityMetricDetail(label: 'identityExpired'.tr(), value: '${totals.expiredIdentities}'),
-      ],
-      loading: () => const [],
-      error: (_, _) => const [],
-    );
+  List<_ActivityMetricDetail> _buildIdentityMetricDetails(NetworkTotals? totals) {
+    String fmt(int value) => value > 0 ? '$value' : '–';
+    return [
+      _ActivityMetricDetail(label: 'member'.tr(), value: totals != null ? fmt(totals.memberIdentities) : '–'),
+      _ActivityMetricDetail(label: 'unconfirmed'.tr(), value: totals != null ? fmt(totals.unconfirmedIdentities) : '–'),
+      _ActivityMetricDetail(label: 'unvalidated'.tr(), value: totals != null ? fmt(totals.unvalidatedIdentities) : '–'),
+      _ActivityMetricDetail(label: 'identityExpired'.tr(), value: totals != null ? fmt(totals.expiredIdentities) : '–'),
+    ];
   }
 
   Widget _buildActivityTab(
@@ -2673,6 +2705,43 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                 );
               },
             ),
+          const SizedBox(width: 8),
+          // Keyboard shortcuts hint
+          Tooltip(
+            message: 'keyboardShortcuts'.tr(),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => showKeyboardShortcutsModal(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.keyboard_rounded,
+                      size: 13,
+                      color: context.colorScheme.onSurface.withValues(alpha: 0.35),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'H',
+                      style: scaledTextStyle(
+                        fontSize: 11,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.4),
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Monospace',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -2717,9 +2786,6 @@ class _DesktopTransactionsTab extends ConsumerWidget {
     final activityState = ref.watch(networkActivityProvider);
 
     if (activityState.transactions.isEmpty) {
-      if (activityState.isLoading) {
-        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
-      }
       return _buildEmptyTabState(context, Icons.swap_horiz, 'noNetworkActivity'.tr());
     }
 
@@ -2744,9 +2810,6 @@ class _DesktopIdentitiesTab extends ConsumerWidget {
     final identitiesState = ref.watch(networkIdentitiesProvider);
 
     if (identitiesState.identities.isEmpty) {
-      if (identitiesState.isLoading) {
-        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
-      }
       return _buildEmptyTabState(context, Icons.person_outline, 'noIdentityActivity'.tr());
     }
 
@@ -2772,9 +2835,6 @@ class _DesktopCertificationsTab extends ConsumerWidget {
     final activeCertifications = certsState.certifications.where((c) => c.isActive).toList();
 
     if (activeCertifications.isEmpty) {
-      if (certsState.isLoading) {
-        return Center(child: CircularProgressIndicator(color: context.colorScheme.primary, strokeWidth: 2));
-      }
       return _buildEmptyTabState(context, Icons.verified_outlined, 'noCertificationActivity'.tr());
     }
 

@@ -117,7 +117,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   void _handleActivityTabChange() {
-    if (_tabController.indexIsChanging || _activeActivityTabIndex != _tabController.index) {
+    if (_activeActivityTabIndex != _tabController.index) {
       setState(() {
         _activeActivityTabIndex = _tabController.index;
       });
@@ -1198,10 +1198,12 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             ],
           ),
           const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final perTabWidth = (constraints.maxWidth - 16) / 3;
-              final useCompactTabs = perTabWidth < 179;
+          Builder(
+            builder: (context) {
+              // Use screen width to determine compact mode instead of LayoutBuilder,
+              // which conflicts with TabBar's elastic indicator OverlayPortal.
+              final screenWidth = MediaQuery.of(context).size.width;
+              final useCompactTabs = screenWidth < 1100;
 
               return Container(
                 padding: const EdgeInsets.all(8),

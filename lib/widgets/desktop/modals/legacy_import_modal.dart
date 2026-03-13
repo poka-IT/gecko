@@ -22,6 +22,8 @@ import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/desktop/desktop_congrats_step.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
+import 'package:gecko/utils.dart';
+import 'package:flutter/services.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 /// Opens the desktop legacy import modal for importing a Cesium v1 wallet.
@@ -382,66 +384,200 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Address
-          Text(
-            _addressResult!.address,
-            style: TextStyle(
-              fontSize: 12,
-              fontFamily: 'monospace',
-              color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (_identityName != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              _identityName!,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.colorScheme.onSurface),
-            ),
-          ],
-          const SizedBox(height: 8),
-          // Balance
-          if (_walletBalance != null)
-            BalanceDisplay(
-              value: _walletBalance!.transferableBalance,
-              size: 20,
-              fontWeight: FontWeight.w700,
-              color: context.colorScheme.primary,
-            ),
-          // Identity status
-          if (_idtyStatus != null && _idtyStatus != d.IdtyStatus.none && _idtyStatus != d.IdtyStatus.unknown) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: context.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+    final colorScheme = context.colorScheme;
+
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainer.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Identity name + status
+            if (_identityName != null ||
+                (_idtyStatus != null && _idtyStatus != d.IdtyStatus.none && _idtyStatus != d.IdtyStatus.unknown))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    if (_identityName != null)
+                      Expanded(
+                        child: Text(
+                          _identityName!,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: colorScheme.onSurface),
+                        ),
+                      ),
+                    if (_idtyStatus != null && _idtyStatus != d.IdtyStatus.none && _idtyStatus != d.IdtyStatus.unknown)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _idtyStatusColor(_idtyStatus!).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _idtyStatus.toString().split('.').last,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _idtyStatusColor(_idtyStatus!),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-              child: Text(
-                _idtyStatus.toString().split('.').last,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.colorScheme.primary),
+            // Balance
+            if (_walletBalance != null) ...[
+              BalanceDisplay(
+                value: _walletBalance!.transferableBalance,
+                size: 22,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(height: 14),
+            ],
+            // V1 Public Key
+            _buildCopyableAddress(
+              context,
+              label: 'v1PublicKey'.tr(),
+              value: _addressResult!.pubkey,
+              shortValue: getShortPubkey(_addressResult!.pubkey),
+            ),
+            const SizedBox(height: 10),
+            // V2 Address
+            _buildCopyableAddress(
+              context,
+              label: 'v2Address'.tr(),
+              value: _addressResult!.address,
+              shortValue: getShortPubkey(_addressResult!.address),
+              highlighted: true,
+            ),
+            // V2 info banner
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded, size: 16, color: colorScheme.primary.withValues(alpha: 0.7)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'v2AddressInfo'.tr(),
+                        style: TextStyle(fontSize: 11.5, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+            // Warning if no balance
+            if (_walletBalance != null && _walletBalance!.transferableBalance == BigInt.zero) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, size: 16, color: Color(0xFFFF9800)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('noWalletFound'.tr(), style: const TextStyle(fontSize: 13, color: Color(0xFFFF9800))),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-          // Warning if no balance
-          if (_walletBalance != null && _walletBalance!.transferableBalance == BigInt.zero) ...[
-            const SizedBox(height: 12),
-            Text('noWalletFound'.tr(), style: const TextStyle(fontSize: 13, color: Color(0xFFFF9800))),
-          ],
-        ],
+        ),
       ),
     );
+  }
+
+  Widget _buildCopyableAddress(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required String shortValue,
+    bool highlighted = false,
+  }) {
+    final colorScheme = context.colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {
+          Clipboard.setData(ClipboardData(text: value));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('$label — ${'copied'.tr()}'), duration: const Duration(seconds: 2)));
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: highlighted
+                ? colorScheme.primary.withValues(alpha: 0.06)
+                : colorScheme.surface.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: colorScheme.outline.withValues(alpha: 0.08)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      shortValue,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.copy_rounded, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.35)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _idtyStatusColor(d.IdtyStatus status) {
+    return switch (status) {
+      d.IdtyStatus.validated => Colors.green,
+      d.IdtyStatus.confirmed => Colors.orange,
+      d.IdtyStatus.created => Colors.blue,
+      d.IdtyStatus.expired => Colors.red,
+      d.IdtyStatus.revoked => Colors.grey,
+      _ => Colors.grey,
+    };
   }
 
   // ─── Step 1: PIN ───

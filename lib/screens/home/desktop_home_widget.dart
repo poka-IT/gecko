@@ -48,6 +48,7 @@ import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/desktop/modals/legacy_import_modal.dart';
 import 'package:gecko/widgets/desktop/modals/onboarding_modal.dart';
 import 'package:gecko/widgets/desktop/modals/restore_modal.dart';
+import 'package:gecko/widgets/desktop/modals/wallet_options_modal.dart';
 import 'package:gecko/screens/onBoarding/import_choice_screen.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/screens/home/test_wallet_button.dart';
@@ -2207,6 +2208,54 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
+  void _showCreateOrRestoreMenu(BuildContext context) {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (renderBox == null || overlay == null) return;
+
+    final position = renderBox.localToGlobal(Offset.zero, ancestor: overlay);
+    final size = renderBox.size;
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy + size.height,
+        overlay.size.width - position.dx - size.width,
+        0,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      items: [
+        PopupMenuItem(
+          value: 'create',
+          child: Row(
+            children: [
+              Icon(Icons.add_circle_outline_rounded, size: 18, color: context.colorScheme.primary),
+              const SizedBox(width: 10),
+              Text('createSafe'.tr()),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'restore',
+          child: Row(
+            children: [
+              Icon(Icons.key_rounded, size: 18, color: context.colorScheme.primary),
+              const SizedBox(width: 10),
+              Text('restoreWallet'.tr()),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == 'create') {
+        showDesktopOnboardingModal(context);
+      } else if (value == 'restore') {
+        showDesktopRestoreModal(context);
+      }
+    });
+  }
+
   Widget _buildAddDerivationButton(BuildContext context, WidgetRef ref) {
     final derivationState = ref.watch(derivationStateProvider);
     final walletsState = ref.watch(walletsListProvider);
@@ -2252,7 +2301,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           context,
           icon: Icons.add_circle_outline_rounded,
           label: 'addNewSafe'.tr(),
-          onTap: () => showDesktopOnboardingModal(context),
+          onTap: () => _showCreateOrRestoreMenu(context),
         ),
         if (ImportChoiceScreen.enableLegacyLogin)
           _buildSecondaryActionButton(
@@ -2332,9 +2381,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              _pushDesktopProfileRoute(context, address: wallet.address, username: wallet.name);
-            },
+            onTap: () => showDesktopWalletOptionsModal(context, wallet: wallet),
             child: Ink(
               padding: EdgeInsets.symmetric(horizontal: isOnlyWallet ? 12 : 10, vertical: isOnlyWallet ? 12 : 10),
               decoration: BoxDecoration(

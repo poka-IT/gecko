@@ -80,14 +80,16 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   bool balancesLoaded = false;
 
   WalletEntity get fromWallet {
-    if (_fromWallet != null) return _fromWallet!;
+    final wallets = ref.read(walletsListProvider).wallets;
+    if (_fromWallet != null && wallets.any((w) => w.address == _fromWallet!.address)) {
+      return _fromWallet!;
+    }
     final lastAddress = ref.read(lastPaymentWalletAddressProvider);
     if (lastAddress != null) {
-      final wallets = ref.read(walletsListProvider).wallets;
       final match = wallets.where((w) => w.address == lastAddress).firstOrNull;
       if (match != null) return match;
     }
-    return ref.read(firstWalletProvider)!;
+    return wallets.isNotEmpty ? wallets.first : ref.read(firstWalletProvider)!;
   }
 
   set fromWallet(WalletEntity value) => _fromWallet = value;

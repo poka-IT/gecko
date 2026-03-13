@@ -425,6 +425,7 @@
     "issuerName": "Issuer name",
     "itsTheGoodWord": "It's the good word!",
     "itsTimeToUseAPenAndPaper": "It's time to take a **pen and paper** in order to write down your mnemonic.",
+    "iUnderstandTheImportanceOfMnemonic": "I understand the importance of keeping my recovery phrase safe",
     "justCertified": "Certification completed",
     "keepThisMnemonicSecure": "Keep this sentence carefully, because without it Ğecko will not be able to rebuild your wallets the day you change your phone.",
     "keepThisPaperSafe": "Keep this sheet safe from prying lizards.\nIt will allow you to restore all your wallets at any time.",

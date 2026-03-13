@@ -131,7 +131,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final Widget child;
     if (!_splashRemoved || isLoading) {
       child = const _SplashPlaceholder(key: ValueKey('splash'));
-    } else if (isWalletsExists) {
+    } else if (isWalletsExists || isDesktopLayout(context)) {
+      // On desktop, always use the full desktop layout (even without wallets)
+      // The left panel adapts to show welcome content when no wallets exist
       child = GeckoHomeWidget(
         key: const ValueKey('home'),
         isEasterEggActive: _isEasterEggActive,

@@ -10,6 +10,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/desktop/modals/activity_modal.dart';
 import 'package:gecko/services/snackbar_service.dart';
@@ -242,6 +243,8 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
       builder: (context, ref, _) {
         ref.watch(blockHeightProvider);
         final isConnected = ref.read(durtProvider).isConnected;
+        final hasWallets = ref.watch(isWalletsExistsProvider);
+        final isEnabled = isConnected && hasWallets;
 
         return SizedBox(
           width: double.infinity,
@@ -249,15 +252,15 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
-              onTap: isConnected ? () => _handleTransfer(ref) : null,
+              onTap: isEnabled ? () => _handleTransfer(ref) : null,
               child: Ink(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: isConnected ? context.colorScheme.primary : context.colorScheme.surfaceContainerHigh,
+                  color: isEnabled ? context.colorScheme.primary : context.colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isConnected ? const Color(0xFF6c4204) : context.colorScheme.outline.withValues(alpha: 0.1),
-                    width: isConnected ? 2 : 1,
+                    color: isEnabled ? const Color(0xFF6c4204) : context.colorScheme.outline.withValues(alpha: 0.1),
+                    width: isEnabled ? 2 : 1,
                   ),
                 ),
                 child: Row(
@@ -266,14 +269,14 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
                     Image.asset(
                       'assets/vector_white.png',
                       height: 24,
-                      color: isConnected ? Colors.white : Colors.grey[400],
+                      color: isEnabled ? Colors.white : Colors.grey[400],
                     ),
                     const SizedBox(width: 12),
                     Text(
                       'doATransfer'.tr(),
                       style: scaledTextStyle(
                         fontSize: 15,
-                        color: isConnected ? Colors.white : Colors.grey[500],
+                        color: isEnabled ? Colors.white : Colors.grey[500],
                         fontWeight: FontWeight.w700,
                       ),
                     ),

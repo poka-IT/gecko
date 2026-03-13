@@ -18,6 +18,8 @@ import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/commons/text_markdown.dart';
+import 'package:gecko/widgets/desktop/desktop_congrats_step.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -449,10 +451,10 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          Text(
+          TextMarkDown(
             !_pinConfirmed ? 'hereIsThePasswordKeepIt'.tr() : 'geckoWillCheckPassword'.tr(),
-            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 15, color: context.colorScheme.onSurface),
+            textAlign: WrapAlignment.center,
           ),
           if (_pinError)
             Padding(
@@ -539,35 +541,10 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
   // ─── Step 2: Congrats ───
 
   Widget _buildCongratsStep(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-          Icon(Icons.check_circle_rounded, size: 64, color: context.colorScheme.primary),
-          const SizedBox(height: 24),
-          Text(
-            'allGood'.tr(),
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: context.colorScheme.onSurface),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'yourSafeAndWalletWereCreatedSuccessfully'.tr(),
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
-          ),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-              child: Text('accessMyWallet'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
-          ),
-        ],
-      ),
+    return DesktopCongratsStep(
+      message: 'yourSafeAndWalletWereCreatedSuccessfully'.tr(),
+      buttonLabel: 'accessMyWallet'.tr(),
+      onButtonPressed: () => Navigator.of(context).pop(true),
     );
   }
 }

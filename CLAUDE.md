@@ -191,6 +191,11 @@ curl -s --request POST \
 
 Available labels: `bug`, `p1`, `p2`, `p3`, `need-infos`, `GoodFirstIssue`, `Refactoring`, `WIP`, `blocked`, `duplicated`
 
+## UI Text Rendering
+
+- **Never use plain `Text` widget for translation strings that contain markdown** (bold `**...**`, italic `*...*`, etc.). Use `TextMarkDown` from `lib/widgets/commons/text_markdown.dart` instead, which renders markdown formatting via `flutter_markdown`.
+- This applies to all UI: screens, modals, dialogs, cards, etc.
+
 ## Platform Notes
 
 - Android API 23+, iOS, macOS, Linux supported

@@ -14,6 +14,8 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/screens/profile_view.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -404,6 +406,12 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
     await WidgetsBinding.instance.endOfFrame;
 
     if (navigatorContext == null || !navigatorContext.mounted) {
+      return;
+    }
+
+    // On desktop, open the profile modal instead of pushing a full-screen page
+    if (isDesktopLayout(navigatorContext)) {
+      await showDesktopProfileModal(navigatorContext, address: address, username: username);
       return;
     }
 

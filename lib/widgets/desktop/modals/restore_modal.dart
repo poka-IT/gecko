@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:durt2/durt2.dart' as d;
+import 'package:durt2/durt2.dart' show BidouilleLang, Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,8 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/onBoarding/9.dart' show isPinComplex;
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/commons/text_markdown.dart';
+import 'package:gecko/widgets/desktop/desktop_congrats_step.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -47,7 +50,6 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
   // Mnemonic
   final List<TextEditingController> _wordControllers = List.generate(12, (_) => TextEditingController());
   final List<FocusNode> _wordFocusNodes = List.generate(12, (i) => FocusNode(debugLabel: 'word_$i'));
-  bool _mnemonicValid = false;
 
   // PIN
   String _pinCode = '';
@@ -74,9 +76,6 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
       textController: _confirmPinTextController,
       focusNode: _confirmPinFocusNode,
     );
-    for (final c in _wordControllers) {
-      c.addListener(_checkMnemonic);
-    }
   }
 
   @override
@@ -94,30 +93,26 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
 
   String get _mnemonicString => _wordControllers.map((c) => c.text.trim().toLowerCase()).join(' ');
 
-  void _checkMnemonic() {
-    final allFilled = _wordControllers.every((c) => c.text.trim().isNotEmpty);
-    if (allFilled != _mnemonicValid) {
-      setState(() => _mnemonicValid = allFilled);
-    }
-  }
-
   Future<void> _pasteMnemonic() async {
     final success = await ref.read(pasteMnemonicProvider)();
     if (success) {
       // Read words from the provider controllers and fill ours
       final providerControllers = ref.read(mnemonicControllersProvider);
+      final words = <String>[];
       for (int i = 0; i < 12 && i < providerControllers.length; i++) {
         _wordControllers[i].text = providerControllers[i].text;
+        words.add(providerControllers[i].text.trim().toLowerCase());
       }
+      // Validate via mnemonicInputProvider
+      await ref.read(mnemonicInputProvider.notifier).fillWords(words);
     }
   }
 
   Future<void> _validateAndProceed() async {
-    try {
-      // Validate mnemonic
-      await ref.read(mnemonicStateProvider.notifier).setMnemonic(_mnemonicString);
-      setState(() => _currentStep = 1);
-    } catch (e) {
+    await ref.read(mnemonicStateProvider.notifier).setMnemonic(_mnemonicString);
+    final mnemonicState = ref.read(mnemonicStateProvider);
+
+    if (mnemonicState.mnemonicResult == null) {
       if (context.mounted) {
         await showConfirmationDialog(
           context: context,
@@ -127,7 +122,10 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
           hideCancelButton: true,
         );
       }
+      return;
     }
+
+    setState(() => _currentStep = 1);
   }
 
   Future<void> _handlePinConfirmed() async {
@@ -167,12 +165,19 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
       await ref.read(biometricProvider.notifier).refresh();
       final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
 
-      // Scan derivations for existing wallets
+      // Scan derivations for existing wallets (use service directly to avoid
+      // navigator side effects from the provider's error/timeout handlers)
       final mnemonicState = ref.read(mnemonicStateProvider);
       if (mnemonicState.mnemonicResult != null) {
-        final scanStatus = await ref.read(startScanProvider)(context, mnemonicState.mnemonicResult!);
-        if (scanStatus == ScanDerivationsResult.timeout || scanStatus == ScanDerivationsResult.error) {
-          // Fallback: import root wallet
+        final scanResult = await ref
+            .read(walletScanServiceProvider)
+            .scanDerivations(
+              mnemonicResult: mnemonicState.mnemonicResult!,
+              onStatusChanged: (_) {},
+              onWalletCountChanged: (_) {},
+            );
+        if (!scanResult.hasWallets) {
+          // No on-chain wallets found, or timeout/error: import root wallet
           await ref.read(walletServiceProvider).importRootWallet(pinCode: _pinCode);
         }
       } else {
@@ -209,8 +214,10 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: finalSafe);
 
       if (mounted) {
-        setState(() => _isProcessing = false);
-        Navigator.of(context).pop(true);
+        setState(() {
+          _isProcessing = false;
+          _currentStep = 2;
+        });
       }
     } catch (e) {
       log.e('Error during desktop restore: $e');
@@ -303,6 +310,8 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
   // ─── Step 0: Mnemonic entry ───
 
   Widget _buildMnemonicEntry(BuildContext context) {
+    final mnemonicInput = ref.watch(mnemonicInputProvider);
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -320,28 +329,86 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                 runSpacing: 8,
                 alignment: WrapAlignment.center,
                 children: List.generate(12, (index) {
+                  final isWordValid = mnemonicInput.wordValidations[index] ?? true;
+                  final suggestion = mnemonicInput.wordSuggestions[index];
+
                   return SizedBox(
                     width: 120,
-                    height: 44,
-                    child: TextField(
-                      controller: _wordControllers[index],
-                      focusNode: _wordFocusNodes[index],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14),
-                      decoration: InputDecoration(
-                        labelText: '${index + 1}',
-                        labelStyle: TextStyle(fontSize: 12, color: context.colorScheme.primary),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        filled: true,
-                        fillColor: context.colorScheme.surfaceContainer,
-                      ),
-                      textInputAction: index < 11 ? TextInputAction.next : TextInputAction.done,
-                      onSubmitted: (_) {
-                        if (index < 11) {
-                          _wordFocusNodes[index + 1].requestFocus();
-                        }
-                      },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: 44,
+                          child: TextField(
+                            controller: _wordControllers[index],
+                            focusNode: _wordFocusNodes[index],
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isWordValid ? context.colorScheme.onSurface : Colors.red[600],
+                            ),
+                            decoration: InputDecoration(
+                              labelText: '${index + 1}',
+                              labelStyle: TextStyle(fontSize: 12, color: context.colorScheme.primary),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              filled: true,
+                              fillColor: context.colorScheme.surfaceContainer,
+                            ),
+                            textInputAction: index < 11 ? TextInputAction.next : TextInputAction.done,
+                            onSubmitted: (_) {
+                              if (index < 11) {
+                                _wordFocusNodes[index + 1].requestFocus();
+                              }
+                            },
+                            onChanged: (value) async {
+                              final cleanText = value.trim().toLowerCase();
+
+                              // Update validation via provider
+                              await ref.read(mnemonicInputProvider.notifier).updateWord(index, cleanText);
+
+                              // Auto-advance: if word uniquely identifies a BIP39 word, move to next
+                              if (cleanText.length >= 3 && index < 11) {
+                                try {
+                                  final languageCode = context.locale.languageCode;
+                                  final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
+                                  final isUnique = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
+                                    cleanText,
+                                    checkRedundance: true,
+                                    preferredLanguage: preferredLanguage,
+                                  );
+                                  if (isUnique && mounted) {
+                                    _wordFocusNodes[index + 1].requestFocus();
+                                  }
+                                } catch (_) {}
+                              }
+                            },
+                          ),
+                        ),
+                        // Show suggestion for invalid words
+                        if (suggestion != null)
+                          GestureDetector(
+                            onTap: () {
+                              _wordControllers[index].text = suggestion;
+                              ref.read(mnemonicInputProvider.notifier).updateWord(index, suggestion);
+                              if (index < 11) {
+                                _wordFocusNodes[index + 1].requestFocus();
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                suggestion,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: context.colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   );
                 }),
@@ -358,7 +425,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
               ),
               const Spacer(),
               FilledButton(
-                onPressed: _mnemonicValid ? _validateAndProceed : null,
+                onPressed: mnemonicInput.isValid ? _validateAndProceed : null,
                 style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24)),
                 child: Text('restoreThisSafe'.tr(), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
@@ -376,10 +443,10 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          Text(
+          TextMarkDown(
             !_pinConfirmed ? 'hereIsThePasswordKeepIt'.tr() : 'geckoWillCheckPassword'.tr(),
-            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 15, color: context.colorScheme.onSurface),
+            textAlign: WrapAlignment.center,
           ),
           if (_pinError)
             Padding(
@@ -484,35 +551,10 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
   // ─── Step 2: Congrats ───
 
   Widget _buildCongratsStep(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-          Icon(Icons.celebration_rounded, size: 64, color: context.colorScheme.primary),
-          const SizedBox(height: 24),
-          Text(
-            'allGood'.tr(),
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: context.colorScheme.onSurface),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'yourSafeAndWalletWereRestoredSuccessfully'.tr(),
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
-          ),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-              child: Text('accessMySafe'.tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
-          ),
-        ],
-      ),
+    return DesktopCongratsStep(
+      message: 'yourSafeAndWalletWereRestoredSuccessfully'.tr(),
+      buttonLabel: 'accessMySafe'.tr(),
+      onButtonPressed: () => Navigator.of(context).pop(true),
     );
   }
 }

@@ -37,6 +37,8 @@ import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
 import 'package:gecko/widgets/desktop/panels/contacts_panel.dart';
+import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/widgets/bubble_speak.dart';
 import 'package:gecko/widgets/drag_tule_action.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:gecko/models/transaction_display_item.dart';
@@ -44,6 +46,9 @@ import 'package:gecko/models/identity_display_item.dart';
 import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:gecko/widgets/desktop/modals/onboarding_modal.dart';
+import 'package:gecko/widgets/desktop/modals/restore_modal.dart';
+import 'package:gecko/screens/home/test_wallet_button.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 /// Desktop home layout for wide screens (>= 900px)
@@ -418,120 +423,207 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   // ─────────────────────────── Center Panel ───────────────────────────
 
   Widget _buildLeftPanel(BuildContext context, WidgetRef ref, {bool canShowContacts = false}) {
+    final hasWallets = ref.watch(isWalletsExistsProvider);
+
     return _buildPanelShell(
       context,
       child: Column(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final headerHeight = (constraints.maxWidth * 0.24).clamp(scaleSize(88), scaleSize(126));
-                      final headerLift = (headerHeight * 0.18).clamp(0.0, scaleSize(26));
-                      final topBleedCompensation = scaleSize(18);
-                      final desiredOffset = headerLift + topBleedCompensation;
-                      final reservedHeight = (headerHeight - desiredOffset + scaleSize(12)).clamp(
-                        scaleSize(72),
-                        headerHeight,
-                      );
-                      final safeOffset = (headerHeight - reservedHeight).clamp(0.0, desiredOffset);
+          // Top fixed section: header + message + search
+          _buildLeftPanelHeader(context, ref, canShowContacts: canShowContacts),
+          // Main content area
+          if (hasWallets)
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildTotalBalanceCard(context, ref),
+                    const SizedBox(height: 12),
+                    _buildWalletOverview(context, ref),
+                  ],
+                ),
+              ),
+            )
+          else
+            Expanded(child: Center(child: _buildWelcomeSection(context))),
+          const SizedBox(height: 14),
+          _buildNetworkStatusCard(context, ref),
+        ],
+      ),
+    );
+  }
 
-                      return SizedBox(
-                        height: reservedHeight,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            // Header image (background layer — must be first so buttons stay clickable)
-                            Positioned.fill(
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 560),
-                                  child: Transform.translate(
-                                    offset: Offset(0, -safeOffset),
-                                    child: AnimatedHeaderImage(
-                                      isEasterEggActive: widget.isEasterEggActive,
-                                      height: headerHeight,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // Top-left buttons (above image)
-                            Positioned(
-                              top: scaleSize(2),
-                              left: 0,
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.settings_rounded,
-                                  size: scaleSize(28),
-                                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
-                                ),
-                                tooltip: 'parameters'.tr(),
-                                onPressed: () => showDesktopSettingsModal(context),
-                              ),
-                            ),
-                            Positioned(
-                              top: scaleSize(52),
-                              left: scaleSize(2),
-                              child: _buildTopShortcutButton(
-                                context: context,
-                                icon: Icons.qr_code_scanner_rounded,
-                                tooltip: 'scanQRCode'.tr(),
-                                onTap: () => _openQrScanner(context),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(
-                    height: scaleSize(42),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 2, left: 24, right: 24),
-                      child: DefaultTextStyle(
-                        textAlign: TextAlign.center,
-                        style: scaledTextStyle(
-                          color: context.colorScheme.onSurface,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        child: Consumer(
-                          builder: (context, ref, _) {
-                            final homeMessage = ref.watch(homeMessageProvider);
-                            final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
-                            return GestureDetector(
-                              onTap: () {
-                                if (homeMessage == "noLizard".tr()) {
-                                  homeMessageNotifier.showWisdomOfTheDay(context);
-                                }
-                              },
-                              child: AnimatedFadeOutIn<String>(
-                                data: homeMessage,
-                                duration: const Duration(milliseconds: 200),
-                                builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
-                              ),
-                            );
-                          },
+  /// Top section of the left panel: header image, message, search bar
+  Widget _buildLeftPanelHeader(BuildContext context, WidgetRef ref, {bool canShowContacts = false}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final headerHeight = (constraints.maxWidth * 0.24).clamp(scaleSize(88), scaleSize(126));
+            final headerLift = (headerHeight * 0.18).clamp(0.0, scaleSize(26));
+            final topBleedCompensation = scaleSize(18);
+            final desiredOffset = headerLift + topBleedCompensation;
+            final reservedHeight = (headerHeight - desiredOffset + scaleSize(12)).clamp(scaleSize(72), headerHeight);
+            final safeOffset = (headerHeight - reservedHeight).clamp(0.0, desiredOffset);
+
+            return SizedBox(
+              height: reservedHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: Transform.translate(
+                          offset: Offset(0, -safeOffset),
+                          child: AnimatedHeaderImage(isEasterEggActive: widget.isEasterEggActive, height: headerHeight),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  _buildDesktopSearchSection(context, ref, canShowContacts: canShowContacts),
-                  const SizedBox(height: 16),
-                  _buildTotalBalanceCard(context, ref),
-                  const SizedBox(height: 12),
-                  _buildWalletOverview(context, ref),
+                  Positioned(
+                    top: scaleSize(2),
+                    left: 0,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.settings_rounded,
+                        size: scaleSize(28),
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                      tooltip: 'parameters'.tr(),
+                      onPressed: () => showDesktopSettingsModal(context),
+                    ),
+                  ),
+                  Positioned(
+                    top: scaleSize(52),
+                    left: scaleSize(2),
+                    child: _buildTopShortcutButton(
+                      context: context,
+                      icon: Icons.qr_code_scanner_rounded,
+                      tooltip: 'scanQRCode'.tr(),
+                      onTap: () => _openQrScanner(context),
+                    ),
+                  ),
                 ],
+              ),
+            );
+          },
+        ),
+        SizedBox(
+          height: scaleSize(42),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 2, left: 24, right: 24),
+            child: DefaultTextStyle(
+              textAlign: TextAlign.center,
+              style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w700),
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final homeMessage = ref.watch(homeMessageProvider);
+                  final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+                  return GestureDetector(
+                    onTap: () {
+                      if (homeMessage == "noLizard".tr()) {
+                        homeMessageNotifier.showWisdomOfTheDay(context);
+                      }
+                    },
+                    child: AnimatedFadeOutIn<String>(
+                      data: homeMessage,
+                      duration: const Duration(milliseconds: 200),
+                      builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    ),
+                  );
+                },
               ),
             ),
           ),
-          const SizedBox(height: 14),
-          _buildNetworkStatusCard(context, ref),
+        ),
+        const SizedBox(height: 18),
+        _buildDesktopSearchSection(context, ref, canShowContacts: canShowContacts),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  // ─── Welcome Section (replaces wallets when no wallet exists) ───
+
+  Widget _buildWelcomeSection(BuildContext context) {
+    final imageCache = ImageCacheService();
+    final primary = context.colorScheme.primary;
+
+    return _buildGlassCard(
+      context,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Gecko mascot with bubble — gecko sits right on top of the button
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Gecko + bubble row — bubble aligned with gecko's mouth
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Image(image: imageCache.getImageProvider('assets/home/gecko-bienvenue.png'), height: 140),
+                  Flexible(
+                    child: Transform.translate(
+                      offset: const Offset(-10, 0),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 112),
+                        child: BubbleSpeakWithTail(text: "noLizard".tr(), fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              // Create wallet button — flush against gecko's feet
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  key: keyOnboardingNewSafe,
+                  icon: const Icon(Icons.add_circle_outline_rounded, size: 22, color: Colors.white),
+                  label: Text(
+                    'createWallet'.tr(),
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    shadowColor: primary.withValues(alpha: 0.3),
+                  ),
+                  onPressed: () => showDesktopOnboardingModal(context),
+                ),
+              ),
+              const SizedBox(height: 14),
+              // Restore / Import wallet button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  key: keyRestoreSafe,
+                  icon: Icon(Icons.key_rounded, size: 20, color: primary),
+                  label: Text(
+                    'restoreWallet'.tr(),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: primary),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(width: 2.5, color: primary.withValues(alpha: 0.6)),
+                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    backgroundColor: primary.withValues(alpha: 0.04),
+                  ),
+                  onPressed: () => showDesktopRestoreModal(context),
+                ),
+              ),
+              const TestWalletButton(),
+            ],
+          ),
         ],
       ),
     );

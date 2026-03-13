@@ -79,17 +79,23 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   BigInt? toAddressBalance;
   bool balancesLoaded = false;
 
+  /// All wallets across all safes, for the dropdown list.
+  List<WalletEntity> get _allWallets {
+    final groups = ref.read(safeWalletGroupsProvider);
+    return groups.expand((g) => g.wallets).toList();
+  }
+
   WalletEntity get fromWallet {
-    final wallets = ref.read(walletsListProvider).wallets;
-    if (_fromWallet != null && wallets.any((w) => w.address == _fromWallet!.address)) {
+    final all = _allWallets;
+    if (_fromWallet != null && all.any((w) => w.address == _fromWallet!.address)) {
       return _fromWallet!;
     }
     final lastAddress = ref.read(lastPaymentWalletAddressProvider);
     if (lastAddress != null) {
-      final match = wallets.where((w) => w.address == lastAddress).firstOrNull;
+      final match = all.where((w) => w.address == lastAddress).firstOrNull;
       if (match != null) return match;
     }
-    return wallets.isNotEmpty ? wallets.first : ref.read(firstWalletProvider)!;
+    return all.isNotEmpty ? all.first : ref.read(firstWalletProvider)!;
   }
 
   set fromWallet(WalletEntity value) => _fromWallet = value;
@@ -98,14 +104,14 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
   void initState() {
     super.initState();
 
+    // Initialize fromWallet immediately so the first build has the correct value
+    if (widget.fromWallet != null) {
+      _fromWallet = widget.fromWallet;
+    }
+
     // Schedule reset state and wallet loading after build is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        // Initialize default wallet from Riverpod provider
-        if (widget.fromWallet != null) {
-          _fromWallet = widget.fromWallet;
-        }
-
         // Reset state after build is complete to avoid setState during build
         resetState();
 
@@ -510,17 +516,14 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                               dropdownColor: context.colorScheme.tertiary,
                               elevation: 12,
                               key: keyDropdownWallets,
-                              // The dropdown's value is the ADDRESS of the default wallet.
                               value: fromWallet.address,
                               menuMaxHeight: scaleSize(270),
                               onTap: () {
                                 FocusScope.of(context).requestFocus(amountFocus);
                               },
-                              // This builds the widget that's visible when the dropdown is closed.
                               selectedItemBuilder: (context) {
-                                return ref.watch(walletsListProvider).wallets.map((wallet) {
+                                return _allWallets.map((wallet) {
                                   return Container(
-                                    // The dropdown automatically selects the correct widget to show.
                                     width: scaleSize(isTall ? 315 : 310),
                                     padding: EdgeInsets.all(scaleSize(7)),
                                     child: Row(
@@ -534,32 +537,24 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                   );
                                 }).toList();
                               },
-                              // This is called when the user selects a new item.
                               onChanged: (String? newSelectedWalletAddress) async {
                                 if (newSelectedWalletAddress == null) return;
 
-                                // Find the full WalletEntity object that corresponds to the selected address.
-                                final newSelectedWallet = ref
-                                    .watch(walletsListProvider)
-                                    .wallets
-                                    .firstWhere((wallet) => wallet.address == newSelectedWalletAddress);
+                                final newSelectedWallet = _allWallets.firstWhere(
+                                  (wallet) => wallet.address == newSelectedWalletAddress,
+                                );
 
-                                // Update your local state and trigger a rebuild.
                                 setState(() {
                                   fromWallet = newSelectedWallet;
-                                  // Reset balance loading state when wallet changes
                                   balancesLoaded = false;
                                   defaultWalletSpendable = null;
                                   toAddressBalance = null;
                                 });
 
-                                // Execute your original logic.
                                 amountFocus.requestFocus();
                               },
-                              // This builds the list of choices the user sees when the dropdown is open.
-                              items: ref.watch(walletsListProvider).wallets.map((WalletEntity wallet) {
+                              items: _allWallets.map((WalletEntity wallet) {
                                 return DropdownMenuItem<String>(
-                                  // Each item's value is its unique ADDRESS string.
                                   value: wallet.address,
                                   key: keySelectThisWallet(wallet.address),
                                   child: Container(

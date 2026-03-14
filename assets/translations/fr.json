@@ -70,6 +70,7 @@
     "displayNActivity": "Voir\nl'activité",
     "networkActivity": "Activité réseau",
     "noNetworkActivity": "Aucune activité réseau disponible",
+    "noResultsForFilter": "Aucun résultat pour ces filtres",
     "memberValidated": "Membre validé",
     "copyAddress": "Copier\nl'adresse",
     "copy": "Copier",

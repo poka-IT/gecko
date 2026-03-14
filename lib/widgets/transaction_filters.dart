@@ -11,6 +11,583 @@ import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:durt2/durt2.dart' show IdtyStatus;
 
+/// Shows the transaction filter sheet for a given mode. Can be called from anywhere.
+void showTransactionFilterSheet(BuildContext context, FilterMode mode, {String? address}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    constraints: const BoxConstraints(maxWidth: 600),
+    builder: (context) => TransactionFilterSheetContent(mode: mode, address: address),
+  );
+}
+
+/// Self-contained transaction filter sheet content with its own local state.
+/// Used by both [showTransactionFilterSheet] and [TransactionFilters] widget.
+class TransactionFilterSheetContent extends ConsumerStatefulWidget {
+  final FilterMode mode;
+  final String? address;
+
+  const TransactionFilterSheetContent({super.key, required this.mode, this.address});
+
+  @override
+  ConsumerState<TransactionFilterSheetContent> createState() => _TransactionFilterSheetContentState();
+}
+
+class _TransactionFilterSheetContentState extends ConsumerState<TransactionFilterSheetContent> {
+  static final DateTime _minSelectableDate = DateTime(2017, 3, 8);
+
+  late TextEditingController _addressController;
+  late TextEditingController _commentController;
+  late TextEditingController _minAmountController;
+  late TextEditingController _maxAmountController;
+  late TextEditingController _fromAddressController;
+  late TextEditingController _toAddressController;
+
+  DateTime? _startDate;
+  DateTime? _endDate;
+  bool _exactMatchAddress = false;
+  bool _exactMatchComment = false;
+  bool _exactMatchDirection = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final filters = widget.mode == FilterMode.network
+        ? ref.read(networkFiltersProvider)
+        : ref.read(transactionFiltersProvider);
+
+    _addressController = TextEditingController(text: filters.addressOrNameSearch ?? '');
+    _commentController = TextEditingController(
+      text: widget.mode == FilterMode.network ? '' : (filters.commentSearch ?? ''),
+    );
+    _minAmountController = TextEditingController(
+      text: filters.amountRange.minAmount != null
+          ? convertBigIntToAmount(filters.amountRange.minAmount).toString()
+          : '',
+    );
+    _maxAmountController = TextEditingController(
+      text: filters.amountRange.maxAmount != null
+          ? convertBigIntToAmount(filters.amountRange.maxAmount).toString()
+          : '',
+    );
+    _fromAddressController = TextEditingController(text: filters.directionFilter?.fromAddress ?? '');
+    _toAddressController = TextEditingController(text: filters.directionFilter?.toAddress ?? '');
+    _startDate = filters.dateRange.startDate;
+    _endDate = filters.dateRange.endDate;
+    _exactMatchAddress = filters.exactMatchAddress;
+    _exactMatchComment = filters.exactMatchComment;
+    _exactMatchDirection = filters.exactMatchDirection;
+  }
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    _commentController.dispose();
+    _minAmountController.dispose();
+    _maxAmountController.dispose();
+    _fromAddressController.dispose();
+    _toAddressController.dispose();
+    super.dispose();
+  }
+
+  void _applyFilters() {
+    final notifier = widget.mode == FilterMode.network
+        ? ref.read(networkFiltersProvider.notifier)
+        : ref.read(transactionFiltersProvider.notifier);
+
+    if (widget.mode == FilterMode.account) {
+      notifier.updateAddressOrNameSearch(_addressController.text.trim());
+    } else {
+      notifier.updateDirectionFilter(_fromAddressController.text.trim(), _toAddressController.text.trim());
+    }
+
+    if (widget.mode != FilterMode.network) {
+      notifier.updateCommentSearch(_commentController.text.trim());
+    } else {
+      notifier.updateCommentSearch('');
+    }
+
+    notifier.updateDateRange(_startDate, _endDate);
+
+    final minAmount = _minAmountController.text.trim().isEmpty
+        ? null
+        : convertAmountToBigInt(double.tryParse(_minAmountController.text.trim()) ?? 0);
+    final maxAmount = _maxAmountController.text.trim().isEmpty
+        ? null
+        : convertAmountToBigInt(double.tryParse(_maxAmountController.text.trim()) ?? 0);
+    notifier.updateAmountRange(minAmount, maxAmount);
+
+    notifier.updateExactMatchAddress(_exactMatchAddress);
+    notifier.updateExactMatchComment(_exactMatchComment);
+    if (widget.mode == FilterMode.network) {
+      notifier.updateExactMatchDirection(_exactMatchDirection);
+    }
+  }
+
+  void _resetFilters() {
+    final notifier = widget.mode == FilterMode.network
+        ? ref.read(networkFiltersProvider.notifier)
+        : ref.read(transactionFiltersProvider.notifier);
+    notifier.clearAllFilters();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.enter): () {
+          _applyFilters();
+          Navigator.pop(context);
+        },
+      },
+      child: Focus(
+        autofocus: true,
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -2)),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: EdgeInsets.only(top: scaleSize(12)),
+                width: scaleSize(40),
+                height: scaleSize(4),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: EdgeInsets.all(scaleSize(16)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'advancedFilters'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: context.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close, size: scaleSize(24)),
+                      style: IconButton.styleFrom(
+                        backgroundColor: context.colorScheme.surfaceContainer,
+                        foregroundColor: context.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Form content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(16)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (widget.mode == FilterMode.account) ...[
+                        _buildSearchField(
+                          context,
+                          label: 'searchAddressOrName'.tr(),
+                          controller: _addressController,
+                          hintText: 'enterAddressOrName'.tr(),
+                          icon: Icons.person_search,
+                          isExactMatch: _exactMatchAddress,
+                          onExactMatchChanged: () => setState(() => _exactMatchAddress = !_exactMatchAddress),
+                        ),
+                        SizedBox(height: scaleSize(16)),
+                      ] else if (widget.mode == FilterMode.network) ...[
+                        _buildSearchField(
+                          context,
+                          label: 'fromAddressOrName'.tr(),
+                          controller: _fromAddressController,
+                          hintText: 'enterFromAddressOrName'.tr(),
+                          icon: Icons.call_made,
+                          isExactMatch: _exactMatchDirection,
+                          onExactMatchChanged: () => setState(() => _exactMatchDirection = !_exactMatchDirection),
+                        ),
+                        SizedBox(height: scaleSize(16)),
+                        _buildSearchField(
+                          context,
+                          label: 'toAddressOrName'.tr(),
+                          controller: _toAddressController,
+                          hintText: 'enterToAddressOrName'.tr(),
+                          icon: Icons.call_received,
+                          isExactMatch: _exactMatchDirection,
+                          onExactMatchChanged: () => setState(() => _exactMatchDirection = !_exactMatchDirection),
+                        ),
+                        SizedBox(height: scaleSize(16)),
+                      ],
+                      _buildSearchField(
+                        context,
+                        label: 'searchComment'.tr(),
+                        controller: _commentController,
+                        hintText: widget.mode == FilterMode.network
+                            ? 'commentFilterDisabledNetwork'.tr()
+                            : 'enterCommentKeywords'.tr(),
+                        icon: Icons.comment_outlined,
+                        isExactMatch: _exactMatchComment,
+                        onExactMatchChanged: widget.mode == FilterMode.network
+                            ? null
+                            : () => setState(() => _exactMatchComment = !_exactMatchComment),
+                        enabled: widget.mode != FilterMode.network,
+                      ),
+                      SizedBox(height: scaleSize(16)),
+                      _buildDateRange(context),
+                      SizedBox(height: scaleSize(16)),
+                      _buildAmountRange(context),
+                      SizedBox(height: scaleSize(100)),
+                    ],
+                  ),
+                ),
+              ),
+              // Action buttons
+              _buildActionButtons(context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchField(
+    BuildContext context, {
+    required String label,
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    required bool isExactMatch,
+    VoidCallback? onExactMatchChanged,
+    bool enabled = true,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: scaledTextStyle(
+                  fontSize: 13,
+                  color: context.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            if (onExactMatchChanged != null && enabled) ...[
+              SizedBox(width: scaleSize(8)),
+              InkWell(
+                onTap: onExactMatchChanged,
+                borderRadius: BorderRadius.circular(4),
+                child: Padding(
+                  padding: EdgeInsets.all(scaleSize(4)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: isExactMatch,
+                        onChanged: (_) => onExactMatchChanged(),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      SizedBox(width: scaleSize(4)),
+                      Text(
+                        'exactMatch'.tr(),
+                        style: scaledTextStyle(fontSize: 11, color: context.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        SizedBox(height: scaleSize(6)),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: scaledTextStyle(
+              fontSize: 14,
+              color: enabled
+                  ? context.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)
+                  : context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
+            prefixIcon: Icon(
+              icon,
+              size: scaleSize(20),
+              color: enabled
+                  ? context.colorScheme.onSurfaceVariant
+                  : context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
+            isDense: true,
+          ),
+          style: scaledTextStyle(
+            fontSize: 14,
+            color: enabled
+                ? context.colorScheme.onSurface
+                : context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateRange(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'dateRange'.tr(),
+          style: scaledTextStyle(
+            fontSize: 13,
+            color: context.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: scaleSize(8)),
+        Row(
+          children: [
+            Expanded(child: _buildDateField(context, _startDate, 'startDate'.tr(), isStart: true)),
+            SizedBox(width: scaleSize(12)),
+            Expanded(child: _buildDateField(context, _endDate, 'endDate'.tr(), isStart: false)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateField(BuildContext context, DateTime? date, String placeholder, {required bool isStart}) {
+    return GestureDetector(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: date ?? DateTime.now(),
+          firstDate: isStart ? _minSelectableDate : (_startDate ?? _minSelectableDate),
+          lastDate: isStart ? (_endDate ?? DateTime.now()) : DateTime.now(),
+        );
+        if (picked != null) {
+          setState(() {
+            if (isStart) {
+              _startDate = picked;
+            } else {
+              _endDate = picked;
+            }
+          });
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
+        decoration: BoxDecoration(
+          border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.calendar_today, size: scaleSize(16), color: context.colorScheme.onSurfaceVariant),
+            SizedBox(width: scaleSize(8)),
+            Expanded(
+              child: Text(
+                date != null ? DateFormat('dd/MM/yyyy').format(date) : placeholder,
+                style: scaledTextStyle(
+                  fontSize: 14,
+                  color: date != null
+                      ? context.colorScheme.onSurface
+                      : context.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+            if (date != null)
+              GestureDetector(
+                onTap: () => setState(() {
+                  if (isStart) {
+                    _startDate = null;
+                  } else {
+                    _endDate = null;
+                  }
+                }),
+                child: Icon(Icons.close, size: scaleSize(16), color: context.colorScheme.onSurfaceVariant),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAmountRange(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'amountRange'.tr(),
+          style: scaledTextStyle(
+            fontSize: 13,
+            color: context.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: scaleSize(6)),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _minAmountController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: 'minimum'.tr(),
+                  hintStyle: scaledTextStyle(
+                    fontSize: 14,
+                    color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
+                  prefixIcon: Icon(Icons.trending_up, size: scaleSize(20)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
+                  isDense: true,
+                ),
+                style: scaledTextStyle(fontSize: 14),
+              ),
+            ),
+            SizedBox(width: scaleSize(12)),
+            Expanded(
+              child: TextField(
+                controller: _maxAmountController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  hintText: 'maximum'.tr(),
+                  hintStyle: scaledTextStyle(
+                    fontSize: 14,
+                    color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
+                  prefixIcon: Icon(Icons.trending_down, size: scaleSize(20)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: context.colorScheme.primary, width: 2),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(12)),
+                  isDense: true,
+                ),
+                style: scaledTextStyle(fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface,
+        border: Border(top: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, -2))],
+      ),
+      padding: EdgeInsets.fromLTRB(
+        scaleSize(16),
+        scaleSize(16),
+        scaleSize(16),
+        scaleSize(16) + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton(
+              onPressed: () {
+                _resetFilters();
+                Navigator.pop(context);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: context.colorScheme.onSurfaceVariant,
+                padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                'clearAll'.tr(),
+                style: scaledTextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: context.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: scaleSize(12)),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                _applyFilters();
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.colorScheme.primary,
+                foregroundColor: Colors.white,
+                elevation: 2,
+                padding: EdgeInsets.symmetric(vertical: scaleSize(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
+              ),
+              child: Text(
+                'done'.tr(),
+                style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Generic transaction filters widget that adapts to both account and network modes
 class TransactionFilters extends ConsumerStatefulWidget {
   const TransactionFilters({super.key, required this.mode, this.address});

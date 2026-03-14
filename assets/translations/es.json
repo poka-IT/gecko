@@ -605,6 +605,7 @@
     "noIdentityWallet": "Ningún monedero-miembro encontrado",
     "noLizard": "es pan comido 😉",
     "noNetworkActivity": "No hay actividad de red disponible",
+    "noResultsForFilter": "No hay resultados para estos filtros",
     "noWalletFound": "No se encontró ningún monedero",
     "soldeTotal": "Balance total",
     "connectedToNode": "Conectado al nodo",

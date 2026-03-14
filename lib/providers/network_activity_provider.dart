@@ -179,10 +179,8 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
     }
 
     try {
-      final genesisTime = await ref.read(genesisTimeProvider.future);
-      if (genesisTime == null) {
-        return; // Storage not ready yet
-      }
+      // Use fallback genesis time if unavailable (isMigrationTime will default to false)
+      final genesisTime = await ref.read(genesisTimeProvider.future) ?? DateTime(2099);
 
       // Fetch fresh network-wide transactions
       final result = await d.SquidService.client.getNetworkActivity(number: 20, cursor: null);
@@ -240,11 +238,8 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final genesisTime = await ref.read(genesisTimeProvider.future);
-      if (genesisTime == null) {
-        state = state.copyWith(isLoading: false, error: 'Storage not ready');
-        return;
-      }
+      // Use fallback genesis time if unavailable (isMigrationTime will default to false)
+      final genesisTime = await ref.read(genesisTimeProvider.future) ?? DateTime(2099);
       final includeUDs = ref.read(networkUniversalDividendsToggleProvider);
 
       List<TransactionDisplayItem> allTransactions = [];
@@ -335,11 +330,8 @@ class NetworkActivityNotifier extends Notifier<NetworkActivityState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      final genesisTime = await ref.read(genesisTimeProvider.future);
-      if (genesisTime == null) {
-        state = state.copyWith(isLoading: false);
-        return;
-      }
+      // Use fallback genesis time if unavailable (isMigrationTime will default to false)
+      final genesisTime = await ref.read(genesisTimeProvider.future) ?? DateTime(2099);
       final includeUDs = ref.read(networkUniversalDividendsToggleProvider);
 
       // Fetch more network transactions using cursor pagination
@@ -471,11 +463,8 @@ class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityStat
     );
 
     try {
-      final genesisTime = await ref.read(genesisTimeProvider.future);
-      if (genesisTime == null) {
-        state = state.copyWith(isLoading: false, error: 'Storage not ready');
-        return;
-      }
+      // Use fallback genesis time if unavailable (isMigrationTime will default to false)
+      final genesisTime = await ref.read(genesisTimeProvider.future) ?? DateTime(2099);
 
       if (hasFilters) {
         // Use server-side filtering via Durt2 (always start fresh, no cursor)
@@ -537,11 +526,8 @@ class ServerFilteredNetworkActivityNotifier extends Notifier<NetworkActivityStat
     state = state.copyWith(isLoading: true);
 
     try {
-      final genesisTime = await ref.read(genesisTimeProvider.future);
-      if (genesisTime == null) {
-        state = state.copyWith(isLoading: false);
-        return;
-      }
+      // Use fallback genesis time if unavailable (isMigrationTime will default to false)
+      final genesisTime = await ref.read(genesisTimeProvider.future) ?? DateTime(2099);
 
       if (state.hasActiveFilters && state.appliedServerFilters != null) {
         // Load more with server filters (use only server-generated cursors)

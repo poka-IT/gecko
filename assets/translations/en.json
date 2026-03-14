@@ -600,6 +600,7 @@
     "noIdentityWallet": "No member wallet found",
     "noLizard": "no lounge lizard 😉",
     "noNetworkActivity": "No network activity available",
+    "noResultsForFilter": "No results match your filters",
     "noWalletFound": "No wallet found",
     "soldeTotal": "Total balance",
     "connectedToNode": "Connected to node",

@@ -606,6 +606,7 @@
     "noIdentityWallet": "Nessun portafoglio membro trovato",
     "noLizard": "Tutto a posto grazie alla lucertola 😉",
     "noNetworkActivity": "Nessuna attività di rete disponibile",
+    "noResultsForFilter": "Nessun risultato per questi filtri",
     "noWalletFound": "Nessun portafoglio trovato",
     "soldeTotal": "Saldo totale",
     "connectedToNode": "Connesso al nodo",

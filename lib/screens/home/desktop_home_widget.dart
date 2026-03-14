@@ -47,6 +47,13 @@ import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gecko/providers/transaction_filters_provider.dart';
+import 'package:gecko/providers/identity_filters_provider.dart';
+import 'package:gecko/providers/certification_filters_provider.dart';
+import 'package:gecko/widgets/network_activity/identity_filters.dart';
+import 'package:gecko/widgets/network_activity/certification_filters.dart';
+import 'package:gecko/widgets/transaction_filters.dart';
+import 'package:gecko/models/transaction_filters.dart';
 import 'package:gecko/widgets/desktop/modals/keyboard_shortcuts_modal.dart';
 import 'package:gecko/widgets/global_search_palette_dialog.dart';
 import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
@@ -1418,20 +1425,29 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   Widget _buildAnimatedActivityTabContent(BuildContext context, WidgetRef ref) {
     final currentIndex = _activeActivityTabIndex;
-    return IndexedStack(
-      index: currentIndex.clamp(0, 2),
+    return Column(
       children: [
-        _DesktopTransactionsTab(
-          scrollController: _scrollControllers[0],
-          tileBuilder: (context, tx) => _buildCompactTransactionTile(context, tx),
-        ),
-        _DesktopIdentitiesTab(
-          scrollController: _scrollControllers[1],
-          tileBuilder: (context, identity) => _buildCompactIdentityTile(context, identity),
-        ),
-        _DesktopCertificationsTab(
-          scrollController: _scrollControllers[2],
-          tileBuilder: (context, cert) => _buildCompactCertificationTile(context, cert),
+        // Filter bar — shows active filter count + opens filter modal
+        _DesktopFilterBar(activeTabIndex: currentIndex),
+        const SizedBox(height: 6),
+        Expanded(
+          child: IndexedStack(
+            index: currentIndex.clamp(0, 2),
+            children: [
+              _DesktopTransactionsTab(
+                scrollController: _scrollControllers[0],
+                tileBuilder: (context, tx) => _buildCompactTransactionTile(context, tx),
+              ),
+              _DesktopIdentitiesTab(
+                scrollController: _scrollControllers[1],
+                tileBuilder: (context, identity) => _buildCompactIdentityTile(context, identity),
+              ),
+              _DesktopCertificationsTab(
+                scrollController: _scrollControllers[2],
+                tileBuilder: (context, cert) => _buildCompactCertificationTile(context, cert),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -2778,10 +2794,15 @@ class _DesktopTransactionsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activityState = ref.watch(networkActivityProvider);
+    final activityState = ref.watch(adaptiveFilteredNetworkActivityProvider);
 
     if (activityState.transactions.isEmpty) {
-      return _buildEmptyTabState(context, Icons.swap_horiz, 'noNetworkActivity'.tr());
+      final hasFilters = ref.watch(networkFiltersProvider).hasActiveFilters;
+      return _buildEmptyTabState(
+        context,
+        Icons.swap_horiz,
+        hasFilters ? 'noResultsForFilter'.tr() : 'noNetworkActivity'.tr(),
+      );
     }
 
     return ListView.separated(
@@ -2802,10 +2823,15 @@ class _DesktopIdentitiesTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final identitiesState = ref.watch(networkIdentitiesProvider);
+    final identitiesState = ref.watch(adaptiveFilteredNetworkIdentitiesProvider);
 
     if (identitiesState.identities.isEmpty) {
-      return _buildEmptyTabState(context, Icons.person_outline, 'noIdentityActivity'.tr());
+      final hasFilters = ref.watch(identityFiltersProvider).hasActiveFilters;
+      return _buildEmptyTabState(
+        context,
+        Icons.person_outline,
+        hasFilters ? 'noResultsForFilter'.tr() : 'noIdentityActivity'.tr(),
+      );
     }
 
     return ListView.separated(
@@ -2826,20 +2852,179 @@ class _DesktopCertificationsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final certsState = ref.watch(networkCertificationsProvider);
-    final activeCertifications = certsState.certifications.where((c) => c.isActive).toList();
+    final certsState = ref.watch(adaptiveFilteredNetworkCertificationsProvider);
 
-    if (activeCertifications.isEmpty) {
-      return _buildEmptyTabState(context, Icons.verified_outlined, 'noCertificationActivity'.tr());
+    if (certsState.certifications.isEmpty) {
+      final hasFilters = ref.watch(certificationFiltersProvider).hasActiveFilters;
+      return _buildEmptyTabState(
+        context,
+        Icons.verified_outlined,
+        hasFilters ? 'noResultsForFilter'.tr() : 'noCertificationActivity'.tr(),
+      );
     }
 
     return ListView.separated(
       controller: scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: activeCertifications.length,
+      itemCount: certsState.certifications.length,
       separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) => tileBuilder(context, activeCertifications[index]),
+      itemBuilder: (context, index) => tileBuilder(context, certsState.certifications[index]),
     );
+  }
+}
+
+/// Filter bar for desktop activity tabs — compact inline filter button with badge
+class _DesktopFilterBar extends ConsumerWidget {
+  final int activeTabIndex;
+
+  const _DesktopFilterBar({required this.activeTabIndex});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the appropriate filter provider based on active tab
+    final activeFilterCount = switch (activeTabIndex) {
+      0 => ref.watch(networkFiltersProvider).activeFilterCount,
+      1 => ref.watch(identityFiltersProvider).activeFilterCount,
+      2 => ref.watch(certificationFiltersProvider).activeFilterCount,
+      _ => 0,
+    };
+    final hasFilters = activeFilterCount > 0;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _openFilterModal(context, ref),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: hasFilters
+                      ? context.colorScheme.primary.withValues(alpha: 0.08)
+                      : context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: hasFilters
+                        ? context.colorScheme.primary.withValues(alpha: 0.2)
+                        : context.colorScheme.outline.withValues(alpha: 0.08),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.filter_list_rounded,
+                      size: 16,
+                      color: hasFilters
+                          ? context.colorScheme.primary
+                          : context.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'filters'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 12,
+                        color: hasFilters
+                            ? context.colorScheme.primary
+                            : context.colorScheme.onSurface.withValues(alpha: 0.55),
+                        fontWeight: hasFilters ? FontWeight.w700 : FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (hasFilters) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$activeFilterCount',
+                          style: scaledTextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Icon(
+                      Icons.tune_rounded,
+                      size: 15,
+                      color: hasFilters
+                          ? context.colorScheme.primary
+                          : context.colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (hasFilters) ...[
+          const SizedBox(width: 6),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _clearFilters(ref),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.error.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: context.colorScheme.error.withValues(alpha: 0.15)),
+                ),
+                child: Icon(
+                  Icons.filter_list_off_rounded,
+                  size: 16,
+                  color: context.colorScheme.error.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _openFilterModal(BuildContext context, WidgetRef ref) {
+    switch (activeTabIndex) {
+      case 0:
+        _showTransactionFiltersModal(context);
+        break;
+      case 1:
+        _showIdentityFiltersModal(context);
+        break;
+      case 2:
+        _showCertificationFiltersModal(context);
+        break;
+    }
+  }
+
+  void _showTransactionFiltersModal(BuildContext context) {
+    // Show the same bottom sheet as mobile — it adapts via maxWidth constraint
+    showTransactionFilterSheet(context, FilterMode.network);
+  }
+
+  void _showIdentityFiltersModal(BuildContext context) {
+    showIdentityFilterSheet(context);
+  }
+
+  void _showCertificationFiltersModal(BuildContext context) {
+    showCertificationFilterSheet(context);
+  }
+
+  void _clearFilters(WidgetRef ref) {
+    switch (activeTabIndex) {
+      case 0:
+        ref.read(networkFiltersProvider.notifier).reset();
+        break;
+      case 1:
+        ref.read(identityFiltersProvider.notifier).reset();
+        break;
+      case 2:
+        ref.read(certificationFiltersProvider.notifier).reset();
+        break;
+    }
   }
 }
 

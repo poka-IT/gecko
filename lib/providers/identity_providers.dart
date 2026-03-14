@@ -169,19 +169,40 @@ final hybridIdentityNameProvider = AsyncNotifierProvider.family<HybridIdentityNa
 );
 
 /// Provides identity search results for a given search term.
-/// Returns empty list if network is unavailable.
+/// Searches both by identity name and by address fragment in parallel,
+/// then merges and deduplicates results (name matches first, then address matches).
 final searchIdentityProvider = FutureProvider.family<List<d.IdentitySuggestion>, String>((ref, searchTerm) async {
-  // Check if we have Squid connection specifically (required for identity search)
   final squidConnectionStatus = ref.watch(squidConnectionStatusProvider);
   if (squidConnectionStatus != d.ConnectionStatus.connected) {
-    return []; // Return empty list if Squid is not connected
+    return [];
   }
 
   try {
-    final results = await d.SquidService.client.searchAddressByName(searchTerm);
-    return results;
+    final client = d.SquidService.client;
+
+    // Always search by name; also search by address fragment if >= 6 chars and no spaces
+    final nameSearch = client.searchAddressByName(searchTerm);
+    final doAddressSearch = searchTerm.length >= 6 && !searchTerm.contains(' ');
+    final addressSearch = doAddressSearch ? client.searchByAddress(searchTerm) : Future.value(<d.IdentitySuggestion>[]);
+
+    final bothResults = await Future.wait([
+      nameSearch.catchError((_) => <d.IdentitySuggestion>[]),
+      addressSearch.catchError((_) => <d.IdentitySuggestion>[]),
+    ]);
+    final nameResults = bothResults[0];
+    final addressResults = bothResults[1];
+
+    // Merge: name results first, then address results not already present
+    final seenAddresses = <String>{};
+    final merged = <d.IdentitySuggestion>[];
+    for (final r in nameResults) {
+      if (seenAddresses.add(r.address)) merged.add(r);
+    }
+    for (final r in addressResults) {
+      if (seenAddresses.add(r.address)) merged.add(r);
+    }
+    return merged;
   } catch (e) {
-    // If there's an error, return empty list
     return [];
   }
 });

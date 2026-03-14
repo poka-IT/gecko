@@ -1,5 +1,5 @@
 include:
-  - project: 'axiom-team/duniter-automation'
+  - project: 'axiom-bot/duniter-automation'
     file: '/gitlab-ci-template.yml'
     ref: 'main'
 

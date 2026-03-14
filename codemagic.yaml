@@ -25,7 +25,17 @@ workflows:
       - name: Build Windows release
         script: flutter build windows --release
 
-      - name: Package Windows build
+      - name: Install Inno Setup
+        script: |
+          choco install innosetup -y --no-progress
+          $ISCC = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $ISCC)) {
+            Write-Error "Inno Setup not found at $ISCC"
+            exit 1
+          }
+          Write-Host "Inno Setup installed at $ISCC"
+
+      - name: Package Windows installer
         script: |
           $VERSION = (Select-String -Path pubspec.yaml -Pattern '^version:\s+(.+)$').Matches.Groups[1].Value
           $VERSION_NAME = $VERSION.Split('+')[0]
@@ -34,12 +44,26 @@ workflows:
           $ARTIFACT_DIR = "artifacts\windows"
           New-Item -ItemType Directory -Force -Path $ARTIFACT_DIR
 
-          $ZIP_NAME = "gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
+          # Verify Flutter build output exists
           $BUNDLE_PATH = "build\windows\x64\runner\Release"
+          if (-not (Test-Path "$BUNDLE_PATH\gecko.exe")) {
+            Write-Error "Flutter build output not found at $BUNDLE_PATH"
+            exit 1
+          }
 
+          # Build installer with Inno Setup
+          $ISCC = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          & $ISCC /DMyAppVersion=$VERSION_NAME /DMyAppBuildNumber=$BUILD_NUMBER "windows\installer.iss"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          Write-Host "Installer built: $ARTIFACT_DIR\gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64-setup.exe"
+
+          # Also keep the zip for portable usage
+          $ZIP_NAME = "gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
           7z a "$ARTIFACT_DIR\$ZIP_NAME" ".\$BUNDLE_PATH\*"
 
-          Write-Host "Packaged: $ARTIFACT_DIR\$ZIP_NAME"
+          Write-Host "Portable zip: $ARTIFACT_DIR\$ZIP_NAME"
 
     artifacts:
+      - artifacts/windows/*.exe
       - artifacts/windows/*.zip

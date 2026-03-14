@@ -80,30 +80,44 @@ if [ "${ELAPSED}" -ge "${TIMEOUT}" ]; then
   exit 1
 fi
 
-# 3. Extract artifact URL (Codemagic uses British spelling "artefacts")
-ARTIFACT_URL=$(echo "${STATUS_RESPONSE}" | jq -r '
-  .build.artefacts[]
-  | select(.name | test("\\.zip$"))
-  | .url' | head -1)
+# 3. Extract artifact URLs (Codemagic uses British spelling "artefacts")
+mkdir -p artifacts/windows
 
-if [ -z "${ARTIFACT_URL}" ] || [ "${ARTIFACT_URL}" = "null" ]; then
-  echo "ERROR: No zip artifact found in build output"
+# Download all Windows artifacts (installer .exe + portable .zip)
+ARTIFACT_COUNT=0
+for EXT in exe zip; do
+  ARTIFACT_URL=$(echo "${STATUS_RESPONSE}" | jq -r "
+    .build.artefacts[]
+    | select(.name | test(\"\\\\.${EXT}$\"))
+    | .url" | head -1)
+
+  if [ -z "${ARTIFACT_URL}" ] || [ "${ARTIFACT_URL}" = "null" ]; then
+    echo "WARN: No .${EXT} artifact found"
+    continue
+  fi
+
+  if [ "${EXT}" = "exe" ]; then
+    DEST="artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64-setup.exe"
+  else
+    DEST="artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
+  fi
+
+  echo "==> Downloading: ${DEST}"
+  curl -sfL --retry 3 \
+    -H "x-auth-token: ${CODEMAGIC_API_TOKEN}" \
+    -o "${DEST}" \
+    "${ARTIFACT_URL}"
+
+  FILE_SIZE=$(stat -c%s "${DEST}" 2>/dev/null || stat -f%z "${DEST}" 2>/dev/null || echo "unknown")
+  echo "    Size: ${FILE_SIZE} bytes"
+  ARTIFACT_COUNT=$((ARTIFACT_COUNT + 1))
+done
+
+if [ "${ARTIFACT_COUNT}" -eq 0 ]; then
+  echo "ERROR: No artifacts found in build output"
   echo "Available artefacts:"
   echo "${STATUS_RESPONSE}" | jq '.build.artefacts[].name'
   exit 1
 fi
 
-echo "==> Downloading artifact: ${ARTIFACT_URL}"
-
-# 4. Download the artifact
-mkdir -p artifacts/windows
-DEST="artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
-
-curl -sfL --retry 3 \
-  -H "x-auth-token: ${CODEMAGIC_API_TOKEN}" \
-  -o "${DEST}" \
-  "${ARTIFACT_URL}"
-
-FILE_SIZE=$(stat -c%s "${DEST}" 2>/dev/null || stat -f%z "${DEST}" 2>/dev/null || echo "unknown")
-echo "==> Downloaded: ${DEST} (${FILE_SIZE} bytes)"
-echo "==> Windows build complete"
+echo "==> Windows build complete (${ARTIFACT_COUNT} artifacts downloaded)"

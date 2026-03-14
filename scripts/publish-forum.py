@@ -94,7 +94,8 @@ else:
     if linux_x64_job_id:
         optional_desktop_lines += f"\n\n• **[Linux Desktop (tar.gz)]({linux_x64_base_url}/gecko-{version}-linux-x64.tar.gz)** (x64)"
     if windows_x64_job_id:
-        optional_desktop_lines += f"\n\n• **[Windows Desktop (zip)]({windows_x64_base_url}/gecko-{version}-windows-x64.zip)** (x64)"
+        optional_desktop_lines += f"\n\n• **[Windows Desktop - Installeur]({windows_x64_base_url}/gecko-{version}-windows-x64-setup.exe)** (x64, recommandé)"
+        optional_desktop_lines += f"\n\n• **[Windows Desktop - Portable (zip)]({windows_x64_base_url}/gecko-{version}-windows-x64.zip)** (x64)"
 
     complete_message = f"""{base_message}
 

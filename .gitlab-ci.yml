@@ -560,7 +560,7 @@ release:gitlab:
       fi
       if [ -n "$WINDOWS_X64_JOB_ID" ]; then
         DESKTOP_LINES="$DESKTOP_LINES
-      - **Windows (x64)**: zip archive below"
+      - **Windows (x64)**: Installer (.exe) or portable (.zip) below"
       fi
 
       cat >> release_description_full.md << EOF
@@ -594,7 +594,8 @@ release:gitlab:
         set -- "$@" --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG Linux Desktop (x64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$LINUX_X64_JOB_ID/artifacts/raw/artifacts/linux/gecko-$VERSION_URL-linux-x64.tar.gz\",\"link_type\":\"package\"}"
       fi
       if [ -n "$WINDOWS_X64_JOB_ID" ]; then
-        set -- "$@" --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG Windows Desktop (x64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$WINDOWS_X64_JOB_ID/artifacts/raw/artifacts/windows/gecko-$VERSION_URL-windows-x64.zip\",\"link_type\":\"package\"}"
+        set -- "$@" --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG Windows Installer (x64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$WINDOWS_X64_JOB_ID/artifacts/raw/artifacts/windows/gecko-$VERSION_URL-windows-x64-setup.exe\",\"link_type\":\"package\"}"
+        set -- "$@" --assets-link "{\"name\":\"Gecko $CI_COMMIT_TAG Windows Portable (x64)\",\"url\":\"$CI_PROJECT_URL/-/jobs/$WINDOWS_X64_JOB_ID/artifacts/raw/artifacts/windows/gecko-$VERSION_URL-windows-x64.zip\",\"link_type\":\"package\"}"
       fi
       release-cli create "$@"
 

@@ -47,6 +47,12 @@ class _DesktopProfileContent extends ConsumerStatefulWidget {
 }
 
 class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> {
+  /// Once cert content has been shown, never go back to placeholder
+  bool _certContentShown = false;
+
+  /// Cache last successfully built cert widget to avoid flicker during provider reloads
+  Widget? _lastCertContent;
+
   @override
   void initState() {
     super.initState();
@@ -202,38 +208,54 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
     final memberWallets = allMemberWalletsAsync.asData?.value;
     final hasMemberWallet = memberWallets != null && memberWallets.isNotEmpty;
 
+    if (!hasMemberWallet) {
+      return const SizedBox.shrink();
+    }
+
     final certStateAsync = ref.watch(certStateProvider(widget.address));
     final certState = certStateAsync.asData?.value;
-    final isLoading = certState == null && !certStateAsync.hasError;
     final isNone = certState != null && certState.status == CertStatus.none;
 
-    // AnimatedSize smoothly handles height transitions (loading→content, content→none)
+    // Determine what to show
+    Widget child;
+    if (isNone || certStateAsync.hasError) {
+      // Definitive: no cert area needed
+      _certContentShown = false;
+      _lastCertContent = null;
+      child = const SizedBox.shrink();
+    } else if (certState != null) {
+      // We have real data — build and cache the content
+      _certContentShown = true;
+      _lastCertContent = Container(
+        key: const ValueKey('cert_content'),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.06)),
+        ),
+        child: Column(
+          children: [
+            _buildCertWalletDropdown(ref),
+            CertStateWidget(certState: certState, address: widget.address),
+          ],
+        ),
+      );
+      child = _lastCertContent!;
+    } else if (_certContentShown && _lastCertContent != null) {
+      // Loading but we've shown content before — keep showing cached content
+      child = _lastCertContent!;
+    } else {
+      // First load, never shown content — show placeholder
+      child = _buildCertPlaceholder(context);
+    }
+
+    // AnimatedSize smoothly handles height transitions (nothing→content)
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       alignment: Alignment.topCenter,
-      child: isNone || certStateAsync.hasError || !hasMemberWallet
-          ? const SizedBox.shrink()
-          : AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: isLoading
-                  ? _buildCertPlaceholder(context)
-                  : Container(
-                      key: ValueKey('cert_${certState!.status}'),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.06)),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildCertWalletDropdown(ref),
-                          CertStateWidget(certState: certState, address: widget.address),
-                        ],
-                      ),
-                    ),
-            ),
+      child: child,
     );
   }
 

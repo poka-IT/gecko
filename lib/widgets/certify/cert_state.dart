@@ -11,37 +11,51 @@ import 'package:gecko/widgets/certify/execute_queued_button.dart';
 import 'package:gecko/widgets/certify/in_queue_button.dart';
 import 'package:gecko/widgets/certify/wait_to_cert.dart';
 
-class CertStateWidget extends ConsumerWidget {
+class CertStateWidget extends ConsumerStatefulWidget {
   const CertStateWidget({super.key, required this.certState, required this.address});
 
   final CertState certState;
   final String address;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CertStateWidget> createState() => _CertStateWidgetState();
+}
+
+class _CertStateWidgetState extends ConsumerState<CertStateWidget> {
+  /// Cache last successfully built widget to avoid flicker during provider reloads
+  Widget? _lastBuiltWidget;
+
+  @override
+  Widget build(BuildContext context) {
     // Get the effective certification wallet (issuer)
     final issuerWalletAsync = ref.watch(effectiveCertificationWalletProvider);
 
     // Keep last known data to avoid flicker during provider refresh
     final issuerWallet = issuerWalletAsync.asData?.value;
     if (issuerWallet == null) {
-      return _buildLegacyWidget(context, ref);
+      // During loading, show cached widget if available to avoid flicker
+      return _lastBuiltWidget ?? _buildLegacyWidget(context, ref);
     }
 
     final issuerAddress = issuerWallet.address;
-    final buttonStateAsync = ref.watch(certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: address)));
+    final buttonStateAsync = ref.watch(
+      certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: widget.address)),
+    );
 
     final buttonState = buttonStateAsync.asData?.value;
     if (buttonState == null) {
-      return _buildLegacyWidget(context, ref);
+      // During loading, show cached widget if available to avoid flicker
+      return _lastBuiltWidget ?? _buildLegacyWidget(context, ref);
     }
 
-    return _buildFromButtonState(context, ref, buttonState, issuerAddress);
+    final result = _buildFromButtonState(context, ref, buttonState, issuerAddress);
+    _lastBuiltWidget = result;
+    return result;
   }
 
   Widget _buildFromButtonState(BuildContext context, WidgetRef ref, CertButtonState buttonState, String issuerAddress) {
     // Use certState from buttonState if available, otherwise fallback to widget's certState
-    final effectiveCertState = buttonState.certState ?? certState;
+    final effectiveCertState = buttonState.certState ?? widget.certState;
 
     switch (buttonState.action) {
       case CertButtonAction.none:
@@ -51,14 +65,14 @@ class CertStateWidget extends ConsumerWidget {
         return _buildCertifyButton(ref);
 
       case CertButtonAction.addToQueue:
-        return AddToQueueButton(address: address, certState: effectiveCertState, issuerAddress: issuerAddress);
+        return AddToQueueButton(address: widget.address, certState: effectiveCertState, issuerAddress: issuerAddress);
 
       case CertButtonAction.inQueue:
         return InQueueButton(pendingCert: buttonState.pendingCert!, issuerAddress: issuerAddress);
 
       case CertButtonAction.executeQueued:
         return ExecuteQueuedButton(
-          address: address,
+          address: widget.address,
           pendingCert: buttonState.pendingCert!,
           issuerAddress: issuerAddress,
         );
@@ -103,16 +117,16 @@ class CertStateWidget extends ConsumerWidget {
     String label;
     bool canCertify = false;
 
-    switch (certState.status) {
+    switch (widget.certState.status) {
       case CertStatus.canCert:
         label = 'certify'.tr();
         canCertify = true;
         break;
       case CertStatus.canRenewIn:
-        label = 'canRenewCertInX'.tr(args: [formatDuration(certState.duration!)]);
+        label = 'canRenewCertInX'.tr(args: [formatDuration(widget.certState.duration!)]);
         break;
       case CertStatus.mustWaitBeforeCert:
-        label = 'mustWaitXBeforeCertify'.tr(args: [formatDuration(certState.duration!)]);
+        label = 'mustWaitXBeforeCertify'.tr(args: [formatDuration(widget.certState.duration!)]);
         break;
       case CertStatus.mustConfirmIdentity:
         label = 'mustConfirmHisIdentity'.tr();
@@ -136,14 +150,14 @@ class CertStateWidget extends ConsumerWidget {
 
   Widget _buildCertifyButton(WidgetRef ref) {
     // Check if certification already exists to determine if it's a renewal
-    final certExistsAsync = ref.watch(certificationExistsProvider(address));
-    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
+    final certExistsAsync = ref.watch(certificationExistsProvider(widget.address));
+    final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(widget.address));
 
     // Use last known values to avoid flicker during refresh
     final certExists = certExistsAsync.asData?.value ?? false;
     final idtyStatus = idtyStatusAsync.asData?.value ?? IdtyStatus.unknown;
 
-    return CertifyButton(address, isRenewal: certExists, idtyStatus: idtyStatus);
+    return CertifyButton(widget.address, isRenewal: certExists, idtyStatus: idtyStatus);
   }
 
   String formatDuration(Duration duration) {
@@ -165,6 +179,6 @@ class CertStateWidget extends ConsumerWidget {
   }
 
   Widget _buildDisabledButton(String label) {
-    return WaitToCertWidget(label: label, duration: formatDuration(certState.duration ?? Duration.zero));
+    return WaitToCertWidget(label: label, duration: formatDuration(widget.certState.duration ?? Duration.zero));
   }
 }

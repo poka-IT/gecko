@@ -754,9 +754,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     if (answer) {
                                       final success = await ref.read(walletActionsProvider.notifier).deleteAllWallets();
                                       if (success && mounted) {
-                                        await Navigator.of(
+                                        await AppNavigator.pushAndRemoveUntilWithFader(
                                           context,
-                                        ).pushNamedAndRemoveUntil(RouteNames.home, (Route<dynamic> route) => false);
+                                          RouteNames.home,
+                                          (Route<dynamic> route) => false,
+                                        );
                                       }
                                     }
                                   }

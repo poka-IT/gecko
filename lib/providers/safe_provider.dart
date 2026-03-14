@@ -83,7 +83,18 @@ class SafeManager {
   /// Handle case when no safes remain after deletion
   Future<void> _handleNoSafesRemaining(NavigatorState navigator, dynamic walletService) async {
     // 1. Navigate FIRST with captured NavigatorState (before context becomes invalid)
-    navigator.pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
+    // Use fade transition instead of default slide (more appropriate for desktop reset)
+    final routeBuilder = AppRoutes.getRoutes()[RouteNames.home]!;
+    navigator.pushAndRemoveUntil(
+      PageRouteBuilder(
+        settings: const RouteSettings(name: RouteNames.home),
+        pageBuilder: (context, animation, secondaryAnimation) => routeBuilder(context),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+      (route) => false,
+    );
 
     // 2. Small delay to let navigation start and unmount old widgets
     await Future.delayed(const Duration(milliseconds: 50));

@@ -51,16 +51,15 @@ class _CachedAvatarImageState extends State<CachedAvatarImage> {
       return;
     }
 
-    _cachedImagePath = widget.imagePath;
-
     try {
       final file = File(widget.imagePath);
       if (file.existsSync()) {
         _cachedImageBytes = file.readAsBytesSync();
-        // Don't call setState in initState - image is already loaded for first build
+        _cachedImagePath = widget.imagePath;
       }
+      // Don't set _cachedImagePath if file doesn't exist, so a retry is possible on rebuild
     } catch (e) {
-      // Ignore errors
+      // Don't cache the path on error either, allow retry
     }
   }
 

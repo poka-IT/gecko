@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:io';
 import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +16,7 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/pin_security_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
+import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:gecko/globals.dart';
@@ -804,7 +804,16 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                             width: scaleSize(isTall ? 95 : 75),
                             fit: BoxFit.contain,
                           ))
-                  : Image.file(File(currentSafe.imagePath!), width: scaleSize(isTall ? 127 : 95), fit: BoxFit.contain),
+                  : CachedAvatarImage(
+                      imagePath: currentSafe.imagePath!,
+                      fit: BoxFit.contain,
+                      isCircular: false,
+                      fallback: Image.asset(
+                        'assets/safes/${currentSafe.number % 4}.png',
+                        width: scaleSize(isTall ? 95 : 75),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
             ),
           ),
         ),

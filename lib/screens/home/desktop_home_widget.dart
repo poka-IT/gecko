@@ -2154,7 +2154,12 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                           wallet.imagePath != null &&
                               wallet.imagePath!.isNotEmpty &&
                               !wallet.imagePath!.startsWith('assets/')
-                          ? CachedAvatarImage(imagePath: wallet.imagePath!, fit: BoxFit.cover, isCircular: false)
+                          ? CachedAvatarImage(
+                              imagePath: wallet.imagePath!,
+                              fit: BoxFit.cover,
+                              isCircular: false,
+                              fallback: Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
+                            )
                           : Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
                     ),
                   ),

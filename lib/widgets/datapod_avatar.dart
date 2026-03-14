@@ -29,20 +29,23 @@ class DatapodAvatar extends ConsumerWidget {
   Widget _buildLocalWalletAvatar(WidgetRef ref) {
     final wallet = ref.watch(walletByAddressProvider(address));
 
+    final walletNumber = wallet?.number ?? 0;
+    final defaultAvatar = CachedAvatarImage(
+      imagePath: 'assets/avatars/${walletNumber % 4}.png',
+      fit: BoxFit.cover,
+      isCircular: true,
+    );
+
     if (wallet?.imagePath != null && wallet!.imagePath!.isNotEmpty) {
       return CachedAvatarImage(
         key: ValueKey(wallet.imagePath),
         imagePath: wallet.imagePath!,
         fit: BoxFit.cover,
         isCircular: true,
+        fallback: defaultAvatar,
       );
     } else {
-      final walletNumber = wallet?.number ?? 0;
-      return CachedAvatarImage(
-        imagePath: 'assets/avatars/${walletNumber % 4}.png',
-        fit: BoxFit.cover,
-        isCircular: true,
-      );
+      return defaultAvatar;
     }
   }
 

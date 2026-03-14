@@ -93,6 +93,10 @@ class WalletTile extends ConsumerWidget {
                               imagePath: freshWallet.imagePath!,
                               fit: BoxFit.contain,
                               isCircular: true,
+                              fallback: Image.asset(
+                                'assets/avatars/${freshWallet.number % 4}.png',
+                                alignment: Alignment.bottomCenter,
+                              ),
                             ),
                           ),
                   ),

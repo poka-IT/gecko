@@ -180,7 +180,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               ),
             ],
           ),
-          child: CachedAvatarImage(imagePath: widget.wallet.imagePath!, fit: BoxFit.cover, isCircular: true),
+          child: CachedAvatarImage(
+            imagePath: widget.wallet.imagePath!,
+            fit: BoxFit.cover,
+            isCircular: true,
+            fallback: Image.asset('assets/avatars/${widget.wallet.number % 4}.png', fit: BoxFit.cover),
+          ),
         ),
         Positioned(
           right: 0,

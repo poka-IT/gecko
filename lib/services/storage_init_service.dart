@@ -16,6 +16,18 @@ class StorageInitService {
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
 
+  /// Returns the base app directory (~/.gecko on desktop, documents dir on mobile)
+  Future<Directory> _appBaseDirectory() async {
+    if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+      final home = Platform.isWindows ? Platform.environment['UserProfile'] : Platform.environment['HOME'];
+      if (home == null) {
+        throw StateError('Home directory environment variable is not set');
+      }
+      return Directory('$home/.gecko');
+    }
+    return pp.getApplicationDocumentsDirectory();
+  }
+
   /// Initialize Hive database and setup required boxes
   Future<void> initHive() async {
     if (_isInitialized) {
@@ -23,20 +35,10 @@ class StorageInitService {
       return;
     }
 
-    late Directory hivePath;
-
     // Setup Hive path based on platform
     if (!kIsWeb) {
-      if (Platform.isLinux || Platform.isMacOS) {
-        final home = Platform.environment['HOME'];
-        hivePath = Directory('$home/.gecko/db');
-      } else if (Platform.isWindows) {
-        final home = Platform.environment['UserProfile'];
-        hivePath = Directory('$home/.gecko/db');
-      } else if (Platform.isAndroid || Platform.isIOS) {
-        final home = await pp.getApplicationDocumentsDirectory();
-        hivePath = Directory('${home.path}/db');
-      }
+      final baseDir = await _appBaseDirectory();
+      final hivePath = Directory('${baseDir.path}/db');
       if (!await hivePath.exists()) {
         await hivePath.create(recursive: true);
       }
@@ -63,9 +65,9 @@ class StorageInitService {
 
   /// Setup application directories
   Future<void> _setupAppDirectories() async {
-    final documentDir = await pp.getApplicationDocumentsDirectory();
-    avatarsDirectory = Directory('${documentDir.path}/avatars');
-    avatarsCacheDirectory = Directory('${documentDir.path}/avatarsCache');
+    final baseDir = await _appBaseDirectory();
+    avatarsDirectory = Directory('${baseDir.path}/avatars');
+    avatarsCacheDirectory = Directory('${baseDir.path}/avatarsCache');
 
     if (!await avatarsDirectory.exists()) {
       await avatarsDirectory.create();

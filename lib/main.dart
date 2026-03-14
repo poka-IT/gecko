@@ -31,7 +31,6 @@ import 'package:flutter/material.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/version_overlay.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/services/storage_init_service.dart';
@@ -79,7 +78,6 @@ Future<void> main() async {
   // Initialize storage service
   final storageService = StorageInitService();
   if (!storageService.isInitialized) {
-    await initHiveForFlutter();
     await storageService.initHive();
   } else {
     log.i('Storage service already initialized, skipping Hive setup');

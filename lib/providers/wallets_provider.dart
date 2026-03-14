@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +9,6 @@ import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/providers/safe_data_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
-import 'package:path_provider/path_provider.dart';
 
 // ============================================================================
 // STATE CLASSES
@@ -385,8 +382,7 @@ class WalletActionsNotifier extends Notifier<void> {
       await _walletService.clearWallets();
       await ref.read(configBoxProvider).removeAllAsync();
 
-      final directory = await getApplicationDocumentsDirectory();
-      final avatarFolder = Directory('${directory.path}/avatars/');
+      final avatarFolder = avatarsDirectory;
       if (await avatarFolder.exists()) {
         await avatarFolder.delete(recursive: true);
         await avatarFolder.create();

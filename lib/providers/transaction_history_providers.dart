@@ -99,7 +99,8 @@ class TransfersOnlyHistoryNotifier extends Notifier<TransactionHistoryState> {
     // Listen to Squid connection changes to re-establish subscription when reconnected
     ref.listen(squidConnectionStatusProvider, (previous, next) {
       if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
-        log.i('🔄 Squid reconnected - re-establishing activity subscription for $_address');
+        log.i('🔄 Squid reconnected - reloading transfers and re-establishing subscription for $_address');
+        loadTransactions();
         _subscribeToAccountActivity();
       }
     });
@@ -328,7 +329,8 @@ class CombinedHistoryNotifier extends Notifier<TransactionHistoryState> {
     // Listen to Squid connection changes to re-establish subscription when reconnected
     ref.listen(squidConnectionStatusProvider, (previous, next) {
       if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
-        log.i('🔄 Squid reconnected - re-establishing activity subscription for $_address');
+        log.i('🔄 Squid reconnected - reloading combined history and re-establishing subscription for $_address');
+        loadTransactions();
         _subscribeToAccountActivity();
       }
     });

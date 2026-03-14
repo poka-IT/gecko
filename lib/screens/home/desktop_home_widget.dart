@@ -252,7 +252,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         suggestions.add(
           _DesktopSearchSuggestion(
             address: wallet.address,
-            username: wallet.name,
+            username: WalletNameService.displayName(wallet.name),
             type: _DesktopSearchSuggestionType.address,
           ),
         );

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
@@ -20,9 +21,13 @@ class DragWalletsInfo extends ConsumerWidget {
 
     final screenWidth = MediaQuery.of(homeContext).size.width;
 
-    final fromName = ref.read(squidServiceProvider).walletNameIndexer[dragAddress.address] ?? dragAddress.name;
+    final fromName =
+        ref.read(squidServiceProvider).walletNameIndexer[dragAddress.address] ??
+        WalletNameService.displayName(dragAddress.name);
 
-    final toName = ref.read(squidServiceProvider).walletNameIndexer[lastFlyBy.address] ?? lastFlyBy.name;
+    final toName =
+        ref.read(squidServiceProvider).walletNameIndexer[lastFlyBy.address] ??
+        WalletNameService.displayName(lastFlyBy.name);
     final mdStyle = MarkdownStyleSheet(
       p: scaledTextStyle(fontSize: 15, color: Colors.black, letterSpacing: 0.3),
       textAlign: WrapAlignment.spaceBetween,

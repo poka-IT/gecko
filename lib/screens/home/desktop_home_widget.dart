@@ -692,7 +692,19 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   // ─── Activity Panel (right, full height) ───
 
   Widget _buildActivityPanel(BuildContext context, WidgetRef ref) {
-    return _buildPanelShell(context, child: _buildNetworkActivityFeed(context, ref));
+    return _buildPanelShell(
+      context,
+      child: _NetworkActivityFeed(
+        tabController: _tabController,
+        activeTabIndex: _activeActivityTabIndex,
+        scrollControllers: _scrollControllers,
+        tileBuilders: (
+          tx: (context, tx) => _buildCompactTransactionTile(context, tx),
+          identity: (context, identity) => _buildCompactIdentityTile(context, identity),
+          cert: (context, cert) => _buildCompactCertificationTile(context, cert),
+        ),
+      ),
+    );
   }
 
   Widget _buildTopShortcutButton({
@@ -1119,339 +1131,9 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   // ─── Network Activity Feed ───
 
-  Widget _buildNetworkActivityFeed(BuildContext context, WidgetRef ref) {
-    final network = ref.watch(networkProvider);
-    final networkLabel = network.name.toUpperCase();
-    final totalsAsync = ref.watch(networkTotalsProvider);
-    final connectionStatus = ref.watch(connectionStatusProvider);
-    final isConnected = connectionStatus == d.ConnectionStatus.connected;
-
-    // Keep last known totals during loading/error to avoid flicker
-    final totals = totalsAsync.asData?.value;
-    String resolveCount(String Function(NetworkTotals) fromTotals) {
-      if (totals != null) return fromTotals(totals);
-      return '–';
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildActivityControlsBar(
-          context,
-          networkLabel: networkLabel,
-          isConnected: isConnected,
-          txCount: resolveCount((t) => _formatExactMetric(t.transactions)),
-          identityCount: resolveCount((t) => _formatExactMetric(t.identities)),
-          identityDetails: _buildIdentityMetricDetails(totals),
-          certCount: resolveCount((t) => _formatExactMetric(t.certifications)),
-        ),
-        const SizedBox(height: 14),
-        Expanded(
-          child: _buildGlassCard(
-            context,
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-            child: _buildAnimatedActivityTabContent(context, ref),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActivityControlsBar(
-    BuildContext context, {
-    required String networkLabel,
-    required bool isConnected,
-    required String txCount,
-    required String identityCount,
-    required List<_ActivityMetricDetail> identityDetails,
-    required String certCount,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            context.colorScheme.surface.withValues(alpha: 0.96),
-            context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.82),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 18, offset: const Offset(0, 10)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'networkActivity'.tr(),
-                      style: scaledTextStyle(
-                        fontSize: 16,
-                        color: context.colorScheme.onSurface,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      networkLabel,
-                      style: scaledTextStyle(
-                        fontSize: 10.5,
-                        color: context.colorScheme.onSurface.withValues(alpha: 0.5),
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isConnected ? Colors.green.withValues(alpha: 0.10) : Colors.orange.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isConnected ? Colors.green : Colors.orange,
-                      ),
-                    ),
-                    const SizedBox(width: 7),
-                    Text(
-                      isConnected ? 'connectedToNode'.tr(args: [networkLabel]) : 'connecting'.tr(),
-                      style: scaledTextStyle(
-                        fontSize: 10,
-                        color: context.colorScheme.onSurface.withValues(alpha: 0.72),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Builder(
-            builder: (context) {
-              // Use screen width to determine compact mode instead of LayoutBuilder,
-              // which conflicts with TabBar's elastic indicator OverlayPortal.
-              final screenWidth = MediaQuery.of(context).size.width;
-              final useCompactTabs = screenWidth < 1100;
-
-              return Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  tabAlignment: TabAlignment.fill,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicatorAnimation: TabIndicatorAnimation.elastic,
-                  dividerColor: Colors.transparent,
-                  indicator: UnderlineTabIndicator(
-                    borderRadius: BorderRadius.circular(999),
-                    borderSide: BorderSide(color: context.colorScheme.primary.withValues(alpha: 0.95), width: 3),
-                    insets: const EdgeInsets.fromLTRB(24, 0, 24, 6),
-                  ),
-                  indicatorPadding: EdgeInsets.zero,
-                  labelColor: context.colorScheme.onSurface,
-                  unselectedLabelColor: context.colorScheme.onSurface.withValues(alpha: 0.55),
-                  labelStyle: scaledTextStyle(fontSize: useCompactTabs ? 10.5 : 11.5, fontWeight: FontWeight.w700),
-                  unselectedLabelStyle: scaledTextStyle(
-                    fontSize: useCompactTabs ? 10.5 : 11.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  splashBorderRadius: BorderRadius.circular(16),
-                  overlayColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
-                      return context.colorScheme.primary.withValues(alpha: 0.05);
-                    }
-                    if (states.contains(WidgetState.pressed)) {
-                      return context.colorScheme.primary.withValues(alpha: 0.08);
-                    }
-                    return Colors.transparent;
-                  }),
-                  tabs: [
-                    _buildActivityTab(
-                      context,
-                      Icons.swap_horiz_rounded,
-                      'transactions'.tr(),
-                      count: txCount,
-                      compact: useCompactTabs,
-                    ),
-                    _buildActivityTab(
-                      context,
-                      Icons.person_rounded,
-                      'identities'.tr(),
-                      count: identityCount,
-                      compact: useCompactTabs,
-                    ),
-                    _buildActivityTab(
-                      context,
-                      Icons.verified_rounded,
-                      'certifications'.tr(),
-                      count: certCount,
-                      compact: useCompactTabs,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: identityDetails.map((detail) => _buildIdentityDetailChip(context, detail)).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIdentityDetailChip(BuildContext context, _ActivityMetricDetail detail) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '${detail.label}: ',
-            style: scaledTextStyle(
-              fontSize: 10,
-              color: context.colorScheme.onSurface.withValues(alpha: 0.62),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Text(
-            detail.value,
-            style: scaledTextStyle(fontSize: 10, color: context.colorScheme.onSurface, fontWeight: FontWeight.w800),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatExactMetric(int totalCount) {
-    if (totalCount <= 0) return '–';
-    return '$totalCount';
-  }
-
-  List<_ActivityMetricDetail> _buildIdentityMetricDetails(NetworkTotals? totals) {
-    String fmt(int value) => value > 0 ? '$value' : '–';
-    return [
-      _ActivityMetricDetail(label: 'member'.tr(), value: totals != null ? fmt(totals.memberIdentities) : '–'),
-      _ActivityMetricDetail(label: 'unconfirmed'.tr(), value: totals != null ? fmt(totals.unconfirmedIdentities) : '–'),
-      _ActivityMetricDetail(label: 'unvalidated'.tr(), value: totals != null ? fmt(totals.unvalidatedIdentities) : '–'),
-      _ActivityMetricDetail(label: 'identityExpired'.tr(), value: totals != null ? fmt(totals.expiredIdentities) : '–'),
-    ];
-  }
-
-  Widget _buildActivityTab(
-    BuildContext context,
-    IconData icon,
-    String label, {
-    required String count,
-    required bool compact,
-  }) {
-    final tabChild = SizedBox.expand(
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (compact)
-                Icon(icon, size: 18)
-              else
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, size: 16),
-                    const SizedBox(width: 8),
-                    Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-                  ],
-                ),
-              const SizedBox(height: 2),
-              Text(
-                count,
-                overflow: TextOverflow.ellipsis,
-                style: scaledTextStyle(
-                  fontSize: 10,
-                  color: context.colorScheme.onSurface.withValues(alpha: 0.46),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    return Tab(
-      height: 58,
-      child: compact
-          ? Tooltip(
-              message: label,
-              waitDuration: const Duration(milliseconds: 80),
-              preferBelow: true,
-              verticalOffset: 24,
-              child: tabChild,
-            )
-          : tabChild,
-    );
-  }
-
-  Widget _buildAnimatedActivityTabContent(BuildContext context, WidgetRef ref) {
-    final currentIndex = _activeActivityTabIndex;
-    return Column(
-      children: [
-        // Filter bar — shows active filter count + opens filter modal
-        _DesktopFilterBar(activeTabIndex: currentIndex),
-        const SizedBox(height: 6),
-        Expanded(
-          child: IndexedStack(
-            index: currentIndex.clamp(0, 2),
-            children: [
-              _DesktopTransactionsTab(
-                scrollController: _scrollControllers[0],
-                tileBuilder: (context, tx) => _buildCompactTransactionTile(context, tx),
-              ),
-              _DesktopIdentitiesTab(
-                scrollController: _scrollControllers[1],
-                tileBuilder: (context, identity) => _buildCompactIdentityTile(context, identity),
-              ),
-              _DesktopCertificationsTab(
-                scrollController: _scrollControllers[2],
-                tileBuilder: (context, cert) => _buildCompactCertificationTile(context, cert),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  // Activity panel controls and tab content have been extracted to
+  // _NetworkActivityFeed and _NetworkActivityControlsBar ConsumerWidgets
+  // to isolate provider watches and prevent cascading rebuilds.
 
   String _relativeTime(BuildContext context, DateTime dateTime) {
     final locale = Localizations.localeOf(context).languageCode;
@@ -2782,6 +2464,384 @@ class _DesktopSafeWalletGroup {
   final d.SafeEntity safe;
   final List<d.WalletEntity> wallets;
   final bool isCurrent;
+}
+
+// ─── Isolated activity feed widget (prevents cascading rebuilds to parent) ───
+
+/// Record type for tile builder callbacks
+typedef _TileBuilders = ({
+  Widget Function(BuildContext, TransactionDisplayItem) tx,
+  Widget Function(BuildContext, IdentityDisplayItem) identity,
+  Widget Function(BuildContext, CertificationDisplayItem) cert,
+});
+
+class _NetworkActivityFeed extends ConsumerWidget {
+  final TabController tabController;
+  final int activeTabIndex;
+  final List<ScrollController> scrollControllers;
+  final _TileBuilders tileBuilders;
+
+  const _NetworkActivityFeed({
+    required this.tabController,
+    required this.activeTabIndex,
+    required this.scrollControllers,
+    required this.tileBuilders,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final network = ref.watch(networkProvider);
+    final networkLabel = network.name.toUpperCase();
+    final connectionStatus = ref.watch(connectionStatusProvider);
+    final isConnected = connectionStatus == d.ConnectionStatus.connected;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _NetworkActivityControlsBar(tabController: tabController, networkLabel: networkLabel, isConnected: isConnected),
+        const SizedBox(height: 14),
+        Expanded(
+          child: _buildGlassCard(
+            context,
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            child: Column(
+              children: [
+                _DesktopFilterBar(activeTabIndex: activeTabIndex),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: IndexedStack(
+                    index: activeTabIndex.clamp(0, 2),
+                    children: [
+                      _DesktopTransactionsTab(scrollController: scrollControllers[0], tileBuilder: tileBuilders.tx),
+                      _DesktopIdentitiesTab(scrollController: scrollControllers[1], tileBuilder: tileBuilders.identity),
+                      _DesktopCertificationsTab(scrollController: scrollControllers[2], tileBuilder: tileBuilders.cert),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlassCard(BuildContext context, {required Widget child, EdgeInsets? padding}) {
+    return Container(
+      clipBehavior: Clip.hardEdge,
+      padding: padding ?? const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            context.colorScheme.surface.withValues(alpha: 0.92),
+            context.colorScheme.surfaceContainer.withValues(alpha: 0.68),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 18, offset: const Offset(0, 8))],
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Isolated controls bar — only rebuilds when totals or connection changes,
+/// NOT when transaction/identity/certification lists change.
+class _NetworkActivityControlsBar extends ConsumerWidget {
+  final TabController tabController;
+  final String networkLabel;
+  final bool isConnected;
+
+  const _NetworkActivityControlsBar({
+    required this.tabController,
+    required this.networkLabel,
+    required this.isConnected,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalsAsync = ref.watch(networkTotalsProvider);
+    final totals = totalsAsync.asData?.value;
+
+    String resolveCount(String Function(NetworkTotals) fromTotals) {
+      if (totals != null) return fromTotals(totals);
+      return '–';
+    }
+
+    String formatExactMetric(int totalCount) {
+      if (totalCount <= 0) return '–';
+      return '$totalCount';
+    }
+
+    final txCount = resolveCount((t) => formatExactMetric(t.transactions));
+    final identityCount = resolveCount((t) => formatExactMetric(t.identities));
+    final certCount = resolveCount((t) => formatExactMetric(t.certifications));
+
+    List<_ActivityMetricDetail> identityDetails = [
+      _ActivityMetricDetail(
+        label: 'member'.tr(),
+        value: totals != null && totals.memberIdentities > 0 ? '${totals.memberIdentities}' : '–',
+      ),
+      _ActivityMetricDetail(
+        label: 'unconfirmed'.tr(),
+        value: totals != null && totals.unconfirmedIdentities > 0 ? '${totals.unconfirmedIdentities}' : '–',
+      ),
+      _ActivityMetricDetail(
+        label: 'unvalidated'.tr(),
+        value: totals != null && totals.unvalidatedIdentities > 0 ? '${totals.unvalidatedIdentities}' : '–',
+      ),
+      _ActivityMetricDetail(
+        label: 'identityExpired'.tr(),
+        value: totals != null && totals.expiredIdentities > 0 ? '${totals.expiredIdentities}' : '–',
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            context.colorScheme.surface.withValues(alpha: 0.96),
+            context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.82),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 18, offset: const Offset(0, 10)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'networkActivity'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 16,
+                        color: context.colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      networkLabel,
+                      style: scaledTextStyle(
+                        fontSize: 10.5,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isConnected ? Colors.green.withValues(alpha: 0.10) : Colors.orange.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isConnected ? Colors.green : Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      isConnected ? 'connectedToNode'.tr(args: [networkLabel]) : 'connecting'.tr(),
+                      style: scaledTextStyle(
+                        fontSize: 10,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.72),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Builder(
+            builder: (context) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              final useCompactTabs = screenWidth < 1100;
+
+              return Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TabBar(
+                  controller: tabController,
+                  tabAlignment: TabAlignment.fill,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorAnimation: TabIndicatorAnimation.elastic,
+                  dividerColor: Colors.transparent,
+                  indicator: UnderlineTabIndicator(
+                    borderRadius: BorderRadius.circular(999),
+                    borderSide: BorderSide(color: context.colorScheme.primary.withValues(alpha: 0.95), width: 3),
+                    insets: const EdgeInsets.fromLTRB(24, 0, 24, 6),
+                  ),
+                  indicatorPadding: EdgeInsets.zero,
+                  labelColor: context.colorScheme.onSurface,
+                  unselectedLabelColor: context.colorScheme.onSurface.withValues(alpha: 0.55),
+                  labelStyle: scaledTextStyle(fontSize: useCompactTabs ? 10.5 : 11.5, fontWeight: FontWeight.w700),
+                  unselectedLabelStyle: scaledTextStyle(
+                    fontSize: useCompactTabs ? 10.5 : 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  splashBorderRadius: BorderRadius.circular(16),
+                  overlayColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
+                      return context.colorScheme.primary.withValues(alpha: 0.05);
+                    }
+                    if (states.contains(WidgetState.pressed)) {
+                      return context.colorScheme.primary.withValues(alpha: 0.08);
+                    }
+                    return Colors.transparent;
+                  }),
+                  tabs: [
+                    _buildActivityTab(
+                      context,
+                      Icons.swap_horiz_rounded,
+                      'transactions'.tr(),
+                      count: txCount,
+                      compact: useCompactTabs,
+                    ),
+                    _buildActivityTab(
+                      context,
+                      Icons.person_rounded,
+                      'identities'.tr(),
+                      count: identityCount,
+                      compact: useCompactTabs,
+                    ),
+                    _buildActivityTab(
+                      context,
+                      Icons.verified_rounded,
+                      'certifications'.tr(),
+                      count: certCount,
+                      compact: useCompactTabs,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: identityDetails
+                .map(
+                  (detail) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.72),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${detail.label}: ',
+                          style: scaledTextStyle(
+                            fontSize: 10,
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.62),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          detail.value,
+                          style: scaledTextStyle(
+                            fontSize: 10,
+                            color: context.colorScheme.onSurface,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityTab(
+    BuildContext context,
+    IconData icon,
+    String label, {
+    required String count,
+    required bool compact,
+  }) {
+    final tabChild = SizedBox.expand(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (compact)
+                Icon(icon, size: 18)
+              else
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 16),
+                    const SizedBox(width: 8),
+                    Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+              const SizedBox(height: 2),
+              Text(
+                count,
+                overflow: TextOverflow.ellipsis,
+                style: scaledTextStyle(
+                  fontSize: 10,
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.46),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return Tab(
+      height: 58,
+      child: compact
+          ? Tooltip(
+              message: label,
+              waitDuration: const Duration(milliseconds: 80),
+              preferBelow: true,
+              verticalOffset: 24,
+              child: tabChild,
+            )
+          : tabChild,
+    );
+  }
 }
 
 // ─── Isolated Tab ConsumerWidgets (rebuild only when their own provider changes) ───

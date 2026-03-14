@@ -830,9 +830,9 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                           style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
                                           decoration: InputDecoration(
                                             hintText: 'optionalComment'.tr(),
-                                            hintStyle: TextStyle(color: Colors.grey[400]),
+                                            hintStyle: TextStyle(color: context.colorScheme.onSurfaceVariant),
                                             filled: true,
-                                            fillColor: Colors.white.withAlpha(128),
+                                            fillColor: context.colorScheme.surfaceContainer,
                                             contentPadding: EdgeInsets.symmetric(
                                               horizontal: scaleSize(8),
                                               vertical: scaleSize(4),
@@ -841,7 +841,11 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                             suffixIcon: IconButton(
                                               padding: EdgeInsets.zero,
                                               constraints: const BoxConstraints(),
-                                              icon: Icon(Icons.close, size: scaleSize(16), color: Colors.grey[600]),
+                                              icon: Icon(
+                                                Icons.close,
+                                                size: scaleSize(16),
+                                                color: context.colorScheme.onSurfaceVariant,
+                                              ),
                                               onPressed: () {
                                                 ref
                                                     .read(profileViewProvider(widget.toAddress).notifier)
@@ -855,11 +859,11 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(8),
-                                              borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+                                              borderSide: BorderSide(color: context.colorScheme.outline, width: 1),
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(8),
-                                              borderSide: BorderSide(color: Colors.grey[400]!, width: 1.5),
+                                              borderSide: BorderSide(color: context.colorScheme.primary, width: 1.5),
                                             ),
                                           ),
                                         ),

@@ -2845,19 +2845,28 @@ class _NetworkActivityControlsBar extends ConsumerWidget {
   }
 }
 
-// ─── Isolated Tab ConsumerWidgets (rebuild only when their own provider changes) ───
+// ─── Isolated Tab Widgets (rebuild only when their own provider changes) ───
 
-class _DesktopTransactionsTab extends ConsumerWidget {
+class _DesktopTransactionsTab extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final Widget Function(BuildContext, TransactionDisplayItem) tileBuilder;
 
   const _DesktopTransactionsTab({required this.scrollController, required this.tileBuilder});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final activityState = ref.watch(adaptiveFilteredNetworkActivityProvider);
+  ConsumerState<_DesktopTransactionsTab> createState() => _DesktopTransactionsTabState();
+}
 
-    if (activityState.transactions.isEmpty) {
+class _DesktopTransactionsTabState extends ConsumerState<_DesktopTransactionsTab> {
+  Set<String> _knownIds = {};
+  Set<String> _newIds = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final activityState = ref.watch(adaptiveFilteredNetworkActivityProvider);
+    final items = activityState.transactions;
+
+    if (items.isEmpty) {
       final hasFilters = ref.watch(networkFiltersProvider).hasActiveFilters;
       return _buildEmptyTabState(
         context,
@@ -2866,27 +2875,49 @@ class _DesktopTransactionsTab extends ConsumerWidget {
       );
     }
 
+    // Detect new items by comparing IDs
+    final currentIds = items.map((tx) => tx.squidId ?? '${tx.timestamp.millisecondsSinceEpoch}').toSet();
+    if (_knownIds.isNotEmpty) {
+      _newIds = currentIds.difference(_knownIds);
+    }
+    _knownIds = currentIds;
+
     return ListView.separated(
-      controller: scrollController,
+      controller: widget.scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: activityState.transactions.length,
+      itemCount: items.length,
       separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) => tileBuilder(context, activityState.transactions[index]),
+      itemBuilder: (context, index) {
+        final tx = items[index];
+        final txId = tx.squidId ?? '${tx.timestamp.millisecondsSinceEpoch}';
+        final isNew = _newIds.contains(txId);
+        final child = widget.tileBuilder(context, tx);
+        return isNew ? _NewItemHighlight(child: child) : child;
+      },
     );
   }
 }
 
-class _DesktopIdentitiesTab extends ConsumerWidget {
+class _DesktopIdentitiesTab extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final Widget Function(BuildContext, IdentityDisplayItem) tileBuilder;
 
   const _DesktopIdentitiesTab({required this.scrollController, required this.tileBuilder});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final identitiesState = ref.watch(adaptiveFilteredNetworkIdentitiesProvider);
+  ConsumerState<_DesktopIdentitiesTab> createState() => _DesktopIdentitiesTabState();
+}
 
-    if (identitiesState.identities.isEmpty) {
+class _DesktopIdentitiesTabState extends ConsumerState<_DesktopIdentitiesTab> {
+  Set<String> _knownIds = {};
+  Set<String> _newIds = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final identitiesState = ref.watch(adaptiveFilteredNetworkIdentitiesProvider);
+    final items = identitiesState.identities;
+
+    if (items.isEmpty) {
       final hasFilters = ref.watch(identityFiltersProvider).hasActiveFilters;
       return _buildEmptyTabState(
         context,
@@ -2895,27 +2926,48 @@ class _DesktopIdentitiesTab extends ConsumerWidget {
       );
     }
 
+    final currentIds = items.map((i) => '${i.accountId ?? i.name}_${i.timestamp.millisecondsSinceEpoch}').toSet();
+    if (_knownIds.isNotEmpty) {
+      _newIds = currentIds.difference(_knownIds);
+    }
+    _knownIds = currentIds;
+
     return ListView.separated(
-      controller: scrollController,
+      controller: widget.scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: identitiesState.identities.length,
+      itemCount: items.length,
       separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) => tileBuilder(context, identitiesState.identities[index]),
+      itemBuilder: (context, index) {
+        final identity = items[index];
+        final identityId = '${identity.accountId ?? identity.name}_${identity.timestamp.millisecondsSinceEpoch}';
+        final isNew = _newIds.contains(identityId);
+        final child = widget.tileBuilder(context, identity);
+        return isNew ? _NewItemHighlight(child: child) : child;
+      },
     );
   }
 }
 
-class _DesktopCertificationsTab extends ConsumerWidget {
+class _DesktopCertificationsTab extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final Widget Function(BuildContext, CertificationDisplayItem) tileBuilder;
 
   const _DesktopCertificationsTab({required this.scrollController, required this.tileBuilder});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final certsState = ref.watch(adaptiveFilteredNetworkCertificationsProvider);
+  ConsumerState<_DesktopCertificationsTab> createState() => _DesktopCertificationsTabState();
+}
 
-    if (certsState.certifications.isEmpty) {
+class _DesktopCertificationsTabState extends ConsumerState<_DesktopCertificationsTab> {
+  Set<String> _knownIds = {};
+  Set<String> _newIds = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final certsState = ref.watch(adaptiveFilteredNetworkCertificationsProvider);
+    final items = certsState.certifications;
+
+    if (items.isEmpty) {
       final hasFilters = ref.watch(certificationFiltersProvider).hasActiveFilters;
       return _buildEmptyTabState(
         context,
@@ -2924,12 +2976,71 @@ class _DesktopCertificationsTab extends ConsumerWidget {
       );
     }
 
+    final currentIds = items.map((c) => c.id).toSet();
+    if (_knownIds.isNotEmpty) {
+      _newIds = currentIds.difference(_knownIds);
+    }
+    _knownIds = currentIds;
+
     return ListView.separated(
-      controller: scrollController,
+      controller: widget.scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: certsState.certifications.length,
+      itemCount: items.length,
       separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) => tileBuilder(context, certsState.certifications[index]),
+      itemBuilder: (context, index) {
+        final cert = items[index];
+        final isNew = _newIds.contains(cert.id);
+        final child = widget.tileBuilder(context, cert);
+        return isNew ? _NewItemHighlight(child: child) : child;
+      },
+    );
+  }
+}
+
+/// Subtle highlight animation for newly arrived items
+class _NewItemHighlight extends StatefulWidget {
+  final Widget child;
+  const _NewItemHighlight({required this.child});
+
+  @override
+  State<_NewItemHighlight> createState() => _NewItemHighlightState();
+}
+
+class _NewItemHighlightState extends State<_NewItemHighlight> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _highlightAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _highlightAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _highlightAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: context.colorScheme.primary.withValues(alpha: _highlightAnimation.value * 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
     );
   }
 }

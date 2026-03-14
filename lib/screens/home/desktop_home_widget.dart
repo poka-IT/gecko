@@ -2860,6 +2860,7 @@ class _DesktopTransactionsTab extends ConsumerStatefulWidget {
 class _DesktopTransactionsTabState extends ConsumerState<_DesktopTransactionsTab> {
   Set<String> _knownIds = {};
   Set<String> _newIds = {};
+  int _newCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -2875,25 +2876,30 @@ class _DesktopTransactionsTabState extends ConsumerState<_DesktopTransactionsTab
       );
     }
 
-    // Detect new items by comparing IDs
     final currentIds = items.map((tx) => tx.squidId ?? '${tx.timestamp.millisecondsSinceEpoch}').toSet();
     if (_knownIds.isNotEmpty) {
       _newIds = currentIds.difference(_knownIds);
+      _newCount = _newIds.length;
     }
     _knownIds = currentIds;
 
-    return ListView.separated(
-      controller: widget.scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: items.length,
-      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) {
-        final tx = items[index];
-        final txId = tx.squidId ?? '${tx.timestamp.millisecondsSinceEpoch}';
-        final isNew = _newIds.contains(txId);
-        final child = widget.tileBuilder(context, tx);
-        return isNew ? _NewItemHighlight(child: child) : child;
-      },
+    return _ActivityListWithToast(
+      newCount: _newCount,
+      icon: Icons.swap_horiz_rounded,
+      labelKey: 'transactions',
+      child: ListView.separated(
+        controller: widget.scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        itemCount: items.length,
+        separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
+        itemBuilder: (context, index) {
+          final tx = items[index];
+          final txId = tx.squidId ?? '${tx.timestamp.millisecondsSinceEpoch}';
+          final isNew = _newIds.contains(txId);
+          final child = widget.tileBuilder(context, tx);
+          return isNew ? _NewItemHighlight(child: child) : child;
+        },
+      ),
     );
   }
 }
@@ -2911,6 +2917,7 @@ class _DesktopIdentitiesTab extends ConsumerStatefulWidget {
 class _DesktopIdentitiesTabState extends ConsumerState<_DesktopIdentitiesTab> {
   Set<String> _knownIds = {};
   Set<String> _newIds = {};
+  int _newCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -2929,21 +2936,27 @@ class _DesktopIdentitiesTabState extends ConsumerState<_DesktopIdentitiesTab> {
     final currentIds = items.map((i) => '${i.accountId ?? i.name}_${i.timestamp.millisecondsSinceEpoch}').toSet();
     if (_knownIds.isNotEmpty) {
       _newIds = currentIds.difference(_knownIds);
+      _newCount = _newIds.length;
     }
     _knownIds = currentIds;
 
-    return ListView.separated(
-      controller: widget.scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: items.length,
-      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) {
-        final identity = items[index];
-        final identityId = '${identity.accountId ?? identity.name}_${identity.timestamp.millisecondsSinceEpoch}';
-        final isNew = _newIds.contains(identityId);
-        final child = widget.tileBuilder(context, identity);
-        return isNew ? _NewItemHighlight(child: child) : child;
-      },
+    return _ActivityListWithToast(
+      newCount: _newCount,
+      icon: Icons.person_rounded,
+      labelKey: 'identities',
+      child: ListView.separated(
+        controller: widget.scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        itemCount: items.length,
+        separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
+        itemBuilder: (context, index) {
+          final identity = items[index];
+          final identityId = '${identity.accountId ?? identity.name}_${identity.timestamp.millisecondsSinceEpoch}';
+          final isNew = _newIds.contains(identityId);
+          final child = widget.tileBuilder(context, identity);
+          return isNew ? _NewItemHighlight(child: child) : child;
+        },
+      ),
     );
   }
 }
@@ -2961,6 +2974,7 @@ class _DesktopCertificationsTab extends ConsumerStatefulWidget {
 class _DesktopCertificationsTabState extends ConsumerState<_DesktopCertificationsTab> {
   Set<String> _knownIds = {};
   Set<String> _newIds = {};
+  int _newCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -2979,25 +2993,148 @@ class _DesktopCertificationsTabState extends ConsumerState<_DesktopCertification
     final currentIds = items.map((c) => c.id).toSet();
     if (_knownIds.isNotEmpty) {
       _newIds = currentIds.difference(_knownIds);
+      _newCount = _newIds.length;
     }
     _knownIds = currentIds;
 
-    return ListView.separated(
-      controller: widget.scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      itemCount: items.length,
-      separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
-      itemBuilder: (context, index) {
-        final cert = items[index];
-        final isNew = _newIds.contains(cert.id);
-        final child = widget.tileBuilder(context, cert);
-        return isNew ? _NewItemHighlight(child: child) : child;
-      },
+    return _ActivityListWithToast(
+      newCount: _newCount,
+      icon: Icons.verified_rounded,
+      labelKey: 'certifications',
+      child: ListView.separated(
+        controller: widget.scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        itemCount: items.length,
+        separatorBuilder: (_, _) => Divider(height: 1, color: context.colorScheme.outline.withValues(alpha: 0.06)),
+        itemBuilder: (context, index) {
+          final cert = items[index];
+          final isNew = _newIds.contains(cert.id);
+          final child = widget.tileBuilder(context, cert);
+          return isNew ? _NewItemHighlight(child: child) : child;
+        },
+      ),
     );
   }
 }
 
-/// Subtle highlight animation for newly arrived items
+// ─── Shared animation widgets ───
+
+/// Wraps a list with a slide-up toast notification when new items arrive.
+class _ActivityListWithToast extends StatefulWidget {
+  final int newCount;
+  final IconData icon;
+  final String labelKey;
+  final Widget child;
+
+  const _ActivityListWithToast({
+    required this.newCount,
+    required this.icon,
+    required this.labelKey,
+    required this.child,
+  });
+
+  @override
+  State<_ActivityListWithToast> createState() => _ActivityListWithToastState();
+}
+
+class _ActivityListWithToastState extends State<_ActivityListWithToast> with SingleTickerProviderStateMixin {
+  late AnimationController _toastController;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+  int _displayedCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _toastController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _toastController, curve: Curves.easeOutCubic));
+    _fadeAnimation = CurvedAnimation(parent: _toastController, curve: Curves.easeOut);
+  }
+
+  @override
+  void didUpdateWidget(_ActivityListWithToast oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.newCount > 0 && widget.newCount != oldWidget.newCount) {
+      _displayedCount = widget.newCount;
+      _toastController.forward(from: 0);
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) _toastController.reverse();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _toastController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.child,
+        // Toast notification — anchored at bottom center
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 8,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.inverseSurface.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(widget.icon, size: 14, color: context.colorScheme.inversePrimary),
+                      const SizedBox(width: 6),
+                      Text(
+                        '+$_displayedCount',
+                        style: scaledTextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: context.colorScheme.onInverseSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.labelKey.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: context.colorScheme.onInverseSurface.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Subtle highlight animation for newly arrived items — fades from accent background to transparent.
 class _NewItemHighlight extends StatefulWidget {
   final Widget child;
   const _NewItemHighlight({required this.child});
@@ -3013,11 +3150,11 @@ class _NewItemHighlightState extends State<_NewItemHighlight> with SingleTickerP
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000));
     _highlightAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _controller.forward();
   }
 
@@ -3034,7 +3171,7 @@ class _NewItemHighlightState extends State<_NewItemHighlight> with SingleTickerP
       builder: (context, child) {
         return Container(
           decoration: BoxDecoration(
-            color: context.colorScheme.primary.withValues(alpha: _highlightAnimation.value * 0.08),
+            color: context.colorScheme.primary.withValues(alpha: _highlightAnimation.value * 0.10),
             borderRadius: BorderRadius.circular(8),
           ),
           child: child,

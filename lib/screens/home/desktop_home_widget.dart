@@ -2861,6 +2861,7 @@ class _DesktopTransactionsTabState extends ConsumerState<_DesktopTransactionsTab
   Set<String> _knownIds = {};
   Set<String> _newIds = {};
   int _newCount = 0;
+  DateTime? _newestKnownTimestamp;
 
   @override
   Widget build(BuildContext context) {
@@ -2878,8 +2879,21 @@ class _DesktopTransactionsTabState extends ConsumerState<_DesktopTransactionsTab
 
     final currentIds = items.map((tx) => tx.squidId ?? '${tx.timestamp.millisecondsSinceEpoch}').toSet();
     if (_knownIds.isNotEmpty) {
-      _newIds = currentIds.difference(_knownIds);
+      // Only count items newer than the previously newest known item (not pagination)
+      final newItems = currentIds.difference(_knownIds);
+      _newIds = {};
+      if (newItems.isNotEmpty && _newestKnownTimestamp != null) {
+        for (final tx in items) {
+          final txId = tx.squidId ?? '${tx.timestamp.millisecondsSinceEpoch}';
+          if (newItems.contains(txId) && tx.timestamp.isAfter(_newestKnownTimestamp!)) {
+            _newIds.add(txId);
+          }
+        }
+      }
       _newCount = _newIds.length;
+    }
+    if (items.isNotEmpty) {
+      _newestKnownTimestamp = items.first.timestamp;
     }
     _knownIds = currentIds;
 
@@ -2918,6 +2932,7 @@ class _DesktopIdentitiesTabState extends ConsumerState<_DesktopIdentitiesTab> {
   Set<String> _knownIds = {};
   Set<String> _newIds = {};
   int _newCount = 0;
+  DateTime? _newestKnownTimestamp;
 
   @override
   Widget build(BuildContext context) {
@@ -2935,8 +2950,20 @@ class _DesktopIdentitiesTabState extends ConsumerState<_DesktopIdentitiesTab> {
 
     final currentIds = items.map((i) => '${i.accountId ?? i.name}_${i.timestamp.millisecondsSinceEpoch}').toSet();
     if (_knownIds.isNotEmpty) {
-      _newIds = currentIds.difference(_knownIds);
+      final newItems = currentIds.difference(_knownIds);
+      _newIds = {};
+      if (newItems.isNotEmpty && _newestKnownTimestamp != null) {
+        for (final identity in items) {
+          final identityId = '${identity.accountId ?? identity.name}_${identity.timestamp.millisecondsSinceEpoch}';
+          if (newItems.contains(identityId) && identity.timestamp.isAfter(_newestKnownTimestamp!)) {
+            _newIds.add(identityId);
+          }
+        }
+      }
       _newCount = _newIds.length;
+    }
+    if (items.isNotEmpty) {
+      _newestKnownTimestamp = items.first.timestamp;
     }
     _knownIds = currentIds;
 
@@ -2975,6 +3002,7 @@ class _DesktopCertificationsTabState extends ConsumerState<_DesktopCertification
   Set<String> _knownIds = {};
   Set<String> _newIds = {};
   int _newCount = 0;
+  DateTime? _newestKnownTimestamp;
 
   @override
   Widget build(BuildContext context) {
@@ -2992,8 +3020,19 @@ class _DesktopCertificationsTabState extends ConsumerState<_DesktopCertification
 
     final currentIds = items.map((c) => c.id).toSet();
     if (_knownIds.isNotEmpty) {
-      _newIds = currentIds.difference(_knownIds);
+      final newItems = currentIds.difference(_knownIds);
+      _newIds = {};
+      if (newItems.isNotEmpty && _newestKnownTimestamp != null) {
+        for (final cert in items) {
+          if (newItems.contains(cert.id) && cert.timestamp.isAfter(_newestKnownTimestamp!)) {
+            _newIds.add(cert.id);
+          }
+        }
+      }
       _newCount = _newIds.length;
+    }
+    if (items.isNotEmpty) {
+      _newestKnownTimestamp = items.first.timestamp;
     }
     _knownIds = currentIds;
 

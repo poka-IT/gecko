@@ -2564,7 +2564,8 @@ class _NetworkActivityControlsBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final totalsAsync = ref.watch(networkTotalsProvider);
-    final totals = totalsAsync.asData?.value;
+    // Use .value to keep last known totals during AsyncLoading (avoids flicker to "–")
+    final totals = totalsAsync.value;
 
     String resolveCount(String Function(NetworkTotals) fromTotals) {
       if (totals != null) return fromTotals(totals);

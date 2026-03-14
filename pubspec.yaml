@@ -2,7 +2,7 @@ name: gecko
 description: Pay with G1.
 publish_to: "none"
 
-version: 1.0.6+177
+version: 1.1.0+178
 
 environment:
   sdk: ^3.8.1
@@ -61,7 +61,7 @@ dependencies:
   http: ^1.6.0
   gif_view: ^1.0.3
   get_it: ^9.2.0
-  durt2: ^1.0.5
+  durt2: ^1.0.6
   flutter_riverpod: ^3.2.1
   riverpod_sqflite: ^0.4.2
   sqflite: ^2.4.1

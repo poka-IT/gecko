@@ -1,3 +1,8 @@
+include:
+  - project: 'axiom-team/duniter-automation'
+    file: '/gitlab-ci-template.yml'
+    ref: 'main'
+
 # Gecko CI/CD Pipeline
 # Build and release for Android, iOS, Linux Desktop, and Windows Desktop
 #
@@ -13,6 +18,8 @@ stages:
   - deploy
   - publish
   - release
+  - ai-develop
+  - ai-review
 
 workflow:
   auto_cancel:

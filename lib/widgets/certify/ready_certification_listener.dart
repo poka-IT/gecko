@@ -16,6 +16,8 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certify/certification_transaction_helper.dart';
 import 'package:gecko/widgets/certify/ready_certification_modal.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/widgets/desktop/modals/certification_queue_modal.dart';
 
 /// Global listener for ready certification notifications.
 /// This widget should be placed high in the widget tree to listen for
@@ -111,26 +113,36 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
       context: navContext,
       pendingCert: pendingCert,
       issuerAddress: issuerAddress,
-      onCertify: () => _executeCertificationFromModal(pendingCert, issuerAddress),
+      onCertify: () async {
+        try {
+          await _executeCertificationFromModal(pendingCert, issuerAddress);
+        } finally {
+          _isShowingModal = false;
+        }
+      },
       onViewQueue: () {
         // Snooze this certification so it doesn't show again this session
         _snoozedCertificationIds.add(pendingCert.id);
+        _isShowingModal = false;
 
         final ctx = Gecko.navigatorContext;
         if (ctx != null) {
-          Navigator.push(
-            ctx,
-            MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
-          );
+          if (isDesktopLayout(ctx)) {
+            showDesktopCertificationQueueModal(ctx, issuerAddress: issuerAddress);
+          } else {
+            Navigator.push(
+              ctx,
+              MaterialPageRoute(builder: (context) => CertificationQueueScreen(issuerAddress: issuerAddress)),
+            );
+          }
         }
       },
       onDismiss: () {
         // Snooze this certification so it doesn't show again this session
         _snoozedCertificationIds.add(pendingCert.id);
+        _isShowingModal = false;
       },
-    ).then((_) {
-      _isShowingModal = false;
-    });
+    );
   }
 
   Future<void> _executeCertificationFromModal(d.PendingCertification pendingCert, String issuerAddress) async {

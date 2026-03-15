@@ -100,21 +100,20 @@ while IFS=$'\t' read -r NAME URL; do
     -o "${TMPFILE}" \
     "${URL}"
 
-  # If it's a zip that contains our setup.exe or portable zip, extract it
-  if echo "${NAME}" | grep -qE '\.zip$'; then
-    # Check if this zip contains our actual artifacts
-    if unzip -l "${TMPFILE}" 2>/dev/null | grep -qE '\.(exe|zip)$'; then
-      echo "    Extracting contents..."
+  # Identify artifact type and handle accordingly
+  if echo "${NAME}" | grep -q "windows-x64\.zip"; then
+    # This is the portable zip — keep as-is
+    echo "    Portable zip detected"
+    cp "${TMPFILE}" "artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
+  elif echo "${NAME}" | grep -qE '\.zip$'; then
+    # Codemagic bundles .exe artifacts into a zip — extract the setup.exe
+    if unzip -l "${TMPFILE}" 2>/dev/null | grep -q "setup\.exe"; then
+      echo "    Extracting setup.exe from bundle..."
       unzip -o -j "${TMPFILE}" -d artifacts/windows/ 2>/dev/null || true
     else
-      # It's probably the portable zip itself — check by name
-      if echo "${NAME}" | grep -q "windows-x64\.zip"; then
-        cp "${TMPFILE}" "artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
-      else
-        # Unknown zip — extract to see what's inside
-        unzip -o -j "${TMPFILE}" -d artifacts/windows/ 2>/dev/null || \
-          cp "${TMPFILE}" "artifacts/windows/${NAME}"
-      fi
+      echo "    Unknown zip bundle, extracting..."
+      unzip -o -j "${TMPFILE}" -d artifacts/windows/ 2>/dev/null || \
+        cp "${TMPFILE}" "artifacts/windows/${NAME}"
     fi
   else
     cp "${TMPFILE}" "artifacts/windows/${NAME}"

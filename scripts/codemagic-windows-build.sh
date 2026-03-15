@@ -80,44 +80,62 @@ if [ "${ELAPSED}" -ge "${TIMEOUT}" ]; then
   exit 1
 fi
 
-# 3. Extract artifact URLs (Codemagic uses British spelling "artefacts")
+# 3. Download all artifacts (Codemagic uses British spelling "artefacts")
 mkdir -p artifacts/windows
 
-# Download all Windows artifacts (installer .exe + portable .zip)
+echo "==> Available artefacts:"
+echo "${STATUS_RESPONSE}" | jq -r '.build.artefacts[] | "  - \(.name) (\(.size // "unknown") bytes)"'
+
+# Download each artifact and extract if needed
+ARTIFACT_URLS=$(echo "${STATUS_RESPONSE}" | jq -r '.build.artefacts[] | "\(.name)\t\(.url)"')
 ARTIFACT_COUNT=0
-for EXT in exe zip; do
-  ARTIFACT_URL=$(echo "${STATUS_RESPONSE}" | jq -r "
-    .build.artefacts[]
-    | select(.name | test(\"\\\\.${EXT}$\"))
-    | .url" | head -1)
 
-  if [ -z "${ARTIFACT_URL}" ] || [ "${ARTIFACT_URL}" = "null" ]; then
-    echo "WARN: No .${EXT} artifact found"
-    continue
-  fi
+while IFS=$'\t' read -r NAME URL; do
+  [ -z "${URL}" ] && continue
 
-  if [ "${EXT}" = "exe" ]; then
-    DEST="artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64-setup.exe"
-  else
-    DEST="artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
-  fi
-
-  echo "==> Downloading: ${DEST}"
+  TMPFILE="/tmp/codemagic_artifact_${ARTIFACT_COUNT}"
+  echo "==> Downloading: ${NAME}"
   curl -sfL --retry 3 \
     -H "x-auth-token: ${CODEMAGIC_API_TOKEN}" \
-    -o "${DEST}" \
-    "${ARTIFACT_URL}"
+    -o "${TMPFILE}" \
+    "${URL}"
 
-  FILE_SIZE=$(stat -c%s "${DEST}" 2>/dev/null || stat -f%z "${DEST}" 2>/dev/null || echo "unknown")
-  echo "    Size: ${FILE_SIZE} bytes"
+  # If it's a zip that contains our setup.exe or portable zip, extract it
+  if echo "${NAME}" | grep -qE '\.zip$'; then
+    # Check if this zip contains our actual artifacts
+    if unzip -l "${TMPFILE}" 2>/dev/null | grep -qE '\.(exe|zip)$'; then
+      echo "    Extracting contents..."
+      unzip -o -j "${TMPFILE}" -d artifacts/windows/ 2>/dev/null || true
+    else
+      # It's probably the portable zip itself — check by name
+      if echo "${NAME}" | grep -q "windows-x64\.zip"; then
+        cp "${TMPFILE}" "artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
+      else
+        # Unknown zip — extract to see what's inside
+        unzip -o -j "${TMPFILE}" -d artifacts/windows/ 2>/dev/null || \
+          cp "${TMPFILE}" "artifacts/windows/${NAME}"
+      fi
+    fi
+  else
+    cp "${TMPFILE}" "artifacts/windows/${NAME}"
+  fi
+
+  rm -f "${TMPFILE}"
   ARTIFACT_COUNT=$((ARTIFACT_COUNT + 1))
-done
+done <<< "${ARTIFACT_URLS}"
 
-if [ "${ARTIFACT_COUNT}" -eq 0 ]; then
-  echo "ERROR: No artifacts found in build output"
-  echo "Available artefacts:"
-  echo "${STATUS_RESPONSE}" | jq '.build.artefacts[].name'
+# Verify we got the expected files
+echo "==> Downloaded artifacts:"
+ls -lh artifacts/windows/
+
+SETUP_FILE="artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64-setup.exe"
+ZIP_FILE="artifacts/windows/gecko-${VERSION_NAME}+${BUILD_NUMBER}-windows-x64.zip"
+
+if [ ! -f "${SETUP_FILE}" ] && [ ! -f "${ZIP_FILE}" ]; then
+  echo "ERROR: No expected artifacts found after download"
   exit 1
 fi
 
-echo "==> Windows build complete (${ARTIFACT_COUNT} artifacts downloaded)"
+[ -f "${SETUP_FILE}" ] && echo "==> Installer: ${SETUP_FILE}"
+[ -f "${ZIP_FILE}" ] && echo "==> Portable: ${ZIP_FILE}"
+echo "==> Windows build complete"

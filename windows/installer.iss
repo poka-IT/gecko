@@ -34,8 +34,7 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequired=admin
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
@@ -48,6 +47,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\dependencies\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -55,4 +55,13 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
+Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Visual C++ Runtime..."; Check: not VCRedistInstalled; Flags: waituntilterminated
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+function VCRedistInstalled: Boolean;
+var
+  Installed: Cardinal;
+begin
+  Result := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64', 'Installed', Installed) and (Installed = 1);
+end;

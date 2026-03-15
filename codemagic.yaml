@@ -35,6 +35,17 @@ workflows:
           }
           Write-Host "Inno Setup installed at $ISCC"
 
+      - name: Download VC++ Redistributable
+        script: |
+          New-Item -ItemType Directory -Force -Path "dependencies"
+          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "dependencies\vc_redist.x64.exe"
+          if (-not (Test-Path "dependencies\vc_redist.x64.exe")) {
+            Write-Error "Failed to download VC++ Redistributable"
+            exit 1
+          }
+          $size = (Get-Item "dependencies\vc_redist.x64.exe").Length / 1MB
+          Write-Host "VC++ Redistributable downloaded (${size} MB)"
+
       - name: Package Windows installer
         script: |
           $VERSION = (Select-String -Path pubspec.yaml -Pattern '^version:\s+(.+)$').Matches.Groups[1].Value

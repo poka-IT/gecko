@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
@@ -87,7 +88,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   final EasterEggController _easterEggController = EasterEggController();
   int _activeActivityTabIndex = 0;
   int _highlightedSearchIndex = -1;
-  bool _isContactsPanelOpen = false;
+  bool _isContactsPanelOpen = configBox.get('contactsPanelOpen', defaultValue: false) as bool;
   bool _isSearchPaletteOpen = false;
 
   String get _searchShortcutLabel {
@@ -176,6 +177,11 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     await scanQr(context);
   }
 
+  void _toggleContactsPanel() {
+    setState(() => _isContactsPanelOpen = !_isContactsPanelOpen);
+    configBox.put('contactsPanelOpen', _isContactsPanelOpen);
+  }
+
   void _focusDesktopHomeShell() {
     if (!_desktopHomeFocusNode.hasFocus) {
       _desktopHomeFocusNode.requestFocus();
@@ -233,7 +239,19 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
     // C — toggle contacts panel
     if (event.logicalKey == LogicalKeyboardKey.keyC) {
-      setState(() => _isContactsPanelOpen = !_isContactsPanelOpen);
+      _toggleContactsPanel();
+      return KeyEventResult.handled;
+    }
+
+    // S — open QR code scanner
+    if (event.logicalKey == LogicalKeyboardKey.keyS) {
+      _openQrScanner(context);
+      return KeyEventResult.handled;
+    }
+
+    // P — open settings
+    if (event.logicalKey == LogicalKeyboardKey.keyP) {
+      showDesktopSettingsModal(context);
       return KeyEventResult.handled;
     }
 
@@ -983,7 +1001,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () => setState(() => _isContactsPanelOpen = !_isContactsPanelOpen),
+          onTap: _toggleContactsPanel,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             width: 52,

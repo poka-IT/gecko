@@ -558,7 +558,11 @@ class _AvatarWithProfileLink extends ConsumerWidget {
 
   void _openProfile(BuildContext context) {
     if (isDesktopLayout(context)) {
-      showDesktopCesiumProfileModal(context, address: address);
+      if (isOwner) {
+        showDesktopCesiumProfileModal(context, address: address);
+      } else {
+        showDesktopCesiumProfileViewModal(context, address: address);
+      }
     } else {
       Navigator.push(
         context,

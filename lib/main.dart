@@ -177,8 +177,19 @@ Future<void> _showDesktopWindow() async {
   final savedHeight = configBox.get('windowHeight') as double?;
   final size = (savedWidth != null && savedHeight != null) ? Size(savedWidth, savedHeight) : defaultSize;
 
-  final windowOptions = WindowOptions(size: size, center: true, title: 'Ğecko', titleBarStyle: TitleBarStyle.normal);
+  final bypassMinSize = configBox.get('bypassMinWindowSize', defaultValue: false) as bool;
+  const minSize = Size(800, 600);
+  final windowOptions = WindowOptions(
+    size: size,
+    minimumSize: bypassMinSize ? null : minSize,
+    center: true,
+    title: 'Ğecko',
+    titleBarStyle: TitleBarStyle.normal,
+  );
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    if (!bypassMinSize) {
+      await windowManager.setMinimumSize(minSize);
+    }
     await windowManager.show();
     await windowManager.focus();
   });

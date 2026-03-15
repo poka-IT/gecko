@@ -22,6 +22,8 @@ import 'package:gecko/routes.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -633,6 +635,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       child: generateMnemonicsInEnglishToggle(context),
                     ),
                   ),
+                  if (isDesktopLayout(context)) ...[
+                    ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                        child: bypassMinWindowSizeToggle(context),
+                      ),
+                    ),
+                  ],
                   ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
                   Text(
@@ -2199,6 +2221,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 return null;
               }),
               onChanged: (_) => ref.read(backgroundImageProvider.notifier).toggle(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget bypassMinWindowSizeToggle(BuildContext context) {
+    final bypass = configBox.get('bypassMinWindowSize', defaultValue: false) as bool;
+
+    return InkWell(
+      onTap: () async {
+        final newValue = !bypass;
+        configBox.put('bypassMinWindowSize', newValue);
+        if (newValue) {
+          await windowManager.setMinimumSize(const Size(0, 0));
+        } else {
+          await windowManager.setMinimumSize(const Size(800, 600));
+        }
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: scaleSize(4)),
+        child: Row(
+          children: [
+            Icon(Icons.aspect_ratio_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
+            ScaledSizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'bypassMinWindowSize'.tr(),
+                    style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                  ),
+                  Text(
+                    'bypassMinWindowSizeDescription'.tr(),
+                    style: scaledTextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: bypass,
+              thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (states.contains(WidgetState.selected)) {
+                  return context.colorScheme.primary;
+                }
+                return Colors.grey[400];
+              }),
+              trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                if (!states.contains(WidgetState.selected)) {
+                  return Colors.grey[300];
+                }
+                return null;
+              }),
+              onChanged: (bool value) async {
+                configBox.put('bypassMinWindowSize', value);
+                if (value) {
+                  await windowManager.setMinimumSize(const Size(0, 0));
+                } else {
+                  await windowManager.setMinimumSize(const Size(800, 600));
+                }
+                if (mounted) {
+                  setState(() {});
+                }
+              },
             ),
           ],
         ),

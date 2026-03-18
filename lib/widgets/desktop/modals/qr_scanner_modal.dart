@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/services/qr_scanner_service.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -38,26 +37,18 @@ class _QrScannerModalContent extends StatefulWidget {
 }
 
 class _QrScannerModalContentState extends State<_QrScannerModalContent> {
-  MobileScannerController? _controller;
+  late final MobileScannerController _controller;
   bool _hasScanned = false;
-  bool _scannerUnavailable = false;
 
   @override
   void initState() {
     super.initState();
-    try {
-      _controller = MobileScannerController(
-        detectionSpeed: DetectionSpeed.noDuplicates,
-        formats: [BarcodeFormat.qrCode],
-      );
-    } on MissingPluginException {
-      _scannerUnavailable = true;
-    }
+    _controller = MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates, formats: [BarcodeFormat.qrCode]);
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -70,7 +61,7 @@ class _QrScannerModalContentState extends State<_QrScannerModalContent> {
     if (rawValue.isEmpty) return;
 
     _hasScanned = true;
-    _controller?.stop();
+    _controller.stop();
     Navigator.of(context).pop(QrScanResult.success(rawValue));
   }
 
@@ -141,51 +132,32 @@ class _QrScannerModalContentState extends State<_QrScannerModalContent> {
                           child: Stack(
                             children: [
                               // Camera feed
-                              if (_scannerUnavailable || _controller == null)
-                                Container(
-                                  color: Colors.black,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.videocam_off_rounded, color: Colors.white54, size: 48),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          'cameraError'.tr(),
-                                          style: const TextStyle(color: Colors.white70, fontSize: 13),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              else
-                                MobileScanner(
-                                  controller: _controller!,
-                                  onDetect: _onDetect,
-                                  errorBuilder: (context, error) {
-                                    return Container(
-                                      color: Colors.black,
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(Icons.videocam_off_rounded, color: Colors.white54, size: 48),
-                                            const SizedBox(height: 12),
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 24),
-                                              child: Text(
-                                                error.errorDetails?.message ?? 'cameraError'.tr(),
-                                                style: const TextStyle(color: Colors.white70, fontSize: 13),
-                                                textAlign: TextAlign.center,
-                                              ),
+                              MobileScanner(
+                                controller: _controller,
+                                onDetect: _onDetect,
+                                errorBuilder: (context, error) {
+                                  return Container(
+                                    color: Colors.black,
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.videocam_off_rounded, color: Colors.white54, size: 48),
+                                          const SizedBox(height: 12),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                                            child: Text(
+                                              error.errorDetails?.message ?? 'cameraError'.tr(),
+                                              style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                              textAlign: TextAlign.center,
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  },
-                                ),
+                                    ),
+                                  );
+                                },
+                              ),
                               // Viewfinder overlay
                               CustomPaint(
                                 size: const Size(cameraSize, cameraSize),

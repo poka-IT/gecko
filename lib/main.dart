@@ -204,8 +204,10 @@ class _DesktopWindowListener extends WindowListener {
   @override
   void onWindowResize() {
     windowManager.getSize().then((size) {
-      configBox.put('windowWidth', size.width);
-      configBox.put('windowHeight', size.height);
+      if (configBox.isOpen) {
+        configBox.put('windowWidth', size.width);
+        configBox.put('windowHeight', size.height);
+      }
     });
   }
 

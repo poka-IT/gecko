@@ -42,7 +42,10 @@ class StorageInitService {
       if (!await hivePath.exists()) {
         await hivePath.create(recursive: true);
       }
-      await Hive.initFlutter(hivePath.path);
+      // Use Hive.init() directly instead of Hive.initFlutter() to avoid
+      // calling getApplicationDocumentsDirectory() which fails on Linux
+      // with atypical window managers (dwm, jwm) that lack XDG support.
+      Hive.init(hivePath.path);
     } else {
       await Hive.initFlutter();
     }

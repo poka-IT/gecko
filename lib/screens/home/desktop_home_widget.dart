@@ -1426,6 +1426,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                           ),
                         ),
                       ),
+                      DatapodAvatar(address: toAddress, size: 28, name: tx.toUsername),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: _buildClickableProfile(
                           context,

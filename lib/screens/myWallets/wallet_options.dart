@@ -195,8 +195,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: InkWell(
               onTap: () async {
-                // Ask for PIN code first if needed
                 final pinCodeValid = await PinCodeService.askPinCode(wallet: widget.wallet);
+                if (!mounted) return;
 
                 if (pinCodeValid) {
                   final newPath = await WalletManagementService.changeAvatar(
@@ -204,11 +204,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                     pinCode: PinCodeService.pinCode,
                     ref: ref,
                   );
+                  if (!mounted) return;
                   if (newPath.isNotEmpty) {
                     setState(() {
                       widget.wallet.imagePath = newPath;
                     });
-                    // Refresh wallets list to update UI components
                     ref.read(walletsListProvider.notifier).refresh();
                   }
                 }
@@ -360,14 +360,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 key: keyRenameWallet,
                 onTap: () async {
                   final newName = await WalletNameDialogService.showEditWalletNameDialog(context, widget.wallet);
-                  if (newName != null) {
-                    // Reload wallets data to update the UI
+                  if (newName != null && mounted) {
                     await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
-                    // Reload the wallet object to get the updated name
+                    if (!mounted) return;
                     final updatedWallet = ref.read(walletByAddressProvider(widget.wallet.address));
                     if (updatedWallet != null) {
                       widget.wallet.name = updatedWallet.name;
-                      // Update the local state to rebuild the UI
                       setState(() {
                         currentWalletName = updatedWallet.name!;
                       });

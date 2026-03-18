@@ -71,6 +71,7 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
       if (!result) return;
 
       if (!await PinCodeService.askPinCode()) return;
+      if (!mounted) return;
       final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
 
       if (identityWallet == null) {

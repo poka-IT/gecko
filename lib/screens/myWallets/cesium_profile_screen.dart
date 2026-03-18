@@ -106,9 +106,10 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
 
     final pinCode = await PinCodeService.askPinCode();
     if (!pinCode) {
-      SnackbarService.showError(context, message: 'pinNeeded'.tr());
+      if (mounted) SnackbarService.showError(context, message: 'pinNeeded'.tr());
       return;
     }
+    if (!mounted) return;
 
     setState(() => _isSaving = true);
 
@@ -120,8 +121,6 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
       );
 
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
-
-      // Get current title or use wallet name as fallback
       String title = _profile?['title'] ?? 'Duniter Wallet';
 
       final success = await cesiumPlus.uploadProfile(
@@ -136,15 +135,16 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
         tags: _tags.isEmpty ? null : _tags,
       );
 
+      if (!mounted) return;
       if (success) {
         SnackbarService.showSuccess(context, message: 'profileUpdated'.tr());
-        if (mounted) Navigator.pop(context);
+        Navigator.pop(context);
       } else {
         SnackbarService.showError(context, message: 'profileUpdateFailed'.tr());
       }
     } catch (e) {
       log.e('Error saving Cesium+ profile: $e');
-      SnackbarService.showError(context, message: 'profileUpdateFailed'.tr());
+      if (mounted) SnackbarService.showError(context, message: 'profileUpdateFailed'.tr());
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -188,9 +188,10 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
 
     final pinCode = await PinCodeService.askPinCode();
     if (!pinCode) {
-      SnackbarService.showError(context, message: 'pinNeeded'.tr());
+      if (mounted) SnackbarService.showError(context, message: 'pinNeeded'.tr());
       return;
     }
+    if (!mounted) return;
 
     setState(() => _isSaving = true);
 
@@ -204,15 +205,16 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
       final success = await cesiumPlus.deleteProfile(address: widget.address, signFunction: keyPair.sign);
 
+      if (!mounted) return;
       if (success) {
         SnackbarService.showSuccess(context, message: 'profileDeleted'.tr());
-        if (mounted) Navigator.pop(context);
+        Navigator.pop(context);
       } else {
         SnackbarService.showError(context, message: 'profileDeleteFailed'.tr());
       }
     } catch (e) {
       log.e('Error deleting Cesium+ profile: $e');
-      SnackbarService.showError(context, message: 'profileDeleteFailed'.tr());
+      if (mounted) SnackbarService.showError(context, message: 'profileDeleteFailed'.tr());
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

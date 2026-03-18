@@ -382,6 +382,7 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
 
                       // Ask for PIN code first if needed
                       final pinCodeValid = await PinCodeService.askPinCode();
+                      if (!mounted) return;
 
                       if (pinCodeValid) {
                         final newPath = await WalletManagementService.changeAvatar(
@@ -389,14 +390,13 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                           pinCode: PinCodeService.pinCode,
                           ref: ref,
                         );
+                        if (!mounted) return;
                         setState(() {
-                          // Only update if newPath is not empty (not cancelled)
                           if (newPath.isNotEmpty) {
                             _newCustomImagePath = newPath;
                           }
                           _isPickerOpen = false;
                         });
-                        // Reload wallets from database to update UI everywhere
                         await ref.read(walletsListProvider.notifier).loadWallets();
                       } else {
                         setState(() => _isPickerOpen = false);

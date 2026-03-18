@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:bubble/bubble.dart';
+import 'dart:io' show Platform;
 import 'package:durt2/durt2.dart' show Durt, BidouilleLang;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -26,7 +28,20 @@ class RestoreSafe extends ConsumerStatefulWidget {
 }
 
 class _RestoreSafeState extends ConsumerState<RestoreSafe> {
+  static final bool _isDesktop = !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
   bool _isRestoring = false;
+  final List<FocusNode> _focusNodes = List.generate(12, (_) => FocusNode());
+
+  // Track the latest validation call per field to cancel stale results
+  int _validationGeneration = 0;
+
+  @override
+  void dispose() {
+    for (final node in _focusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -361,10 +376,13 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: TextField(
-              autofocus: true,
+              autofocus: index == 0,
+              focusNode: _focusNodes[index],
               controller: cellCtl,
               enabled: !(mnemonicInput.isComplete && mnemonicInput.isValid) && !_isRestoring,
-              textInputAction: TextInputAction.next,
+              // On desktop, disable system auto-advance (Tab key) to avoid
+              // racing with our async BIP39 validation
+              textInputAction: _isDesktop ? TextInputAction.none : TextInputAction.next,
               decoration: InputDecoration(
                 border: InputBorder.none,
                 focusedBorder: UnderlineInputBorder(
@@ -387,6 +405,8 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
 
                 // Only move to next field if we have a valid BIP39 word AND we're not at the last field
                 if (cleanText.isNotEmpty && index < 11) {
+                  // Track this validation call to discard stale results
+                  final thisGeneration = ++_validationGeneration;
                   try {
                     final languageCode = context.locale.languageCode;
                     final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
@@ -398,8 +418,9 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                       checkRedundance: true,
                       preferredLanguage: preferredLanguage,
                     );
-                    if (isUniqueValidWord) {
-                      FocusScope.of(context).nextFocus();
+                    // Only advance if this is still the latest validation AND this field still has focus
+                    if (isUniqueValidWord && thisGeneration == _validationGeneration && _focusNodes[index].hasFocus) {
+                      _focusNodes[index + 1].requestFocus();
                     }
                   } catch (e) {
                     // If validation fails, don't move to next field

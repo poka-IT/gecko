@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io' show Platform;
 import 'package:durt2/durt2.dart' show BidouilleLang, Durt;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -15,12 +17,29 @@ import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
-class RestoreSafeMigrated extends ConsumerWidget {
+class RestoreSafeMigrated extends ConsumerStatefulWidget {
   const RestoreSafeMigrated({super.key, this.skipIntro = false});
   final bool skipIntro;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RestoreSafeMigrated> createState() => _RestoreSafeMigratedState();
+}
+
+class _RestoreSafeMigratedState extends ConsumerState<RestoreSafeMigrated> {
+  static final bool _isDesktop = !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
+  final List<FocusNode> _focusNodes = List.generate(12, (_) => FocusNode());
+  int _validationGeneration = 0;
+
+  @override
+  void dispose() {
+    for (final node in _focusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mnemonicInput = ref.watch(mnemonicInputProvider);
     final controllers = ref.watch(mnemonicControllersProvider);
 
@@ -132,7 +151,7 @@ class RestoreSafeMigrated extends ConsumerWidget {
 
                                 await AppNavigator.pushWithFader(
                                   context,
-                                  skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
+                                  widget.skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
                                   arguments: OnboardingStepsSevenToNineArguments(
                                     scanDerivation: true,
                                     fromRestore: true,
@@ -243,8 +262,10 @@ class RestoreSafeMigrated extends ConsumerWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: TextField(
+              autofocus: index == 0,
+              focusNode: _focusNodes[index],
               controller: controller,
-              textInputAction: TextInputAction.next,
+              textInputAction: _isDesktop ? TextInputAction.none : TextInputAction.next,
               decoration: InputDecoration(
                 border: InputBorder.none,
                 focusedBorder: UnderlineInputBorder(
@@ -263,6 +284,7 @@ class RestoreSafeMigrated extends ConsumerWidget {
 
                 // Auto-advance on valid word (except last field)
                 if (cleanText.isNotEmpty && index < 11) {
+                  final thisGeneration = ++_validationGeneration;
                   try {
                     final languageCode = context.locale.languageCode;
                     final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
@@ -273,8 +295,8 @@ class RestoreSafeMigrated extends ConsumerWidget {
                       preferredLanguage: preferredLanguage,
                     );
 
-                    if (isUniqueValidWord) {
-                      FocusScope.of(context).nextFocus();
+                    if (isUniqueValidWord && thisGeneration == _validationGeneration && _focusNodes[index].hasFocus) {
+                      _focusNodes[index + 1].requestFocus();
                     }
                   } catch (e) {
                     // If validation fails, don't auto-advance

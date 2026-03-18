@@ -96,6 +96,7 @@ class WalletDeletionService {
           // SafeManager.deleteSafe handles everything: deletion, navigation, safe switching
           // It already showed its own confirmation, but we already confirmed above,
           // so we call the internal deletion directly
+          if (!context.mounted) return -1;
           await _deleteSafeDirectly(ref, safe, context);
           return 0;
         }

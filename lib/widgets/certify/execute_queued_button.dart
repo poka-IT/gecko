@@ -90,8 +90,11 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
 
       if (!result) return;
 
-      if (!await PinCodeService.askPinCode(wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress)))
+      if (!await PinCodeService.askPinCode(
+        wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress),
+      )) {
         return;
+      }
       if (!context.mounted) return;
 
       try {

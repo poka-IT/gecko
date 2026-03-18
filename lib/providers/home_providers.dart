@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/network_activity_provider.dart';
 import 'package:gecko/providers/network_certifications_provider.dart';
@@ -216,7 +217,8 @@ final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
   );
 
   if (result.hasException) {
-    throw result.exception!;
+    log.w('Squid query failed: ${result.exception}');
+    return _lastTotalsResult ?? const NetworkTotals.empty();
   }
 
   final data = result.data;
@@ -402,7 +404,11 @@ class AppInitNotifier extends Notifier<AppInitState> {
         }
       }
 
-      _connectivitySubscription = Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
+      try {
+        _connectivitySubscription = Connectivity().onConnectivityChanged.listen(updateConnectionStatus);
+      } on PlatformException catch (e) {
+        log.w('Connectivity monitoring unavailable: $e');
+      }
     } else {
       state = state.copyWith(isConnected: true);
     }

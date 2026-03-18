@@ -95,12 +95,18 @@ class StorageInitService {
 
   /// Open required Hive boxes
   Future<void> _openRequiredBoxes() async {
-    // Open config box first
-    configBox = await Hive.openBox("configBox");
-
-    // Open wallets and contacts boxes
-    g1WalletsBox = await Hive.openBox('g1WalletsBox');
-    contactsBox = await Hive.openBox('contactsBox');
+    try {
+      configBox = await Hive.openBox("configBox");
+      g1WalletsBox = await Hive.openBox('g1WalletsBox');
+      contactsBox = await Hive.openBox('contactsBox');
+    } on OSError catch (e) {
+      // errno 11 (EAGAIN) or 35 (EWOULDBLOCK): another Gecko instance holds the lock
+      if (e.errorCode == 11 || e.errorCode == 35) {
+        throw StateError('Another instance of Gecko is already running. '
+            'Please close it before starting a new one.');
+      }
+      rethrow;
+    }
 
     // Initialize certification queue service
     await CertificationQueueService.init();

@@ -163,7 +163,9 @@ class SentryService {
         }
         if (extra != null) {
           extra.forEach((key, value) {
-            scope.setTag('capture_$key', _sanitizePii(key, value.toString()));
+            final sanitizedKey = key.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+            final tagValue = value is Map ? value.entries.map((e) => '${e.key}=${e.value}').join(', ') : value.toString();
+            scope.setTag('capture_$sanitizedKey', _sanitizePii(sanitizedKey, tagValue));
           });
         }
 

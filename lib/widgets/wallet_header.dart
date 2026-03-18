@@ -310,7 +310,7 @@ class _IdentityStatusDisplay extends StatelessWidget {
         ),
         Flexible(
           child: AnimatedFadeOutIn<String>(
-            data: statusText[currentStatus]!,
+            data: statusText[currentStatus] ?? '',
             duration: const Duration(milliseconds: 150),
             builder: (value) => Text(
               value,

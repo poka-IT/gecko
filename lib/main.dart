@@ -34,6 +34,7 @@ import 'package:responsive_framework/responsive_framework.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/services/storage_init_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:gecko/services/log_collection_service.dart';
@@ -194,17 +195,29 @@ Future<void> _showDesktopWindow() async {
     await windowManager.focus();
   });
 
-  // Listen for resize to persist window size
-  windowManager.addListener(_WindowSizeListener());
+  // Listen for resize to persist window size, and handle app close cleanup
+  windowManager.addListener(_DesktopWindowListener());
+  await windowManager.setPreventClose(true);
 }
 
-class _WindowSizeListener extends WindowListener {
+class _DesktopWindowListener extends WindowListener {
   @override
   void onWindowResize() {
     windowManager.getSize().then((size) {
       configBox.put('windowWidth', size.width);
       configBox.put('windowHeight', size.height);
     });
+  }
+
+  @override
+  void onWindowClose() async {
+    // Clean up Hive boxes to release file locks and avoid mutex deadlocks on Windows
+    try {
+      await Hive.close();
+    } catch (e) {
+      // Best effort — don't block shutdown
+    }
+    await windowManager.destroy();
   }
 }
 

@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/extensions.dart';
@@ -27,28 +28,26 @@ class _QrCodeFullscreenState extends State<QrCodeFullscreen> {
   bool _brightnessWasChanged = false;
 
   Future<void> setBrightnessIfNeeded() async {
+    if (!(Platform.isAndroid || Platform.isIOS)) return;
     try {
       final currentBrightness = await ScreenBrightness().application;
-      // Only increase brightness to 80% if current brightness is below 80%
       if (currentBrightness < 0.8) {
         await ScreenBrightness().setApplicationScreenBrightness(0.8);
         _brightnessWasChanged = true;
       }
     } catch (e) {
-      log.e(e.toString());
-      throw 'Failed to set brightness';
+      log.w('Failed to set brightness: $e');
     }
   }
 
   Future<void> resetBrightness() async {
+    if (!(Platform.isAndroid || Platform.isIOS)) return;
     try {
-      // Only reset brightness if we changed it
       if (_brightnessWasChanged) {
         await ScreenBrightness().resetApplicationScreenBrightness();
       }
     } catch (e) {
-      log.e(e.toString());
-      throw 'Failed to reset brightness';
+      log.w('Failed to reset brightness: $e');
     }
   }
 

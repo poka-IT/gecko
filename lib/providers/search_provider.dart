@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -155,47 +155,48 @@ final updatePasteAddressProvider = Provider<void Function(bool, String)>((ref) {
   };
 });
 
-/// Clipboard monitoring state notifier
+/// Clipboard listener that uses native OS notifications instead of polling.
+/// This avoids blocking the main thread on iOS (UIPasteboard semaphore).
+class _ClipboardChangeListener with ClipboardListener {
+  final void Function() onChanged;
+  _ClipboardChangeListener(this.onChanged);
+
+  @override
+  void onClipboardChanged() => onChanged();
+}
+
+/// Clipboard monitoring state notifier using clipboard_watcher (native notifications).
 class ClipboardMonitorNotifier extends Notifier<String?> {
-  Timer? _monitoringTimer;
-  String? _lastClipboardContent;
-  Timer? _debounceTimer;
+  _ClipboardChangeListener? _listener;
 
   @override
   String? build() {
+    _listener = _ClipboardChangeListener(_onClipboardChanged);
+    clipboardWatcher.addListener(_listener!);
+    clipboardWatcher.start();
+
     ref.onDispose(() {
-      _monitoringTimer?.cancel();
-      _debounceTimer?.cancel();
+      if (_listener != null) {
+        clipboardWatcher.removeListener(_listener!);
+      }
+      clipboardWatcher.stop();
     });
 
-    _startMonitoring();
+    // Check clipboard once at init (on search screen open)
+    _onClipboardChanged();
     return null;
   }
 
-  void _startMonitoring() {
-    _checkClipboard();
-  }
-
-  void _checkClipboard() async {
+  void _onClipboardChanged() async {
     try {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       final newContent = clipboardData?.text;
-
-      if (newContent != null && newContent != _lastClipboardContent) {
-        _lastClipboardContent = newContent;
+      if (newContent != null && newContent != state) {
         state = newContent;
-
-        _debounceTimer?.cancel();
-        _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
-          _processClipboardContent(newContent);
-        });
+        _processClipboardContent(newContent);
       }
-
-      // Schedule next check
-      _monitoringTimer = Timer(const Duration(seconds: 1), _checkClipboard);
     } catch (e) {
-      // Handle clipboard access errors gracefully
-      _monitoringTimer = Timer(const Duration(seconds: 1), _checkClipboard);
+      // Clipboard access may fail (e.g. permission denied on iOS 16+)
     }
   }
 
@@ -231,7 +232,6 @@ final clipboardMonitorProvider = NotifierProvider<ClipboardMonitorNotifier, Stri
 
 /// Provider to start clipboard monitoring (call this to initialize)
 final startClipboardMonitoringProvider = Provider<void>((ref) {
-  // This will start the clipboard monitoring when accessed
   ref.watch(clipboardMonitorProvider);
   return;
 });

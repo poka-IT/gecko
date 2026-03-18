@@ -148,6 +148,31 @@ When searching for bugs across forums and issue trackers, always launch all sear
 - GitLab API: `WebFetch` on `https://git.duniter.org/api/v4/projects/clients%2Fgecko/issues?state=opened&order_by=created_at&sort=desc`
 - See `memory/forum_search_guide.md` for full details
 
+### Forum bug → Sentry → Fix → Reply workflow
+
+When a user reports a bug on the forum, follow this complete workflow:
+
+1. **Read the forum post** — get screenshots (resolve `upload://` URLs via the post JSON `cooked` field), understand the issue described by the user
+2. **Search Sentry** — in parallel, search for matching issues on the **latest version only** (see "Sentry Issue Analysis" section). Cross-reference the user's description, platform, and timing with Sentry stacktraces and diagnostic tags
+3. **Analyze** — read the relevant source code, identify the root cause, plan the fix
+4. **Fix & commit** — implement the fix, commit with `Fixes AXIOM-TEAM-XX` in the message to reference Sentry issues
+5. **Reply on the forum** — post a reply to the user (via the Discourse API, NOT MCP which is read-only) explaining:
+   - What the problem was (cause racine, en termes accessibles)
+   - What was fixed (résumé technique concis)
+   - In which version it will be available (next version from `pubspec.yaml`)
+   - Keep the tone **polite, friendly, and grateful** for the report
+   - Example format:
+     ```
+     Salut @username,
+
+     Merci pour le retour ! J'ai identifié le problème grâce à [source].
+
+     [Explication du problème en termes accessibles].
+
+     C'est corrigé, [résumé de la correction]. Ce sera disponible dans la version **X.Y.Z**.
+     ```
+6. **Provide Sentry resolve links** — give the user (poka) the direct Sentry issue URLs to manually mark as "Resolve in Next Release"
+
 ## GitLab Issue Management
 
 The `GITLAB_TOKEN` env variable provides access to `git.duniter.org` API. Project ID: **474** (path: `clients/gecko`).
@@ -196,9 +221,47 @@ Available labels: `bug`, `p1`, `p2`, `p3`, `need-infos`, `GoodFirstIssue`, `Refa
 - **Never use plain `Text` widget for translation strings that contain markdown** (bold `**...**`, italic `*...*`, etc.). Use `TextMarkDown` from `lib/widgets/commons/text_markdown.dart` instead, which renders markdown formatting via `flutter_markdown`.
 - This applies to all UI: screens, modals, dialogs, cards, etc.
 
+## Sentry Issue Analysis
+
+The Sentry project is **axiom-team** (org: `axiom-team`, regionUrl: `https://us.sentry.io`). The project slug is `axiom-team`.
+
+### Release tags by platform
+
+Gecko uses **3 different release tag formats** depending on the platform. When analyzing issues, **always query all 3 release tags** to get the full picture:
+- `gecko@{version}+{build}` — Linux, Windows (desktop)
+- `fr.axiomteam.gecko@{version}+{build}` — Android
+- `fr.axiom-team.gecko@{version}+{build}` — iOS, macOS
+
+**IMPORTANT**: Always filter by the **latest release version** (check `pubspec.yaml` for `version:`). Issues from old versions may already be fixed. Search all 3 release tags in parallel.
+
+### Querying issues
+
+Use the Sentry MCP tools:
+- `search_issues` with `naturalLanguageQuery: "unresolved issues with release <tag>"` for each of the 3 release tags
+- `get_issue_details` for individual issue investigation (includes stacktrace, tags, device info)
+- `search_events` for counts/aggregations
+
+### Diagnostic tags
+
+Gecko sends rich diagnostic context with every Sentry event. Key tags to check:
+- `diagnostic_durt_storage_status_*` — connection endpoint, storage mode (online/offline)
+- `diagnostic_indexer_debug_connection_status_*` — duniter/squid connection state
+- `diagnostic_providers_state_*` — app state (home message, wallets count, connection status)
+- `diagnostic_authentication_debug_*` — PIN state, safe state
+- `diagnostic_device_info_*` — screen size, pixel ratio (helps identify desktop vs mobile)
+- `diagnostic_app_info_platform` — android, ios, linux, macos, windows
+
+### After fixing a Sentry issue
+
+Once a fix is committed, provide the user with direct links to each resolved Sentry issue so they can manually mark them as **"Resolve in Next Release"** in the Sentry UI. Format:
+```
+https://axiom-team.sentry.io/issues/AXIOM-TEAM-XX
+```
+The Sentry MCP has no `update_issue` tool, so this manual step is required.
+
 ## Platform Notes
 
-- Android API 23+, iOS, macOS, Linux supported
-- Portrait orientation only
+- Android API 23+, iOS, macOS, Linux, Windows supported
+- Portrait orientation only (mobile), free resize (desktop)
 - SSL self-signed certificates enabled for Android compatibility
 - Local dev can override durt2 via `pubspec.yaml` dependency_overrides pointing to `../durt2`

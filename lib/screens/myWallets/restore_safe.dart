@@ -444,7 +444,7 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
             GestureDetector(
               onTap: () {
                 cellCtl.text = suggestion;
-                if (index < 11) FocusScope.of(context).nextFocus();
+                if (index < 11) _focusNodes[index + 1].requestFocus();
               },
               child: Padding(
                 padding: const EdgeInsets.only(top: 2),

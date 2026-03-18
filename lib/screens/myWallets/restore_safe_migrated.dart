@@ -274,13 +274,17 @@ class _RestoreSafeMigratedState extends ConsumerState<RestoreSafeMigrated> {
                 contentPadding: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(8)),
               ),
               onChanged: (value) async {
-                // Strip spaces and convert to lowercase
-                if (value.contains(' ')) {
-                  controller.text = controller.text.replaceAll(' ', '');
+                // Strip spaces and convert to lowercase, preserving cursor position
+                final cleaned = value.replaceAll(' ', '').toLowerCase();
+                if (cleaned != value) {
+                  final cursorPos = controller.selection.baseOffset - (value.length - cleaned.length);
+                  controller.value = TextEditingValue(
+                    text: cleaned,
+                    selection: TextSelection.collapsed(offset: cursorPos.clamp(0, cleaned.length)),
+                  );
                 }
-                if (value.isNotEmpty) controller.text = controller.text.toLowerCase();
 
-                final cleanText = controller.text;
+                final cleanText = cleaned;
 
                 // Auto-advance on valid word (except last field)
                 if (cleanText.isNotEmpty && index < 11) {
@@ -315,7 +319,7 @@ class _RestoreSafeMigratedState extends ConsumerState<RestoreSafeMigrated> {
             GestureDetector(
               onTap: () {
                 controller.text = suggestion;
-                if (index < 11) FocusScope.of(context).nextFocus();
+                if (index < 11) _focusNodes[index + 1].requestFocus();
               },
               child: Padding(
                 padding: const EdgeInsets.only(top: 2),

@@ -25,6 +25,7 @@ class _KeyboardShortcutsContent extends StatelessWidget {
         shortcuts: [
           _ShortcutEntry(keys: ['K'], description: 'keyboardShortcutSearch'.tr()),
           _ShortcutEntry(keys: ['F'], description: 'keyboardShortcutSearch'.tr()),
+          _ShortcutEntry(keys: ['R'], description: 'keyboardShortcutSearch'.tr()),
           _ShortcutEntry(keys: ['/'], description: 'keyboardShortcutFocusSearch'.tr()),
           _ShortcutEntry(keys: ['C'], description: 'keyboardShortcutContacts'.tr()),
           _ShortcutEntry(keys: ['A'], description: 'keyboardShortcutActivity'.tr()),

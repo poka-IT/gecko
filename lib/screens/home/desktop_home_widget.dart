@@ -241,8 +241,10 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       return KeyEventResult.handled;
     }
 
-    // K or F — open global search palette
-    if (event.logicalKey == LogicalKeyboardKey.keyK || event.logicalKey == LogicalKeyboardKey.keyF) {
+    // K, F or R — open global search palette
+    if (event.logicalKey == LogicalKeyboardKey.keyK ||
+        event.logicalKey == LogicalKeyboardKey.keyF ||
+        event.logicalKey == LogicalKeyboardKey.keyR) {
       _openGlobalSearchPalette();
       return KeyEventResult.handled;
     }

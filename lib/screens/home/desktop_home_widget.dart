@@ -178,8 +178,36 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   void _toggleContactsPanel() {
+    // If screen is too narrow for the side panel, show contacts in a modal dialog
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 1200) {
+      _showContactsModal();
+      return;
+    }
     setState(() => _isContactsPanelOpen = !_isContactsPanelOpen);
     configBox.put('contactsPanelOpen', _isContactsPanelOpen);
+  }
+
+  void _showContactsModal() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: DesktopContactsPanel(
+              disableReordering: true,
+              onContactTap: (address, username) {
+                Navigator.of(dialogContext).pop();
+                _pushDesktopProfileRoute(context, address: address, username: username);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _focusDesktopHomeShell() {
@@ -461,10 +489,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                                 Expanded(flex: 3, child: _buildContactsColumn(context, ref)),
                                 const SizedBox(width: 18),
                               ],
-                              Expanded(
-                                flex: showContactsColumn ? 5 : 11,
-                                child: _buildLeftPanel(context, ref, canShowContacts: canShowContacts),
-                              ),
+                              Expanded(flex: showContactsColumn ? 5 : 11, child: _buildLeftPanel(context, ref)),
                               const SizedBox(width: 18),
                               Expanded(flex: showContactsColumn ? 4 : 9, child: _buildActivityPanel(context, ref)),
                             ],
@@ -496,7 +521,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   // ─────────────────────────── Center Panel ───────────────────────────
 
-  Widget _buildLeftPanel(BuildContext context, WidgetRef ref, {bool canShowContacts = false}) {
+  Widget _buildLeftPanel(BuildContext context, WidgetRef ref) {
     final hasWallets = ref.watch(isWalletsExistsProvider);
 
     return _buildPanelShell(
@@ -504,7 +529,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       child: Column(
         children: [
           // Top fixed section: header + message + search
-          _buildLeftPanelHeader(context, ref, canShowContacts: canShowContacts),
+          _buildLeftPanelHeader(context, ref),
           // Main content area
           if (hasWallets)
             Expanded(
@@ -528,7 +553,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   /// Top section of the left panel: header image, message, search bar
-  Widget _buildLeftPanelHeader(BuildContext context, WidgetRef ref, {bool canShowContacts = false}) {
+  Widget _buildLeftPanelHeader(BuildContext context, WidgetRef ref) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -618,7 +643,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         // ListenableBuilder isolates search rebuilds from the rest of the left panel
         ListenableBuilder(
           listenable: Listenable.merge([_desktopSearchController, _desktopSearchFocusNode]),
-          builder: (context, _) => _buildDesktopSearchSection(context, ref, canShowContacts: canShowContacts),
+          builder: (context, _) => _buildDesktopSearchSection(context, ref),
         ),
         const SizedBox(height: 16),
       ],
@@ -767,7 +792,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     );
   }
 
-  Widget _buildDesktopSearchSection(BuildContext context, WidgetRef ref, {bool canShowContacts = false}) {
+  Widget _buildDesktopSearchSection(BuildContext context, WidgetRef ref) {
     final query = _desktopSearchController.text.trim();
     final isFocused = _desktopSearchFocusNode.hasFocus;
     final addressResultsAsync = ref.watch(searchResultsProvider);
@@ -983,8 +1008,6 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
       ),
     );
 
-    if (!canShowContacts) return searchBar;
-
     return Row(
       children: [
         _buildContactsToggleButton(context),
@@ -995,6 +1018,8 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   Widget _buildContactsToggleButton(BuildContext context) {
+    // Only show "active" state when the side panel is actually visible
+    final isVisuallyActive = _isContactsPanelOpen && MediaQuery.of(context).size.width >= 1200;
     return Tooltip(
       message: 'contactsManagement'.tr(),
       child: Material(
@@ -1007,7 +1032,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              gradient: _isContactsPanelOpen
+              gradient: isVisuallyActive
                   ? LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -1026,13 +1051,13 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                     ),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: _isContactsPanelOpen
+                color: isVisuallyActive
                     ? context.colorScheme.primary.withValues(alpha: 0.4)
                     : context.colorScheme.outline.withValues(alpha: 0.1),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: _isContactsPanelOpen
+                  color: isVisuallyActive
                       ? context.colorScheme.primary.withValues(alpha: 0.10)
                       : Colors.black.withValues(alpha: 0.06),
                   blurRadius: 20,
@@ -1041,9 +1066,9 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
               ],
             ),
             child: Icon(
-              _isContactsPanelOpen ? Icons.people_rounded : Icons.people_outline_rounded,
+              isVisuallyActive ? Icons.people_rounded : Icons.people_outline_rounded,
               size: 24,
-              color: _isContactsPanelOpen
+              color: isVisuallyActive
                   ? context.colorScheme.primary
                   : context.colorScheme.onSurface.withValues(alpha: 0.6),
             ),

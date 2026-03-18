@@ -98,6 +98,10 @@ class StorageInitService {
     // Open config box first
     configBox = await Hive.openBox("configBox");
 
+    // Open wallets and contacts boxes
+    g1WalletsBox = await Hive.openBox('g1WalletsBox');
+    contactsBox = await Hive.openBox('contactsBox');
+
     // Initialize certification queue service
     await CertificationQueueService.init();
   }

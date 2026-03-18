@@ -102,8 +102,10 @@ class StorageInitService {
     } on OSError catch (e) {
       // errno 11 (EAGAIN) or 35 (EWOULDBLOCK): another Gecko instance holds the lock
       if (e.errorCode == 11 || e.errorCode == 35) {
-        throw StateError('Another instance of Gecko is already running. '
-            'Please close it before starting a new one.');
+        throw StateError(
+          'Another instance of Gecko is already running. '
+          'Please close it before starting a new one.',
+        );
       }
       rethrow;
     }

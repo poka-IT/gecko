@@ -46,7 +46,10 @@ class _QrScannerModalContentState extends State<_QrScannerModalContent> {
   void initState() {
     super.initState();
     try {
-      _controller = MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates, formats: [BarcodeFormat.qrCode]);
+      _controller = MobileScannerController(
+        detectionSpeed: DetectionSpeed.noDuplicates,
+        formats: [BarcodeFormat.qrCode],
+      );
     } on MissingPluginException {
       _scannerUnavailable = true;
     }

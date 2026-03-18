@@ -17,9 +17,8 @@ import 'package:gecko/widgets/name_by_address.dart';
 /// Shows all contacts with search, sorted by custom order or resolved name.
 class DesktopContactsPanel extends ConsumerStatefulWidget {
   final void Function(String address, String? username) onContactTap;
-  final bool disableReordering;
 
-  const DesktopContactsPanel({super.key, required this.onContactTap, this.disableReordering = false});
+  const DesktopContactsPanel({super.key, required this.onContactTap});
 
   @override
   ConsumerState<DesktopContactsPanel> createState() => _DesktopContactsPanelState();
@@ -175,8 +174,8 @@ class _DesktopContactsPanelState extends ConsumerState<DesktopContactsPanel> {
         Expanded(
           child: contacts.isEmpty
               ? _buildEmptyState(context, allCount == 0)
-              : (isSearching || widget.disableReordering)
-              // When searching or in modal, use simple list (reorder doesn't make sense)
+              : isSearching
+              // When searching, use simple list (reorder doesn't make sense during search)
               ? ListView.builder(
                   itemCount: contacts.length,
                   itemBuilder: (context, index) => Padding(

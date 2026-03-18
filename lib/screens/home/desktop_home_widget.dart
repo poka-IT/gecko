@@ -89,6 +89,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   int _activeActivityTabIndex = 0;
   int _highlightedSearchIndex = -1;
   bool _isContactsPanelOpen = configBox.get('contactsPanelOpen', defaultValue: false) as bool;
+  bool _isActivityPanelOpen = configBox.get('activityPanelOpen', defaultValue: true) as bool;
   bool _isSearchPaletteOpen = false;
 
   String get _searchShortcutLabel {
@@ -178,40 +179,30 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
   }
 
   void _toggleContactsPanel() {
-    // If screen is too narrow for the side panel, show contacts in a modal dialog
-    final screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth < 1200) {
-      _showContactsModal();
-      return;
-    }
-    setState(() => _isContactsPanelOpen = !_isContactsPanelOpen);
+    setState(() {
+      _isContactsPanelOpen = !_isContactsPanelOpen;
+      // On narrow screens, auto-close activity panel when opening contacts
+      if (_isContactsPanelOpen && _isActivityPanelOpen && _isNarrowDesktop) {
+        _isActivityPanelOpen = false;
+        configBox.put('activityPanelOpen', false);
+      }
+    });
     configBox.put('contactsPanelOpen', _isContactsPanelOpen);
   }
 
-  void _showContactsModal() {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: DesktopContactsPanel(
-                disableReordering: true,
-                onContactTap: (address, username) {
-                  Navigator.of(dialogContext).pop();
-                  _pushDesktopProfileRoute(context, address: address, username: username);
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void _toggleActivityPanel() {
+    setState(() {
+      _isActivityPanelOpen = !_isActivityPanelOpen;
+      // On narrow screens, auto-close contacts panel when opening activity
+      if (_isActivityPanelOpen && _isContactsPanelOpen && _isNarrowDesktop) {
+        _isContactsPanelOpen = false;
+        configBox.put('contactsPanelOpen', false);
+      }
+    });
+    configBox.put('activityPanelOpen', _isActivityPanelOpen);
   }
+
+  bool get _isNarrowDesktop => MediaQuery.of(context).size.width < 1200;
 
   void _focusDesktopHomeShell() {
     if (!_desktopHomeFocusNode.hasFocus) {
@@ -277,6 +268,12 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     // S — open QR code scanner
     if (event.logicalKey == LogicalKeyboardKey.keyS) {
       _openQrScanner(context);
+      return KeyEventResult.handled;
+    }
+
+    // A — toggle activity panel
+    if (event.logicalKey == LogicalKeyboardKey.keyA) {
+      _toggleActivityPanel();
       return KeyEventResult.handled;
     }
 
@@ -480,21 +477,27 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                   padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final canShowContacts = constraints.maxWidth >= 1200;
-                      final showContactsColumn = canShowContacts && _isContactsPanelOpen;
+                      final showContacts = _isContactsPanelOpen;
+                      final showActivity = _isActivityPanelOpen;
+                      final bothOpen = showContacts && showActivity;
                       return Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 1600),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              if (showContactsColumn) ...[
-                                Expanded(flex: 3, child: _buildContactsColumn(context, ref)),
+                              if (showContacts) ...[
+                                Expanded(flex: bothOpen ? 3 : 4, child: _buildContactsColumn(context, ref)),
                                 const SizedBox(width: 18),
                               ],
-                              Expanded(flex: showContactsColumn ? 5 : 11, child: _buildLeftPanel(context, ref)),
-                              const SizedBox(width: 18),
-                              Expanded(flex: showContactsColumn ? 4 : 9, child: _buildActivityPanel(context, ref)),
+                              Expanded(
+                                flex: bothOpen ? 5 : (showContacts || showActivity ? 6 : 1),
+                                child: _buildLeftPanel(context, ref),
+                              ),
+                              if (showActivity) ...[
+                                const SizedBox(width: 18),
+                                Expanded(flex: bothOpen ? 4 : 5, child: _buildActivityPanel(context, ref)),
+                              ],
                             ],
                           ),
                         ),
@@ -1016,13 +1019,14 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         _buildContactsToggleButton(context),
         const SizedBox(width: 10),
         Expanded(child: searchBar),
+        const SizedBox(width: 10),
+        _buildActivityToggleButton(context),
       ],
     );
   }
 
   Widget _buildContactsToggleButton(BuildContext context) {
-    // Only show "active" state when the side panel is actually visible
-    final isVisuallyActive = _isContactsPanelOpen && MediaQuery.of(context).size.width >= 1200;
+    final isVisuallyActive = _isContactsPanelOpen;
     return Tooltip(
       message: 'contactsManagement'.tr(),
       child: Material(
@@ -1070,6 +1074,66 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             ),
             child: Icon(
               isVisuallyActive ? Icons.people_rounded : Icons.people_outline_rounded,
+              size: 24,
+              color: isVisuallyActive
+                  ? context.colorScheme.primary
+                  : context.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityToggleButton(BuildContext context) {
+    final isVisuallyActive = _isActivityPanelOpen;
+    return Tooltip(
+      message: 'networkActivity'.tr(),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: _toggleActivityPanel,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: isVisuallyActive
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        context.colorScheme.primary.withValues(alpha: 0.18),
+                        context.colorScheme.primary.withValues(alpha: 0.10),
+                      ],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        context.colorScheme.surface.withValues(alpha: 0.96),
+                        context.colorScheme.surfaceContainerHigh.withValues(alpha: 0.86),
+                      ],
+                    ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isVisuallyActive
+                    ? context.colorScheme.primary.withValues(alpha: 0.4)
+                    : context.colorScheme.outline.withValues(alpha: 0.1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isVisuallyActive
+                      ? context.colorScheme.primary.withValues(alpha: 0.10)
+                      : Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Icon(
+              isVisuallyActive ? Icons.timeline_rounded : Icons.timeline_rounded,
               size: 24,
               color: isVisuallyActive
                   ? context.colorScheme.primary

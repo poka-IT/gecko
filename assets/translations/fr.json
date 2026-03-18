@@ -907,6 +907,7 @@
     "keyboardShortcutSearch": "Ouvrir la palette de recherche",
     "keyboardShortcutFocusSearch": "Aller à la barre de recherche",
     "keyboardShortcutContacts": "Afficher/masquer les contacts",
+    "keyboardShortcutActivity": "Afficher/masquer l'activité réseau",
     "keyboardShortcutScan": "Scanner un QR code",
     "keyboardShortcutSettings": "Ouvrir les paramètres",
     "keyboardShortcutClose": "Fermer / défocaliser",

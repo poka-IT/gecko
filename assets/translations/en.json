@@ -913,6 +913,7 @@
     "keyboardShortcutSearch": "Open search palette",
     "keyboardShortcutFocusSearch": "Focus search bar",
     "keyboardShortcutContacts": "Toggle contacts panel",
+    "keyboardShortcutActivity": "Toggle activity panel",
     "keyboardShortcutScan": "Scan QR code",
     "keyboardShortcutSettings": "Open settings",
     "keyboardShortcutClose": "Close / unfocus",

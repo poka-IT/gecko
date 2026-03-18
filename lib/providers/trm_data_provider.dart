@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart' hide Provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:durt2/durt2.dart' as durt2;
 
 /// Enum for currency display modes
@@ -130,18 +131,22 @@ BigInt _getBalanceRatio(CurrencyDisplayMode displayMode, TrmData? trmData, Ref r
 }
 
 class TrmDataNotifier extends Notifier<AsyncValue<TrmData>> {
+  AsyncValue<TrmData>? _lastData;
+
   @override
   AsyncValue<TrmData> build() {
-    Future.microtask(() => _loadTrmData());
-    return const AsyncValue.loading();
+    // Watch storage state so provider rebuilds when connection arrives
+    final storageState = ref.watch(storageStateProvider);
+    if (storageState == StorageState.onlineMode) {
+      Future.microtask(() => _loadTrmData());
+    }
+    // Preserve last loaded data across rebuilds (e.g. reconnection)
+    return _lastData ?? const AsyncValue.loading();
   }
 
   /// Load TRM data from Duniter blockchain
   Future<void> _loadTrmData() async {
     try {
-      state = const AsyncValue.loading();
-
-      // Use the existing Durt instance directly instead of creating a new container
       final durt = durt2.Durt.i;
 
       // Get money supply (M) from Duniter
@@ -153,7 +158,8 @@ class TrmDataNotifier extends Notifier<AsyncValue<TrmData>> {
 
       final trmData = TrmData(moneySupply: moneySupply, membersCount: membersCount, lastUpdated: DateTime.now());
 
-      state = AsyncValue.data(trmData);
+      _lastData = AsyncValue.data(trmData);
+      state = _lastData!;
 
       log.d(
         'TRM data loaded: M=${(moneySupply.toDouble() / 100).toStringAsFixed(0)} G1 ($moneySupply centimes), N=$membersCount, M/N=${trmData.moneyOverMembersRatio.toStringAsFixed(2)} G1/member',

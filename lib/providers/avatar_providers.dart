@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
@@ -66,7 +67,11 @@ class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
         return cachedBytes;
       }
 
-      // 3. Download from Cesium+ (blocking)
+      // 3. Download from Cesium+ (blocking, only if connected)
+      if (ref.read(storageStateProvider) != StorageState.onlineMode) {
+        // Not connected yet — don't cache null, will retry when connection is ready
+        return null;
+      }
       log.d('Downloading avatar for $address from Cesium+');
       final avatarBytes = await _downloadAndCacheAvatar(address);
 
@@ -105,6 +110,8 @@ class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
   /// Refresh avatar in background (non-blocking)
   Future<void> _refreshAvatarInBackground(String address) async {
     try {
+      if (ref.read(storageStateProvider) != StorageState.onlineMode) return;
+
       final cesiumPlusService = ref.read(cesiumPlusServiceProvider);
       final newAvatarBytes = await cesiumPlusService.getAvatar(address);
 

@@ -14,6 +14,7 @@ import 'package:gecko/providers/block_height_provider.dart';
 /// (e.g., account migration where the storage key is removed instead of updated).
 final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance, String>((ref, address) {
   final storageService = ref.watch(storageServiceProvider);
+  final storageState = ref.watch(storageStateProvider);
 
   // Track last known balance to avoid unnecessary stream emissions
   BigInt? lastTransferableBalance;
@@ -24,6 +25,9 @@ final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance,
 
   controller = StreamController<d.WalletBalance>(
     onListen: () async {
+      // Skip subscription when offline — provider will be recreated when connection returns
+      if (storageState != StorageState.onlineMode) return;
+
       // When someone starts listening, create the subscription
       try {
         // Get initial balance first
@@ -84,6 +88,7 @@ final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance,
 /// Use this for: wallet home, wallet options, main wallet screens.
 final persistentBalanceStreamProvider = StreamProvider.family<d.WalletBalance, String>((ref, address) {
   final storageService = ref.watch(storageServiceProvider);
+  final storageState = ref.watch(storageStateProvider);
 
   // Create a StreamController to manage the balance stream
   late StreamController<d.WalletBalance> controller;
@@ -91,6 +96,8 @@ final persistentBalanceStreamProvider = StreamProvider.family<d.WalletBalance, S
 
   controller = StreamController<d.WalletBalance>(
     onListen: () async {
+      if (storageState != StorageState.onlineMode) return;
+
       // When someone starts listening, create the subscription
       try {
         // Get initial balance first
@@ -152,6 +159,7 @@ final smartBalanceStreamProvider = Provider.family.autoDispose<AsyncValue<d.Wall
 /// The stream automatically starts when the first listener is added and stops when the last one is removed.
 final certificationStreamProvider = StreamProvider.family.autoDispose<d.CertificationData, String>((ref, address) {
   final storageService = ref.watch(storageServiceProvider);
+  final storageState = ref.watch(storageStateProvider);
 
   // Create a StreamController to manage the certification stream
   late StreamController<d.CertificationData> controller;
@@ -159,6 +167,8 @@ final certificationStreamProvider = StreamProvider.family.autoDispose<d.Certific
 
   controller = StreamController<d.CertificationData>(
     onListen: () async {
+      if (storageState != StorageState.onlineMode) return;
+
       // When someone starts listening, create the subscription
       try {
         // Get initial certification data first
@@ -204,6 +214,7 @@ final certificationStreamProvider = StreamProvider.family.autoDispose<d.Certific
 /// Use this for: owned wallet screens where certifications should stay subscribed.
 final persistentCertificationStreamProvider = StreamProvider.family<d.CertificationData, String>((ref, address) {
   final storageService = ref.watch(storageServiceProvider);
+  final storageState = ref.watch(storageStateProvider);
 
   // Create a StreamController to manage the certification stream
   late StreamController<d.CertificationData> controller;
@@ -211,6 +222,8 @@ final persistentCertificationStreamProvider = StreamProvider.family<d.Certificat
 
   controller = StreamController<d.CertificationData>(
     onListen: () async {
+      if (storageState != StorageState.onlineMode) return;
+
       // When someone starts listening, create the subscription
       try {
         // Get initial certification data first
@@ -275,6 +288,7 @@ final smartCertificationStreamProvider = Provider.family.autoDispose<AsyncValue<
 /// The stream automatically starts when the first listener is added and stops when the last one is removed.
 final idtyStatusStreamProvider = StreamProvider.family.autoDispose<d.IdtyStatus, String>((ref, address) {
   final storageService = ref.watch(storageServiceProvider);
+  final storageState = ref.watch(storageStateProvider);
 
   // Create a StreamController to manage the identity status stream
   late StreamController<d.IdtyStatus> controller;
@@ -282,6 +296,8 @@ final idtyStatusStreamProvider = StreamProvider.family.autoDispose<d.IdtyStatus,
 
   controller = StreamController<d.IdtyStatus>(
     onListen: () async {
+      if (storageState != StorageState.onlineMode) return;
+
       // When someone starts listening, create the subscription
       try {
         // Get initial identity status first
@@ -327,6 +343,7 @@ final idtyStatusStreamProvider = StreamProvider.family.autoDispose<d.IdtyStatus,
 /// Use this for: owned wallet screens where identity status should stay subscribed.
 final persistentIdtyStatusStreamProvider = StreamProvider.family<d.IdtyStatus, String>((ref, address) {
   final storageService = ref.watch(storageServiceProvider);
+  final storageState = ref.watch(storageStateProvider);
 
   // Create a StreamController to manage the identity status stream
   late StreamController<d.IdtyStatus> controller;
@@ -334,6 +351,8 @@ final persistentIdtyStatusStreamProvider = StreamProvider.family<d.IdtyStatus, S
 
   controller = StreamController<d.IdtyStatus>(
     onListen: () async {
+      if (storageState != StorageState.onlineMode) return;
+
       // When someone starts listening, create the subscription
       try {
         // Get initial identity status first

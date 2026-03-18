@@ -197,12 +197,15 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            child: DesktopContactsPanel(
-              disableReordering: true,
-              onContactTap: (address, username) {
-                Navigator.of(dialogContext).pop();
-                _pushDesktopProfileRoute(context, address: address, username: username);
-              },
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: DesktopContactsPanel(
+                disableReordering: true,
+                onContactTap: (address, username) {
+                  Navigator.of(dialogContext).pop();
+                  _pushDesktopProfileRoute(context, address: address, username: username);
+                },
+              ),
             ),
           ),
         ),

@@ -170,8 +170,10 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                   isSelected: widget.actualRoute == 'scan',
                   semanticLabel: 'Scan QR code',
                   onTap: () async {
+                    final navCtx = Gecko.navigatorContext;
+                    if (navCtx == null) return;
                     final scanQr = ref.read(qrScanProvider);
-                    await scanQr(context);
+                    await scanQr(navCtx);
                   },
                 ),
                 _buildNavItem(
@@ -183,7 +185,9 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                   onTap: lockAction
                       ? null
                       : () async {
-                          if (!await PinCodeService.askPinCode(context, canSwitch: true)) return;
+                          final navCtx = Gecko.navigatorContext;
+                          if (navCtx == null) return;
+                          if (!await PinCodeService.askPinCode(navCtx, canSwitch: true)) return;
 
                           if (!mounted) return;
                           final navContext = Gecko.navigatorContext;

@@ -924,5 +924,6 @@
     "failedApplyIndexerEndpoint": "Impossible d'appliquer le nœud indexeur",
     "errorSwitchingNetwork": "Erreur lors du changement vers {} : {}",
     "errorClearingCaches": "Erreur lors du nettoyage du cache : {}",
-    "diagnosticCopied": "Rapport de diagnostic copié dans le presse-papier"
+    "diagnosticCopied": "Rapport de diagnostic copié dans le presse-papier",
+    "indexerUnavailableNoHistory": "L'indexeur ({}) est indisponible.\nL'historique ne peut pas être affiché."
 }

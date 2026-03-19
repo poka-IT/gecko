@@ -141,7 +141,7 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
               Icon(Icons.wifi_off, size: scaleSize(32), color: context.colorScheme.onSurface.withValues(alpha: 0.3)),
               ScaledSizedBox(height: 12),
               Text(
-                "noNetworkNoHistory".tr(),
+                "indexerUnavailableNoHistory".tr(args: [ref.read(squidEndpointProvider)]),
                 textAlign: TextAlign.center,
                 style: scaledTextStyle(fontSize: 15, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
@@ -225,7 +225,7 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
                           ),
                           ScaledSizedBox(height: 12),
                           Text(
-                            "noNetworkNoHistory".tr(),
+                            "indexerUnavailableNoHistory".tr(args: [ref.read(squidEndpointProvider)]),
                             textAlign: TextAlign.center,
                             style: scaledTextStyle(
                               fontSize: 15,

@@ -337,10 +337,15 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
 
     if (!isNetworkAvailable) {
+      final squidEndpoint = ref.read(squidEndpointProvider);
       return Column(
         children: <Widget>[
           ScaledSizedBox(height: 50),
-          Text("noNetworkNoHistory".tr(), textAlign: TextAlign.center, style: scaledTextStyle(fontSize: 17)),
+          Text(
+            "indexerUnavailableNoHistory".tr(args: [squidEndpoint]),
+            textAlign: TextAlign.center,
+            style: scaledTextStyle(fontSize: 17),
+          ),
         ],
       );
     }
@@ -412,7 +417,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                   ScaledSizedBox(height: 50),
                   Center(
                     child: Text(
-                      "noNetworkNoHistory".tr(),
+                      "indexerUnavailableNoHistory".tr(args: [ref.read(squidEndpointProvider)]),
                       textAlign: TextAlign.center,
                       style: scaledTextStyle(fontSize: 17),
                     ),

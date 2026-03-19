@@ -930,5 +930,6 @@
     "youAreNotMember": "Sie sind kein Mitglied",
     "zoomDraw": "Zoomen und zeichnen",
     "zoomToDraw": "Zoomen, um auf der Signatur zu zeichnen",
-    "diagnosticCopied": "Diagnosebericht in die Zwischenablage kopiert"
+    "diagnosticCopied": "Diagnosebericht in die Zwischenablage kopiert",
+    "indexerUnavailableNoHistory": "Der Indexer ({}) ist nicht erreichbar.\nDer Verlauf kann nicht angezeigt werden."
 }

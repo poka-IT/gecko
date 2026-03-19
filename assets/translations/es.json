@@ -930,5 +930,6 @@
     "failedApplyIndexerEndpoint": "Error al aplicar el nodo indexador",
     "errorSwitchingNetwork": "Error al cambiar a {}: {}",
     "errorClearingCaches": "Error al limpiar la caché: {}",
-    "diagnosticCopied": "Informe de diagnóstico copiado al portapapeles"
+    "diagnosticCopied": "Informe de diagnóstico copiado al portapapeles",
+    "indexerUnavailableNoHistory": "El indexador ({}) no está disponible.\nNo se puede mostrar el historial."
 }

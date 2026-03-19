@@ -931,5 +931,6 @@
     "failedApplyIndexerEndpoint": "Impossibile applicare il nodo indicizzatore",
     "errorSwitchingNetwork": "Errore nel passaggio a {}: {}",
     "errorClearingCaches": "Errore durante la pulizia della cache: {}",
-    "diagnosticCopied": "Rapporto diagnostico copiato negli appunti"
+    "diagnosticCopied": "Rapporto diagnostico copiato negli appunti",
+    "indexerUnavailableNoHistory": "L'indicizzatore ({}) non è disponibile.\nLo storico non può essere visualizzato."
 }

@@ -918,5 +918,6 @@
     "failedApplyIndexerEndpoint": "Malsukcesis apliki indeksilo-nodon",
     "errorSwitchingNetwork": "Eraro dum ŝanĝo al {}: {}",
     "errorClearingCaches": "Eraro dum purigado de kaŝmemoro: {}",
-    "diagnosticCopied": "Diagnoza raporto kopiita en la tondujon"
+    "diagnosticCopied": "Diagnoza raporto kopiita en la tondujon",
+    "indexerUnavailableNoHistory": "La indeksilo ({}) estas neatingebla.\nHistorio ne povas esti montrata."
 }

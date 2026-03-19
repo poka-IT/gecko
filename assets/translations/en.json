@@ -930,5 +930,6 @@
     "failedApplyIndexerEndpoint": "Failed to apply indexer endpoint",
     "errorSwitchingNetwork": "Error switching to {}: {}",
     "errorClearingCaches": "Error clearing caches: {}",
-    "diagnosticCopied": "Diagnostic report copied to clipboard"
+    "diagnosticCopied": "Diagnostic report copied to clipboard",
+    "indexerUnavailableNoHistory": "The indexer ({}) is unavailable.\nHistory cannot be displayed."
 }

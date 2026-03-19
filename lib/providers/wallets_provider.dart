@@ -104,18 +104,19 @@ class DerivationState {
 class WalletsListNotifier extends Notifier<WalletsListState> {
   @override
   WalletsListState build() {
-    // Listen to safe number changes to auto-reload.
-    // fireImmediately handles the initial load, so no separate microtask needed.
+    // Listen to safe number changes to auto-reload on subsequent changes.
     ref.listen(defaultSafeBoxNumberProvider, (previous, next) {
-      if (previous != next || previous == null) {
-        // Si pas de safe (-1), vider la liste au lieu de charger
+      if (previous != next) {
         if (next < 0) {
           state = state.copyWith(wallets: [], isLoading: false, currentSafeNumber: next);
         } else {
           loadWallets(safeBoxNumber: next);
         }
       }
-    }, fireImmediately: true);
+    });
+
+    // Initial load deferred to avoid reading state during build.
+    Future.microtask(() => loadWallets());
 
     return const WalletsListState(isLoading: true);
   }

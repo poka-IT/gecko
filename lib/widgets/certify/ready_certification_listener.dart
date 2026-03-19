@@ -166,7 +166,9 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     if (!confirmed || !mounted) return;
 
     // Ask for PIN
-    if (!await PinCodeService.askPinCode(context)) return;
+    final pinCtx = Gecko.navigatorContext;
+    if (pinCtx == null) return;
+    if (!await PinCodeService.askPinCode(pinCtx)) return; // ignore: use_build_context_synchronously
     if (!mounted) return;
 
     try {

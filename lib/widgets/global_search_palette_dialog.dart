@@ -499,7 +499,10 @@ class _WalletResultTile extends ConsumerWidget {
           () {
             ref.read(searchTextProvider.notifier).clear();
             Navigator.of(context, rootNavigator: true).pop();
-            NavigationService.openProfile(context, address: wallet.address, username: wallet.username);
+            final navCtx = Gecko.navigatorContext;
+            if (navCtx != null) {
+              NavigationService.openProfile(navCtx, address: wallet.address, username: wallet.username);
+            }
           },
     );
   }
@@ -533,7 +536,10 @@ class _IdentityResultTile extends ConsumerWidget {
           () {
             ref.read(searchTextProvider.notifier).clear();
             Navigator.of(context, rootNavigator: true).pop();
-            NavigationService.openProfile(context, address: identity.address, username: identity.name);
+            final navCtx = Gecko.navigatorContext;
+            if (navCtx != null) {
+              NavigationService.openProfile(navCtx, address: identity.address, username: identity.name);
+            }
           },
     );
   }

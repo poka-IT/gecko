@@ -917,5 +917,6 @@
     "indexerEndpointUpdated": "Indeksilo-nodo sukcese ĝisdatigita",
     "failedApplyIndexerEndpoint": "Malsukcesis apliki indeksilo-nodon",
     "errorSwitchingNetwork": "Eraro dum ŝanĝo al {}: {}",
-    "errorClearingCaches": "Eraro dum purigado de kaŝmemoro: {}"
+    "errorClearingCaches": "Eraro dum purigado de kaŝmemoro: {}",
+    "diagnosticCopied": "Diagnoza raporto kopiita en la tondujon"
 }

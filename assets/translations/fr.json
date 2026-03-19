@@ -923,5 +923,6 @@
     "indexerEndpointUpdated": "Le nœud indexeur a été mis à jour avec succès",
     "failedApplyIndexerEndpoint": "Impossible d'appliquer le nœud indexeur",
     "errorSwitchingNetwork": "Erreur lors du changement vers {} : {}",
-    "errorClearingCaches": "Erreur lors du nettoyage du cache : {}"
+    "errorClearingCaches": "Erreur lors du nettoyage du cache : {}",
+    "diagnosticCopied": "Rapport de diagnostic copié dans le presse-papier"
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/widgets/global_search_palette_dialog.dart';
 
 class GlobalSearchShortcutScope extends StatefulWidget {
@@ -44,7 +45,8 @@ class _GlobalSearchShortcutScopeState extends State<GlobalSearchShortcutScope> {
     }
 
     if (event.logicalKey == LogicalKeyboardKey.escape && _dialogOpen) {
-      Navigator.of(context, rootNavigator: true).maybePop();
+      final navCtx = Gecko.navigatorContext;
+      if (navCtx != null) Navigator.of(navCtx, rootNavigator: true).maybePop();
       return true;
     }
 
@@ -53,12 +55,13 @@ class _GlobalSearchShortcutScopeState extends State<GlobalSearchShortcutScope> {
 
   void _openPalette() {
     if (_dialogOpen || !mounted) return;
+    final navCtx = Gecko.navigatorContext;
+    if (navCtx == null) return;
     _dialogOpen = true;
-    final navigatorContext = context;
 
     unawaited(
       showGeneralDialog<void>(
-        context: navigatorContext,
+        context: navCtx,
         useRootNavigator: true,
         barrierLabel: 'global_search',
         barrierDismissible: true,

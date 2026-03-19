@@ -929,5 +929,6 @@
     "youAreMember": "Sie sind Mitglied",
     "youAreNotMember": "Sie sind kein Mitglied",
     "zoomDraw": "Zoomen und zeichnen",
-    "zoomToDraw": "Zoomen, um auf der Signatur zu zeichnen"
+    "zoomToDraw": "Zoomen, um auf der Signatur zu zeichnen",
+    "diagnosticCopied": "Diagnosebericht in die Zwischenablage kopiert"
 }

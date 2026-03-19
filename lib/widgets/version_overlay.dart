@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/services/diagnostic_service.dart';
 
 // Provider for copy state indication
@@ -44,10 +46,13 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
     // Change state to indicate success
     ref.read(versionCopyStateProvider.notifier).setCopied();
 
-    // Show a brief snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Diagnostic report copied to clipboard'), duration: Duration(seconds: 2)),
-    );
+    // Show a brief snackbar via navigator context (this widget is above the Scaffold)
+    final navCtx = Gecko.navigatorContext;
+    if (navCtx != null) {
+      ScaffoldMessenger.of(
+        navCtx,
+      ).showSnackBar(SnackBar(content: Text('diagnosticCopied'.tr()), duration: const Duration(seconds: 2)));
+    }
   }
 
   @override

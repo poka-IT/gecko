@@ -930,5 +930,6 @@
     "indexerEndpointUpdated": "Nodo indicizzatore aggiornato con successo",
     "failedApplyIndexerEndpoint": "Impossibile applicare il nodo indicizzatore",
     "errorSwitchingNetwork": "Errore nel passaggio a {}: {}",
-    "errorClearingCaches": "Errore durante la pulizia della cache: {}"
+    "errorClearingCaches": "Errore durante la pulizia della cache: {}",
+    "diagnosticCopied": "Rapporto diagnostico copiato negli appunti"
 }

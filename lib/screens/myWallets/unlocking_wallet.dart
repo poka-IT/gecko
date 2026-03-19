@@ -21,6 +21,7 @@ import 'package:gecko/globals.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:gecko/widgets/biometric/biometric_auth_button.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/gecko_pin_field.dart';
@@ -287,13 +288,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       } else {
         // Show error snackbar for other errors (timeouts, network issues, etc.)
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: context.geckoColors.danger,
-              duration: const Duration(seconds: 5),
-            ),
-          );
+          SnackbarService.showError(context, message: errorMessage, duration: 5);
         }
         if (!fromBiometric) {
           pinFocus.requestFocus();

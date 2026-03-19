@@ -1,11 +1,11 @@
 import 'package:durt2/durt2.dart' show WalletEntity, KeyPairType, WalletService, SafeEntity, SafeEntityExt;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/services/snackbar_service.dart';
 
 /// Test wallet configuration
 class TestWalletConfig {
@@ -162,30 +162,19 @@ class DebugTestWalletService {
 
   /// Show success message
   static void _showSuccessMessage(BuildContext context, List<WalletEntity> wallets) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
+    SnackbarService.showSuccess(
+      context,
+      message:
           'Test wallets created successfully!\n'
           '${wallets.length} accounts generated\n'
           'Alice address: ${wallets.first.address}\n'
           'PIN: $defaultPinCode',
-          style: scaledTextStyle(fontSize: 14, color: Colors.white),
-        ),
-        backgroundColor: context.geckoColors.success,
-        duration: const Duration(seconds: 4),
-      ),
     );
   }
 
   /// Show error message
   static void _showErrorMessage(BuildContext context, dynamic error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error creating test wallets: $error', style: scaledTextStyle(fontSize: 14, color: Colors.white)),
-        backgroundColor: context.geckoColors.danger,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    SnackbarService.showError(context, message: 'Error creating test wallets: $error', duration: 3);
     log.e('Error creating test wallets: $error');
   }
 }

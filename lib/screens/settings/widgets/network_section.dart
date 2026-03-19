@@ -13,6 +13,7 @@ import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/currency_provider.dart';
 import 'package:gecko/screens/settings/settings_card.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 
@@ -207,12 +208,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
         });
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('errorSwitchingNetwork'.tr(args: [newNetwork.name, e.toString()])),
-            backgroundColor: context.geckoColors.danger,
-          ),
-        );
+        SnackbarService.showError(context, message: 'errorSwitchingNetwork'.tr(args: [newNetwork.name, e.toString()]));
       }
     } finally {
       if (mounted) {
@@ -422,10 +418,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
           }
           if (mounted) {
             if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              // ignore: use_build_context_synchronously
-              SnackBar(content: Text('duniterEndpointUpdated'.tr()), backgroundColor: context.geckoColors.success),
-            );
+            SnackbarService.showSuccess(context, message: 'duniterEndpointUpdated'.tr());
           }
         } else {
           log.e('❌ Failed to apply Duniter endpoint');
@@ -436,9 +429,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
           }
           if (mounted) {
             // ignore: use_build_context_synchronously
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('connectionError'.tr()), backgroundColor: context.geckoColors.danger),
-            );
+            SnackbarService.showError(context, message: 'connectionError'.tr());
           }
         }
       } else {
@@ -451,9 +442,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
         }
         if (mounted) {
           // ignore: use_build_context_synchronously
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('invalidEndpointError'.tr()), backgroundColor: context.geckoColors.danger),
-          );
+          SnackbarService.showError(context, message: 'invalidEndpointError'.tr());
         }
       }
     }
@@ -563,10 +552,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
             }
             if (mounted) {
               if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                // ignore: use_build_context_synchronously
-                SnackBar(content: Text('indexerEndpointUpdated'.tr()), backgroundColor: context.geckoColors.success),
-              );
+              SnackbarService.showSuccess(context, message: 'indexerEndpointUpdated'.tr());
             }
           } else {
             log.e('❌ Failed to apply Squid endpoint');
@@ -589,9 +575,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
             }
             if (mounted) {
               // ignore: use_build_context_synchronously
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('failedApplyIndexerEndpoint'.tr()), backgroundColor: context.geckoColors.danger),
-              );
+              SnackbarService.showError(context, message: 'failedApplyIndexerEndpoint'.tr());
             }
           }
         } else {
@@ -615,9 +599,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
           }
           if (mounted) {
             // ignore: use_build_context_synchronously
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('invalidIndexerError'.tr()), backgroundColor: context.geckoColors.danger),
-            );
+            SnackbarService.showError(context, message: 'invalidIndexerError'.tr());
           }
         }
       }
@@ -1075,12 +1057,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                         }
                         if (mounted) {
                           // ignore: use_build_context_synchronously
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('connectionError'.tr()),
-                              backgroundColor: context.geckoColors.danger,
-                            ),
-                          );
+                          SnackbarService.showError(context, message: 'connectionError'.tr());
                         }
                       } finally {
                         // Connection attempt finished
@@ -1192,13 +1169,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                         }
                         if (mounted) {
                           if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('duniterEndpointUpdated'.tr()),
-                              // ignore: use_build_context_synchronously
-                              backgroundColor: context.geckoColors.success,
-                            ),
-                          );
+                          SnackbarService.showSuccess(context, message: 'duniterEndpointUpdated'.tr());
                         }
                       } else {
                         log.e('❌ Failed to apply Duniter endpoint');
@@ -1209,12 +1180,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                         }
                         if (mounted) {
                           // ignore: use_build_context_synchronously
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('connectionError'.tr()),
-                              backgroundColor: context.geckoColors.danger,
-                            ),
-                          );
+                          SnackbarService.showError(context, message: 'connectionError'.tr());
                         }
                       }
                     } else {
@@ -1227,13 +1193,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                       }
                       if (mounted) {
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          // ignore: use_build_context_synchronously
-                          SnackBar(
-                            content: Text('invalidEndpointError'.tr()),
-                            backgroundColor: context.geckoColors.danger,
-                          ),
-                        );
+                        SnackbarService.showError(context, message: 'invalidEndpointError'.tr());
                       }
                     }
                   },
@@ -1274,20 +1234,16 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
       }
       selectedIndexerEndpoint = endpoint;
     } else {
-      selectedIndexerEndpoint = Networks.listSquidEndpoints.isNotEmpty
+      selectedIndexerEndpoint = Networks.squidEndpoint.isNotEmpty
           ? (() {
-              // Safe access to avoid race conditions
-              final endpoints = Networks.listSquidEndpoints;
-              if (endpoints.isEmpty) return 'wss://';
-
-              String endpoint = endpoints[0];
+              String endpoint = Networks.squidEndpoint;
               // Clean endpoint for display (remove paths)
               if (endpoint.contains('/v1/graphql')) {
                 endpoint = endpoint.split('/v1/graphql')[0];
               }
               return endpoint;
             })()
-          : 'wss://';
+          : null;
     }
 
     final indexerEndpointController = _indexerEndpointController;
@@ -1474,7 +1430,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
           },
         ),
 
-        if (!_config.hasCustomIndexer)
+        if (!_config.hasCustomIndexer && selectedIndexerEndpoint != null)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1561,13 +1517,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                         }
                         if (mounted) {
                           if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('indexerEndpointUpdated'.tr()),
-                              // ignore: use_build_context_synchronously
-                              backgroundColor: context.geckoColors.success,
-                            ),
-                          );
+                          SnackbarService.showSuccess(context, message: 'indexerEndpointUpdated'.tr());
                         }
                       } else {
                         log.e('❌ Failed to apply Squid endpoint');
@@ -1585,13 +1535,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                         }
                         if (mounted) {
                           if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            // ignore: use_build_context_synchronously
-                            SnackBar(
-                              content: Text('failedApplyIndexerEndpoint'.tr()),
-                              backgroundColor: context.geckoColors.danger,
-                            ),
-                          );
+                          SnackbarService.showError(context, message: 'failedApplyIndexerEndpoint'.tr());
                         }
                       }
                     } else {
@@ -1610,13 +1554,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                       }
                       if (mounted) {
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          // ignore: use_build_context_synchronously
-                          SnackBar(
-                            content: Text('invalidIndexerError'.tr()),
-                            backgroundColor: context.geckoColors.danger,
-                          ),
-                        );
+                        SnackbarService.showError(context, message: 'invalidIndexerError'.tr());
                       }
                     }
                   },

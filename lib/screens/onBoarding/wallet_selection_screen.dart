@@ -12,6 +12,7 @@ import 'package:gecko/routes.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class WalletSelectionScreen extends ConsumerStatefulWidget {
@@ -326,12 +327,7 @@ class _WalletSelectionScreenState extends ConsumerState<WalletSelectionScreen> {
     } catch (e) {
       log.e('Error performing migration: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('migrationError'.tr(args: [e.toString()])),
-            backgroundColor: context.geckoColors.danger,
-          ),
-        );
+        SnackbarService.showError(context, message: 'migrationError'.tr(args: [e.toString()]));
       }
     }
   }

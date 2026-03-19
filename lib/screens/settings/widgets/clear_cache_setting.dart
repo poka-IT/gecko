@@ -5,6 +5,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 /// Tappable card that clears all application caches after confirmation.
@@ -31,19 +32,12 @@ class ClearCacheSetting extends ConsumerWidget {
             await settingsService.clearAllCaches();
 
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('clearCacheExplanation'.tr()), duration: const Duration(seconds: 2)),
-              );
+              SnackbarService.showMessage(context, message: 'clearCacheExplanation'.tr(), duration: 2);
             }
           } catch (e) {
             log.e('Error clearing caches: $e');
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('errorClearingCaches'.tr(args: [e.toString()])),
-                  backgroundColor: context.geckoColors.danger,
-                ),
-              );
+              SnackbarService.showError(context, message: 'errorClearingCaches'.tr(args: [e.toString()]));
             }
           }
         }

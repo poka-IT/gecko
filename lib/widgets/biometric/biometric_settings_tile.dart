@@ -8,6 +8,7 @@ import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/extensions.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/services/snackbar_service.dart';
 
 /// Settings tile for biometric authentication management
 class BiometricSettingsTile extends ConsumerWidget {
@@ -116,22 +117,9 @@ class BiometricSettingsTile extends ConsumerWidget {
 
         if (context.mounted) {
           if (success) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.white),
-                    SizedBox(width: scaleSize(8)),
-                    Text('biometricDisabled'.tr()),
-                  ],
-                ),
-                backgroundColor: context.geckoColors.warning,
-              ),
-            );
+            SnackbarService.showWarning(context, message: 'biometricDisabled'.tr());
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('biometricDisableFailed'.tr()), backgroundColor: context.colorScheme.error),
-            );
+            SnackbarService.showError(context, message: 'biometricDisableFailed'.tr());
           }
         }
       }
@@ -356,19 +344,7 @@ class _BiometricSetupBottomSheetState extends ConsumerState<_BiometricSetupBotto
           widget.onSetupComplete?.call();
           Navigator.of(context).pop();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: scaleSize(8)),
-                  Text('biometricEnabled'.tr()),
-                ],
-              ),
-              backgroundColor: context.geckoColors.success,
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          SnackbarService.showSuccess(context, message: 'biometricEnabled'.tr(), duration: 3);
         }
         // If failed, error message will be shown in the UI automatically via state
       }

@@ -5,6 +5,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
 
 class RenameSafeScreen extends ConsumerStatefulWidget {
@@ -50,12 +51,7 @@ class _RenameSafeScreenState extends ConsumerState<RenameSafeScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('errorRenamingSafe'.tr(args: [e.toString()])),
-            backgroundColor: context.geckoColors.danger,
-          ),
-        );
+        SnackbarService.showError(context, message: 'errorRenamingSafe'.tr(args: [e.toString()]));
       }
     } finally {
       if (mounted) {

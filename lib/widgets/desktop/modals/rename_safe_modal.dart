@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 
 /// Shows the rename safe form inside a desktop modal.
@@ -57,12 +58,7 @@ class _RenameSafeContentState extends ConsumerState<_RenameSafeContent> {
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('errorRenamingSafe'.tr(args: [e.toString()])),
-            backgroundColor: context.geckoColors.danger,
-          ),
-        );
+        SnackbarService.showError(context, message: 'errorRenamingSafe'.tr(args: [e.toString()]));
         setState(() => _isLoading = false);
       }
     }

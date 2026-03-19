@@ -30,6 +30,7 @@ import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/screens/myWallets/change_pin.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
 import 'package:gecko/widgets/membership_alert_card.dart';
@@ -619,13 +620,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     } catch (e) {
       log.e('Migration to new safe error: $e');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('migrationError'.tr(args: [e.toString()])),
-          // ignore: use_build_context_synchronously
-          backgroundColor: context.geckoColors.danger,
-        ),
-      );
+      SnackbarService.showError(context, message: 'migrationError'.tr(args: [e.toString()]));
     }
   }
 
@@ -691,13 +686,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     } catch (e) {
       log.e('Migration to existing safe error: $e');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('migrationError'.tr(args: [e.toString()])),
-          // ignore: use_build_context_synchronously
-          backgroundColor: context.geckoColors.danger,
-        ),
-      );
+      SnackbarService.showError(context, message: 'migrationError'.tr(args: [e.toString()]));
     }
   }
 

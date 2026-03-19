@@ -7,6 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/wallet_name_validation_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 
@@ -168,12 +169,7 @@ class _WalletNameEditDialogState extends ConsumerState<_WalletNameEditDialog> {
                                 }
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error renaming wallet: ${e.toString()}'),
-                                      backgroundColor: context.geckoColors.danger,
-                                    ),
-                                  );
+                                  SnackbarService.showError(context, message: 'Error renaming wallet: ${e.toString()}');
                                 }
                               }
                             }

@@ -11,6 +11,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
@@ -445,22 +446,16 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
 
         if (result.success) {
           // Success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('biometricSetupSuccessful'.tr()), backgroundColor: context.geckoColors.success),
-          );
+          SnackbarService.showSuccess(context, message: 'biometricSetupSuccessful'.tr());
         } else {
           // Error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('biometricSetupFailed'.tr()), backgroundColor: context.geckoColors.danger),
-          );
+          SnackbarService.showError(context, message: 'biometricSetupFailed'.tr());
         }
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog if open
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('anErrorOccurred'.tr()), backgroundColor: context.geckoColors.danger));
+        SnackbarService.showError(context, message: 'anErrorOccurred'.tr());
       }
     }
   }

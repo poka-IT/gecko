@@ -3,7 +3,6 @@ import 'package:durt2/durt2.dart' show SafeEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
@@ -12,6 +11,7 @@ import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/certification_queue_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 /// Safe management operations provider
@@ -64,12 +64,7 @@ class SafeManager {
 
       // Show error message to user
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('failedDeleteSafe'.tr(args: [e.toString()])),
-            backgroundColor: context.geckoColors.danger,
-          ),
-        );
+        SnackbarService.showError(context, message: 'failedDeleteSafe'.tr(args: [e.toString()]));
       }
     }
   }

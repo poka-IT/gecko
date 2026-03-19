@@ -994,21 +994,15 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
       if (context.mounted) {
         Navigator.pop(context);
         if (result.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('biometricSetupSuccessful'.tr()), backgroundColor: context.geckoColors.success),
-          );
+          SnackbarService.showSuccess(context, message: 'biometricSetupSuccessful'.tr());
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('biometricSetupFailed'.tr()), backgroundColor: context.geckoColors.danger),
-          );
+          SnackbarService.showError(context, message: 'biometricSetupFailed'.tr());
         }
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('anErrorOccurred'.tr()), backgroundColor: context.geckoColors.danger));
+        SnackbarService.showError(context, message: 'anErrorOccurred'.tr());
       }
     }
   }

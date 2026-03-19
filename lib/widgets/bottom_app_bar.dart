@@ -9,6 +9,7 @@ import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/widgets/drag_wallets_info.dart';
 
 /// Global widget that shows bottom app bar when appropriate
@@ -158,7 +159,9 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                   isSelected: false,
                   semanticLabel: 'Home',
                   onTap: () {
-                    Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));
+                    final navContext = Gecko.navigatorContext;
+                    if (navContext == null) return;
+                    Navigator.popUntil(navContext, ModalRoute.withName(RouteNames.home));
                   },
                 ),
                 _buildNavItem(
@@ -183,8 +186,10 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                           if (!await PinCodeService.askPinCode(context, canSwitch: true)) return;
 
                           if (!mounted) return;
+                          final navContext = Gecko.navigatorContext;
+                          if (navContext == null) return;
                           Navigator.pushNamedAndRemoveUntil(
-                            context,
+                            navContext, // ignore: use_build_context_synchronously
                             RouteNames.myWallets,
                             ModalRoute.withName(RouteNames.home),
                           );

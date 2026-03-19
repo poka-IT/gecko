@@ -53,15 +53,19 @@ class ReadyCertificationModal extends ConsumerWidget {
               Container(
                 width: scaleSize(80),
                 height: scaleSize(80),
-                decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
-                child: Icon(Icons.notifications_active, size: scaleSize(48), color: Colors.green.shade700),
+                decoration: BoxDecoration(color: context.geckoColors.successContainer, shape: BoxShape.circle),
+                child: Icon(Icons.notifications_active, size: scaleSize(48), color: context.geckoColors.successText),
               ),
               ScaledSizedBox(height: 20),
 
               // Title
               Text(
                 'certificationReady'.tr(),
-                style: scaledTextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                style: scaledTextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: context.geckoColors.successText,
+                ),
                 textAlign: TextAlign.center,
               ),
               ScaledSizedBox(height: 12),
@@ -79,7 +83,7 @@ class ReadyCertificationModal extends ConsumerWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: context.geckoColors.success,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
                   ),

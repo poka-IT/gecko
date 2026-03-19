@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/text_size_mode.dart';
+import 'package:gecko/services/config_service.dart';
 
 // Provider for text scaling value
 class TextScalingNotifier extends Notifier<double> {
   @override
   double build() => _getInitialScale();
 
-  static double _getInitialScale() {
-    final savedScale = configBox.get('textScaleValue');
-    if (savedScale != null && savedScale is double) {
+  double _getInitialScale() {
+    final savedScale = ref.read(configServiceProvider).textScaleValue;
+    if (savedScale != null) {
       return savedScale;
     }
     return TextScaling.defaultScale;
@@ -17,7 +17,7 @@ class TextScalingNotifier extends Notifier<double> {
 
   void setTextScale(double scale) {
     state = scale;
-    configBox.put('textScaleValue', scale);
+    ref.read(configServiceProvider).textScaleValue = scale;
   }
 }
 

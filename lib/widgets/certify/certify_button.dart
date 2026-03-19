@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -70,7 +68,8 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
 
       if (!result) return;
 
-      if (!await PinCodeService.askPinCode()) return;
+      // ignore: use_build_context_synchronously
+      if (!await PinCodeService.askPinCode(context)) return;
       if (!mounted) return;
       final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
 
@@ -79,6 +78,7 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
       }
 
       try {
+        if (!mounted) return;
         await CertificationTransactionHelper.executeCertification(
           context: context,
           ref: ref,

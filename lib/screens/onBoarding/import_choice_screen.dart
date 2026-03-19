@@ -208,7 +208,7 @@ class ImportChoiceScreen extends StatelessWidget {
           'notRecommended'.tr(),
           style: scaledTextStyle(
             fontSize: 10,
-            color: Colors.orange.withValues(alpha: 0.7),
+            color: context.geckoColors.warning.withValues(alpha: 0.7),
             fontStyle: FontStyle.italic,
           ),
         ),
@@ -256,7 +256,7 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: scaleSize(28)),
+              Icon(Icons.warning_amber_rounded, color: context.geckoColors.warning, size: scaleSize(28)),
               ScaledSizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -281,9 +281,9 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
                 Container(
                   padding: EdgeInsets.all(scaleSize(14)),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
+                    color: context.geckoColors.warning.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                    border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     'legacyWarningMessage'.tr(),
@@ -351,12 +351,12 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
                           padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(10)),
                           decoration: BoxDecoration(
                             color: _hasStartedClicking
-                                ? Colors.red.withValues(alpha: 0.1)
+                                ? context.geckoColors.danger.withValues(alpha: 0.1)
                                 : context.colorScheme.onSurface.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: _hasStartedClicking
-                                  ? Colors.red.withValues(alpha: 0.3)
+                                  ? context.geckoColors.danger.withValues(alpha: 0.3)
                                   : context.colorScheme.onSurface.withValues(alpha: 0.1),
                             ),
                           ),
@@ -368,7 +368,7 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
                                 style: scaledTextStyle(
                                   fontSize: 12,
                                   color: _hasStartedClicking
-                                      ? Colors.red.withValues(alpha: 0.8)
+                                      ? context.geckoColors.danger.withValues(alpha: 0.8)
                                       : context.colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
@@ -377,7 +377,7 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
                                 Container(
                                   padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(2)),
                                   decoration: BoxDecoration(
-                                    color: Colors.red.withValues(alpha: 0.2),
+                                    color: context.geckoColors.danger.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -385,7 +385,7 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
                                     style: scaledTextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.red,
+                                      color: context.geckoColors.danger,
                                     ),
                                   ),
                                 ),
@@ -400,7 +400,7 @@ class _LegacyWarningDialogState extends State<_LegacyWarningDialog> {
                           'legacyClicksRemaining'.tr(args: [_clicksRemaining.toString()]),
                           style: scaledTextStyle(
                             fontSize: 10,
-                            color: Colors.red.withValues(alpha: 0.7),
+                            color: context.geckoColors.danger.withValues(alpha: 0.7),
                             fontStyle: FontStyle.italic,
                           ),
                         ),

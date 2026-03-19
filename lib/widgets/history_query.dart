@@ -354,8 +354,8 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
     final rawHistoryState = ref.watch(combinedHistoryProvider(widget.address));
 
     // Always initialize/update timestamp with RAW data (including UDs) to prevent false notifications
-    if (!rawHistoryState.isLoading && rawHistoryState.transactions.isNotEmpty) {
-      final currentLatestTimestamp = rawHistoryState.transactions.first.timestamp;
+    if (!rawHistoryState.isLoading && rawHistoryState.items.isNotEmpty) {
+      final currentLatestTimestamp = rawHistoryState.items.first.timestamp;
 
       // Only show notification if NOT initial load AND we have a newer transaction than before
       if (!_isInitialLoad &&
@@ -396,7 +396,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             // Handle loading state
-            if (historyState.isLoading && historyState.transactions.isEmpty)
+            if (historyState.isLoading && historyState.items.isEmpty)
               Center(child: CircularProgressIndicator(color: context.colorScheme.primary)),
 
             // Handle error state
@@ -421,7 +421,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
               ),
 
             // Handle empty state
-            if (!historyState.isLoading && historyState.transactions.isEmpty && historyState.error == null)
+            if (!historyState.isLoading && historyState.items.isEmpty && historyState.error == null)
               Consumer(
                 builder: (context, ref, child) {
                   final hasAdvancedFilters = ref.watch(transactionFiltersProvider).hasActiveFilters;
@@ -484,7 +484,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
               ),
 
             // Handle success state with transactions
-            if (historyState.transactions.isNotEmpty)
+            if (historyState.items.isNotEmpty)
               Expanded(
                 child: Consumer(
                   builder: (context, ref, child) {
@@ -514,7 +514,7 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                             child: Builder(
                               builder: (context) {
                                 final historyView = HistoryView(
-                                  transactions: _filterInProgressDuplicate(historyState.transactions),
+                                  transactions: _filterInProgressDuplicate(historyState.items),
                                   address: widget.address,
                                   migrationFromData: migrationFromDataAsync.when(
                                     data: (migrationData) => migrationData,

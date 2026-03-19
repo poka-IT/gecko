@@ -52,7 +52,7 @@ class BubbleSpeakWithTail extends StatelessWidget {
           bottom: -scaleSize(28),
           child: Image(
             image: AssetImage(
-              homeContext.isDarkTheme ? 'assets/home/bout_de_bulle_dark.png' : 'assets/home/bout_de_bulle.png',
+              context.isDarkTheme ? 'assets/home/bout_de_bulle_dark.png' : 'assets/home/bout_de_bulle.png',
             ),
             height: scaleSize(30),
           ),

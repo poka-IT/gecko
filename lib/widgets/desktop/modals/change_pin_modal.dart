@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +84,7 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
             padding: const EdgeInsets.only(bottom: 12),
             child: Text(
               _errorMessage,
-              style: const TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.w500),
+              style: TextStyle(color: context.geckoColors.danger, fontSize: 14, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
           ),
@@ -110,7 +108,7 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
                 setState(() {
                   _hasError = true;
                   _errorMessage = 'passwordTooSimple'.tr();
-                  _pinColor = Colors.red;
+                  _pinColor = context.geckoColors.danger;
                 });
                 _pinTextController.clear();
                 _pinFocusNode.requestFocus();
@@ -133,7 +131,7 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
                 setState(() {
                   _hasError = true;
                   _errorMessage = 'thisIsNotAGoodCode'.tr();
-                  _pinColor = Colors.red;
+                  _pinColor = context.geckoColors.danger;
                 });
                 _confirmTextController.clear();
                 _confirmFocusNode.requestFocus();

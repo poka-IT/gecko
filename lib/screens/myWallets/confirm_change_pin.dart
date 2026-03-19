@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,7 +70,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
               if (hasError) ...[
                 Text(
                   "thisIsNotAGoodCode".tr(),
-                  style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
+                  style: TextStyle(color: context.geckoColors.danger, fontSize: 15, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -109,12 +107,14 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
             setState(() {
               isPinLoading = false;
               hasError = true;
-              pinColor = Colors.red[600];
+              pinColor = context.geckoColors.danger;
               enterPin.text = '';
             });
+            if (!mounted) return;
+            // ignore: use_build_context_synchronously
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text('changePinError'.tr()), backgroundColor: Colors.red));
+            ).showSnackBar(SnackBar(content: Text('changePinError'.tr()), backgroundColor: context.geckoColors.danger));
             return;
           }
 
@@ -139,6 +139,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
           final currentSafe = ref.read(currentSafeNumberProvider);
           await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
+          if (!context.mounted) return;
           Navigator.of(context)
             ..pop() // Ferme l'écran de confirmation
             ..pop(); // Ferme l'écran de changement de PIN
@@ -146,7 +147,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
           setState(() {
             hasError = true;
             isPinLoading = false;
-            pinColor = Colors.red[600];
+            pinColor = context.geckoColors.danger;
             enterPin.text = '';
           });
           pinFocus.requestFocus();

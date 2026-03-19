@@ -12,7 +12,6 @@ const keyAppBarSafe = Key('keyAppBarSafe');
 // Home
 const keyParameters = Key('keyParameters');
 const keyDebugScreen = Key('keyDebugScreen');
-const keyContacts = Key('keyContacts');
 const keyDrawerMenu = Key('keyDrawerMenu');
 const keyOpenWalletsHomme = Key('keyOpenWalletsHomme');
 const keyOpenSearch = Key('keyOpenSearch');
@@ -21,7 +20,6 @@ const keyOnboardingNewSafe = Key('keyOnboardingNewSafe');
 
 // Wallets home
 const keyImportG1v1 = Key('keyImportG1v1');
-const keyChangeSafe = Key('keyChangeSafe');
 const keyListWallets = Key('keyListWallets');
 const keyAddDerivation = Key('keyAddDerivation');
 // Removed problematic GlobalKeys - now using dynamic ValueKeys or local GlobalKeys
@@ -68,9 +66,6 @@ const keyCloseTransactionScreen = Key('keyCloseTransactionScreen');
 // Activity view
 const keyListTransactions = Key('keyListTransactions');
 const keyActivityScreen = Key('keyActivityScreen');
-
-// Certification view
-const keyCertsReceived = Key('keyCertsReceived');
 
 // Unlock wallet
 const keyUnlockWallet = Key('keyUnlockWallet');

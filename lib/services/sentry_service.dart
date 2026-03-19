@@ -368,7 +368,10 @@ Full diagnostic data is attached as additional context.
         Exception('Failed to send manual issue report: $e'),
         withScope: (scope) {
           scope.setTag('report_type', 'manual_report_failed');
-          scope.setTag('original_user_description', userDescription);
+          scope.setTag(
+            'original_user_description',
+            userDescription.length > 200 ? userDescription.substring(0, 200) : userDescription,
+          );
         },
       );
     }

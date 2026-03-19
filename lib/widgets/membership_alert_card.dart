@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/membership_providers.dart';
@@ -87,7 +88,7 @@ class MembershipAlertCard extends ConsumerWidget {
         : 'membershipEvalPendingNoEstimate'.tr();
 
     return _AlertCardContainer(
-      color: Colors.blue,
+      color: context.geckoColors.info,
       icon: Icons.hourglass_top,
       title: 'membershipEvalPending'.tr(),
       message: message,
@@ -100,7 +101,7 @@ class MembershipAlertCard extends ConsumerWidget {
         : '';
 
     return _AlertCardContainer(
-      color: Colors.red,
+      color: context.geckoColors.danger,
       icon: Icons.warning_rounded,
       title: 'membershipExpiredAlert'.tr(),
       message: '${'membershipExpiredRenewNow'.tr()}$autoRevocText',
@@ -119,7 +120,7 @@ class MembershipAlertCard extends ConsumerWidget {
       // Renewal available but not yet expiring soon
       title = 'membershipRenewalAvailable'.tr();
       message = 'membershipRenewalAvailableMessage'.tr();
-      color = Colors.orange;
+      color = context.geckoColors.warning;
       icon = Icons.autorenew;
     } else {
       // Expiring soon
@@ -210,10 +211,9 @@ class _AlertCardContainer extends StatelessWidget {
   }
 
   Color get _darkColor {
-    // Use shade800 equivalent for text readability
-    if (color == Colors.blue) return Colors.blue.shade800;
-    if (color == Colors.red) return Colors.red.shade800;
-    if (color == Colors.deepOrange) return Colors.deepOrange.shade800;
-    return Colors.orange.shade800;
+    // Use a darker shade for text readability on light container backgrounds.
+    // HSLColor darkening produces a visually consistent result across hues.
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness * 0.55).clamp(0.0, 1.0)).toColor();
   }
 }

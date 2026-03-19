@@ -2,7 +2,6 @@ import 'package:durt2/durt2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/trm_data_provider.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
@@ -101,6 +100,7 @@ class BalanceDisplay extends ConsumerWidget {
   }
 
   Widget _buildCurrencyDisplay(
+    BuildContext context,
     CurrencyDisplayMode displayMode,
     String formattedNumber,
     String currencySymbol,
@@ -110,16 +110,20 @@ class BalanceDisplay extends ConsumerWidget {
     if (valuePrefix.isNotEmpty) {
       prefixWidget = Text(
         valuePrefix,
-        style: TextStyle(fontSize: size, color: color == Colors.white ? color : Colors.red, fontWeight: fontWeight),
+        style: TextStyle(
+          fontSize: size,
+          color: color == Colors.white ? color : context.geckoColors.danger,
+          fontWeight: fontWeight,
+        ),
       );
     }
 
     // Get current route
-    final container = ProviderScope.containerOf(homeContext);
+    final container = ProviderScope.containerOf(context);
     final currentRoute = container.read(currentRouteProvider);
     final isMyWallets = currentRoute == RouteNames.myWallets;
 
-    final currencyTextColor = isMyWallets ? color : homeContext.colorScheme.outline;
+    final currencyTextColor = isMyWallets ? color : context.colorScheme.outline;
 
     if (displayMode == CurrencyDisplayMode.du || displayMode == CurrencyDisplayMode.moneyOverMembers) {
       // DU and mM/N modes: display like "prefix + [unit] + symbol as superscript"
@@ -222,6 +226,6 @@ class BalanceDisplay extends ConsumerWidget {
       formattedNumber = _formatNumber(displayValue, displayMode);
     }
 
-    return _buildCurrencyDisplay(displayMode, formattedNumber, currencySymbol, valuePrefix);
+    return _buildCurrencyDisplay(context, displayMode, formattedNumber, currencySymbol, valuePrefix);
   }
 }

@@ -2,7 +2,6 @@
 
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -81,7 +80,11 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
                     padding: EdgeInsets.only(top: scaleSize(10)),
                     child: Text(
                       'passwordTooSimple'.tr(),
-                      style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(
+                        fontSize: 15,
+                        color: context.geckoColors.danger,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ScaledSizedBox(height: isTall ? 60 : 10),
@@ -156,9 +159,6 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
 }
 
 bool isPinComplex(String pin) {
-  // Debug mode
-  if (kDebugMode && debugPin) return true;
-
   // Check if PIN is 4 digits
   if (pin.length != pinLength) return false;
 

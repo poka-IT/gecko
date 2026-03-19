@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -37,7 +35,7 @@ class AddNewDerivationButton extends ConsumerWidget {
                 key: keyAddDerivation,
                 onTap: () async {
                   if (!derivationState.isLoading) {
-                    if (!await PinCodeService.askPinCode()) return;
+                    if (!await PinCodeService.askPinCode(context)) return;
 
                     await ref.read(walletActionsProvider.notifier).generateNewDerivation(newDerivationName);
                   }

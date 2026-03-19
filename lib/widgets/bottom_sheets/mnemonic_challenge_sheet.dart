@@ -251,9 +251,9 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
               fontSize: 18,
               fontWeight: FontWeight.w500,
               color: isCurrentValidated
-                  ? Colors.green[600]
+                  ? context.geckoColors.success
                   : hasError
-                  ? Colors.red[600]
+                  ? context.geckoColors.danger
                   : null,
             ),
             decoration: InputDecoration(
@@ -263,18 +263,18 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
               fillColor: context.colorScheme.surfaceContainerHighest,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: hasError ? BorderSide(color: Colors.red[600]!, width: 1.5) : BorderSide.none,
+                borderSide: hasError ? BorderSide(color: context.geckoColors.danger, width: 1.5) : BorderSide.none,
               ),
               enabledBorder: hasError
                   ? OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.red[600]!, width: 1.5),
+                      borderSide: BorderSide(color: context.geckoColors.danger, width: 1.5),
                     )
                   : OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               focusedBorder: hasError
                   ? OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.red[600]!, width: 1.5),
+                      borderSide: BorderSide(color: context.geckoColors.danger, width: 1.5),
                     )
                   : null,
               suffixIcon: isCurrentValidated
@@ -284,10 +284,10 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
                       builder: (context, value, child) {
                         return Opacity(opacity: value, child: child);
                       },
-                      child: Icon(Icons.check_circle, color: Colors.green[600]),
+                      child: Icon(Icons.check_circle, color: context.geckoColors.success),
                     )
                   : hasError
-                  ? Icon(Icons.error_outline, color: Colors.red[600])
+                  ? Icon(Icons.error_outline, color: context.geckoColors.danger)
                   : null,
             ),
           ),
@@ -299,13 +299,21 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
                 ? Text(
                     key: const ValueKey('correct'),
                     'correctWord'.tr(),
-                    style: scaledTextStyle(fontSize: 14, color: Colors.green[600], fontWeight: FontWeight.w500),
+                    style: scaledTextStyle(
+                      fontSize: 14,
+                      color: context.geckoColors.success,
+                      fontWeight: FontWeight.w500,
+                    ),
                   )
                 : hasError
                 ? Text(
                     key: const ValueKey('error'),
                     'incorrectWord'.tr(),
-                    style: scaledTextStyle(fontSize: 14, color: Colors.red[600], fontWeight: FontWeight.w500),
+                    style: scaledTextStyle(
+                      fontSize: 14,
+                      color: context.geckoColors.danger,
+                      fontWeight: FontWeight.w500,
+                    ),
                   )
                 : const SizedBox.shrink(key: ValueKey('empty')),
           ),
@@ -340,7 +348,7 @@ class _WordPositionChip extends StatelessWidget {
     final isActive = chipState == _ChipState.active;
 
     final bgColor = isValidated
-        ? Colors.green[600]!
+        ? context.geckoColors.success
         : isActive
         ? context.colorScheme.primary
         : context.colorScheme.surfaceContainerHighest;

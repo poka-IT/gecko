@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:intl/date_symbol_data_local.dart' show dateTimeSymbolMap;
 import 'package:truncate/truncate.dart';
 
@@ -102,7 +102,7 @@ String calculateDateDelimiter(DateTime timestamp) {
   } else if (daysDifference < 7) {
     return "daysAgo".tr(args: [daysDifference.toString()]);
   } else {
-    final locale = safeLocale(Localizations.localeOf(homeContext).languageCode);
+    final locale = safeLocale(Localizations.localeOf(Gecko.navigatorContext!).languageCode);
     final formatPattern = timestamp.year == now.year ? 'EEEE d MMMM' : 'EEEE d MMMM y';
     final formatted = DateFormat(formatPattern, locale).format(timestamp);
     return formatted

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/connection_providers.dart';
@@ -12,6 +14,8 @@ final blockHeightProvider = NotifierProvider<BlockHeightNotifier, int>(BlockHeig
 
 /// Notifier that manages block height state and connection status changes
 class BlockHeightNotifier extends Notifier<int> {
+  VoidCallback? _currentListener;
+
   @override
   int build() {
     _init();
@@ -56,19 +60,26 @@ class BlockHeightNotifier extends Notifier<int> {
       final storageService = ref.read(storageServiceProvider);
       final blockHeightNotifier = storageService.blockHeightNotifier;
 
+      // Remove previous listener if any
+      if (_currentListener != null) {
+        blockHeightNotifier.removeListener(_currentListener!);
+      }
+
       // Set initial value
       state = blockHeightNotifier.value;
 
       // Listen to changes
-      void listener() {
+      _currentListener = () {
         state = blockHeightNotifier.value;
-      }
-
-      blockHeightNotifier.addListener(listener);
+      };
+      blockHeightNotifier.addListener(_currentListener!);
 
       // Clean up listener when disposed
       ref.onDispose(() {
-        blockHeightNotifier.removeListener(listener);
+        if (_currentListener != null) {
+          blockHeightNotifier.removeListener(_currentListener!);
+          _currentListener = null;
+        }
       });
     } catch (e) {
       // If there's an error, set state to 0

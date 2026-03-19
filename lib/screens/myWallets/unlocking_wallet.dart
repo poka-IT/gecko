@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
@@ -201,7 +199,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
           await Future.delayed(const Duration(milliseconds: 20));
           setState(() {
-            pinColor = Colors.red[600]!;
+            pinColor = context.geckoColors.danger;
           });
           pinNotifier.setLoading(false);
           pinNotifier.setValid(false);
@@ -217,7 +215,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
           pinNotifier.setValid(true);
           setState(() {
-            pinColor = Colors.green[400]!;
+            pinColor = context.geckoColors.success;
           });
 
           // Update the default safe to the currently selected one
@@ -238,6 +236,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           PinCodeService.debounceResetPinCode();
 
           // ALWAYS return success and let the caller decide navigation
+          if (!mounted) return;
           Navigator.pop(context, pin.toUpperCase());
         }
       });
@@ -259,7 +258,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
         enterPin.text = '';
       }
       setState(() {
-        pinColor = Colors.red[600]!;
+        pinColor = context.geckoColors.danger;
       });
 
       String errorMessage;
@@ -289,7 +288,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
         // Show error snackbar for other errors (timeouts, network issues, etc.)
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red, duration: const Duration(seconds: 5)),
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: context.geckoColors.danger,
+              duration: const Duration(seconds: 5),
+            ),
           );
         }
         if (!fromBiometric) {
@@ -420,12 +423,12 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                         padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
                         decoration: BoxDecoration(
                           color: pinCacheState
-                              ? const Color(0xff4CAF50).withValues(alpha: 0.15)
+                              ? context.geckoColors.success.withValues(alpha: 0.15)
                               : context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: pinCacheState
-                                ? const Color(0xff4CAF50).withValues(alpha: 0.3)
+                                ? context.geckoColors.success.withValues(alpha: 0.3)
                                 : context.colorScheme.outline.withValues(alpha: 0.15),
                           ),
                         ),
@@ -434,7 +437,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                           children: [
                             Icon(
                               pinCacheState ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
-                              color: pinCacheState ? const Color(0xff4CAF50) : context.colorScheme.onSurfaceVariant,
+                              color: pinCacheState ? context.geckoColors.success : context.colorScheme.onSurfaceVariant,
                               size: scaleSize(16),
                             ),
                             ScaledSizedBox(width: 8),
@@ -443,7 +446,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                                 'rememberPassword'.tr(),
                                 style: scaledTextStyle(
                                   fontSize: 11,
-                                  color: pinCacheState ? const Color(0xff4CAF50) : context.colorScheme.onSurfaceVariant,
+                                  color: pinCacheState
+                                      ? context.geckoColors.success
+                                      : context.colorScheme.onSurfaceVariant,
                                   fontWeight: pinCacheState ? FontWeight.w600 : FontWeight.w400,
                                 ),
                               ),
@@ -483,9 +488,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.red[50],
+                          color: context.geckoColors.dangerContainer,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red[300]!),
+                          border: Border.all(color: context.geckoColors.danger.withValues(alpha: 0.5)),
                         ),
                         child: Column(
                           children: [
@@ -493,13 +498,17 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                               securityState.remainingAttempts <= 3
                                   ? 'pinSecurityFinalWarning'.tr(args: [securityState.remainingAttempts.toString()])
                                   : 'pinSecurityWarningTitle'.tr(),
-                              style: scaledTextStyle(color: Colors.red[700], fontWeight: FontWeight.bold, fontSize: 14),
+                              style: scaledTextStyle(
+                                color: context.geckoColors.dangerText,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'pinSecurityWarningMessage'.tr(args: [securityState.remainingAttempts.toString()]),
-                              style: scaledTextStyle(color: Colors.red[600], fontSize: 12),
+                              style: scaledTextStyle(color: context.geckoColors.danger, fontSize: 12),
                               textAlign: TextAlign.center,
                             ),
                             // Show countdown if locked out
@@ -510,7 +519,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                                   args: [PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds)],
                                 ),
                                 style: scaledTextStyle(
-                                  color: Colors.orange[700],
+                                  color: context.geckoColors.warningText,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -530,16 +539,16 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.orange[50],
+                          color: context.geckoColors.warningContainer,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange[300]!),
+                          border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.5)),
                         ),
                         child: Column(
                           children: [
                             Text(
                               'pinSecurityLocked'.tr(),
                               style: scaledTextStyle(
-                                color: Colors.orange[700],
+                                color: context.geckoColors.warningText,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                               ),
@@ -550,7 +559,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                               'pinSecurityUnlocksIn'.tr(
                                 args: [PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds)],
                               ),
-                              style: scaledTextStyle(color: Colors.orange[600], fontSize: 12),
+                              style: scaledTextStyle(color: context.geckoColors.warning, fontSize: 12),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -566,7 +575,11 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
                         "thisIsNotAGoodCode".tr(),
-                        style: scaledTextStyle(color: Colors.red[700], fontWeight: FontWeight.w500, fontSize: 15),
+                        style: scaledTextStyle(
+                          color: context.geckoColors.dangerText,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                        ),
                       ),
                     );
                   }

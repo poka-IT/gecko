@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -168,7 +166,7 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     if (!confirmed || !mounted) return;
 
     // Ask for PIN
-    if (!await PinCodeService.askPinCode()) return;
+    if (!await PinCodeService.askPinCode(context)) return;
     if (!mounted) return;
 
     try {
@@ -178,6 +176,7 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
 
       // Execute the certification with callback to remove from queue and sync
       await CertificationTransactionHelper.executeCertification(
+        // ignore: use_build_context_synchronously
         context: ctx,
         ref: ref,
         issuerAddress: issuerAddress,
@@ -196,6 +195,7 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
       log.e('[GlobalCertListener] Certification failed: $e');
       final errorCtx = Gecko.navigatorContext;
       if (errorCtx != null) {
+        if (!context.mounted) return;
         showConfirmationDialog(context: errorCtx, type: ConfirmationDialogType.error, message: e.toString());
       }
     }

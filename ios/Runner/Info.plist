@@ -45,10 +45,6 @@
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
-		<key>NSBonjourServices</key>
-		<array>
-			<string>_dartobservatory._tcp</string>
-		</array>
 		<key>ITSAppUsesNonExemptEncryption</key>
 		<string>NO</string>
 		<key>NSCameraUsageDescription</key>

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:durt2/durt2.dart' as durt2;
 
 /// Enum for currency display modes
@@ -183,14 +184,14 @@ class CurrencyDisplayModeNotifier extends Notifier<CurrencyDisplayMode> {
   }
 
   CurrencyDisplayMode _getInitialMode() {
+    final config = ref.read(configServiceProvider);
     // Check if user has legacy DU mode enabled
-    final isUdUnit = configBox.get('isUdUnit') ?? false;
-    if (isUdUnit) {
+    if (config.isUdUnit) {
       return CurrencyDisplayMode.du;
     }
 
     // Check for new display mode setting
-    final displayModeString = configBox.get('currencyDisplayMode') ?? 'g1';
+    final displayModeString = config.currencyDisplayMode;
     return CurrencyDisplayMode.values.firstWhere(
       (mode) => mode.name.toLowerCase() == displayModeString.toLowerCase(),
       orElse: () => CurrencyDisplayMode.g1,
@@ -200,11 +201,12 @@ class CurrencyDisplayModeNotifier extends Notifier<CurrencyDisplayMode> {
   void setDisplayMode(CurrencyDisplayMode mode) {
     state = mode;
 
+    final config = ref.read(configServiceProvider);
     // Save to config
-    configBox.put('currencyDisplayMode', mode.name.toLowerCase());
+    config.currencyDisplayMode = mode.name.toLowerCase();
 
     // Update legacy DU setting for backward compatibility
-    configBox.put('isUdUnit', mode == CurrencyDisplayMode.du);
+    config.isUdUnit = mode == CurrencyDisplayMode.du;
 
     log.i('Currency display mode changed to: ${mode.name}');
   }

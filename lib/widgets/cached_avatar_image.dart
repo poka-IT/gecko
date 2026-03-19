@@ -11,12 +11,16 @@ class CachedAvatarImage extends StatefulWidget {
     this.fit = BoxFit.contain,
     this.isCircular = true,
     this.fallback,
+    this.semanticLabel,
   });
 
   final String imagePath;
   final BoxFit fit;
   final bool isCircular;
   final Widget? fallback;
+
+  /// Accessibility label for the avatar image.
+  final String? semanticLabel;
 
   @override
   State<CachedAvatarImage> createState() => _CachedAvatarImageState();
@@ -29,7 +33,7 @@ class _CachedAvatarImageState extends State<CachedAvatarImage> {
   @override
   void initState() {
     super.initState();
-    _loadImageSync();
+    _loadImage(); // fire-and-forget is OK here, mounted check inside
   }
 
   @override
@@ -38,24 +42,25 @@ class _CachedAvatarImageState extends State<CachedAvatarImage> {
     if (oldWidget.imagePath != widget.imagePath) {
       _cachedImagePath = null;
       _cachedImageBytes = null;
-      _loadImageSync();
-      // Trigger rebuild when image path changes
-      if (mounted) {
-        setState(() {});
-      }
+      _loadImage();
     }
   }
 
-  void _loadImageSync() {
+  Future<void> _loadImage() async {
     if (widget.imagePath == _cachedImagePath || widget.imagePath.isEmpty || widget.imagePath.startsWith('assets/')) {
       return;
     }
 
     try {
       final file = File(widget.imagePath);
-      if (file.existsSync()) {
-        _cachedImageBytes = file.readAsBytesSync();
-        _cachedImagePath = widget.imagePath;
+      if (await file.exists()) {
+        final bytes = await file.readAsBytes();
+        if (mounted) {
+          setState(() {
+            _cachedImageBytes = bytes;
+            _cachedImagePath = widget.imagePath;
+          });
+        }
       }
       // Don't set _cachedImagePath if file doesn't exist, so a retry is possible on rebuild
     } catch (e) {
@@ -67,7 +72,12 @@ class _CachedAvatarImageState extends State<CachedAvatarImage> {
   Widget build(BuildContext context) {
     // Handle asset images
     if (widget.imagePath.startsWith('assets/')) {
-      final image = Image.asset(widget.imagePath, key: ValueKey(widget.imagePath), fit: widget.fit);
+      final image = Image.asset(
+        widget.imagePath,
+        key: ValueKey(widget.imagePath),
+        fit: widget.fit,
+        semanticLabel: widget.semanticLabel,
+      );
       return widget.isCircular
           ? Container(
               decoration: const BoxDecoration(shape: BoxShape.circle),
@@ -84,6 +94,7 @@ class _CachedAvatarImageState extends State<CachedAvatarImage> {
         key: ValueKey(widget.imagePath),
         fit: widget.fit,
         gaplessPlayback: true,
+        semanticLabel: widget.semanticLabel,
       );
       return widget.isCircular
           ? Container(

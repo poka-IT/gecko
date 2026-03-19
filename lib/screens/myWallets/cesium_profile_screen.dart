@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -104,7 +102,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final pinCode = await PinCodeService.askPinCode();
+    final pinCode = await PinCodeService.askPinCode(context);
     if (!pinCode) {
       if (mounted) SnackbarService.showError(context, message: 'pinNeeded'.tr());
       return;
@@ -160,7 +158,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
           child: AlertDialog(
             title: Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.red.shade600, size: scaleSize(24)),
+                Icon(Icons.warning_amber_rounded, color: context.geckoColors.danger, size: scaleSize(24)),
                 ScaledSizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -175,7 +173,10 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
               TextButton(onPressed: () => Navigator.pop(context, false), child: Text('cancel'.tr())),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.geckoColors.danger,
+                  foregroundColor: Colors.white,
+                ),
                 child: Text('deleteProfile'.tr()),
               ),
             ],
@@ -186,7 +187,8 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
 
     if (confirmed != true) return;
 
-    final pinCode = await PinCodeService.askPinCode();
+    // ignore: use_build_context_synchronously
+    final pinCode = await PinCodeService.askPinCode(context);
     if (!pinCode) {
       if (mounted) SnackbarService.showError(context, message: 'pinNeeded'.tr());
       return;
@@ -292,10 +294,10 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                     child: Padding(
                       padding: const EdgeInsets.only(right: 16, top: 8),
                       child: TextButton.icon(
-                        icon: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 20),
+                        icon: Icon(Icons.delete_outline, color: context.geckoColors.danger, size: 20),
                         label: Text(
                           'deleteProfile'.tr(),
-                          style: scaledTextStyle(fontSize: 13, color: Colors.red.shade400),
+                          style: scaledTextStyle(fontSize: 13, color: context.geckoColors.danger),
                         ),
                         onPressed: _isSaving ? null : _deleteProfile,
                       ),
@@ -516,7 +518,11 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                                             ),
                                           ),
                                           IconButton(
-                                            icon: Icon(Icons.delete, color: Colors.red.shade400, size: scaleSize(20)),
+                                            icon: Icon(
+                                              Icons.delete,
+                                              color: context.geckoColors.danger,
+                                              size: scaleSize(20),
+                                            ),
                                             onPressed: () => _removeSocial(index),
                                           ),
                                         ],
@@ -640,7 +646,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
         actions: [
           if (_profile != null)
             IconButton(
-              icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+              icon: Icon(Icons.delete_outline, color: context.geckoColors.danger),
               tooltip: 'deleteProfile'.tr(),
               onPressed: _isSaving ? null : _deleteProfile,
             ),
@@ -796,6 +802,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
                   Navigator.pop(context);
                   // Force unfocus after closing dialog to prevent city field from getting focus
                   Future.delayed(const Duration(milliseconds: 100), () {
+                    // ignore: use_build_context_synchronously
                     FocusScope.of(context).unfocus();
                   });
                 },
@@ -808,6 +815,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
     ).then((_) {
       // Also unfocus when dialog is dismissed
       Future.delayed(const Duration(milliseconds: 10), () {
+        // ignore: use_build_context_synchronously
         FocusScope.of(context).unfocus();
       });
     });

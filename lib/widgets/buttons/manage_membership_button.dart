@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/membership_providers.dart';
@@ -31,7 +31,7 @@ class ManageMembershipButton extends ConsumerWidget {
       onTap: () {
         if (isDesktopLayout(context)) {
           Navigator.of(context).pop();
-          showDesktopManageMembershipModal(homeContext, address: address);
+          showDesktopManageMembershipModal(Gecko.navigatorContext!, address: address);
         } else {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ManageMembership(address: address)));
         }
@@ -45,7 +45,7 @@ class ManageMembershipButton extends ConsumerWidget {
                 Icon(
                   Icons.workspace_premium_outlined,
                   size: scaleSize(24),
-                  color: const Color(0xFFFF9800).withValues(alpha: 0.8),
+                  color: context.geckoColors.warning.withValues(alpha: 0.8),
                 ),
                 if (showBadge)
                   Positioned(
@@ -54,7 +54,7 @@ class ManageMembershipButton extends ConsumerWidget {
                     child: Container(
                       width: scaleSize(8),
                       height: scaleSize(8),
-                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: context.geckoColors.danger, shape: BoxShape.circle),
                     ),
                   ),
               ],

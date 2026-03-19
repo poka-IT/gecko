@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -134,7 +133,7 @@ class QrScannerService {
   ///
   /// Returns a [QrScanResult] containing the processed address and scan status.
   /// Handles camera permissions and validates the scanned content.
-  Future<QrScanResult> scanQrCode() async {
+  Future<QrScanResult> scanQrCode(BuildContext context) async {
     // Check system resources before attempting to scan
     final systemResources = await _checkSystemResources();
 
@@ -180,7 +179,7 @@ class QrScannerService {
           );
 
           // Fallback to mobile_scanner for this scan
-          return await _fallbackToMobileScanner();
+          return await _fallbackToMobileScanner(context); // ignore: use_build_context_synchronously
         }
 
         // Re-throw other TypeErrors
@@ -223,7 +222,7 @@ class QrScannerService {
     } else {
       // For desktop platforms, use a compact modal with the camera feed
       // ignore: use_build_context_synchronously
-      final result = await showDesktopQrScannerModal(homeContext);
+      final result = await showDesktopQrScannerModal(context);
 
       if (result == null || result.isCancelled) {
         return QrScanResult.cancelled();
@@ -281,7 +280,7 @@ class QrScannerService {
   }
 
   /// Fallback method using mobile_scanner when barcode_scan2 fails
-  Future<QrScanResult> _fallbackToMobileScanner() async {
+  Future<QrScanResult> _fallbackToMobileScanner(BuildContext context) async {
     final controller = MobileScannerController();
     QrScanResult? qrResult;
 
@@ -292,7 +291,7 @@ class QrScannerService {
         if (qrResult?.isSuccess == true) {
           controller.stop();
           // ignore: use_build_context_synchronously
-          Navigator.pop(homeContext);
+          Navigator.pop(context);
         }
       } else {
         controller.start();
@@ -300,7 +299,7 @@ class QrScannerService {
     });
 
     await Navigator.push(
-      homeContext,
+      context,
       MaterialPageRoute(
         builder: (context) => MobileScanner(
           controller: controller,
@@ -324,7 +323,7 @@ class QrScannerService {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(25),
                       onTap: () {
-                        Navigator.pop(homeContext);
+                        Navigator.pop(context);
                       },
                       child: Container(
                         decoration: BoxDecoration(

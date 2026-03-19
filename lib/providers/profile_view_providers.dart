@@ -1,9 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/contact_service.dart';
@@ -117,15 +116,17 @@ final qrScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
   return (BuildContext context) async {
     final qrScannerService = ref.read(qrScannerServiceProvider);
 
-    final result = await qrScannerService.scanQrCode();
+    final result = await qrScannerService.scanQrCode(context);
 
     if (result.isSuccess && result.address != null) {
       // Navigate to wallet view with the scanned address
-      Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
-      NavigationService.openProfile(homeContext, address: result.address!);
+      Navigator.popUntil(Gecko.navigatorContext!, ModalRoute.withName(RouteNames.home));
+      NavigationService.openProfile(Gecko.navigatorContext!, address: result.address!);
     } else if (result.isInvalidAddress) {
+      if (!context.mounted) return;
       SnackbarService.showError(context, message: 'qrCodeNotAddress'.tr(), duration: 2);
     } else if (result.isError) {
+      if (!context.mounted) return;
       SnackbarService.showError(context, message: result.errorMessage ?? 'Scan failed', duration: 2);
     }
     // If cancelled, do nothing
@@ -152,6 +153,7 @@ final toggleContactProvider = Provider<Future<void> Function(G1WalletsList, Buil
     final result = await contactService.toggleContact(profile);
 
     if (result.isSuccess) {
+      if (!context.mounted) return;
       SnackbarService.showMessage(context, message: result.message, duration: 4);
 
       // Invalidate the contact status to trigger UI update
@@ -160,6 +162,7 @@ final toggleContactProvider = Provider<Future<void> Function(G1WalletsList, Buil
       // Invalidate the contacts list to trigger refresh
       ref.invalidate(allContactsProvider);
     } else if (result.isError) {
+      if (!context.mounted) return;
       SnackbarService.showError(context, message: result.errorMessage ?? 'Contact operation failed');
     }
   };

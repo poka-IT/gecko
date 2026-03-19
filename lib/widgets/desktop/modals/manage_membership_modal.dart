@@ -1,11 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/membership_providers.dart';
@@ -58,7 +56,7 @@ class _ManageMembershipContent extends ConsumerWidget {
         return _buildActionTile(
           context,
           icon: Icons.workspace_premium_outlined,
-          iconColor: info.canRenew ? const Color(0xFFFF9800) : Colors.grey[400]!,
+          iconColor: info.canRenew ? context.geckoColors.warning : Colors.grey[400]!,
           label: 'renewMembership'.tr(),
           subtitle: MembershipRenewal.buildExpirationText(info),
           onTap: info.canRenew
@@ -81,7 +79,10 @@ class _ManageMembershipContent extends ConsumerWidget {
       label: 'Migrer mon identit\u00e9',
       onTap: () {
         Navigator.of(context).pop();
-        Navigator.push(homeContext, MaterialPageRoute(builder: (context) => MigrateIdentityScreen(address: address)));
+        Navigator.push(
+          Gecko.navigatorContext!,
+          MaterialPageRoute(builder: (context) => MigrateIdentityScreen(address: address)),
+        );
       },
     );
   }
@@ -91,9 +92,9 @@ class _ManageMembershipContent extends ConsumerWidget {
       context,
       key: keyRevokeIdty,
       icon: Icons.dangerous_outlined,
-      iconColor: Colors.red[400]!,
+      iconColor: context.geckoColors.danger,
       label: 'revokeMyIdentity'.tr(),
-      labelColor: Colors.red[400],
+      labelColor: context.geckoColors.danger,
       onTap: () async {
         final answer = await showConfirmationDialog(
           context: context,
@@ -103,17 +104,20 @@ class _ManageMembershipContent extends ConsumerWidget {
 
         if (!answer) return;
 
-        if (!await PinCodeService.askPinCode(wallet: ref.read(walletServiceProvider).getWalletData(address))) return;
+        if (!context.mounted) return;
+        if (!await PinCodeService.askPinCode(context, wallet: ref.read(walletServiceProvider).getWalletData(address)))
+          return;
 
         final keypair = await ref
             .read(walletServiceProvider)
             .getKeyPairFromAddress(address: address, pinCode: PinCodeService.pinCode);
         final transactionStatus = ref.read(duniterServiceProvider).revokeIdentity(keypair);
 
+        if (!context.mounted) return;
         Navigator.of(context).pop();
 
         navigateToTransactionProgress(
-          homeContext,
+          Gecko.navigatorContext!,
           transactionStatus: transactionStatus,
           transType: 'revokeIdty',
           fromAddress: address,

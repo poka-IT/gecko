@@ -22,7 +22,7 @@ class MnemonicDisplayWidget extends StatelessWidget {
       return Container(
         constraints: BoxConstraints(maxWidth: scaleSize(360)),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.red),
+          border: Border.all(color: context.geckoColors.danger),
           color: context.colorScheme.surfaceContainer,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
         ),
@@ -30,7 +30,7 @@ class MnemonicDisplayWidget extends StatelessWidget {
         child: Center(
           child: Text(
             'Invalid mnemonic: expected 12 words, got ${mnemonicWords.length}',
-            style: scaledTextStyle(fontSize: 15, color: Colors.red),
+            style: scaledTextStyle(fontSize: 15, color: context.geckoColors.danger),
           ),
         ),
       );

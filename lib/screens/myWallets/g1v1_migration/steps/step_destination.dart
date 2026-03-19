@@ -113,7 +113,7 @@ class _StepDestinationState extends ConsumerState<StepDestination> {
                           child: Text(
                             mapValidationErrors(flowState.migrationChecks!.errors),
                             textAlign: TextAlign.center,
-                            style: scaledTextStyle(fontSize: 12, color: Colors.red),
+                            style: scaledTextStyle(fontSize: 12, color: context.geckoColors.danger),
                           ),
                         ),
                     ],

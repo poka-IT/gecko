@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
@@ -293,8 +292,8 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
     final GlobalKey tutorialKey = _currentTutorialKey!;
 
     // Check if tutorial should be shown - global configuration (once for all safes)
-    const String tutorialConfigKey = 'showDraggableTutorial_global';
-    final bool showDraggableTutorial = configBox.get(tutorialConfigKey) ?? true;
+    final config = ref.read(configServiceProvider);
+    final bool showDraggableTutorial = config.showDraggableTutorial;
     // Show tutorial only once EVER (global) when user has at least 2 wallets
     if (shouldShowTutorial && showDraggableTutorial && !_tutorialShownInSession && !_tutorialScheduled) {
       _tutorialScheduled = true; // Prevent multiple scheduling
@@ -348,7 +347,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
             tutorialCoachMark.show(context: context);
             _tutorialShownInSession = true; // Mark as shown for this session
             // Mark tutorial as shown GLOBALLY (never show again)
-            configBox.put(tutorialConfigKey, false);
+            config.showDraggableTutorial = false;
           }
         });
       });

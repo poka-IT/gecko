@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,11 +83,13 @@ class WalletScanNotifier extends Notifier<WalletScanState> {
       );
 
       if (result.isTimeout) {
+        // ignore: use_build_context_synchronously
         await _handleTimeout(context);
         return ScanDerivationsResult.timeout;
       }
 
       if (result.hasError) {
+        if (!context.mounted) return ScanDerivationsResult.error;
         await _handleError(context, result.errorMessage ?? 'Unknown error');
         return ScanDerivationsResult.error;
       }
@@ -100,6 +100,7 @@ class WalletScanNotifier extends Notifier<WalletScanState> {
       return result.hasWallets ? ScanDerivationsResult.walletExists : ScanDerivationsResult.walletNotFound;
     } catch (e) {
       log.e('Error in scanDerivations: $e');
+      if (!context.mounted) return ScanDerivationsResult.error;
       await _handleError(context, e.toString());
       return ScanDerivationsResult.error;
     }

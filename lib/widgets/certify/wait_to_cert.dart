@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/screens/profile_view.dart' show buttonSize, buttonFontSize;
 
@@ -27,9 +28,9 @@ class WaitToCertWidget extends StatelessWidget {
           width: scaleSize(buttonSize),
           decoration: BoxDecoration(
             color: showSpinner
-                ? Colors.blue.withValues(alpha: 0.2)
+                ? context.geckoColors.info.withValues(alpha: 0.2)
                 : isSuccess
-                ? Colors.green.withValues(alpha: 0.15)
+                ? context.geckoColors.success.withValues(alpha: 0.15)
                 : const Color(0xffFFD58D).withValues(alpha: 0.5),
             shape: BoxShape.circle,
           ),
@@ -39,12 +40,16 @@ class WaitToCertWidget extends StatelessWidget {
                     child: SizedBox(
                       width: scaleSize(buttonSize * 0.5),
                       height: scaleSize(buttonSize * 0.5),
-                      child: CircularProgressIndicator(strokeWidth: scaleSize(3), color: Colors.blue),
+                      child: CircularProgressIndicator(strokeWidth: scaleSize(3), color: context.geckoColors.info),
                     ),
                   )
                 : isSuccess
                 ? Center(
-                    child: Icon(Icons.check_circle, size: scaleSize(buttonSize * 0.6), color: Colors.green),
+                    child: Icon(
+                      Icons.check_circle,
+                      size: scaleSize(buttonSize * 0.6),
+                      color: context.geckoColors.success,
+                    ),
                   )
                 : Stack(
                     children: [
@@ -70,9 +75,9 @@ class WaitToCertWidget extends StatelessWidget {
             fontSize: buttonFontSize - 4,
             fontWeight: FontWeight.w400,
             color: showSpinner
-                ? Colors.blue
+                ? context.geckoColors.info
                 : isSuccess
-                ? Colors.green[700]
+                ? context.geckoColors.successText
                 : Colors.grey[600],
           ),
         ),

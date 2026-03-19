@@ -167,11 +167,7 @@ class MainDrawer extends ConsumerWidget {
                       ),
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: 'Ğecko v$appVersion'));
-                        SnackbarService.showMessage(
-                          context,
-                          message: 'Le numéro de version de Ğecko a été copié dans votre presse papier',
-                          duration: 4,
-                        );
+                        SnackbarService.showMessage(context, message: 'versionCopied'.tr(), duration: 4);
                       },
                     ),
                   ),

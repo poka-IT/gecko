@@ -1,9 +1,10 @@
+import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
-import 'package:gecko/globals.dart';
 
 double scaleSize(double size) {
-  // Use view size instead of MediaQuery to avoid scaling changes when keyboard shows/hides
-  final view = View.of(homeContext);
+  // Use the platform's primary view to get screen dimensions without requiring a BuildContext.
+  // This is equivalent to View.of(context) in a single-window app.
+  final view = PlatformDispatcher.instance.views.first;
   final viewSize = view.physicalSize / view.devicePixelRatio;
   // Cap the reference width to prevent oversized elements on desktop/wide screens
   final effectiveWidth = viewSize.width.clamp(0.0, 500.0);

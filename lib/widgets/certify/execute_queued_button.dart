@@ -1,10 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/exceptions.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -35,11 +34,11 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
     return ProfileActionButton(
       buttonKey: keyExecuteQueued,
       onTap: () => _executeCertification(context),
-      backgroundColor: Colors.green.shade300,
+      backgroundColor: context.geckoColors.successContainer,
       label: 'executeNow'.tr(),
       labelStyle: Theme.of(
         context,
-      ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, color: Colors.green.shade700),
+      ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, color: context.geckoColors.successText),
       child: Stack(
         children: [
           Positioned.fill(
@@ -52,7 +51,7 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
               width: scaleSize(20),
               height: scaleSize(20),
               decoration: BoxDecoration(
-                color: Colors.green.shade700,
+                color: context.geckoColors.successText,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
@@ -90,7 +89,9 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
 
       if (!result) return;
 
+      if (!mounted) return;
       if (!await PinCodeService.askPinCode(
+        context,
         wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress),
       )) {
         return;

@@ -1,10 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' show SafeEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/biometric_provider.dart';
@@ -34,6 +33,7 @@ class SafeManager {
 
     // IMPORTANT: Capturer le NavigatorState AVANT d'appeler deleteSafe
     // Car le context sera invalidé quand les widgets se rebuild après la suppression
+    if (!context.mounted) return;
     final navigator = Navigator.of(context);
 
     try {
@@ -64,9 +64,12 @@ class SafeManager {
 
       // Show error message to user
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to delete safe: ${e.toString()}'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('failedDeleteSafe'.tr(args: [e.toString()])),
+            backgroundColor: context.geckoColors.danger,
+          ),
+        );
       }
     }
   }

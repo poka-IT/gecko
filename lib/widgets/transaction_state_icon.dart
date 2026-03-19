@@ -1,5 +1,6 @@
 import 'package:durt2/durt2.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 
@@ -14,9 +15,10 @@ class TransactionStateIcon extends StatelessWidget {
     TransactionState.pending ||
     TransactionState.futureNonce ||
     TransactionState.retrying => Loading(size: size, stroke: stroke),
-    TransactionState.inBlock => Icon(Icons.done, size: scaleSize(size), color: Colors.green),
-    TransactionState.finalized => Icon(Icons.done_all, size: scaleSize(size), color: Colors.green),
-    TransactionState.error || TransactionState.timeout => Icon(Icons.close, size: scaleSize(size), color: Colors.red),
+    TransactionState.inBlock => Icon(Icons.done, size: scaleSize(size), color: context.geckoColors.success),
+    TransactionState.finalized => Icon(Icons.done_all, size: scaleSize(size), color: context.geckoColors.success),
+    TransactionState.error ||
+    TransactionState.timeout => Icon(Icons.close, size: scaleSize(size), color: context.geckoColors.danger),
     TransactionState.none => ScaledSizedBox(height: size, width: size),
   };
 }

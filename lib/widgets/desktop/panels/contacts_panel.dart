@@ -3,10 +3,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -37,13 +37,11 @@ class _DesktopContactsPanelState extends ConsumerState<DesktopContactsPanel> {
   }
 
   List<String> _getSavedOrder() {
-    final saved = configBox.get('contactOrder');
-    if (saved is List) return saved.cast<String>();
-    return [];
+    return ref.read(configServiceProvider).contactOrder;
   }
 
   void _saveOrder(List<String> order) {
-    configBox.put('contactOrder', order);
+    ref.read(configServiceProvider).contactOrder = order;
   }
 
   List<G1WalletsList> _getOrderedContacts(List<G1WalletsList> allContacts) {

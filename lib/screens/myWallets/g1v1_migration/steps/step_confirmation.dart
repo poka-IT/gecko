@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' show TransactionStatus, TransactionState, WalletService, DuniterService, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
@@ -7,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
@@ -223,23 +222,23 @@ class StepConfirmation extends ConsumerWidget {
 
                 // Warning card
                 Card(
-                  color: Colors.red.shade50,
+                  color: context.geckoColors.dangerContainer,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.red.shade300, width: 1),
+                    side: BorderSide(color: context.geckoColors.danger.withValues(alpha: 0.5), width: 1),
                   ),
                   child: Padding(
                     padding: EdgeInsets.all(scaleSize(12)),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: scaleSize(20)),
+                        Icon(Icons.warning_amber_rounded, color: context.geckoColors.danger, size: scaleSize(20)),
                         ScaledSizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'migration_confirm_warning'.tr(),
-                            style: scaledTextStyle(fontSize: 13, color: Colors.red.shade900),
+                            style: scaledTextStyle(fontSize: 13, color: context.geckoColors.dangerText),
                           ),
                         ),
                       ],
@@ -294,7 +293,7 @@ class StepConfirmation extends ConsumerWidget {
     final navigator = Navigator.of(context);
 
     // 1. Always force-ask PIN for this irreversible operation
-    if (!await PinCodeService.askPinCode(force: true)) return;
+    if (!await PinCodeService.askPinCode(context, force: true)) return;
 
     // Capture PIN immediately after successful askPinCode, before any async operation
     // that could trigger debounceResetPinCode clearing it (1 second when cache is disabled)
@@ -328,6 +327,7 @@ class StepConfirmation extends ConsumerWidget {
     }
 
     // 3. Mnemonic challenge on target wallet (pass pinCode explicitly to avoid race condition)
+    if (!context.mounted) return;
     if (!await showMnemonicChallenge(context: context, ref: ref, address: targetAddress, pinCode: pinCode)) {
       return;
     }
@@ -369,6 +369,7 @@ class StepConfirmation extends ConsumerWidget {
 
     // 8. Listen to invalidate identity/certification providers on success
     // Capture container before navigation since ConsumerWidget has no mounted check
+    // ignore: use_build_context_synchronously
     final container = ProviderScope.containerOf(context);
     final invalidateSubscription = broadcastStream.listen((status) {
       if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
@@ -384,10 +385,11 @@ class StepConfirmation extends ConsumerWidget {
 
     // 9. Replace migration flow with transaction screen
     try {
+      // ignore: use_build_context_synchronously
       if (isDesktopLayout(navigator.context)) {
         navigator.pop();
         await showDesktopTransactionProgressModal(
-          homeContext,
+          Gecko.navigatorContext!,
           transactionStatus: broadcastStream,
           transType: hasIdentity ? 'identityMigration' : 'accountMigration',
           fromAddress: fromAddress,

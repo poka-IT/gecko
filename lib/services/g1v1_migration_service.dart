@@ -34,18 +34,4 @@ class G1v1MigrationService {
   static bool isValidCredentials(String salt, String password) {
     return salt.trim().isNotEmpty && password.trim().isNotEmpty;
   }
-
-  /// Clean and validate salt input.
-  ///
-  /// Removes leading/trailing whitespace and validates format.
-  static String cleanSalt(String salt) {
-    return salt.trim();
-  }
-
-  /// Clean and validate password input.
-  ///
-  /// Removes leading/trailing whitespace and validates format.
-  static String cleanPassword(String password) {
-    return password.trim();
-  }
 }

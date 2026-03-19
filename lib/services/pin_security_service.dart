@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'package:gecko/globals.dart';
+import 'package:gecko/services/config_service.dart';
 
 /// Service to manage PIN security, tracking failed attempts and enforcing lockouts
 class PinSecurityService {
-  static const String _failedAttemptsKey = 'pinFailedAttempts';
-  static const String _lockoutUntilKey = 'pinLockoutUntil';
-
   /// Maximum attempts before safe deletion
   static const int maxAttempts = 13;
 
@@ -15,10 +13,11 @@ class PinSecurityService {
   /// Base lockout duration in seconds (30 seconds for first lockout)
   static const int baseLockoutSeconds = 30;
 
+  static ConfigService get _config => ConfigService(configBox);
+
   /// Get the current number of failed attempts for a specific safe
   static int getFailedAttempts(int safeNumber) {
-    final key = '${_failedAttemptsKey}_$safeNumber';
-    return configBox.get(key) ?? 0;
+    return _config.getFailedAttempts(safeNumber);
   }
 
   /// Check if the safe is currently locked out
@@ -30,8 +29,7 @@ class PinSecurityService {
 
   /// Get the time when lockout expires, null if not locked
   static DateTime? getLockoutEndTime(int safeNumber) {
-    final key = '${_lockoutUntilKey}_$safeNumber';
-    final timestamp = configBox.get(key);
+    final timestamp = _config.getLockoutUntil(safeNumber);
     if (timestamp == null) return null;
     return DateTime.fromMillisecondsSinceEpoch(timestamp);
   }
@@ -54,20 +52,17 @@ class PinSecurityService {
 
   /// Record a failed PIN attempt and apply lockout if necessary
   static Future<void> recordFailedAttempt(int safeNumber) async {
-    final attemptsKey = '${_failedAttemptsKey}_$safeNumber';
-    final lockoutKey = '${_lockoutUntilKey}_$safeNumber';
-
     final currentAttempts = getFailedAttempts(safeNumber);
     final newAttempts = currentAttempts + 1;
 
     // Store the updated attempt count
-    await configBox.put(attemptsKey, newAttempts);
+    await _config.setFailedAttempts(safeNumber, newAttempts);
 
     // Apply lockout if this is the 3rd or subsequent failed attempt
     if (newAttempts >= 3) {
       final lockoutSeconds = calculateLockoutSeconds(newAttempts);
       final lockoutUntil = DateTime.now().add(Duration(seconds: lockoutSeconds));
-      await configBox.put(lockoutKey, lockoutUntil.millisecondsSinceEpoch);
+      await _config.setLockoutUntil(safeNumber, lockoutUntil.millisecondsSinceEpoch);
     }
 
     log.w('PIN failed attempt recorded for safe $safeNumber: $newAttempts attempts');
@@ -75,11 +70,8 @@ class PinSecurityService {
 
   /// Reset failed attempts for a safe (called on successful unlock)
   static Future<void> resetFailedAttempts(int safeNumber) async {
-    final attemptsKey = '${_failedAttemptsKey}_$safeNumber';
-    final lockoutKey = '${_lockoutUntilKey}_$safeNumber';
-
-    await configBox.delete(attemptsKey);
-    await configBox.delete(lockoutKey);
+    await _config.deleteFailedAttempts(safeNumber);
+    await _config.deleteLockoutUntil(safeNumber);
 
     log.i('PIN failed attempts reset for safe $safeNumber');
   }
@@ -103,11 +95,8 @@ class PinSecurityService {
 
   /// Delete all security data for a specific safe
   static Future<void> deleteSafeSecurityData(int safeNumber) async {
-    final attemptsKey = '${_failedAttemptsKey}_$safeNumber';
-    final lockoutKey = '${_lockoutUntilKey}_$safeNumber';
-
-    await configBox.delete(attemptsKey);
-    await configBox.delete(lockoutKey);
+    await _config.deleteFailedAttempts(safeNumber);
+    await _config.deleteLockoutUntil(safeNumber);
 
     log.i('Security data deleted for safe $safeNumber');
   }

@@ -5,7 +5,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 
@@ -19,7 +18,7 @@ class DragWalletsInfo extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isSameAddress = dragAddress == lastFlyBy;
 
-    final screenWidth = MediaQuery.of(homeContext).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     final fromName =
         ref.read(squidServiceProvider).walletNameIndexer[dragAddress.address] ??

@@ -84,7 +84,7 @@ class BiometricSettingsTile extends ConsumerWidget {
   Future<void> _handleToggle(BuildContext context, bool enableBiometric, BiometricNotifier notifier) async {
     if (enableBiometric) {
       // Enable biometric - need PIN first
-      if (!await PinCodeService.askPinCode(force: true)) return;
+      if (!await PinCodeService.askPinCode(context, force: true)) return;
 
       if (context.mounted) {
         await showModalBottomSheet(
@@ -125,7 +125,7 @@ class BiometricSettingsTile extends ConsumerWidget {
                     Text('biometricDisabled'.tr()),
                   ],
                 ),
-                backgroundColor: Colors.orange,
+                backgroundColor: context.geckoColors.warning,
               ),
             );
           } else {
@@ -365,7 +365,7 @@ class _BiometricSetupBottomSheetState extends ConsumerState<_BiometricSetupBotto
                   Text('biometricEnabled'.tr()),
                 ],
               ),
-              backgroundColor: Colors.green[600],
+              backgroundColor: context.geckoColors.success,
               duration: const Duration(seconds: 3),
             ),
           );

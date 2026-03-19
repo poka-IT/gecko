@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart' show Box;
 import 'package:flutter_riverpod/flutter_riverpod.dart';

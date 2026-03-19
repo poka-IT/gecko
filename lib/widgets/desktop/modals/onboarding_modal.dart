@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/biometric_provider.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -151,7 +150,7 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
           .read(mnemonicStateProvider.notifier)
           .generateMnemonic(
             targetLanguage: targetLanguage,
-            forceEnglish: configBox.get('generateMnemonicsInEnglish') ?? false,
+            forceEnglish: ref.read(configServiceProvider).generateMnemonicsInEnglish,
           );
       final state = ref.read(mnemonicStateProvider);
       if (mounted && state.mnemonicResult != null) {
@@ -513,7 +512,7 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
   }
 
   Widget _buildInfoCard(BuildContext context, {required IconData icon, required String title, bool isWarning = false}) {
-    final color = isWarning ? const Color(0xFFFF9800) : context.colorScheme.primary;
+    final color = isWarning ? context.geckoColors.warning : context.colorScheme.primary;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -668,11 +667,11 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w500,
-                color: _wordVerified ? Colors.green[700] : context.colorScheme.onSurface,
+                color: _wordVerified ? context.geckoColors.successText : context.colorScheme.onSurface,
               ),
               decoration: InputDecoration(
                 labelText: _wordVerified ? 'itsTheGoodWord'.tr() : 'nthMnemonicWord'.tr(),
-                labelStyle: TextStyle(color: _wordVerified ? Colors.green : Colors.grey[500]),
+                labelStyle: TextStyle(color: _wordVerified ? context.geckoColors.success : Colors.grey[500]),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 filled: true,
                 fillColor: context.colorScheme.surfaceContainer,
@@ -730,7 +729,7 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
               padding: const EdgeInsets.only(top: 10),
               child: Text(
                 _pinErrorMessage,
-                style: const TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 14, color: context.geckoColors.danger, fontWeight: FontWeight.w500),
               ),
             ),
           const SizedBox(height: 12),
@@ -875,6 +874,7 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
       if (biometricState.canEnroll && !_biometricSetupAttempted && mounted) {
         await Future.delayed(const Duration(milliseconds: 300));
         if (mounted && !_biometricSetupAttempted) {
+          // ignore: use_build_context_synchronously
           _handleBiometricSetup(context);
         }
       }
@@ -994,19 +994,21 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
       if (context.mounted) {
         Navigator.pop(context);
         if (result.success) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('biometricSetupSuccessful'.tr()), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('biometricSetupSuccessful'.tr()), backgroundColor: context.geckoColors.success),
+          );
         } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('biometricSetupFailed'.tr()), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('biometricSetupFailed'.tr()), backgroundColor: context.geckoColors.danger),
+          );
         }
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('anErrorOccurred'.tr()), backgroundColor: context.geckoColors.danger));
       }
     }
   }

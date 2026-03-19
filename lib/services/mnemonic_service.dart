@@ -66,7 +66,7 @@ class MnemonicService {
       }
 
       final multilangService = Durt.i.wallets.multilangService;
-      final detectedLanguage = await multilangService.detectMnemonicLanguageFromWords(words);
+      final detectedLanguage = await multilangService.detectBidouilleLanguageFromWords(words);
 
       if (detectedLanguage == null) {
         return null; // No valid language detected

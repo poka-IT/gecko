@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/models/certification_display_item.dart';
+import 'package:gecko/providers/base_paginated_provider.dart';
 import 'package:gecko/providers/network_certifications_provider.dart';
 import 'package:gecko/providers/certification_filters_provider.dart';
 import 'package:gecko/widgets/network_activity/base_activity_tab.dart';
@@ -20,7 +22,7 @@ class CertificationActivityTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return BaseActivityTab<NetworkCertificationsState>(
+    return BaseActivityTab<PaginatedState<CertificationDisplayItem>>(
       scrollController: scrollController,
       filterTranslationY: filterTranslationY,
       onNewActivityDetected: onNewActivityDetected,
@@ -34,8 +36,8 @@ class CertificationActivityTab extends ConsumerWidget {
       loadMoreCallback: loadMoreNetworkCertifications,
       emptyStateIcon: Icons.verified_outlined,
       emptyStateMessage: 'noCertificationActivity',
-      getItems: (state) => state.certifications,
-      getLatestTimestamp: (state) => state.certifications.isNotEmpty ? state.certifications.first.timestamp : null,
+      getItems: (state) => state.items,
+      getLatestTimestamp: (state) => state.items.isNotEmpty ? state.items.first.timestamp : null,
       getDateDelimiter: (certification) => certification.dateDelimiter,
       hasActiveFilters: (filters) => filters.hasActiveFilters,
       useRefreshIndicator: true,

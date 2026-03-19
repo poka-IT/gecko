@@ -99,7 +99,11 @@ class IdentityTile extends StatelessWidget {
                       // Activity details
                       Row(
                         children: [
-                          Icon(identity.getStatusIcon(), size: scaleSize(14), color: identity.getStatusColor()),
+                          Icon(
+                            identity.getStatusIcon(),
+                            size: scaleSize(14),
+                            color: identity.getStatusColor(context.geckoColors),
+                          ),
                           ScaledSizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -151,13 +155,17 @@ class IdentityTile extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(2)),
       decoration: BoxDecoration(
-        color: identity.getStatusColor().withValues(alpha: 0.1),
+        color: identity.getStatusColor(context.geckoColors).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(scaleSize(12)),
-        border: Border.all(color: identity.getStatusColor().withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: identity.getStatusColor(context.geckoColors).withValues(alpha: 0.3), width: 1),
       ),
       child: Text(
         identity.displayStatus,
-        style: scaledTextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: identity.getStatusColor()),
+        style: scaledTextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: identity.getStatusColor(context.geckoColors),
+        ),
       ),
     );
   }

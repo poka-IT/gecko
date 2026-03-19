@@ -69,10 +69,16 @@ class _DesktopCertificationsContent extends StatelessWidget {
     required bool isReceived,
     required Widget child,
   }) {
-    final iconColor = isReceived ? Colors.green.shade600 : Colors.blue.shade600;
-    final iconBgColor = isReceived ? Colors.green.withValues(alpha: 0.1) : Colors.blue.withValues(alpha: 0.1);
-    final iconBorderColor = isReceived ? Colors.green.withValues(alpha: 0.3) : Colors.blue.withValues(alpha: 0.3);
-    final sectionColor = isReceived ? Colors.green.withValues(alpha: 0.05) : Colors.blue.withValues(alpha: 0.05);
+    final iconColor = isReceived ? context.geckoColors.success : context.geckoColors.info;
+    final iconBgColor = isReceived
+        ? context.geckoColors.success.withValues(alpha: 0.1)
+        : context.geckoColors.info.withValues(alpha: 0.1);
+    final iconBorderColor = isReceived
+        ? context.geckoColors.success.withValues(alpha: 0.3)
+        : context.geckoColors.info.withValues(alpha: 0.3);
+    final sectionColor = isReceived
+        ? context.geckoColors.success.withValues(alpha: 0.05)
+        : context.geckoColors.info.withValues(alpha: 0.05);
 
     return Container(
       decoration: BoxDecoration(

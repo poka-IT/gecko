@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/providers/connection_providers.dart';
 
 class OfflineInfo extends ConsumerWidget {
@@ -31,7 +32,7 @@ class OfflineInfo extends ConsumerWidget {
           : Container(
               key: const ValueKey('offline'),
               width: double.infinity,
-              color: Colors.orange,
+              color: context.geckoColors.connectionWarn,
               padding: const EdgeInsets.all(4),
               child: Text(
                 'offline'.tr(),

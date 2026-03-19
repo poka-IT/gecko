@@ -174,8 +174,8 @@ class CertTile extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: scaleSize(6), vertical: scaleSize(3)),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(scaleSize(10)),
-          color: Colors.orange.withValues(alpha: 0.1),
-          border: Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 1),
+          color: context.geckoColors.warning.withValues(alpha: 0.1),
+          border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.3), width: 1),
         ),
         child: Text(
           daysUntilExpiration == 0
@@ -183,7 +183,7 @@ class CertTile extends StatelessWidget {
               : daysUntilExpiration == 1
               ? 'expiresInDayShort'.tr()
               : 'expiresInDaysShort'.tr(args: [daysUntilExpiration.toString()]),
-          style: scaledTextStyle(fontSize: 9, color: Colors.orange.shade700, fontWeight: FontWeight.w600),
+          style: scaledTextStyle(fontSize: 9, color: context.geckoColors.warningText, fontWeight: FontWeight.w600),
         ),
       );
     } else if (daysUntilExpiration <= 90) {
@@ -209,14 +209,14 @@ class CertTile extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: scaleSize(6), vertical: scaleSize(3)),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(scaleSize(10)),
-          color: Colors.green.withValues(alpha: 0.1),
-          border: Border.all(color: Colors.green.withValues(alpha: 0.3), width: 1),
+          color: context.geckoColors.success.withValues(alpha: 0.1),
+          border: Border.all(color: context.geckoColors.success.withValues(alpha: 0.3), width: 1),
         ),
         child: Text(
           monthsUntilExpiration == 1
               ? 'expiresInMonthShort'.tr()
               : 'expiresInMonthsShort'.tr(args: [monthsUntilExpiration.toString()]),
-          style: scaledTextStyle(fontSize: 9, color: Colors.green.shade700, fontWeight: FontWeight.w600),
+          style: scaledTextStyle(fontSize: 9, color: context.geckoColors.successText, fontWeight: FontWeight.w600),
         ),
       );
     }

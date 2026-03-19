@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
@@ -56,21 +57,25 @@ class MigrationAlertCard extends ConsumerWidget {
       margin: EdgeInsets.symmetric(vertical: scaleSize(8), horizontal: scaleSize(20)),
       padding: EdgeInsets.all(scaleSize(16)),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.12),
+        color: context.geckoColors.warning.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 1.5),
+        border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.5), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.swap_horiz, color: Colors.orange.shade800, size: scaleSize(22)),
+              Icon(Icons.swap_horiz, color: context.geckoColors.warningText, size: scaleSize(22)),
               ScaledSizedBox(width: 8),
               Expanded(
                 child: Text(
                   'identityMigrated'.tr(),
-                  style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange.shade900),
+                  style: scaledTextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: context.geckoColors.warningText,
+                  ),
                 ),
               ),
             ],
@@ -78,13 +83,13 @@ class MigrationAlertCard extends ConsumerWidget {
           ScaledSizedBox(height: 12),
           TextMarkDown(
             'identityMigratedWarningMessage'.tr(args: [identityName, shortAddress]),
-            style: scaledTextStyle(fontSize: 14, color: Colors.orange.shade900),
+            style: scaledTextStyle(fontSize: 14, color: context.geckoColors.warningText),
             textAlign: WrapAlignment.start,
           ),
           ScaledSizedBox(height: 8),
           Text(
             'identityMigratedWarningExplanation'.tr(),
-            style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800, fontStyle: FontStyle.italic),
+            style: scaledTextStyle(fontSize: 13, color: context.geckoColors.warningText, fontStyle: FontStyle.italic),
           ),
           ScaledSizedBox(height: 16),
           SizedBox(
@@ -97,7 +102,7 @@ class MigrationAlertCard extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange.shade700,
+                backgroundColor: context.geckoColors.warning,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: EdgeInsets.symmetric(vertical: scaleSize(12), horizontal: scaleSize(16)),
@@ -116,12 +121,12 @@ class MigrationAlertCard extends ConsumerWidget {
                 ref.read(ignoreMigrationWarningProvider(address).notifier).ignore();
               },
               style: TextButton.styleFrom(
-                foregroundColor: Colors.orange.shade800,
+                foregroundColor: context.geckoColors.warningText,
                 padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
               ),
               child: Text(
                 'ignoreMigrationWarning'.tr(),
-                style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800),
+                style: scaledTextStyle(fontSize: 13, color: context.geckoColors.warningText),
               ),
             ),
           ),

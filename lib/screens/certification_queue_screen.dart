@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +69,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
               child: Padding(
                 padding: const EdgeInsets.only(right: 8, top: 4),
                 child: IconButton(
-                  icon: const Icon(Icons.sync_problem, color: Colors.orange),
+                  icon: Icon(Icons.sync_problem, color: context.geckoColors.warning),
                   tooltip: 'syncNow'.tr(),
                   onPressed: () => _showSyncDialog(context),
                 ),
@@ -99,7 +97,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
             )
           else if (queueAsync.value?.isSynced == false)
             IconButton(
-              icon: const Icon(Icons.sync_problem, color: Colors.orange),
+              icon: Icon(Icons.sync_problem, color: context.geckoColors.warning),
               tooltip: 'syncNow'.tr(),
               onPressed: () => _showSyncDialog(context),
             ),
@@ -130,7 +128,10 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
               if (queue.hasReadyCertification)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)),
+                  decoration: BoxDecoration(
+                    color: context.geckoColors.success,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Text(
                     'certificationReady'.tr(),
                     style: scaledTextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
@@ -195,7 +196,8 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     // Check if PIN is already cached
     if (PinCodeService.pinCode.isEmpty) {
       // Ask for PIN to sync
-      if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
+      if (!mounted) return;
+      if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
     }
 
     // Sync to CesiumPlus
@@ -216,7 +218,9 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     // Determine card styling based on position and readiness
     final isHighlighted = isFirst || isReady;
-    final cardColor = isReady ? Colors.green.shade50 : (isFirst ? Colors.blue.shade50 : null);
+    final cardColor = isReady
+        ? context.geckoColors.successContainer
+        : (isFirst ? context.geckoColors.infoContainer : null);
     final elevation = isHighlighted ? 4.0 : 1.0;
 
     return Card(
@@ -227,7 +231,12 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
       shape: isFirst
           ? RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: isReady ? Colors.green.shade300 : Colors.blue.shade300, width: 2),
+              side: BorderSide(
+                color: isReady
+                    ? context.geckoColors.success.withValues(alpha: 0.5)
+                    : context.geckoColors.info.withValues(alpha: 0.5),
+                width: 2,
+              ),
             )
           : null,
       child: Padding(
@@ -244,7 +253,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
               style: scaledTextStyle(
                 fontSize: isFirst ? 18 : 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.blue.shade700,
+                color: context.geckoColors.infoText,
               ),
             ),
           ),
@@ -262,12 +271,12 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
             children: [
               if (isReady)
                 IconButton(
-                  icon: Icon(Icons.play_circle_filled, color: Colors.green.shade700, size: scaleSize(32)),
+                  icon: Icon(Icons.play_circle_filled, color: context.geckoColors.successText, size: scaleSize(32)),
                   tooltip: 'executeNow'.tr(),
                   onPressed: () => _executeCertification(cert),
                 ),
               IconButton(
-                icon: Icon(Icons.delete_outline, color: Colors.red.shade400, size: scaleSize(24)),
+                icon: Icon(Icons.delete_outline, color: context.geckoColors.danger, size: scaleSize(24)),
                 tooltip: 'remove'.tr(),
                 onPressed: () => _removeFromQueue(cert),
               ),
@@ -322,11 +331,11 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     DateTime? expectedDate,
   ) {
     final primaryColor = isReady
-        ? Colors.green.shade700
+        ? context.geckoColors.successText
         : timeInfo.isToday
-        ? Colors.orange.shade700
+        ? context.geckoColors.warningText
         : timeInfo.isTomorrow
-        ? Colors.blue.shade600
+        ? context.geckoColors.infoText
         : Colors.grey.shade600;
 
     return Row(
@@ -368,11 +377,11 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     Color bgColor;
     if (isReady) {
-      bgColor = Colors.green;
+      bgColor = context.geckoColors.success;
     } else if (isFirst) {
-      bgColor = Colors.blue;
+      bgColor = context.geckoColors.info;
     } else {
-      bgColor = Colors.blue.shade100;
+      bgColor = context.geckoColors.infoContainer;
     }
 
     return Container(
@@ -393,7 +402,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
                 style: scaledTextStyle(
                   fontSize: fontSize,
                   fontWeight: FontWeight.bold,
-                  color: isFirst ? Colors.white : Colors.blue.shade700,
+                  color: isFirst ? Colors.white : context.geckoColors.infoText,
                 ),
               ),
       ),
@@ -403,8 +412,12 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
   Widget _buildCertTypeBadge(d.CertificationType type) {
     final (label, color, icon) = switch (type) {
       d.CertificationType.invitation => ('certTypeInvitation'.tr(), Colors.purple.shade600, Icons.person_add),
-      d.CertificationType.renewal => ('certTypeRenewal'.tr(), Colors.orange.shade700, Icons.autorenew),
-      d.CertificationType.certification => ('certTypeCertification'.tr(), Colors.blue.shade600, Icons.verified_user),
+      d.CertificationType.renewal => ('certTypeRenewal'.tr(), context.geckoColors.warning, Icons.autorenew),
+      d.CertificationType.certification => (
+        'certTypeCertification'.tr(),
+        context.geckoColors.info,
+        Icons.verified_user,
+      ),
     };
 
     return Container(
@@ -445,16 +458,19 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     if (!confirmed) return;
 
-    if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
+    if (!mounted) return;
+    if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
 
     final identityWallet = await identityWalletFuture;
     if (identityWallet == null) {
       if (!context.mounted) return;
+      // ignore: use_build_context_synchronously
       showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: 'noIdentityWallet'.tr());
       return;
     }
 
     try {
+      if (!mounted) return;
       await CertificationTransactionHelper.executeCertification(
         context: context,
         ref: ref,
@@ -472,6 +488,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     } catch (e) {
       if (!context.mounted) return;
       log.e('Error executing certification: $e');
+      if (!mounted) return;
       showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
     }
   }
@@ -493,7 +510,8 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     if (!confirmed) return;
 
     // Ask for PIN to sync after removal
-    if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
+    if (!mounted) return;
+    if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
 
     await queueNotifier.removeFromQueue(cert.id);
 
@@ -502,6 +520,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     if (!context.mounted) return;
 
+    if (!mounted) return;
     SnackbarService.showWarning(context, message: 'removedFromQueue'.tr(args: [displayName]));
   }
 
@@ -538,7 +557,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     if (!context.mounted) return;
 
     // Ask for PIN
-    if (!await PinCodeService.askPinCode(wallet: _issuerWallet)) return;
+    if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
 
     final success = await _syncToRemoteWithRefs(walletService, queueNotifier);
 

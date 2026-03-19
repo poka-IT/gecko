@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart';
@@ -128,8 +126,8 @@ class SafeOnChainDataNotifier extends AsyncNotifier<SafeOnChainData> {
         statuses[addresses[i]] = d.IdtyStatus.none;
       }
 
-      // Start batch subscriptions for real-time updates
-      _startBatchSubscriptions(addresses, storageService);
+      // Start batch subscriptions for real-time updates (fire-and-forget)
+      unawaited(_startBatchSubscriptions(addresses, storageService));
 
       log.d('📦 SafeOnChainData loaded for safe #$safeNumber: ${addresses.length} wallets');
 
@@ -154,7 +152,7 @@ class SafeOnChainDataNotifier extends AsyncNotifier<SafeOnChainData> {
     _idtySubscription = null;
   }
 
-  void _startBatchSubscriptions(List<String> addresses, d.DuniterStorageService storageService) async {
+  Future<void> _startBatchSubscriptions(List<String> addresses, d.DuniterStorageService storageService) async {
     // Cancel existing subscriptions first
     _cancelSubscriptions();
 

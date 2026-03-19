@@ -1,13 +1,12 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/safe_provider.dart';
@@ -106,10 +105,14 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyShowSeed,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
+            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
+            if (!context.mounted) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
-              showDesktopShowSeedModal(homeContext, walletName: WalletNameService.displayName(currentSafe.name));
+              showDesktopShowSeedModal(
+                Gecko.navigatorContext!,
+                walletName: WalletNameService.displayName(currentSafe.name),
+              );
             } else {
               Navigator.push(
                 context,
@@ -142,7 +145,7 @@ class SafeOptionsContent extends ConsumerWidget {
               ? () {
                   if (isDesktopLayout(context)) {
                     Navigator.of(context).pop();
-                    showDesktopMigrateSafeModal(homeContext);
+                    showDesktopMigrateSafeModal(Gecko.navigatorContext!);
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const MigrateSafeScreen()));
                   }
@@ -175,13 +178,14 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyChangePin,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
+            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
             final oldPin = PinCodeService.pinCode;
             if (oldPin.isEmpty) return;
+            if (!context.mounted) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
               showDesktopChangePinModal(
-                homeContext,
+                Gecko.navigatorContext!,
                 walletName: WalletNameService.displayName(currentSafe.name),
                 oldPin: oldPin,
               );
@@ -216,7 +220,7 @@ class SafeOptionsContent extends ConsumerWidget {
         // Biometric authentication settings
         BiometricSettingsTile(),
         if (!isAlone)
-          if (configBox.get('expertMode') ?? false)
+          if (ref.read(configServiceProvider).expertMode)
             InkWell(
               key: keycreateRootDerivation,
               onTap: ref.read(durtProvider).isConnected
@@ -251,11 +255,12 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyRenameSafe,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
+            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
+            if (!context.mounted) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
               showDesktopRenameSafeModal(
-                homeContext,
+                Gecko.navigatorContext!,
                 currentName: WalletNameService.displayName(currentSafe.name),
                 safeBoxNumber: currentSafe.number,
               );
@@ -291,7 +296,8 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyDeleteSafe,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(force: true, wallet: safeFirstWallet)) return;
+            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
+            if (!context.mounted) return;
 
             await safeManager.deleteSafe(context, currentSafe);
           },
@@ -299,12 +305,16 @@ class SafeOptionsContent extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
             child: Row(
               children: [
-                Image.asset('assets/walletOptions/trash.png', height: scaleSize(24), color: const Color(0xffD80000)),
+                Image.asset(
+                  'assets/walletOptions/trash.png',
+                  height: scaleSize(24),
+                  color: context.geckoColors.deleteAction,
+                ),
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Text(
                     'forgetSafe'.tr(),
-                    style: scaledTextStyle(fontSize: 16, color: const Color(0xffD80000)),
+                    style: scaledTextStyle(fontSize: 16, color: context.geckoColors.deleteAction),
                     softWrap: true,
                   ),
                 ),

@@ -8,6 +8,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
@@ -138,7 +139,7 @@ class _ChooseSafeState extends ConsumerState<OnboardingStepFive> with TickerProv
           .read(mnemonicStateProvider.notifier)
           .generateMnemonic(
             targetLanguage: targetLanguage,
-            forceEnglish: configBox.get('generateMnemonicsInEnglish') ?? false,
+            forceEnglish: ref.read(configServiceProvider).generateMnemonicsInEnglish,
           );
 
       final mnemonicState = ref.read(mnemonicStateProvider);

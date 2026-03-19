@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,9 +50,12 @@ class _RenameSafeScreenState extends ConsumerState<RenameSafeScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error renaming safe: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('errorRenamingSafe'.tr(args: [e.toString()])),
+            backgroundColor: context.geckoColors.danger,
+          ),
+        );
       }
     } finally {
       if (mounted) {

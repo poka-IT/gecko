@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:gecko/services/certification_queue_service.dart';
@@ -119,22 +120,23 @@ class StorageInitService {
 
   /// Handle version compatibility and migrations
   Future<void> _handleVersionCompatibility() async {
+    final config = ConfigService(configBox);
     // Check if walletHeaderDataVersion non compatible, drop wallet_header_cache
-    if (configBox.get('walletHeaderDataVersion') == null ||
-        configBox.get('walletHeaderDataVersion') < walletHeaderDataVersion) {
+    if (config.walletHeaderDataVersion == null || config.walletHeaderDataVersion! < walletHeaderDataVersion) {
       await Hive.deleteBoxFromDisk('wallet_header_cache');
-      configBox.put('walletHeaderDataVersion', walletHeaderDataVersion);
+      config.walletHeaderDataVersion = walletHeaderDataVersion;
       log.d('Updated walletHeaderDataVersion to $walletHeaderDataVersion');
     }
   }
 
   /// Get storage status information
   Map<String, dynamic> getStorageInfo() {
+    final config = ConfigService(configBox);
     return {
       'isInitialized': _isInitialized,
-      'configBoxIsOpen': configBox.isOpen,
-      'dataVersion': configBox.get('dataVersion'),
-      'walletHeaderDataVersion': configBox.get('walletHeaderDataVersion'),
+      'configBoxIsOpen': config.isOpen,
+      'dataVersion': config.dataVersion,
+      'walletHeaderDataVersion': config.walletHeaderDataVersion,
     };
   }
 }

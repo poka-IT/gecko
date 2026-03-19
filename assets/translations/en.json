@@ -256,6 +256,7 @@
     "errorLoadingCurrencyData": "Error loading currency data",
     "errorLoadingLicense": "Unable to load the license",
     "errorLoadingWalletData": "",
+    "errorRenamingSafe": "Error renaming safe: {}",
     "errorReportCopied": "Error report copied to clipboard",
     "errorRetrievingSeed": "Error retrieving seed phrase",
     "errorScanDerivations": "An error occurred while scanning derivations. Please try again.",
@@ -292,6 +293,7 @@
     "extrinsicInBlock": "Included in block, awaiting confirmation...",
     "extrinsicInProgress": "{} in progress",
     "extrinsicValidated": "{} validated !",
+    "failedDeleteSafe": "Failed to delete safe: {}",
     "failedStatus": "Failed",
     "fastAppDescription": "The {} app payment\nfaster than a reptile of Vietnam",
     "fees": "fees: {} {}",
@@ -920,5 +922,12 @@
     "keyboardShortcutNavigateResults": "Navigate results",
     "keyboardShortcutOpenResult": "Open selected result",
     "keyboardShortcutHelp": "Show this help",
-    "keyboardShortcutDisco": "Disco mode"
+    "keyboardShortcutDisco": "Disco mode",
+    "migrateMyIdentity": "Migrate my identity",
+    "versionCopied": "Ğecko version number has been copied to your clipboard",
+    "duniterEndpointUpdated": "Duniter endpoint updated successfully",
+    "indexerEndpointUpdated": "Indexer endpoint updated successfully",
+    "failedApplyIndexerEndpoint": "Failed to apply indexer endpoint",
+    "errorSwitchingNetwork": "Error switching to {}: {}",
+    "errorClearingCaches": "Error clearing caches: {}"
 }

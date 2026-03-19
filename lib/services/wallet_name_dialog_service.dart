@@ -116,11 +116,11 @@ class _WalletNameEditDialogState extends ConsumerState<_WalletNameEditDialog> {
                   ),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
+                    borderSide: BorderSide(color: context.geckoColors.danger, width: 2),
                   ),
                   focusedErrorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.red, width: 2),
+                    borderSide: BorderSide(color: context.geckoColors.danger, width: 2),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   hintText: 'enterWalletName'.tr(),
@@ -171,7 +171,7 @@ class _WalletNameEditDialogState extends ConsumerState<_WalletNameEditDialog> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text('Error renaming wallet: ${e.toString()}'),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: context.geckoColors.danger,
                                     ),
                                   );
                                 }

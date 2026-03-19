@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/providers/gecko_colors.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/utils.dart';
 
@@ -178,8 +179,8 @@ class CertificationDisplayItem {
   }
 
   /// Get color associated with certification status
-  Color getStatusColor() {
-    return isActive ? Colors.green : Colors.red.withValues(alpha: 0.6);
+  Color getStatusColor(GeckoColors colors) {
+    return isActive ? colors.success : colors.danger.withValues(alpha: 0.6);
   }
 
   /// Get icon associated with certification status

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart'
     show
         MigrateWalletChecks,
@@ -16,6 +14,7 @@ import 'package:gecko/providers/stream_providers.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -440,7 +439,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                 try {
                                   // Demander le code PIN d'abord
                                   final fromWallet = ref.read(walletServiceProvider).getWalletData(fromAddress);
-                                  if (!await PinCodeService.askPinCode(wallet: fromWallet)) return;
+                                  if (!await PinCodeService.askPinCode(context, wallet: fromWallet)) return;
 
                                   // Capture services before navigation (ref won't be valid after pop)
                                   final walletService = ref.read(walletServiceProvider);
@@ -471,10 +470,11 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                     }
                                   });
 
+                                  if (!context.mounted) return;
                                   Navigator.pop(context);
                                   try {
                                     await navigateToTransactionProgress(
-                                      homeContext,
+                                      Gecko.navigatorContext!,
                                       transactionStatus: broadcastStream,
                                       transType: 'identityMigration',
                                       fromAddress: fromAddress,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/services/diagnostic_service.dart';
 
@@ -66,14 +67,14 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
-                color: isCopied ? Colors.green.withValues(alpha: 0.2) : Colors.transparent,
+                color: isCopied ? context.geckoColors.success.withValues(alpha: 0.2) : Colors.transparent,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 'v$appVersion',
                 style: TextStyle(
                   fontSize: 8,
-                  color: isCopied ? Colors.green : Colors.grey.withValues(alpha: 0.7),
+                  color: isCopied ? context.geckoColors.success : Colors.grey.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500,
                   decoration: TextDecoration.none,
                 ),

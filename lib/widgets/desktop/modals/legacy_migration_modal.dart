@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' show IdtyStatus, TransactionStatus, TransactionState, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
@@ -8,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/providers/g1v1_migration.provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
@@ -217,13 +216,13 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF9800).withValues(alpha: 0.08),
+              color: context.geckoColors.warningContainer,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+              border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, color: Color(0xFFFF9800), size: 20),
+                Icon(Icons.warning_amber_rounded, color: context.geckoColors.warning, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -332,7 +331,7 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
 
     if (flowState.errorMessage != null) {
       return Center(
-        child: Text(flowState.errorMessage!, style: const TextStyle(color: Colors.red)),
+        child: Text(flowState.errorMessage!, style: TextStyle(color: context.geckoColors.danger)),
       );
     }
 
@@ -447,71 +446,79 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     switch (flowState.accountType) {
       case MigrationAccountType.empty:
         return _infoCard(
-          color: Colors.red,
+          color: context.geckoColors.danger,
           icon: Icons.error_outline,
-          children: [Text('migration_account_empty'.tr(), style: TextStyle(fontSize: 13, color: Colors.red.shade900))],
+          children: [
+            Text('migration_account_empty'.tr(), style: TextStyle(fontSize: 13, color: context.geckoColors.dangerText)),
+          ],
         );
 
       case MigrationAccountType.alreadyMigrated:
         final migration = flowState.migrationFromData!;
         final dateStr = DateFormat.yMMMd(safeLocale(context.locale.languageCode)).format(migration.migrationDate);
         return _infoCard(
-          color: Colors.orange,
+          color: context.geckoColors.warning,
           icon: Icons.info_outline,
           children: [
             Text(
               'migration_account_already_migrated'.tr(),
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.orange.shade900),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.geckoColors.warningText),
             ),
             const SizedBox(height: 4),
             Text(
               'migration_account_already_migrated_details'.tr(args: [dateStr, getShortPubkey(migration.toAddress)]),
-              style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
+              style: TextStyle(fontSize: 12, color: context.geckoColors.warningText),
             ),
           ],
         );
 
       case MigrationAccountType.balanceOnly:
         return _infoCard(
-          color: Colors.green,
+          color: context.geckoColors.success,
           icon: Icons.check_circle_outline,
           children: [
-            Text('migration_account_has_balance'.tr(), style: TextStyle(fontSize: 13, color: Colors.green.shade900)),
+            Text(
+              'migration_account_has_balance'.tr(),
+              style: TextStyle(fontSize: 13, color: context.geckoColors.successText),
+            ),
             const SizedBox(height: 4),
             BalanceDisplay(
               value: flowState.sourceBalance?.transferableBalance ?? BigInt.zero,
               size: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.green.shade900,
+              color: context.geckoColors.successText,
             ),
           ],
         );
 
       case MigrationAccountType.withIdentity:
         return _infoCard(
-          color: Colors.green,
+          color: context.geckoColors.success,
           icon: Icons.check_circle_outline,
           children: [
-            Text('migration_account_has_identity'.tr(), style: TextStyle(fontSize: 13, color: Colors.green.shade900)),
+            Text(
+              'migration_account_has_identity'.tr(),
+              style: TextStyle(fontSize: 13, color: context.geckoColors.successText),
+            ),
             const SizedBox(height: 4),
             BalanceDisplay(
               value: flowState.sourceBalance?.transferableBalance ?? BigInt.zero,
               size: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.green.shade900,
+              color: context.geckoColors.successText,
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                IdentityStatus(address: flowState.v2Address, color: Colors.green.shade800),
+                IdentityStatus(address: flowState.v2Address, color: context.geckoColors.successText),
                 const SizedBox(width: 4),
                 if (flowState.sourceIdentityName != null)
                   Text(
                     flowState.sourceIdentityName!,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.green.shade900),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: context.geckoColors.successText),
                   ),
                 const SizedBox(width: 8),
-                Certifications(address: flowState.v2Address, size: 12, color: Colors.green.shade900),
+                Certifications(address: flowState.v2Address, size: 12, color: context.geckoColors.successText),
               ],
             ),
           ],
@@ -522,18 +529,18 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     }
   }
 
-  Widget _infoCard({required MaterialColor color, required IconData icon, required List<Widget> children}) {
+  Widget _infoCard({required Color color, required IconData icon, required List<Widget> children}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.shade50,
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.shade300, width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color.shade700, size: 20),
+          Icon(icon, color: color, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
@@ -577,7 +584,7 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
               child: Text(
                 mapValidationErrors(flowState.migrationChecks!.errors),
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, color: Colors.red),
+                style: TextStyle(fontSize: 12, color: context.geckoColors.danger),
               ),
             ),
           const SizedBox(height: 16),
@@ -871,19 +878,19 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.red.shade50,
+                      color: context.geckoColors.dangerContainer,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.shade300, width: 1),
+                      border: Border.all(color: context.geckoColors.danger.withValues(alpha: 0.5), width: 1),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 20),
+                        Icon(Icons.warning_amber_rounded, color: context.geckoColors.danger, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'migration_confirm_warning'.tr(),
-                            style: TextStyle(fontSize: 13, color: Colors.red.shade900),
+                            style: TextStyle(fontSize: 13, color: context.geckoColors.dangerText),
                           ),
                         ),
                       ],
@@ -946,7 +953,7 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     final navigator = Navigator.of(context);
 
     // 1. Force-ask PIN (target wallet's safe)
-    if (!await PinCodeService.askPinCode(force: true, wallet: flowState.selectedTargetWallet)) return;
+    if (!await PinCodeService.askPinCode(context, force: true, wallet: flowState.selectedTargetWallet)) return;
     final pinCode = PinCodeService.pinCode;
     if (pinCode.isEmpty) {
       log.e('Migration aborted: PIN was empty immediately after askPinCode');
@@ -971,6 +978,7 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     }
 
     // 3. Mnemonic challenge
+    if (!context.mounted) return;
     if (!await showMnemonicChallenge(context: context, ref: ref, address: targetAddress, pinCode: pinCode)) {
       return;
     }
@@ -1006,6 +1014,7 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     ).asBroadcastStream();
 
     // 8. Listen to invalidate providers on success
+    // ignore: use_build_context_synchronously
     final container = ProviderScope.containerOf(context);
     final invalidateSubscription = broadcastStream.listen((status) {
       if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
@@ -1023,7 +1032,7 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     try {
       navigator.pop();
       await showDesktopTransactionProgressModal(
-        homeContext,
+        Gecko.navigatorContext!,
         transactionStatus: broadcastStream,
         transType: hasIdentity ? 'identityMigration' : 'accountMigration',
         fromAddress: fromAddress,

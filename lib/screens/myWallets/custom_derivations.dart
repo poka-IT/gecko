@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -108,7 +106,7 @@ class _CustomDerivationState extends ConsumerState<CustomDerivation> {
                     shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                   ),
                   onPressed: () async {
-                    if (!await PinCodeService.askPinCode()) return;
+                    if (!await PinCodeService.askPinCode(context)) return;
                     String newDerivationName = WalletNameService.defaultN(walletsList.last.number + 2);
                     if (dropdownValue == 'root') {
                       await ref
@@ -119,6 +117,7 @@ class _CustomDerivationState extends ConsumerState<CustomDerivation> {
                           .read(walletActionsProvider.notifier)
                           .generateNewDerivation(newDerivationName, customDerivation: int.parse(dropdownValue!));
                     }
+                    if (!context.mounted) return;
                     Navigator.popUntil(context, ModalRoute.withName(RouteNames.myWallets));
                   },
                   child: Text(

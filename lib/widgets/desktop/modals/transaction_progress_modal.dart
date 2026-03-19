@@ -346,15 +346,21 @@ class _TransactionProgressContentState extends ConsumerState<_TransactionProgres
   (String, Color) _getStatusInfo(TransactionStatus txStatus, BuildContext context) {
     if (txStatus.state == TransactionState.finalized) {
       if (widget.transType == 'renewMembership') {
-        return ('membershipRenewalConfirmed'.tr(), Colors.green);
+        return ('membershipRenewalConfirmed'.tr(), context.geckoColors.success);
       }
-      return ('extrinsicFinalized'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]), Colors.green);
+      return (
+        'extrinsicFinalized'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]),
+        context.geckoColors.success,
+      );
     } else if (txStatus.state == TransactionState.error) {
       final errorParts = txStatus.errorMessage?.split('Exception: ');
       final error = errorParts != null && errorParts.length > 1 ? errorParts[1] : txStatus.errorMessage;
-      return (lookupTransactionError(error) ?? '${'technicalError'.tr()}: $error', Colors.red);
+      return (lookupTransactionError(error) ?? '${'technicalError'.tr()}: $error', context.geckoColors.danger);
     } else if (txStatus.state == TransactionState.inBlock) {
-      return ('extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]), Colors.green);
+      return (
+        'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]),
+        context.geckoColors.success,
+      );
     } else {
       final msg = switch (txStatus.state) {
         TransactionState.pending => 'sending'.tr(),

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -77,6 +75,7 @@ class DragTuleAction extends ConsumerWidget {
       onAcceptWithDetails: (senderAddress) async {
         final walletData = ref.read(walletByAddressProvider(senderAddress.data));
         paymentPopup(
+          context,
           toAddress: wallet.address,
           username: g1WalletsBox.get(wallet.address)?.username ?? WalletNameService.displayName(wallet.name),
           fromWallet: walletData,

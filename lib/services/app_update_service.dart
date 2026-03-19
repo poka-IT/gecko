@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -68,6 +69,8 @@ class AppUpdateService {
     return true;
   }
 
+  static final ConfigService _config = ConfigService(configBox);
+
   /// Check if user dismissed this specific update result
   bool isDismissed(UpdateCheckResult result) {
     // Play Store updates are managed natively, never dismissed by us
@@ -75,21 +78,21 @@ class AppUpdateService {
 
     // App Store: dismiss by version string
     if (result.installSource == InstallSource.appStore) {
-      final dismissed = configBox.get('updateDismissedVersion');
+      final dismissed = _config.updateDismissedVersion;
       return dismissed != null && dismissed == result.latestVersion;
     }
 
     // Sideloaded / Desktop: dismiss by build number (existing behavior)
-    final dismissed = configBox.get('updateDismissedBuildNumber');
+    final dismissed = _config.updateDismissedBuildNumber;
     return dismissed != null && dismissed == result.latestBuildNumber;
   }
 
   /// Dismiss an update so the user won't be prompted again
   void dismissUpdate(UpdateCheckResult result) {
     if (result.installSource == InstallSource.appStore) {
-      configBox.put('updateDismissedVersion', result.latestVersion);
+      _config.updateDismissedVersion = result.latestVersion;
     } else {
-      configBox.put('updateDismissedBuildNumber', result.latestBuildNumber);
+      _config.updateDismissedBuildNumber = result.latestBuildNumber;
     }
   }
 

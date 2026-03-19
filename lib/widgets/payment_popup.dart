@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 
 import 'package:durt2/durt2.dart'
@@ -19,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/text_input_formaters.dart';
 import 'package:gecko/models/transaction_in_progress_data.dart';
@@ -41,14 +40,19 @@ import 'package:gecko/providers/connection_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Simple function to show the payment popup - no longer depends on external ref
-void paymentPopup({required String toAddress, required String? username, WalletEntity? fromWallet}) {
+void paymentPopup(
+  BuildContext context, {
+  required String toAddress,
+  required String? username,
+  WalletEntity? fromWallet,
+}) {
   showModalBottomSheet<void>(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.only(topRight: Radius.circular(16), topLeft: Radius.circular(16)),
     ),
     isScrollControlled: true,
     constraints: const BoxConstraints(maxWidth: 600),
-    context: homeContext,
+    context: context,
     builder: (BuildContext context) {
       return PaymentPopupWidget(toAddress: toAddress, username: username, fromWallet: fromWallet);
     },
@@ -328,6 +332,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
             AccountPaymentStatus.active => ('', ''),
           };
 
+          if (!context.mounted) return;
           final confirmed = await showConfirmationDialog(
             context: context,
             title: warning.$1,
@@ -343,10 +348,14 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     }
 
     // Close popup immediately to avoid blocking UI
+    if (!context.mounted) return;
+    // ignore: use_build_context_synchronously
     Navigator.pop(context);
 
     // Get PIN code first (this is usually fast)
-    if (!await PinCodeService.askPinCode(wallet: fromWallet)) return;
+    if (!context.mounted) return;
+    // ignore: use_build_context_synchronously
+    if (!await PinCodeService.askPinCode(context, wallet: fromWallet)) return;
 
     // Create a StreamController to control the transaction status
     final statusController = StreamController<TransactionStatus>();
@@ -360,10 +369,13 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     );
 
     // Navigate to transaction progress view
-    if (isDesktopLayout(homeContext)) {
+    final navContext = Gecko.navigatorContext!;
+    // ignore: use_build_context_synchronously
+    if (isDesktopLayout(navContext)) {
       // Desktop: compact modal showing transaction progress
       showDesktopTransactionProgressModal(
-        homeContext,
+        // ignore: use_build_context_synchronously
+        navContext,
         transactionStatus: transactionData.status,
         transType: 'pay',
         fromAddress: capturedFromWallet.address,
@@ -373,7 +385,8 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     } else {
       // Mobile: full activity screen with transaction data
       Navigator.push(
-        homeContext,
+        // ignore: use_build_context_synchronously
+        navContext,
         MaterialPageRoute(
           builder: (context) {
             return ActivityScreen(address: capturedFromWallet.address, transactionData: transactionData);
@@ -524,7 +537,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                           ScaledSizedBox(height: 4),
                           Container(
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.blueAccent.shade200, width: 1.5),
+                              border: Border.all(color: context.geckoColors.info, width: 1.5),
                               borderRadius: const BorderRadius.all(Radius.circular(8)),
                             ),
                             alignment: Alignment.center,
@@ -749,13 +762,17 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                           child: Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              Icon(Icons.info_outline, size: scaleSize(14), color: Colors.orange[700]),
+                                              Icon(
+                                                Icons.info_outline,
+                                                size: scaleSize(14),
+                                                color: context.geckoColors.warning,
+                                              ),
                                               ScaledSizedBox(width: 4),
                                               Text(
                                                 errorMessage,
                                                 style: scaledTextStyle(
                                                   fontSize: 12,
-                                                  color: Colors.orange[700],
+                                                  color: context.geckoColors.warning,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -1000,13 +1017,13 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                 onTap: () async => await _launchUrl('https://duniter.org'),
                 child: Container(
                   padding: const EdgeInsets.only(bottom: 2),
-                  decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.blueAccent, width: 1)),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: context.geckoColors.info, width: 1)),
                   ),
                   child: Text(
                     'moreInfo'.tr(),
                     textAlign: TextAlign.center,
-                    style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w300, color: Colors.blueAccent),
+                    style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w300, color: context.geckoColors.info),
                   ),
                 ),
               ),
@@ -1020,7 +1037,10 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                   key: keyInfoPopup,
                   child: Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Text('gotit'.tr(), style: scaledTextStyle(fontSize: 20, color: const Color(0xffD80000))),
+                    child: Text(
+                      'gotit'.tr(),
+                      style: scaledTextStyle(fontSize: 20, color: context.geckoColors.deleteAction),
+                    ),
                   ),
                   onPressed: () {
                     Navigator.pop(context, true);

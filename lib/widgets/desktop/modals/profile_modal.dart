@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show CertStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -402,7 +400,9 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
   }
 
   Future<void> _handleTransfer(WidgetRef ref) async {
-    if (!await PinCodeService.askPinCode()) return;
-    paymentPopup(toAddress: widget.address, username: widget.username);
+    if (!await PinCodeService.askPinCode(context)) return;
+    if (!context.mounted) return;
+    // ignore: use_build_context_synchronously
+    paymentPopup(context, toAddress: widget.address, username: widget.username);
   }
 }

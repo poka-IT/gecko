@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/durt2.dart' show BidouilleLang, Durt;
 import 'package:easy_localization/easy_localization.dart';
@@ -116,6 +114,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
 
     if (mnemonicState.mnemonicResult == null) {
       if (context.mounted) {
+        if (!mounted) return;
         await showConfirmationDialog(
           context: context,
           type: ConfirmationDialogType.error,
@@ -348,7 +347,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 14,
-                              color: isWordValid ? context.colorScheme.onSurface : Colors.red[600],
+                              color: isWordValid ? context.colorScheme.onSurface : context.geckoColors.danger,
                             ),
                             decoration: InputDecoration(
                               labelText: '${index + 1}',
@@ -373,6 +372,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                               // Auto-advance: if word uniquely identifies a BIP39 word, move to next
                               if (cleanText.length >= 3 && index < 11) {
                                 try {
+                                  // ignore: use_build_context_synchronously
                                   final languageCode = context.locale.languageCode;
                                   final preferredLanguage = BidouilleLang.fromLanguageCode(languageCode);
                                   final isUnique = await Durt.i.wallets.multilangService.isValidWordInAnyLanguage(
@@ -456,7 +456,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
               padding: const EdgeInsets.only(top: 10),
               child: Text(
                 _pinErrorMessage,
-                style: const TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 14, color: context.geckoColors.danger, fontWeight: FontWeight.w500),
               ),
             ),
           const SizedBox(height: 24),
@@ -573,6 +573,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
       if (biometricState.canEnroll && !_biometricSetupAttempted && mounted) {
         await Future.delayed(const Duration(milliseconds: 300));
         if (mounted && !_biometricSetupAttempted) {
+          // ignore: use_build_context_synchronously
           _handleBiometricSetup(context);
         }
       }

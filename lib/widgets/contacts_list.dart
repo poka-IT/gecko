@@ -42,8 +42,8 @@ class ContactsList extends ConsumerWidget {
                 decoration: BoxDecoration(color: Colors.grey[600], borderRadius: BorderRadius.circular(2)),
               ),
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: Text('removeContact'.tr(), style: const TextStyle(color: Colors.red)),
+                leading: Icon(Icons.delete_outline, color: context.geckoColors.danger),
+                title: Text('removeContact'.tr(), style: TextStyle(color: context.geckoColors.danger)),
                 onTap: () async {
                   Navigator.pop(context);
                   final toggleContact = ref.read(toggleContactProvider);

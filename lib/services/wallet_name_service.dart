@@ -1,6 +1,7 @@
 import 'package:durt2/durt2.dart' show Durt;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/services/config_service.dart';
 
 /// Service for managing default wallet names with `#` prefix convention.
 ///
@@ -130,8 +131,8 @@ class WalletNameService {
   /// Converts old translated names to the new `#` convention.
   /// Stores a flag in configBox to avoid re-execution.
   static void runMigration() {
-    const migrationKey = 'wallet_name_migration_v1';
-    if (configBox.get(migrationKey, defaultValue: false) == true) return;
+    final config = ConfigService(configBox);
+    if (config.walletNameMigrationDone) return;
 
     final walletService = Durt.i.wallets;
     final wallets = walletService.walletBox.getAll();
@@ -154,6 +155,6 @@ class WalletNameService {
       }
     }
 
-    configBox.put(migrationKey, true);
+    config.walletNameMigrationDone = true;
   }
 }

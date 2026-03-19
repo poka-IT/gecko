@@ -445,14 +445,14 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
 
         if (result.success) {
           // Success message
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('biometricSetupSuccessful'.tr()), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('biometricSetupSuccessful'.tr()), backgroundColor: context.geckoColors.success),
+          );
         } else {
           // Error message
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('biometricSetupFailed'.tr()), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('biometricSetupFailed'.tr()), backgroundColor: context.geckoColors.danger),
+          );
         }
       }
     } catch (e) {
@@ -460,7 +460,7 @@ class _OnboardingStepElevenState extends ConsumerState<OnboardingStepEleven> wit
         Navigator.pop(context); // Close loading dialog if open
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
+        ).showSnackBar(SnackBar(content: Text('anErrorOccurred'.tr()), backgroundColor: context.geckoColors.danger));
       }
     }
   }

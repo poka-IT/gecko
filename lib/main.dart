@@ -36,6 +36,7 @@ import 'package:gecko/providers/theme_provider.dart';
 import 'package:gecko/services/storage_init_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:gecko/services/app_info_service.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:gecko/services/log_collection_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
@@ -87,14 +88,16 @@ Future<void> main() async {
   // Initialize log collection service
   LogCollectionService.instance.initialize();
 
+  final config = ConfigService(configBox);
+
   // Network selection: restore saved network, default to g1
-  final savedNetwork = configBox.get('selectedNetwork');
+  final savedNetwork = config.selectedNetwork;
   final Networks selectedNetwork;
   if (savedNetwork != null) {
     selectedNetwork = Networks.values.firstWhere((n) => n.name == savedNetwork, orElse: () => Networks.defaultNetwork);
   } else {
     selectedNetwork = Networks.defaultNetwork;
-    configBox.put('selectedNetwork', selectedNetwork.name);
+    config.selectedNetwork = selectedNetwork.name;
   }
 
   // Configure SSL certificate handling before any network connections.
@@ -103,7 +106,7 @@ Future<void> main() async {
   // signatures, not TLS — transactions and blocks are always validated locally.
   // On Android, this also handles older devices with outdated CA certificate stores.
   // TODO: Implement per-endpoint certificate pinning for CesiumPlus profile API.
-  SslConfigService.configureSslCertificateHandling(allowBadCertificates: !kReleaseMode || Platform.isAndroid);
+  SslConfigService.configureSslCertificateHandling(allowBadCertificates: !kReleaseMode);
 
   //Init durt2 with selected network and keypair type
   await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519);
@@ -117,55 +120,37 @@ Future<void> main() async {
   appVersion = appInfoService.appVersion;
 
   // Read user's language preference
-  final savedLocale = configBox.get('localeOverride');
+  final savedLocale = config.localeOverride;
   final startLocale = savedLocale != null ? Locale(savedLocale) : null;
 
-  final enableSentry = configBox.get('sentryEnabled') ?? true;
+  final enableSentry = config.sentryEnabled;
 
   // Lock orientation on mobile, configure window on desktop
   if (Platform.isAndroid || Platform.isIOS) {
     await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 
+  final easyLocalization = EasyLocalization(
+    supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'), Locale('eo'), Locale('de')],
+    path: 'assets/translations',
+    assetLoader: const EmptyStringAssetLoader(),
+    fallbackLocale: const Locale('en'),
+    useFallbackTranslations: true,
+    startLocale: startLocale,
+    child: const Gecko(),
+  );
+
   if (kReleaseMode && enableSentry) {
     await SentryService.init(
       dsn: 'https://c09587b46eaa42e8b9fda28d838ed180@o496840.ingest.sentry.io/5572110',
       appRunner: () async {
-        runApp(
-          EasyLocalization(
-            supportedLocales: const [
-              Locale('en'),
-              Locale('fr'),
-              Locale('es'),
-              Locale('it'),
-              Locale('eo'),
-              Locale('de'),
-            ],
-            path: 'assets/translations',
-            assetLoader: const EmptyStringAssetLoader(),
-            fallbackLocale: const Locale('en'),
-            useFallbackTranslations: true,
-            startLocale: startLocale,
-            child: const Gecko(),
-          ),
-        );
+        runApp(easyLocalization);
         if (isDesktop) await _showDesktopWindow();
       },
     );
   } else {
     log.w('Sentry disabled');
-
-    runApp(
-      EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('fr'), Locale('es'), Locale('it'), Locale('eo'), Locale('de')],
-        path: 'assets/translations',
-        assetLoader: const EmptyStringAssetLoader(),
-        fallbackLocale: const Locale('en'),
-        useFallbackTranslations: true,
-        startLocale: startLocale,
-        child: const Gecko(),
-      ),
-    );
+    runApp(easyLocalization);
     if (isDesktop) await _showDesktopWindow();
   }
 }
@@ -173,12 +158,14 @@ Future<void> main() async {
 Future<void> _showDesktopWindow() async {
   const defaultSize = Size(1185, 845);
 
+  final config = ConfigService(configBox);
+
   // Restore saved window size, or use default
-  final savedWidth = configBox.get('windowWidth') as double?;
-  final savedHeight = configBox.get('windowHeight') as double?;
+  final savedWidth = config.windowWidth;
+  final savedHeight = config.windowHeight;
   final size = (savedWidth != null && savedHeight != null) ? Size(savedWidth, savedHeight) : defaultSize;
 
-  final bypassMinSize = configBox.get('bypassMinWindowSize', defaultValue: false) as bool;
+  final bypassMinSize = config.bypassMinWindowSize;
   const minSize = Size(800, 600);
   final windowOptions = WindowOptions(
     size: size,
@@ -201,13 +188,15 @@ Future<void> _showDesktopWindow() async {
 }
 
 class _DesktopWindowListener extends WindowListener {
+  Timer? _resizeDebounce;
+
   @override
-  void onWindowResize() {
-    windowManager.getSize().then((size) {
-      if (configBox.isOpen) {
-        configBox.put('windowWidth', size.width);
-        configBox.put('windowHeight', size.height);
-      }
+  void onWindowResize() async {
+    _resizeDebounce?.cancel();
+    _resizeDebounce = Timer(const Duration(milliseconds: 500), () async {
+      final size = await windowManager.getSize();
+      ConfigService(configBox).windowWidth = size.width;
+      ConfigService(configBox).windowHeight = size.height;
     });
   }
 

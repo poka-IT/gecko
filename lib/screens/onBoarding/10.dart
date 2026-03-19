@@ -578,7 +578,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                             visible: !pinState.isValid && !pinState.isLoading,
                             child: Text(
                               "thisIsNotAGoodCode".tr(),
-                              style: scaledTextStyle(fontSize: 15, color: Colors.red, fontWeight: FontWeight.w500),
+                              style: scaledTextStyle(
+                                fontSize: 15,
+                                color: context.geckoColors.danger,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           );
                         },
@@ -612,7 +616,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
                                             'rememberPassword'.tr(),
                                             style: scaledTextStyle(
                                               fontSize: 14,
-                                              color: homeContext.colorScheme.onSurfaceVariant,
+                                              color: context.colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                           const Spacer(),
@@ -670,7 +674,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         ref.read(pinStateProvider.notifier).setPinLength(pinLenght);
 
         if (pin.toUpperCase() == widget.pinCode) {
-          pinColor = Colors.green[500];
+          pinColor = context.geckoColors.success;
           ref.read(pinStateProvider.notifier).setLoading(false);
           ref.read(pinStateProvider.notifier).setValid(true);
           await _handlePinConfirmed();
@@ -678,7 +682,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
           hasError = true;
           ref.read(pinStateProvider.notifier).setLoading(false);
           ref.read(pinStateProvider.notifier).setValid(false);
-          pinColor = Colors.red[600];
+          pinColor = context.geckoColors.danger;
           enterPin.text = '';
           pinFocus.requestFocus();
         }

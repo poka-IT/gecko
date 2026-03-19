@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:bubble/bubble.dart';
 import 'dart:io' show Platform;
 import 'package:durt2/durt2.dart' show Durt, BidouilleLang;
@@ -160,6 +158,7 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                                   // Clear input and clean up global keys
                                   ref.read(clearMnemonicInputProvider)();
 
+                                  if (!mounted) return;
                                   await AppNavigator.pushWithFader(
                                     context,
                                     widget.skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,
@@ -173,12 +172,14 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                                   setState(() {
                                     _isRestoring = false;
                                   });
+                                  // ignore: use_build_context_synchronously
                                   await badMnemonicPopup(context);
                                 }
                               } else {
                                 setState(() {
                                   _isRestoring = false;
                                 });
+                                // ignore: use_build_context_synchronously
                                 await badMnemonicPopup(context);
                               }
                             },
@@ -229,6 +230,7 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                                 final success = await ref.read(pasteMnemonicProvider)();
                                 if (!success) {
                                   // Show error if paste failed
+                                  // ignore: use_build_context_synchronously
                                   await badMnemonicPopup(context);
                                 }
                               },
@@ -336,13 +338,13 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
       borderWidth: 1,
       borderColor: Colors.black,
       radius: Radius.zero,
-      color: homeContext.colorScheme.surfaceContainer,
+      color: context.colorScheme.surfaceContainer,
       child: Text(
         text,
         key: keyBubbleSpeak,
         textAlign: TextAlign.justify,
         style: scaledTextStyle(
-          color: homeContext.colorScheme.onSecondaryContainer,
+          color: context.colorScheme.onSecondaryContainer,
           fontSize: 16,
           fontWeight: FontWeight.w400,
         ),
@@ -371,7 +373,7 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
             height: cellHeight,
             constraints: BoxConstraints(minWidth: cellWidth, minHeight: cellHeight),
             decoration: BoxDecoration(
-              border: Border.all(color: isWordValid ? Colors.grey[400]! : Colors.red[400]!, width: 1.5),
+              border: Border.all(color: isWordValid ? Colors.grey[400]! : context.geckoColors.danger, width: 1.5),
               color: context.colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(6),
             ),
@@ -429,13 +431,14 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
 
                 // Hide keyboard if mnemonic is now complete and valid
                 if (mnemonicInput.isComplete && mnemonicInput.isValid) {
+                  // ignore: use_build_context_synchronously
                   FocusScope.of(context).unfocus();
                 }
               },
               textAlign: TextAlign.center,
               style: scaledTextStyle(
                 fontSize: 16,
-                color: isWordValid ? context.colorScheme.onSecondaryContainer : Colors.red[600],
+                color: isWordValid ? context.colorScheme.onSecondaryContainer : context.geckoColors.danger,
                 height: 0.8,
               ),
             ),

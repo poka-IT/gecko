@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show IdtyStatus, WalletBalance;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -283,20 +281,21 @@ class _IdentityStatusDisplay extends StatelessWidget {
     };
 
     Color getStatusColor(IdtyStatus idtyStatus) {
+      final colors = context.geckoColors;
       switch (idtyStatus) {
         case IdtyStatus.validated:
-          return Colors.green;
+          return colors.statusMember;
         case IdtyStatus.confirmed:
-          return Colors.orange;
+          return colors.statusConfirmed;
         case IdtyStatus.created:
-          return Colors.blue;
+          return colors.statusCreated;
         case IdtyStatus.expired:
-          return Colors.red;
+          return colors.statusExpired;
         case IdtyStatus.revoked:
-          return Colors.grey;
+          return colors.statusRevoked;
         case IdtyStatus.none:
         case IdtyStatus.unknown:
-          return Colors.grey;
+          return colors.statusNone;
       }
     }
 
@@ -381,7 +380,7 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                       setState(() => _isPickerOpen = true);
 
                       // Ask for PIN code first if needed
-                      final pinCodeValid = await PinCodeService.askPinCode();
+                      final pinCodeValid = await PinCodeService.askPinCode(context);
                       if (!mounted) return;
 
                       if (pinCodeValid) {
@@ -641,9 +640,9 @@ class WalletHeaderError extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: scaleSize(40), color: Colors.red),
+          Icon(Icons.error_outline, size: scaleSize(40), color: context.geckoColors.danger),
           ScaledSizedBox(width: 16),
-          Text('errorLoadingWalletData'.tr(), style: scaledTextStyle(fontSize: 16, color: Colors.red)),
+          Text('errorLoadingWalletData'.tr(), style: scaledTextStyle(fontSize: 16, color: context.geckoColors.danger)),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 
 import 'package:gecko/services/mnemonic_service.dart';
 
@@ -281,7 +282,7 @@ final wordValidationChallengeProvider = Provider<WordValidationChallenge?>((ref)
   return WordValidationChallenge(
     wordIndex: randomIndex,
     expectedWord: words[randomIndex],
-    wordPosition: MnemonicService.getOrdinalString(randomIndex + 1, homeContext),
+    wordPosition: MnemonicService.getOrdinalString(randomIndex + 1, Gecko.navigatorContext!),
   );
 });
 
@@ -316,7 +317,7 @@ class WordChallengeNotifier extends Notifier<WordChallengeState> {
     // Allow debug cheat code
     final isValid = normalizedInput == normalizedExpected || (kDebugMode && input == 'triche');
 
-    state = state.copyWith(userInput: input, isValid: isValid, inputColor: isValid ? Colors.green[600] : null);
+    state = state.copyWith(userInput: input, isValid: isValid);
   }
 
   void reset() {

@@ -1,8 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show WalletEntity, KeyPairType, WalletService, SafeEntity, SafeEntityExt;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
@@ -96,17 +95,22 @@ class DebugTestWalletService {
       container.read(walletsListProvider.notifier).refresh();
 
       // Close loading dialog
+      if (!context.mounted) return;
       Navigator.pop(context);
 
       // Show success message
+      if (!context.mounted) return;
       _showSuccessMessage(context, wallets);
     } catch (e) {
       // Close loading dialog if still open
+      if (!context.mounted) return;
       if (Navigator.canPop(context)) {
+        if (!context.mounted) return;
         Navigator.pop(context);
       }
 
       // Show error message
+      if (!context.mounted) return;
       _showErrorMessage(context, e);
     }
   }
@@ -167,7 +171,7 @@ class DebugTestWalletService {
           'PIN: $defaultPinCode',
           style: scaledTextStyle(fontSize: 14, color: Colors.white),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: context.geckoColors.success,
         duration: const Duration(seconds: 4),
       ),
     );
@@ -178,7 +182,7 @@ class DebugTestWalletService {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Error creating test wallets: $error', style: scaledTextStyle(fontSize: 14, color: Colors.white)),
-        backgroundColor: Colors.red,
+        backgroundColor: context.geckoColors.danger,
         duration: const Duration(seconds: 3),
       ),
     );

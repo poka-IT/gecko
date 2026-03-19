@@ -1,5 +1,4 @@
 // ignore_for_file: file_names
-// ignore_for_file: must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -141,7 +140,7 @@ class _OnboardingStepSixState extends ConsumerState<OnboardingStepSix> {
                         ),
                         style: scaledTextStyle(
                           fontSize: 25,
-                          color: challengeState.inputColor ?? Colors.black,
+                          color: challengeState.isValid ? context.geckoColors.success : Colors.black,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -161,15 +160,6 @@ class _OnboardingStepSixState extends ConsumerState<OnboardingStepSix> {
                         ),
                       ),
                     ),
-                    // Visibility(
-                    //   visible: !_generateWalletProvider.isAskedWordValid,
-                    //   child: const Expanded(
-                    //     child: Align(
-                    //       alignment: Alignment.bottomCenter,
-                    //       child: Text(''),
-                    //     ),
-                    //   ),
-                    // ),
                     ScaledSizedBox(height: 40),
                   ],
                 ),

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' show IdtyStatus, WalletEntity, Durt, SafeType;
 import 'package:easy_localization/easy_localization.dart';
@@ -8,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/providers.dart';
@@ -18,7 +17,6 @@ import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_management_service.dart';
 import 'package:gecko/services/wallet_deletion_service.dart';
 import 'package:gecko/services/wallet_name_dialog_service.dart';
-// import 'package:gecko/providers_deprecated/wallets_profiles.dart'; // Removed - no longer needed
 import 'package:gecko/screens/activity.dart';
 import 'package:gecko/screens/myWallets/safe_options.dart';
 import 'package:gecko/screens/myWallets/switch_safe.dart';
@@ -105,18 +103,18 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                             margin: EdgeInsets.symmetric(vertical: scaleSize(8)),
                             padding: EdgeInsets.all(scaleSize(12)),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.1),
+                              color: context.geckoColors.warning.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                              border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.warning_amber, color: Colors.orange, size: scaleSize(20)),
+                                Icon(Icons.warning_amber, color: context.geckoColors.warning, size: scaleSize(20)),
                                 ScaledSizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     'legacyWalletWarning'.tr(),
-                                    style: scaledTextStyle(fontSize: 13, color: Colors.orange.shade800),
+                                    style: scaledTextStyle(fontSize: 13, color: context.geckoColors.warningText),
                                   ),
                                 ),
                               ],
@@ -195,7 +193,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: InkWell(
               onTap: () async {
-                final pinCodeValid = await PinCodeService.askPinCode(wallet: widget.wallet);
+                final pinCodeValid = await PinCodeService.askPinCode(context, wallet: widget.wallet);
                 if (!mounted) return;
 
                 if (pinCodeValid) {
@@ -227,7 +225,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       onTap: () async {
         if (widget.embeddedMode && isDesktopLayout(context)) {
           Navigator.of(context).pop();
-          showDesktopActivityModal(homeContext, address: widget.wallet.address);
+          showDesktopActivityModal(Gecko.navigatorContext!, address: widget.wallet.address);
         } else {
           Navigator.push(
             context,
@@ -256,7 +254,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             Image.asset(
               'assets/walletOptions/clock.png',
               height: scaleSize(24),
-              color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+              color: context.geckoColors.info.withValues(alpha: 0.8),
             ),
             ScaledSizedBox(width: 16),
             Expanded(
@@ -315,13 +313,13 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                           Image.asset(
                             'assets/walletOptions/trash.png',
                             height: scaleSize(24),
-                            color: const Color(0xffD80000),
+                            color: context.geckoColors.deleteAction,
                           ),
                           ScaledSizedBox(width: 16),
                           Expanded(
                             child: Text(
                               'deleteThisWallet'.tr(),
-                              style: scaledTextStyle(fontSize: 16, color: const Color(0xffD80000)),
+                              style: scaledTextStyle(fontSize: 16, color: context.geckoColors.deleteAction),
                               softWrap: true,
                             ),
                           ),
@@ -380,7 +378,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                       Image.asset(
                         'assets/walletOptions/edit.png',
                         height: scaleSize(22),
-                        color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                        color: context.geckoColors.info.withValues(alpha: 0.8),
                       ),
                       ScaledSizedBox(width: 18),
                       Expanded(
@@ -399,7 +397,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               onTap: () {
                 if (widget.embeddedMode && isDesktopLayout(context)) {
                   Navigator.of(context).pop();
-                  showDesktopCesiumProfileModal(homeContext, address: widget.wallet.address);
+                  showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
                 } else {
                   Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
                 }
@@ -412,7 +410,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                     Icon(
                       Icons.person_outline,
                       size: scaleSize(22),
-                      color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                      color: context.geckoColors.info.withValues(alpha: 0.8),
                     ),
                     ScaledSizedBox(width: 18),
                     Expanded(
@@ -449,7 +447,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             onTap: () {
               if (widget.embeddedMode && isDesktopLayout(context)) {
                 Navigator.of(context).pop();
-                showDesktopCesiumProfileModal(homeContext, address: widget.wallet.address);
+                showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
               } else {
                 Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
               }
@@ -462,7 +460,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   Icon(
                     Icons.person_outline,
                     size: scaleSize(22),
-                    color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                    color: context.geckoColors.info.withValues(alpha: 0.8),
                   ),
                   ScaledSizedBox(width: 18),
                   Expanded(
@@ -494,7 +492,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             onTap: () {
               if (widget.embeddedMode && isDesktopLayout(context)) {
                 Navigator.of(context).pop();
-                showDesktopCesiumProfileModal(homeContext, address: widget.wallet.address);
+                showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
               } else {
                 Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
               }
@@ -507,7 +505,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   Icon(
                     Icons.person_outline,
                     size: scaleSize(22),
-                    color: const Color(0xFF4A90E2).withValues(alpha: 0.8),
+                    color: context.geckoColors.info.withValues(alpha: 0.8),
                   ),
                   ScaledSizedBox(width: 18),
                   Expanded(
@@ -555,7 +553,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 onPressed: () {
                   if (widget.embeddedMode && isDesktopLayout(context)) {
                     Navigator.of(context).pop();
-                    showDesktopConfirmIdentityModal(homeContext, address: widget.wallet.address);
+                    showDesktopConfirmIdentityModal(Gecko.navigatorContext!, address: widget.wallet.address);
                   } else {
                     Navigator.push(
                       context,
@@ -602,7 +600,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       if (confirmed != true) return;
 
       // Ask for PIN code
-      if (!await PinCodeService.askPinCode(wallet: widget.wallet)) return;
+      if (!context.mounted) return;
+      if (!await PinCodeService.askPinCode(context, wallet: widget.wallet)) return;
 
       // Get legacy wallet information for migration
       final rawSeed = await ref
@@ -615,13 +614,16 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           .set(LegacyMigrationData(fromAddress: widget.wallet.address, rawSeed: rawSeed, hasIdentity: hasIdentity));
 
       // Navigate to safe creation - the onboarding will handle migration automatically
+      if (!context.mounted) return;
       Navigator.pushNamed(context, RouteNames.onboardingStepOne);
     } catch (e) {
       log.e('Migration to new safe error: $e');
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('migrationError'.tr(args: [e.toString()])),
-          backgroundColor: Colors.red,
+          // ignore: use_build_context_synchronously
+          backgroundColor: context.geckoColors.danger,
         ),
       );
     }
@@ -649,7 +651,8 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       if (confirmed != true) return;
 
       // Ask for PIN code
-      if (!await PinCodeService.askPinCode(wallet: widget.wallet)) return;
+      if (!context.mounted) return;
+      if (!await PinCodeService.askPinCode(context, wallet: widget.wallet)) return;
 
       // Get legacy wallet information for migration
       final rawSeed = await ref
@@ -687,10 +690,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       }
     } catch (e) {
       log.e('Migration to existing safe error: $e');
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('migrationError'.tr(args: [e.toString()])),
-          backgroundColor: Colors.red,
+          // ignore: use_build_context_synchronously
+          backgroundColor: context.geckoColors.danger,
         ),
       );
     }
@@ -701,7 +706,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     // because we need to re-encrypt the salt and password with the new PIN
 
     // Ask for current PIN first
-    if (!await PinCodeService.askPinCode(force: true, wallet: widget.wallet)) return;
+    if (!await PinCodeService.askPinCode(context, force: true, wallet: widget.wallet)) return;
 
     // Capture the old PIN immediately after successful askPinCode, before any async
     // operation that could trigger debounceResetPinCode clearing it.
@@ -709,6 +714,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     if (oldPin.isEmpty) return;
 
     // Navigate to change PIN screen
+    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -729,7 +735,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       onTap: () {
         if (widget.embeddedMode && isDesktopLayout(context)) {
           Navigator.of(context).pop();
-          showDesktopCertificationQueueModal(homeContext, issuerAddress: issuerAddress);
+          showDesktopCertificationQueueModal(Gecko.navigatorContext!, issuerAddress: issuerAddress);
         } else {
           Navigator.push(
             context,
@@ -747,7 +753,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 Icon(
                   Icons.queue,
                   size: scaleSize(22),
-                  color: hasReady ? Colors.green : Colors.orange.withValues(alpha: 0.8),
+                  color: hasReady ? context.geckoColors.success : context.geckoColors.warning.withValues(alpha: 0.8),
                 ),
                 if (hasItems && queueLength > 0)
                   Positioned(
@@ -756,7 +762,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
-                        color: hasReady ? Colors.green : Colors.blue,
+                        color: hasReady ? context.geckoColors.success : context.geckoColors.info,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
@@ -784,7 +790,10 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(
+                        color: context.geckoColors.success,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Text(
                         'certificationReady'.tr(),
                         style: scaledTextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
@@ -814,7 +823,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.shield_outlined, size: scaleSize(24), color: greenColor.withValues(alpha: 0.8)),
+                Icon(
+                  Icons.shield_outlined,
+                  size: scaleSize(24),
+                  color: context.geckoColors.success.withValues(alpha: 0.8),
+                ),
                 ScaledSizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -917,11 +930,14 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
     children: [
       InkWell(
         onTap: () async {
-          if (!await PinCodeService.askPinCode(wallet: ref.read(firstWalletProvider))) return;
+          if (!await PinCodeService.askPinCode(context, wallet: ref.read(firstWalletProvider))) return;
+          if (!context.mounted) return;
           if (isDesktopLayout(context)) {
+            if (!context.mounted) return;
             Navigator.of(context).pop();
-            showDesktopSafeOptionsModal(homeContext, ref);
+            showDesktopSafeOptionsModal(Gecko.navigatorContext!, ref);
           } else {
+            if (!context.mounted) return;
             Navigator.push(context, MaterialPageRoute(builder: (context) => const SafeOptions()));
           }
         },
@@ -949,7 +965,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
       InkWell(
         onTap: () async {
           if (!derivationState.isLoading) {
-            if (!await PinCodeService.askPinCode(wallet: ref.read(firstWalletProvider))) return;
+            if (!await PinCodeService.askPinCode(context, wallet: ref.read(firstWalletProvider))) return;
             final lastWalletNumber = walletsState.wallets.isNotEmpty ? walletsState.wallets.last.number : -1;
             String newDerivationName = '${'wallet'.tr()} ${lastWalletNumber + 2}';
             await ref.read(walletActionsProvider.notifier).generateNewDerivation(newDerivationName);
@@ -966,7 +982,9 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
               Icon(
                 Icons.add_circle_outline,
                 size: scaleSize(24),
-                color: ref.read(durtProvider).isConnected ? greenColor.withValues(alpha: 0.8) : Colors.grey[400],
+                color: ref.read(durtProvider).isConnected
+                    ? context.geckoColors.success.withValues(alpha: 0.8)
+                    : Colors.grey[400],
               ),
               ScaledSizedBox(width: 16),
               Expanded(
@@ -1014,9 +1032,9 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
         onTap: () async {
           if (isDesktopLayout(context)) {
             Navigator.of(context).pop();
-            showDesktopLegacyMigrationModal(homeContext);
+            showDesktopLegacyMigrationModal(Gecko.navigatorContext!);
           } else {
-            Navigator.push(homeContext, MaterialPageRoute(builder: (context) => const G1v1MigrationFlow()));
+            Navigator.push(Gecko.navigatorContext!, MaterialPageRoute(builder: (context) => const G1v1MigrationFlow()));
           }
         },
         child: Container(
@@ -1028,7 +1046,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
               Expanded(
                 child: Text(
                   'importIdPasswordAccount'.tr(),
-                  style: scaledTextStyle(fontSize: 16, color: homeContext.colorScheme.onSurface),
+                  style: scaledTextStyle(fontSize: 16, color: Gecko.navigatorContext!.colorScheme.onSurface),
                   softWrap: true,
                 ),
               ),

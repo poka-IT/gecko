@@ -457,6 +457,7 @@
     "pending": "En attente",
     "migratingStatus": "Migration en cours...",
     "successStatus": "Succès",
+    "failedDeleteSafe": "Échec de la suppression du coffre : {}",
     "failedStatus": "Échec",
     "noValidIndexerFound": "Aucun indexeur valide trouvé 😓",
     "nodeAndIndexerSynced": "Noeud et indexeur synchronisés !",
@@ -466,6 +467,7 @@
     "tapForDetails": "Appuyez pour plus de détails",
     "transactionFailedTitle": "Échec de la transaction",
     "errorDetails": "Détails de l'erreur :",
+    "errorRenamingSafe": "Erreur lors du renommage du coffre : {}",
     "errorReportCopied": "Rapport d'erreur copié dans le presse-papiers",
     "transactionDetails": "Détails de la transaction :",
     "newTransactionReceived": "Nouvelle transaction reçue",
@@ -914,5 +916,12 @@
     "keyboardShortcutNavigateResults": "Naviguer dans les résultats",
     "keyboardShortcutOpenResult": "Ouvrir le résultat sélectionné",
     "keyboardShortcutHelp": "Afficher cette aide",
-    "keyboardShortcutDisco": "Mode disco"
+    "keyboardShortcutDisco": "Mode disco",
+    "migrateMyIdentity": "Migrer mon identité",
+    "versionCopied": "Le numéro de version de Ğecko a été copié dans votre presse papier",
+    "duniterEndpointUpdated": "Le nœud Duniter a été mis à jour avec succès",
+    "indexerEndpointUpdated": "Le nœud indexeur a été mis à jour avec succès",
+    "failedApplyIndexerEndpoint": "Impossible d'appliquer le nœud indexeur",
+    "errorSwitchingNetwork": "Erreur lors du changement vers {} : {}",
+    "errorClearingCaches": "Erreur lors du nettoyage du cache : {}"
 }

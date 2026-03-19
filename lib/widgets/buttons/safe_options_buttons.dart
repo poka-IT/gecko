@@ -75,7 +75,11 @@ class SafeOptionsButtons extends StatelessWidget {
                   Flexible(
                     child: Text(
                       'importIdPasswordAccount'.tr(),
-                      style: scaledTextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.w500),
+                      style: scaledTextStyle(
+                        fontSize: 16,
+                        color: context.geckoColors.infoText,
+                        fontWeight: FontWeight.w500,
+                      ),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.visible, // Allow text to wrap if needed
                     ),

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 
 import 'package:durt2/durt2.dart';
@@ -12,7 +10,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/connection_providers.dart';
-import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
@@ -123,8 +120,14 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
     if (confirmed != true) return;
 
-    if (!await PinCodeService.askPinCode(wallet: ref.read(walletServiceProvider).getWalletData(widget.address))) return;
+    if (!context.mounted) return;
+    if (!await PinCodeService.askPinCode(
+      context,
+      wallet: ref.read(walletServiceProvider).getWalletData(widget.address),
+    ))
+      return;
 
+    if (!context.mounted) return;
     if (!await showMnemonicChallenge(context: context, ref: ref, address: widget.address)) return;
 
     final keypair = await ref
@@ -140,7 +143,6 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     final invalidateSubscription = broadcastStream.listen((status) {
       if ((status.state == TransactionState.finalized || status.state == TransactionState.inBlock) && mounted) {
         // Invalidate identity-related providers to refresh cache
-        ref.invalidate(identityNameProvider(widget.address));
         ref.invalidate(hybridIdtyStatusProvider(widget.address));
         // Also update the squid service cache
         ref.read(squidServiceProvider).walletNameIndexer[widget.address] = name;
@@ -154,6 +156,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
 
     try {
       await navigateToTransactionProgress(
+        // ignore: use_build_context_synchronously
         parentContext,
         transactionStatus: broadcastStream,
         transType: 'comfirmIdty',
@@ -293,7 +296,7 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
               decoration: InputDecoration(
                 hintText: 'enterIdentityName'.tr(),
                 errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
-                errorStyle: scaledTextStyle(color: Colors.red),
+                errorStyle: scaledTextStyle(color: context.geckoColors.danger),
                 filled: true,
                 fillColor: context.colorScheme.surfaceContainerHighest,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),

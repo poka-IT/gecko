@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' show CsToV2AddressResult, Utils, IdtyStatus, WalletBalance;
 import 'package:easy_localization/easy_localization.dart';
@@ -150,18 +148,18 @@ class _LegacyLoginScreenState extends ConsumerState<LegacyLoginScreen> {
                           _walletBalance != null &&
                           _walletBalance!.transferableBalance > BigInt.zero)) ...[
                         Card(
-                          color: Colors.orange.withValues(alpha: 0.1),
+                          color: context.geckoColors.warning.withValues(alpha: 0.1),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: Colors.orange, width: 1),
+                            side: BorderSide(color: context.geckoColors.warning, width: 1),
                           ),
                           child: Padding(
                             padding: EdgeInsets.all(scaleSize(16)),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.warning_amber, color: Colors.orange, size: scaleSize(24)),
+                                Icon(Icons.warning_amber, color: context.geckoColors.warning, size: scaleSize(24)),
                                 ScaledSizedBox(width: 12),
                                 Expanded(
                                   child: Column(
@@ -172,7 +170,7 @@ class _LegacyLoginScreenState extends ConsumerState<LegacyLoginScreen> {
                                         style: scaledTextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.orange.shade800,
+                                          color: context.geckoColors.warningText,
                                         ),
                                       ),
                                       ScaledSizedBox(height: 8),
@@ -326,19 +324,26 @@ class _LegacyLoginScreenState extends ConsumerState<LegacyLoginScreen> {
                                     Container(
                                       padding: EdgeInsets.all(scaleSize(12)),
                                       decoration: BoxDecoration(
-                                        color: Colors.red.withValues(alpha: 0.1),
+                                        color: context.geckoColors.danger.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                                        border: Border.all(color: context.geckoColors.danger.withValues(alpha: 0.3)),
                                       ),
                                       child: Row(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Icon(Icons.error_outline, color: Colors.red, size: scaleSize(20)),
+                                          Icon(
+                                            Icons.error_outline,
+                                            color: context.geckoColors.danger,
+                                            size: scaleSize(20),
+                                          ),
                                           ScaledSizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               'accountNotFound'.tr(),
-                                              style: scaledTextStyle(fontSize: 13, color: Colors.red.shade800),
+                                              style: scaledTextStyle(
+                                                fontSize: 13,
+                                                color: context.geckoColors.dangerText,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -548,13 +553,13 @@ class _LegacyLoginScreenState extends ConsumerState<LegacyLoginScreen> {
     Color getStatusColor(IdtyStatus status) {
       switch (status) {
         case IdtyStatus.validated:
-          return Colors.green;
+          return context.geckoColors.statusMember;
         case IdtyStatus.confirmed:
-          return Colors.orange;
+          return context.geckoColors.statusConfirmed;
         case IdtyStatus.created:
-          return Colors.blue;
+          return context.geckoColors.statusCreated;
         case IdtyStatus.expired:
-          return Colors.red;
+          return context.geckoColors.statusExpired;
         case IdtyStatus.revoked:
           return Colors.grey;
         case IdtyStatus.none:

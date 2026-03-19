@@ -3,6 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
+import 'package:gecko/providers/gecko_colors.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/services/snackbar_service.dart';
@@ -10,7 +12,6 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
-import 'package:gecko/extensions.dart';
 
 class CompactWalletHeader extends ConsumerWidget {
   const CompactWalletHeader({super.key, required this.address, this.showBackButton = false});
@@ -137,18 +138,27 @@ class CompactWalletHeader extends ConsumerWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       // Status badge - more prominent
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: IdentityStatusHelper.getStatusColor(idtyStatus).withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          IdentityStatusHelper.getStatusText(idtyStatus),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: IdentityStatusHelper.getStatusColor(idtyStatus),
+                                      Semantics(
+                                        label: 'Identity status: ${IdentityStatusHelper.getStatusText(idtyStatus)}',
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: IdentityStatusHelper.getStatusColor(
+                                              idtyStatus,
+                                              context.geckoColors,
+                                            ).withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            IdentityStatusHelper.getStatusText(idtyStatus),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: IdentityStatusHelper.getStatusColor(
+                                                idtyStatus,
+                                                context.geckoColors,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -176,21 +186,21 @@ class CompactWalletHeader extends ConsumerWidget {
 
 /// Helper class for identity status utilities
 class IdentityStatusHelper {
-  static Color getStatusColor(IdtyStatus idtyStatus) {
+  static Color getStatusColor(IdtyStatus idtyStatus, GeckoColors colors) {
     switch (idtyStatus) {
       case IdtyStatus.validated:
-        return Colors.green;
+        return colors.statusMember;
       case IdtyStatus.confirmed:
-        return Colors.orange;
+        return colors.statusConfirmed;
       case IdtyStatus.created:
-        return Colors.blue;
+        return colors.statusCreated;
       case IdtyStatus.expired:
-        return Colors.red;
+        return colors.statusExpired;
       case IdtyStatus.revoked:
-        return Colors.grey;
+        return colors.statusRevoked;
       case IdtyStatus.none:
       case IdtyStatus.unknown:
-        return Colors.grey;
+        return colors.statusNone;
     }
   }
 

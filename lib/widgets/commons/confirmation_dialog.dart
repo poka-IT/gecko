@@ -21,11 +21,11 @@ extension ConfirmationDialogTypeExtension on ConfirmationDialogType {
     ConfirmationDialogType.question => Icons.help_rounded,
   };
 
-  Color get iconColor => switch (this) {
-    ConfirmationDialogType.info => homeContext.colorScheme.primary,
-    ConfirmationDialogType.warning => const Color(0xFFFF9800),
-    ConfirmationDialogType.success => greenColor,
-    ConfirmationDialogType.error => const Color(0xFFF44336),
+  Color iconColor(BuildContext context) => switch (this) {
+    ConfirmationDialogType.info => context.colorScheme.primary,
+    ConfirmationDialogType.warning => context.geckoColors.warning,
+    ConfirmationDialogType.success => context.geckoColors.success,
+    ConfirmationDialogType.error => context.geckoColors.danger,
     ConfirmationDialogType.question => const Color(0xFF673AB7),
   };
 
@@ -66,7 +66,7 @@ Future<bool> showConfirmationDialog({
     return false;
   }
 
-  final Color iconColorToShow = customIconColor ?? type.iconColor;
+  final Color iconColorToShow = customIconColor ?? type.iconColor(context);
   final Widget iconToShow = customIcon ?? Icon(type.icon, color: iconColorToShow, size: 32);
   final String dialogTitle = title ?? type.title;
   final String confirmTextToShow = confirmText ?? type.confirmText;
@@ -94,7 +94,7 @@ Future<bool> showConfirmationDialog({
             bindings: <ShortcutActivator, VoidCallback>{
               const SingleActivator(LogicalKeyboardKey.enter): () {
                 if (isChecked && !hideConfirmButton) {
-                  Navigator.of(homeContext).pop(true);
+                  Navigator.of(context).pop(true);
                 }
               },
             },
@@ -108,7 +108,7 @@ Future<bool> showConfirmationDialog({
                   child: Container(
                     padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: homeContext.colorScheme.surface,
+                      color: context.colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(color: iconColorToShow.withValues(alpha: 0.1), blurRadius: 20, offset: Offset(0, 10)),
@@ -180,7 +180,7 @@ Future<bool> showConfirmationDialog({
                             if (type != ConfirmationDialogType.error && !hideCancelButton) ...[
                               Expanded(
                                 child: TextButton(
-                                  onPressed: () => Navigator.of(homeContext).pop(false),
+                                  onPressed: () => Navigator.of(context).pop(false),
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -200,7 +200,7 @@ Future<bool> showConfirmationDialog({
                             if (!hideConfirmButton) ...[
                               Expanded(
                                 child: ElevatedButton(
-                                  onPressed: isChecked ? () => Navigator.of(homeContext).pop(true) : null,
+                                  onPressed: isChecked ? () => Navigator.of(context).pop(true) : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: iconColorToShow,
                                     foregroundColor: Colors.white,

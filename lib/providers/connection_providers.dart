@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';

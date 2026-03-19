@@ -369,15 +369,15 @@ class _TransactionInProgressScreenState extends ConsumerState<TransactionInProgr
       } else {
         resultText = 'extrinsicFinalized'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
       }
-      statusColor = Colors.green;
+      statusColor = context.geckoColors.success;
     } else if (txStatus.state == TransactionState.error) {
       final errorParts = txStatus.errorMessage?.split('Exception: ');
       final error = errorParts != null && errorParts.length > 1 ? errorParts[1] : txStatus.errorMessage;
       resultText = lookupTransactionError(error) ?? '${'technicalError'.tr()}: $error';
-      statusColor = Colors.red;
+      statusColor = context.geckoColors.danger;
     } else if (txStatus.state == TransactionState.inBlock) {
       resultText = 'extrinsicValidated'.tr(args: [actionMap[widget.transType] ?? 'strangeTransaction'.tr()]);
-      statusColor = Colors.green;
+      statusColor = context.geckoColors.success;
     } else {
       resultText = _getStatusMessage(txStatus.state);
       statusColor = context.colorScheme.primary;

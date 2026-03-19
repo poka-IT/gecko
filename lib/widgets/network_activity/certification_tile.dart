@@ -41,7 +41,11 @@ class CertificationTile extends StatelessWidget {
                 // Header with formatted status
                 Row(
                   children: [
-                    Icon(certification.getStatusIcon(), size: scaleSize(18), color: certification.getStatusColor()),
+                    Icon(
+                      certification.getStatusIcon(),
+                      size: scaleSize(18),
+                      color: certification.getStatusColor(context.geckoColors),
+                    ),
                     ScaledSizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -49,7 +53,7 @@ class CertificationTile extends StatelessWidget {
                         style: scaledTextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: certification.getStatusColor(),
+                          color: certification.getStatusColor(context.geckoColors),
                         ),
                       ),
                     ),
@@ -176,9 +180,12 @@ class CertificationTile extends StatelessWidget {
 
                     // Expiration info if relevant (now only shows days remaining, not if expired)
                     if (certification.expirationText != null && !certification.isExpired) ...[
-                      Icon(Icons.schedule, size: scaleSize(14), color: Colors.orange),
+                      Icon(Icons.schedule, size: scaleSize(14), color: context.geckoColors.warning),
                       ScaledSizedBox(width: 4),
-                      Text(certification.expirationText!, style: scaledTextStyle(fontSize: 12, color: Colors.orange)),
+                      Text(
+                        certification.expirationText!,
+                        style: scaledTextStyle(fontSize: 12, color: context.geckoColors.warning),
+                      ),
                     ],
 
                     const Spacer(),
@@ -207,18 +214,18 @@ class CertificationTile extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(6), vertical: scaleSize(2)),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.1),
+        color: context.geckoColors.danger.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(scaleSize(10)),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: context.geckoColors.danger.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.warning, size: scaleSize(12), color: Colors.red),
+          Icon(Icons.warning, size: scaleSize(12), color: context.geckoColors.danger),
           ScaledSizedBox(width: 2),
           Text(
             'expired'.tr(),
-            style: scaledTextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.red),
+            style: scaledTextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: context.geckoColors.danger),
           ),
         ],
       ),

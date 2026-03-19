@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/models/identity_display_item.dart';
+import 'package:gecko/providers/base_paginated_provider.dart';
 import 'package:gecko/providers/network_identities_provider.dart';
 import 'package:gecko/providers/identity_filters_provider.dart';
 import 'package:gecko/widgets/network_activity/base_activity_tab.dart';
@@ -20,7 +22,7 @@ class IdentityActivityTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return BaseActivityTab<NetworkIdentitiesState>(
+    return BaseActivityTab<PaginatedState<IdentityDisplayItem>>(
       scrollController: scrollController,
       filterTranslationY: filterTranslationY,
       onNewActivityDetected: onNewActivityDetected,
@@ -33,8 +35,8 @@ class IdentityActivityTab extends ConsumerWidget {
       loadMoreCallback: loadMoreNetworkIdentities,
       emptyStateIcon: Icons.person_outline,
       emptyStateMessage: 'noIdentityActivity',
-      getItems: (state) => state.identities,
-      getLatestTimestamp: (state) => state.identities.isNotEmpty ? state.identities.first.timestamp : null,
+      getItems: (state) => state.items,
+      getLatestTimestamp: (state) => state.items.isNotEmpty ? state.items.first.timestamp : null,
       getDateDelimiter: (identity) => identity.dateDelimiter,
       hasActiveFilters: (filters) => filters.hasActiveFilters,
       useRefreshIndicator: true,

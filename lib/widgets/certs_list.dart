@@ -288,7 +288,6 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
                     child: ListView(
                       key: keyListTransactions,
                       controller: _scrollController,
-                      shrinkWrap: true, // Allow ListView to shrink to content size
                       padding: EdgeInsets.only(
                         top: scaleSize(4),
                         bottom: scaleSize(24),

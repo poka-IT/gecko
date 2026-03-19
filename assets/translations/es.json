@@ -261,6 +261,7 @@
     "errorLoadingCurrencyData": "Error al cargar los datos de la moneda",
     "errorLoadingLicense": "No se pudo cargar la licencia",
     "errorLoadingWalletData": "Error al cargar los datos del monedero",
+    "errorRenamingSafe": "Error al renombrar la bóveda: {}",
     "errorReportCopied": "Informe de error copiado al portapapeles",
     "errorRetrievingSeed": "Error al recuperar la frase secreta",
     "errorScanDerivations": "Se ha producido un error al escanear las derivaciones. Inténtelo de nuevo.",
@@ -297,6 +298,7 @@
     "extrinsicInBlock": "Incluido en un bloque, esperando confirmación...",
     "extrinsicInProgress": "{} en curso",
     "extrinsicValidated": "¡ {} validado !",
+    "failedDeleteSafe": "Error al eliminar la bóveda: {}",
     "failedStatus": "Fallo",
     "fastAppDescription": "La aplicación de pago {}\nmás rápida que un reptil de Vietnam",
     "fees": "costes: {} {}",
@@ -920,5 +922,12 @@
     "keyboardShortcutNavigateResults": "Navegar por los resultados",
     "keyboardShortcutOpenResult": "Abrir resultado seleccionado",
     "keyboardShortcutHelp": "Mostrar esta ayuda",
-    "keyboardShortcutDisco": "Modo disco"
+    "keyboardShortcutDisco": "Modo disco",
+    "migrateMyIdentity": "Migrar mi identidad",
+    "versionCopied": "El número de versión de Ğecko se ha copiado en el portapapeles",
+    "duniterEndpointUpdated": "Nodo Duniter actualizado correctamente",
+    "indexerEndpointUpdated": "Nodo indexador actualizado correctamente",
+    "failedApplyIndexerEndpoint": "Error al aplicar el nodo indexador",
+    "errorSwitchingNetwork": "Error al cambiar a {}: {}",
+    "errorClearingCaches": "Error al limpiar la caché: {}"
 }

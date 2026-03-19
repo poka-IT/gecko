@@ -106,7 +106,7 @@ class _ShowSeedContent extends ConsumerWidget {
                 );
               }
 
-              final safeLanguage = Durt.i.wallets.getSafeMnemonicLanguage(firstWallet.safe.target?.number);
+              final safeLanguage = Durt.i.wallets.getSafeBidouilleLanguage(firstWallet.safe.target?.number);
               final isEnglish = safeLanguage == BidouilleLang.english;
 
               return Column(

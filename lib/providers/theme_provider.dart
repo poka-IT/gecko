@@ -1,6 +1,7 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/providers/gecko_colors.dart';
 import 'package:gecko/providers/providers.dart';
 
 // Theme color constants
@@ -163,7 +164,7 @@ final ThemeData lightTheme = ThemeData(
     }),
   ),
   dividerColor: Colors.grey[300],
-);
+).copyWith(extensions: [lightGeckoColors]);
 
 /// Dark theme configuration for the application
 final ThemeData darkTheme = ThemeData(
@@ -216,4 +217,4 @@ final ThemeData darkTheme = ThemeData(
     }),
   ),
   dividerColor: Colors.grey[700],
-);
+).copyWith(extensions: [darkGeckoColors]);

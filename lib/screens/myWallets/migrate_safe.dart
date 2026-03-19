@@ -6,6 +6,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/myWallets/migrate_safe_progress.dart';
 import 'package:gecko/services/mnemonic_service.dart';
@@ -66,7 +67,7 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
 
     try {
       // Check if destination is empty
-      final nbrScan = configBox.get('scanDerivations') ?? 20;
+      final nbrScan = ref.read(configServiceProvider).scanDerivations;
       List<String> destAddresses = [];
 
       // Generate root address (without derivation)
@@ -262,7 +263,7 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
                   textAlign: TextAlign.center,
                   style: scaledTextStyle(
                     fontSize: isSmall ? 12 : 13,
-                    color: _canMigrate ? Colors.green[600] : Colors.red[600],
+                    color: _canMigrate ? context.geckoColors.success : context.geckoColors.danger,
                   ),
                 ),
               ScaledSizedBox(height: isSmall ? 12 : 16),
@@ -287,7 +288,8 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
 
                           if (!confirmed) return;
 
-                          if (!await PinCodeService.askPinCode(wallet: ref.read(firstWalletProvider))) return;
+                          // ignore: use_build_context_synchronously
+                          if (!await PinCodeService.askPinCode(context, wallet: ref.read(firstWalletProvider))) return;
 
                           Navigator.pushReplacement(
                             // ignore: use_build_context_synchronously

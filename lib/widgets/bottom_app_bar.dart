@@ -1,8 +1,5 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
@@ -159,14 +156,16 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                   key: keyAppBarHome,
                   icon: Icons.home_outlined,
                   isSelected: false,
+                  semanticLabel: 'Home',
                   onTap: () {
-                    Navigator.popUntil(homeContext, ModalRoute.withName(RouteNames.home));
+                    Navigator.popUntil(context, ModalRoute.withName(RouteNames.home));
                   },
                 ),
                 _buildNavItem(
                   key: keyAppBarQrcode,
                   imagePath: 'assets/qrcode-scan.png',
                   isSelected: widget.actualRoute == 'scan',
+                  semanticLabel: 'Scan QR code',
                   onTap: () async {
                     final scanQr = ref.read(qrScanProvider);
                     await scanQr(context);
@@ -177,13 +176,15 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                   imagePath: 'assets/wallet.png',
                   isSelected: lockAction,
                   isDisabled: lockAction,
+                  semanticLabel: 'My wallets',
                   onTap: lockAction
                       ? null
                       : () async {
-                          if (!await PinCodeService.askPinCode(canSwitch: true)) return;
+                          if (!await PinCodeService.askPinCode(context, canSwitch: true)) return;
 
+                          if (!mounted) return;
                           Navigator.pushNamedAndRemoveUntil(
-                            homeContext,
+                            context,
                             RouteNames.myWallets,
                             ModalRoute.withName(RouteNames.home),
                           );
@@ -201,38 +202,45 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
     required Key key,
     required bool isSelected,
     required VoidCallback? onTap,
+    required String semanticLabel,
     IconData? icon,
     String? imagePath,
     bool isDisabled = false,
   }) {
-    // Use local context instead of homeContext to avoid deactivated widget errors
+    // Use local context instead of context to avoid deactivated widget errors
     final color = isSelected
         ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)
         : Theme.of(context).colorScheme.onSecondaryContainer.withValues(alpha: 0.8);
     final size = scaleSize(34);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        key: key,
-        onTap: isDisabled
-            ? null
-            : () {
-                // Safe execution of onTap callback
-                if (mounted && onTap != null) {
-                  onTap();
-                }
-              },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: EdgeInsets.all(scaleSize(12)),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: isSelected ? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5) : Colors.transparent,
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      selected: isSelected,
+      enabled: !isDisabled,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: key,
+          onTap: isDisabled
+              ? null
+              : () {
+                  // Safe execution of onTap callback
+                  if (mounted && onTap != null) {
+                    onTap();
+                  }
+                },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: EdgeInsets.all(scaleSize(12)),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: isSelected ? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5) : Colors.transparent,
+            ),
+            child: icon != null
+                ? Icon(icon, size: size, color: color)
+                : Image.asset(imagePath!, height: size, width: size, color: color),
           ),
-          child: icon != null
-              ? Icon(icon, size: size, color: color)
-              : Image.asset(imagePath!, height: size, width: size, color: color),
         ),
       ),
     );

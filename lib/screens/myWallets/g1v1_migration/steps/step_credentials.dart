@@ -309,7 +309,10 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
                 if (flowState.errorMessage != null)
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
-                    child: Text(flowState.errorMessage!, style: scaledTextStyle(fontSize: 12, color: Colors.red)),
+                    child: Text(
+                      flowState.errorMessage!,
+                      style: scaledTextStyle(fontSize: 12, color: context.geckoColors.danger),
+                    ),
                   ),
               ],
             ),
@@ -326,22 +329,22 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
     switch (flowState.accountType) {
       case MigrationAccountType.empty:
         return Card(
-          color: Colors.red.shade50,
+          color: context.geckoColors.dangerContainer,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.red.shade300, width: 1),
+            side: BorderSide(color: context.geckoColors.danger.withValues(alpha: 0.5), width: 1),
           ),
           child: Padding(
             padding: EdgeInsets.all(scaleSize(12)),
             child: Row(
               children: [
-                Icon(Icons.error_outline, color: Colors.red.shade700, size: scaleSize(20)),
+                Icon(Icons.error_outline, color: context.geckoColors.danger, size: scaleSize(20)),
                 ScaledSizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'migration_account_empty'.tr(),
-                    style: scaledTextStyle(fontSize: 13, color: Colors.red.shade900),
+                    style: scaledTextStyle(fontSize: 13, color: context.geckoColors.dangerText),
                   ),
                 ),
               ],
@@ -353,18 +356,18 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
         final migration = flowState.migrationFromData!;
         final dateStr = DateFormat.yMMMd(safeLocale(context.locale.languageCode)).format(migration.migrationDate);
         return Card(
-          color: Colors.orange.shade50,
+          color: context.geckoColors.warningContainer,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.orange.shade300, width: 1),
+            side: BorderSide(color: context.geckoColors.warning.withValues(alpha: 0.5), width: 1),
           ),
           child: Padding(
             padding: EdgeInsets.all(scaleSize(12)),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline, color: Colors.orange.shade700, size: scaleSize(20)),
+                Icon(Icons.info_outline, color: context.geckoColors.warning, size: scaleSize(20)),
                 ScaledSizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -375,7 +378,7 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
                         style: scaledTextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.orange.shade900,
+                          color: context.geckoColors.warningText,
                         ),
                       ),
                       ScaledSizedBox(height: 4),
@@ -383,7 +386,7 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
                         'migration_account_already_migrated_details'.tr(
                           args: [dateStr, getShortPubkey(migration.toAddress)],
                         ),
-                        style: scaledTextStyle(fontSize: 12, color: Colors.orange.shade800),
+                        style: scaledTextStyle(fontSize: 12, color: context.geckoColors.warningText),
                       ),
                     ],
                   ),
@@ -395,17 +398,17 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
 
       case MigrationAccountType.balanceOnly:
         return Card(
-          color: Colors.green.shade50,
+          color: context.geckoColors.successContainer,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.green.shade300, width: 1),
+            side: BorderSide(color: context.geckoColors.success.withValues(alpha: 0.5), width: 1),
           ),
           child: Padding(
             padding: EdgeInsets.all(scaleSize(12)),
             child: Row(
               children: [
-                Icon(Icons.check_circle_outline, color: Colors.green.shade700, size: scaleSize(20)),
+                Icon(Icons.check_circle_outline, color: context.geckoColors.success, size: scaleSize(20)),
                 ScaledSizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -413,14 +416,14 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
                     children: [
                       Text(
                         'migration_account_has_balance'.tr(),
-                        style: scaledTextStyle(fontSize: 13, color: Colors.green.shade900),
+                        style: scaledTextStyle(fontSize: 13, color: context.geckoColors.successText),
                       ),
                       ScaledSizedBox(height: 4),
                       BalanceDisplay(
                         value: flowState.sourceBalance?.transferableBalance ?? BigInt.zero,
                         size: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.green.shade900,
+                        color: context.geckoColors.successText,
                       ),
                     ],
                   ),
@@ -432,17 +435,17 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
 
       case MigrationAccountType.withIdentity:
         return Card(
-          color: Colors.green.shade50,
+          color: context.geckoColors.successContainer,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.green.shade300, width: 1),
+            side: BorderSide(color: context.geckoColors.success.withValues(alpha: 0.5), width: 1),
           ),
           child: Padding(
             padding: EdgeInsets.all(scaleSize(12)),
             child: Row(
               children: [
-                Icon(Icons.check_circle_outline, color: Colors.green.shade700, size: scaleSize(20)),
+                Icon(Icons.check_circle_outline, color: context.geckoColors.success, size: scaleSize(20)),
                 ScaledSizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -450,19 +453,19 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
                     children: [
                       Text(
                         'migration_account_has_identity'.tr(),
-                        style: scaledTextStyle(fontSize: 13, color: Colors.green.shade900),
+                        style: scaledTextStyle(fontSize: 13, color: context.geckoColors.successText),
                       ),
                       ScaledSizedBox(height: 4),
                       BalanceDisplay(
                         value: flowState.sourceBalance?.transferableBalance ?? BigInt.zero,
                         size: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.green.shade900,
+                        color: context.geckoColors.successText,
                       ),
                       ScaledSizedBox(height: 4),
                       Row(
                         children: [
-                          IdentityStatus(address: flowState.v2Address, color: Colors.green.shade800),
+                          IdentityStatus(address: flowState.v2Address, color: context.geckoColors.successText),
                           ScaledSizedBox(width: 4),
                           if (flowState.sourceIdentityName != null)
                             Text(
@@ -470,11 +473,15 @@ class _StepCredentialsState extends ConsumerState<StepCredentials> {
                               style: scaledTextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.green.shade900,
+                                color: context.geckoColors.successText,
                               ),
                             ),
                           ScaledSizedBox(width: 8),
-                          Certifications(address: flowState.v2Address, size: 12, color: Colors.green.shade900),
+                          Certifications(
+                            address: flowState.v2Address,
+                            size: 12,
+                            color: context.geckoColors.successText,
+                          ),
                         ],
                       ),
                     ],

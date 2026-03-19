@@ -2,6 +2,7 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
@@ -35,17 +36,17 @@ class InQueueButton extends ConsumerWidget {
           );
         }
       },
-      backgroundColor: Colors.blue.shade100,
+      backgroundColor: context.geckoColors.infoContainer,
       label: 'inQueuePosition'.tr(args: [pendingCert.position.toString()]),
       labelStyle: Theme.of(
         context,
-      ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: Colors.blue.shade700),
+      ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: context.geckoColors.infoText),
       sublabel: formattedDate,
       sublabelStyle: scaledTextStyle(fontSize: buttonFontSize - 4, color: Colors.grey[600]),
       child: Stack(
         children: [
           Center(
-            child: Icon(Icons.schedule, size: scaleSize(40), color: Colors.blue.shade700),
+            child: Icon(Icons.schedule, size: scaleSize(40), color: context.geckoColors.infoText),
           ),
           Positioned(
             bottom: 2,
@@ -53,7 +54,7 @@ class InQueueButton extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.blue.shade700,
+                color: context.geckoColors.infoText,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.white, width: 1.5),
               ),

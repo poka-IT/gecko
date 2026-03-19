@@ -17,9 +17,9 @@ class DistanceQualitySection extends ConsumerWidget {
     return Container(
       margin: EdgeInsets.fromLTRB(scaleSize(8), scaleSize(4), scaleSize(8), 0),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.04),
+        color: context.geckoColors.warning.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(scaleSize(10)),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.15), width: 1),
+        border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.15), width: 1),
       ),
       child: switch (distanceState) {
         DistanceIdle() => _buildIdleState(context, ref),
@@ -43,10 +43,10 @@ class DistanceQualitySection extends ConsumerWidget {
               height: scaleSize(28),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.orange.withValues(alpha: 0.1),
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 1),
+                color: context.geckoColors.warning.withValues(alpha: 0.1),
+                border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.3), width: 1),
               ),
-              child: Icon(Icons.hub, size: scaleSize(14), color: Colors.orange.shade700),
+              child: Icon(Icons.hub, size: scaleSize(14), color: context.geckoColors.warning),
             ),
             ScaledSizedBox(width: 12),
             Expanded(
@@ -55,7 +55,7 @@ class DistanceQualitySection extends ConsumerWidget {
                 style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colorScheme.onSurface),
               ),
             ),
-            Icon(Icons.play_arrow_rounded, size: scaleSize(22), color: Colors.orange.shade600),
+            Icon(Icons.play_arrow_rounded, size: scaleSize(22), color: context.geckoColors.warning),
           ],
         ),
       ),
@@ -85,7 +85,7 @@ class DistanceQualitySection extends ConsumerWidget {
               SizedBox(
                 width: scaleSize(16),
                 height: scaleSize(16),
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange.shade600),
+                child: CircularProgressIndicator(strokeWidth: 2, color: context.geckoColors.warning),
               ),
               ScaledSizedBox(width: 10),
               Text(
@@ -100,7 +100,7 @@ class DistanceQualitySection extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: context.colorScheme.outline.withValues(alpha: 0.08),
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange.shade500),
+              valueColor: AlwaysStoppedAnimation<Color>(context.geckoColors.warning),
               minHeight: scaleSize(4),
             ),
           ),
@@ -116,7 +116,7 @@ class DistanceQualitySection extends ConsumerWidget {
         children: [
           // Distance metric
           Expanded(child: _buildMetric(context, 'distanceLabel'.tr(), result.distanceRatio, result.xPercent)),
-          Container(width: 1, height: scaleSize(40), color: Colors.orange.withValues(alpha: 0.15)),
+          Container(width: 1, height: scaleSize(40), color: context.geckoColors.warning.withValues(alpha: 0.15)),
           // Quality metric
           Expanded(child: _buildMetric(context, 'qualityLabel'.tr(), result.qualityRatio, result.xPercent)),
           // Recompute button
@@ -125,7 +125,11 @@ class DistanceQualitySection extends ConsumerWidget {
             borderRadius: BorderRadius.circular(scaleSize(16)),
             child: Padding(
               padding: EdgeInsets.all(scaleSize(6)),
-              child: Icon(Icons.refresh, size: scaleSize(18), color: Colors.orange.shade400),
+              child: Icon(
+                Icons.refresh,
+                size: scaleSize(18),
+                color: context.geckoColors.warning.withValues(alpha: 0.7),
+              ),
             ),
           ),
         ],
@@ -136,8 +140,8 @@ class DistanceQualitySection extends ConsumerWidget {
   Widget _buildMetric(BuildContext context, String label, double ratio, double threshold) {
     final percentage = (ratio * 100).toStringAsFixed(1);
     final isOk = ratio >= threshold;
-    final barColor = isOk ? Colors.green.shade500 : Colors.red.shade400;
-    final valueColor = isOk ? Colors.green.shade600 : Colors.red.shade600;
+    final barColor = isOk ? context.geckoColors.success : context.geckoColors.danger;
+    final valueColor = isOk ? context.geckoColors.successText : context.geckoColors.dangerText;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: scaleSize(10)),
@@ -180,15 +184,15 @@ class DistanceQualitySection extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.error_outline, color: Colors.red.shade400, size: scaleSize(20)),
+                Icon(Icons.error_outline, color: context.geckoColors.danger, size: scaleSize(20)),
                 ScaledSizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'distanceComputeError'.tr(),
-                    style: scaledTextStyle(fontSize: 13, color: Colors.red.shade600),
+                    style: scaledTextStyle(fontSize: 13, color: context.geckoColors.danger),
                   ),
                 ),
-                Icon(Icons.refresh, size: scaleSize(18), color: Colors.orange.shade400),
+                Icon(Icons.refresh, size: scaleSize(18), color: context.geckoColors.warning.withValues(alpha: 0.7)),
               ],
             ),
             ScaledSizedBox(height: 6),

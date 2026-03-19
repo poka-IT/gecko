@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -93,7 +91,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
             } else {
               setState(() {
                 hasError = true;
-                pinColor = Colors.red[600];
+                pinColor = context.geckoColors.danger;
                 enterPin.text = '';
                 pinFocus.requestFocus();
               });
@@ -116,7 +114,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
           const SizedBox(height: 20),
           Text(
             "passwordTooSimple".tr(),
-            style: const TextStyle(color: Colors.red, fontSize: 15, fontWeight: FontWeight.w500),
+            style: TextStyle(color: context.geckoColors.danger, fontSize: 15, fontWeight: FontWeight.w500),
             textAlign: TextAlign.center,
           ),
         ],

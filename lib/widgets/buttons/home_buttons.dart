@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
@@ -108,6 +106,7 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
     required VoidCallback onTap,
     required Widget child,
     required String label,
+    String? semanticLabel,
   }) {
     final showImage = ref.watch(backgroundImageProvider);
     final labelColor = showImage ? Colors.white : context.colorScheme.onSurface;
@@ -115,16 +114,27 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
         ? [Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))]
         : <Shadow>[];
 
-    return Column(
-      children: <Widget>[
-        _buildFlowerPowerButton(baseColor: baseColor, offset: offset, onTap: onTap, child: child),
-        ScaledSizedBox(height: 10),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: scaledTextStyle(color: labelColor, fontSize: 12.5, fontWeight: FontWeight.w500, shadows: labelShadows),
-        ),
-      ],
+    return Semantics(
+      label: semanticLabel ?? label,
+      button: true,
+      child: Column(
+        children: <Widget>[
+          _buildFlowerPowerButton(baseColor: baseColor, offset: offset, onTap: onTap, child: child),
+          ScaledSizedBox(height: 10),
+          ExcludeSemantics(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: scaledTextStyle(
+                color: labelColor,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                shadows: labelShadows,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -153,10 +163,12 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
       offset: 0.66,
       onTap: () async {
         final hadToUnlock = PinCodeService.pinCode.isEmpty;
-        if (!await PinCodeService.askPinCode(canSwitch: true)) return;
+        if (!await PinCodeService.askPinCode(context, canSwitch: true)) return;
         if (hadToUnlock) {
+          // ignore: use_build_context_synchronously
           await _performSmoothTransition(context);
         } else {
+          if (!context.mounted) return;
           Navigator.pushNamed(context, RouteNames.myWallets);
         }
       },

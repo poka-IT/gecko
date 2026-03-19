@@ -58,30 +58,6 @@ final migrationToDataProvider = FutureProvider.family<MigrationData?, String>(
   (ref, address) => ref.watch(migrationDataProvider((direction: MigrationDirection.to, address: address)).future),
 );
 
-/// Provides the name of an identity by address.
-/// Returns null if the address has no identity or if network is unavailable.
-/// @deprecated Use hybridIdentityNameProvider for real-time updates
-final identityNameProvider = FutureProvider.family<String?, String>((ref, address) async {
-  // Check if we have Squid connection specifically (required for identity queries)
-  final squidConnectionStatus = ref.watch(squidConnectionStatusProvider);
-  if (squidConnectionStatus != d.ConnectionStatus.connected) {
-    return null; // Return null if Squid is not connected
-  }
-
-  try {
-    final identityName = await d.SquidService.client.getIdentityName(address);
-
-    // Cache the result
-    final squidService = ref.read(squidServiceProvider);
-    squidService.walletNameIndexer[address] = identityName;
-
-    return identityName;
-  } catch (e) {
-    // If there's an error, return null (address might not have an identity)
-    return null;
-  }
-});
-
 /// Hybrid identity name provider that combines initial fetch with periodic polling
 /// This ensures identity names are always up-to-date after migrations or identity creations
 class HybridIdentityNameNotifier extends AsyncNotifier<String?> {

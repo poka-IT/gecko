@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 
 import 'package:durt2/durt2.dart' as d;
@@ -305,13 +303,13 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF9800).withValues(alpha: 0.08),
+              color: context.geckoColors.warningContainer,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+              border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, color: Color(0xFFFF9800), size: 20),
+                Icon(Icons.warning_amber_rounded, color: context.geckoColors.warning, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -417,7 +415,7 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _idtyStatusColor(_idtyStatus!).withValues(alpha: 0.12),
+                          color: _idtyStatusColor(_idtyStatus!, context).withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -425,7 +423,7 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: _idtyStatusColor(_idtyStatus!),
+                            color: _idtyStatusColor(_idtyStatus!, context),
                           ),
                         ),
                       ),
@@ -487,16 +485,19 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800).withValues(alpha: 0.08),
+                  color: context.geckoColors.warningContainer,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFF9800).withValues(alpha: 0.2)),
+                  border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber_rounded, size: 16, color: Color(0xFFFF9800)),
+                    Icon(Icons.warning_amber_rounded, size: 16, color: context.geckoColors.warning),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text('noWalletFound'.tr(), style: const TextStyle(fontSize: 13, color: Color(0xFFFF9800))),
+                      child: Text(
+                        'noWalletFound'.tr(),
+                        style: TextStyle(fontSize: 13, color: context.geckoColors.warning),
+                      ),
                     ),
                   ],
                 ),
@@ -570,14 +571,15 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
     );
   }
 
-  Color _idtyStatusColor(d.IdtyStatus status) {
+  Color _idtyStatusColor(d.IdtyStatus status, BuildContext context) {
+    final colors = context.geckoColors;
     return switch (status) {
-      d.IdtyStatus.validated => Colors.green,
-      d.IdtyStatus.confirmed => Colors.orange,
-      d.IdtyStatus.created => Colors.blue,
-      d.IdtyStatus.expired => Colors.red,
-      d.IdtyStatus.revoked => Colors.grey,
-      _ => Colors.grey,
+      d.IdtyStatus.validated => colors.statusMember,
+      d.IdtyStatus.confirmed => colors.statusConfirmed,
+      d.IdtyStatus.created => colors.statusCreated,
+      d.IdtyStatus.expired => colors.statusExpired,
+      d.IdtyStatus.revoked => colors.statusRevoked,
+      _ => colors.statusNone,
     };
   }
 
@@ -598,7 +600,7 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
               padding: const EdgeInsets.only(top: 10),
               child: Text(
                 _pinErrorMessage,
-                style: const TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 14, color: context.geckoColors.danger, fontWeight: FontWeight.w500),
               ),
             ),
           const SizedBox(height: 24),

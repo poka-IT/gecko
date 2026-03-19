@@ -1,9 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
@@ -76,7 +75,7 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
               width: scaleSize(20),
               height: scaleSize(20),
               decoration: BoxDecoration(
-                color: Colors.orange.shade700,
+                color: context.geckoColors.warningText,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
@@ -208,6 +207,7 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
 
       // Ask for PIN to sign the sync request
       if (!await PinCodeService.askPinCode(
+        context,
         wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress),
       )) {
         return;

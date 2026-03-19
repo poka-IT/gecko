@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:durt2/durt2.dart' as d;
@@ -14,6 +12,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/squid_cache_buster.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/image_cache_service.dart';
@@ -295,14 +294,17 @@ class AppInitNotifier extends Notifier<AppInitState> {
 
       // Start preloading images in background (fire and forget)
       final imageService = ref.read(imageCacheServiceProvider);
+      // ignore: use_build_context_synchronously
       imageService.preloadCriticalImages(context).catchError((e) {
         log.w('Failed to preload images: $e');
       });
 
       // Handle data version compatibility and initialization
+      if (!context.mounted) return;
       await _handleDataVersionCompatibility(context, widgetRef);
 
       // Setup connection handling
+      if (!context.mounted) return;
       await _setupConnectionHandling(context, widgetRef);
     } catch (e) {
       log.e('Error during app initialization: $e');
@@ -312,12 +314,13 @@ class AppInitNotifier extends Notifier<AppInitState> {
 
   /// Handle data version compatibility
   Future<void> _handleDataVersionCompatibility(BuildContext context, WidgetRef widgetRef) async {
+    final config = ref.read(configServiceProvider);
     // Check if versionData non compatible, drop everything
-    if (configBox.get('dataVersion') == null) {
-      configBox.put('dataVersion', dataVersion);
+    if (config.dataVersion == null) {
+      config.dataVersion = dataVersion;
     }
 
-    if (configBox.get('dataVersion') < dataVersion) {
+    if (config.dataVersion! < dataVersion) {
       await showConfirmationDialog(
         context: context,
         message: "safeNotCompatibleMustReinstallGecko".tr(),
@@ -327,8 +330,8 @@ class AppInitNotifier extends Notifier<AppInitState> {
       );
 
       await avatarsDirectory.create();
-      await configBox.delete('defaultWallet');
-      await configBox.clear();
+      await config.deleteDefaultWallet();
+      await config.clearAll();
       await Hive.deleteBoxFromDisk('g1WalletsBox');
       await Hive.deleteBoxFromDisk('contactsBox');
       await Hive.deleteBoxFromDisk('wallet_header_cache');
@@ -338,7 +341,7 @@ class AppInitNotifier extends Notifier<AppInitState> {
       walletHeaderDataBox = await Hive.openBox('wallet_header_cache');
 
       await ref.read(walletServiceProvider).clearWallets();
-      configBox.put('dataVersion', dataVersion);
+      config.dataVersion = dataVersion;
 
       // Reload wallets using Riverpod provider
       ref.read(walletsListProvider.notifier).refresh();

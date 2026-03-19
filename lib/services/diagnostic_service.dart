@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/wallets_provider.dart';
@@ -192,10 +193,11 @@ class DiagnosticService {
       };
 
       // Database state
+      final config = ConfigService(configBox);
       authInfo['database'] = {
-        'config_box_keys': configBox.keys.length,
-        'config_box_values': configBox.values.length,
-        'config_box_is_open': configBox.isOpen,
+        'config_box_keys': config.keyCount,
+        'config_box_values': config.valueCount,
+        'config_box_is_open': config.isOpen,
       };
     } catch (e) {
       authInfo['error'] = e.toString();
@@ -248,10 +250,7 @@ class DiagnosticService {
       };
 
       // Memory and storage
-      healthInfo['resources'] = {
-        'storage_keys': configBox.keys.length,
-        'platform_env_keys': Platform.environment.keys.take(3).toList(),
-      };
+      healthInfo['resources'] = {'storage_keys': ConfigService(configBox).keyCount};
     } catch (e) {
       healthInfo['error'] = e.toString();
     }

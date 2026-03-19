@@ -329,7 +329,7 @@ class _WalletSelectionScreenState extends ConsumerState<WalletSelectionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('migrationError'.tr(args: [e.toString()])),
-            backgroundColor: Colors.red,
+            backgroundColor: context.geckoColors.danger,
           ),
         );
       }

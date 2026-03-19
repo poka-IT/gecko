@@ -4,17 +4,18 @@ import 'package:gecko/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/desktop/modals/pin_modal.dart';
 
 class PinCodeService {
-  static const String _storageKey = 'isCacheChecked';
-
   static String _pinCode = '';
 
   /// The safe number that [_pinCode] was validated against.
   /// Ensures the cached PIN is only reused for the same safe.
   static int? _authenticatedSafeNumber;
+
+  static ConfigService get _config => ConfigService(configBox);
 
   /// Get/set the cached PIN code.
   /// Setting to empty automatically clears the authenticated safe.
@@ -25,11 +26,11 @@ class PinCodeService {
   }
 
   /// Get the current PIN cache state
-  static bool get isEnabled => configBox.get(_storageKey) ?? false;
+  static bool get isEnabled => _config.isCacheChecked;
 
   /// Set the PIN cache state
   static void setEnabled(bool enabled) {
-    configBox.put(_storageKey, enabled);
+    _config.isCacheChecked = enabled;
   }
 
   /// Toggle the PIN cache state
@@ -57,8 +58,13 @@ class PinCodeService {
     _authenticatedSafeNumber = safeNumber;
   }
 
-  static Future<bool> askPinCode({bool force = false, bool canSwitch = false, d.WalletEntity? wallet}) async {
-    final container = ProviderScope.containerOf(homeContext);
+  static Future<bool> askPinCode(
+    BuildContext context, {
+    bool force = false,
+    bool canSwitch = false,
+    d.WalletEntity? wallet,
+  }) async {
+    final container = ProviderScope.containerOf(context);
     final targetWallet = wallet ?? container.read(walletServiceProvider).defaultWallet;
     final targetSafeNumber = targetWallet.safe.target?.number;
 
@@ -71,11 +77,11 @@ class PinCodeService {
 
       // Use desktop modal on wide screens, full-screen route on mobile
       final Object? result;
-      if (isDesktopLayout(homeContext)) {
-        result = await showDesktopPinModal(homeContext, canSwitch: canSwitch, wallet: targetWallet);
+      if (isDesktopLayout(context)) {
+        result = await showDesktopPinModal(context, canSwitch: canSwitch, wallet: targetWallet);
       } else {
         result = await Navigator.pushNamed(
-          homeContext,
+          context,
           RouteNames.unlockingWallet,
           arguments: UnlockingWalletArguments(wallet: targetWallet, canSwitch: canSwitch),
         );

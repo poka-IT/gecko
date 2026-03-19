@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/gecko_colors.dart';
 
 /// Parses a blockchain timestamp string to local DateTime.
 /// Handles timestamps with or without timezone info (appends 'Z' if missing).
@@ -41,6 +42,9 @@ extension ExtendedBuildContext on BuildContext {
 
   /// Is dark mode currently enabled?
   bool get isDarkTheme => Theme.of(this).brightness == Brightness.dark;
+
+  /// Access the GeckoColors ThemeExtension for semantic color tokens.
+  GeckoColors get geckoColors => Theme.of(this).extension<GeckoColors>()!;
 }
 
 /// Extension to make SnackBars dismissible by tapping

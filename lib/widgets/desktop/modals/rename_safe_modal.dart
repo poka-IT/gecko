@@ -57,9 +57,12 @@ class _RenameSafeContentState extends ConsumerState<_RenameSafeContent> {
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error renaming safe: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('errorRenamingSafe'.tr(args: [e.toString()])),
+            backgroundColor: context.geckoColors.danger,
+          ),
+        );
         setState(() => _isLoading = false);
       }
     }

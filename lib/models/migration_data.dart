@@ -38,23 +38,7 @@ class MigrationData {
     d.Query$GetIdentityMigrations$changeOwnerKeys$edges$node node,
     DateTime genesisTime,
   ) async {
-    try {
-      final migrationDate = _blockNumberToDate(node.blockNumber, genesisTime);
-
-      // Ensure we have both addresses
-      if (node.previousId == null || node.nextId == null) {
-        return null;
-      }
-
-      return MigrationData(
-        fromAddress: node.previousId!,
-        toAddress: node.nextId!,
-        migrationDate: migrationDate,
-        identityName: node.identity?.name,
-      );
-    } catch (e) {
-      return null;
-    }
+    return fromSquidMigrationFromNode(node, genesisTime);
   }
 
   /// Convert block number to DateTime (6 seconds per block)

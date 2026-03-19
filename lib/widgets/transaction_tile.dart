@@ -125,7 +125,9 @@ class TransactionTile extends StatelessWidget {
                                         Icon(
                                           transaction.isReceived ? Icons.call_received : Icons.call_made,
                                           size: scaleSize(14),
-                                          color: transaction.isReceived ? context.colorScheme.primary : Colors.blue,
+                                          color: transaction.isReceived
+                                              ? context.colorScheme.primary
+                                              : context.geckoColors.info,
                                         ),
                                         ScaledSizedBox(width: 6),
                                         // Comment text
@@ -159,7 +161,7 @@ class TransactionTile extends StatelessWidget {
                               BalanceDisplay(
                                 value: finalAmount,
                                 size: 16,
-                                color: transaction.isReceived ? context.colorScheme.primary : Colors.blue,
+                                color: transaction.isReceived ? context.colorScheme.primary : context.geckoColors.info,
                               ),
                               ScaledSizedBox(height: 4),
 

@@ -75,7 +75,7 @@ The `durt2` package provides all Duniter blockchain interactions:
 ### Connection State Management
 
 `lib/providers/connection_providers.dart` handles dual connectivity (Duniter node + Squid indexer):
-- `storageStateProvider` tracks: `notInitialized`, `offlineMode`, `ready`
+- `storageStateProvider` tracks: `notInitialized`, `offlineMode`, `onlineMode`
 - Reconnection triggers provider invalidation for automatic data refresh
 
 ## Unit Tests

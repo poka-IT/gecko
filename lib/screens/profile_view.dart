@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show IdtyStatus, CertStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -410,9 +408,10 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   }
 
   Future<void> _handleTransfer(WidgetRef ref) async {
-    if (!await PinCodeService.askPinCode()) return;
+    if (!await PinCodeService.askPinCode(context)) return;
 
     final fromWallet = widget.fromAddress != null ? ref.read(walletByAddressProvider(widget.fromAddress!)) : null;
-    paymentPopup(toAddress: address, username: username, fromWallet: fromWallet);
+    if (!mounted) return;
+    paymentPopup(context, toAddress: address, username: username, fromWallet: fromWallet);
   }
 }

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +7,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/membership_providers.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
@@ -81,7 +79,10 @@ class ManageMembership extends ConsumerWidget {
             children: [
               Icon(Icons.change_circle_outlined, size: scaleSize(24), color: context.colorScheme.onSurface),
               ScaledSizedBox(width: 16),
-              Text('Migrer mon identité', style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface)),
+              Text(
+                'migrateMyIdentity'.tr(),
+                style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+              ),
             ],
           ),
         ),
@@ -103,17 +104,20 @@ class ManageMembership extends ConsumerWidget {
 
           if (!answer) return;
 
-          if (!await PinCodeService.askPinCode(wallet: ref.read(walletServiceProvider).getWalletData(address))) return;
+          if (!context.mounted) return;
+          if (!await PinCodeService.askPinCode(context, wallet: ref.read(walletServiceProvider).getWalletData(address)))
+            return;
 
           final keypair = await ref
               .read(walletServiceProvider)
               .getKeyPairFromAddress(address: address, pinCode: PinCodeService.pinCode);
           final transactionStatus = ref.read(duniterServiceProvider).revokeIdentity(keypair);
 
+          if (!context.mounted) return;
           Navigator.pop(context);
 
           navigateToTransactionProgress(
-            homeContext,
+            Gecko.navigatorContext!,
             transactionStatus: transactionStatus,
             transType: 'revokeIdty',
             fromAddress: address,

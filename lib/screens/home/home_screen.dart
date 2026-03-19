@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/app_update_provider.dart';
 import 'package:gecko/services/app_update_service.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/home/gecko_home_widget.dart';
@@ -46,10 +47,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showCesiumImportInfoDialogIfNeeded() {
+    final config = ref.read(configServiceProvider);
     final bool isWalletsExists = ref.read(isWalletsExistsProvider);
-    final bool alreadyShown = configBox.get('cesiumImportInfoShown') ?? false;
 
-    if (!isWalletsExists && !alreadyShown) {
+    if (!isWalletsExists && !config.cesiumImportInfoShown) {
       showConfirmationDialog(
         context: context,
         title: "cesium_import_info_title".tr(),
@@ -60,7 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         hideCancelButton: true,
       );
 
-      configBox.put('cesiumImportInfoShown', true);
+      config.cesiumImportInfoShown = true;
     }
   }
 

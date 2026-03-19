@@ -1,305 +1,57 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:durt2/durt2.dart' as d;
-import 'package:flutter_riverpod/experimental/persist.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/base_paginated_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
-import 'package:gecko/providers/persist_storage_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/models/certification_display_item.dart';
 import 'package:gecko/providers/certification_filters_provider.dart';
 import 'package:gecko/models/certification_filters.dart';
 
-/// State for network certification activity
-class NetworkCertificationsState {
-  final List<CertificationDisplayItem> certifications;
-  final bool isLoading;
-  final bool hasNextPage;
-  final String? cursor;
-  final String? error;
-  final bool hasActiveFilters;
-  final d.CertificationFilters? appliedServerFilters;
-  final String? lastActivityId;
-
-  const NetworkCertificationsState({
-    this.certifications = const [],
-    this.isLoading = false,
-    this.hasNextPage = true,
-    this.cursor,
-    this.error,
-    this.hasActiveFilters = false,
-    this.appliedServerFilters,
-    this.lastActivityId,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'certifications': certifications.map((c) => c.toJson()).toList(),
-    'hasNextPage': hasNextPage,
-    'cursor': cursor,
-    'lastActivityId': lastActivityId,
-  };
-
-  factory NetworkCertificationsState.fromJson(Map<String, dynamic> json) => NetworkCertificationsState(
-    certifications: (json['certifications'] as List)
-        .map((c) => CertificationDisplayItem.fromJson(c as Map<String, dynamic>))
-        .toList(),
-    hasNextPage: json['hasNextPage'] as bool? ?? false,
-    cursor: json['cursor'] as String?,
-    lastActivityId: json['lastActivityId'] as String?,
-  );
-
-  NetworkCertificationsState copyWith({
-    List<CertificationDisplayItem>? certifications,
-    bool? isLoading,
-    bool? hasNextPage,
-    String? cursor,
-    String? error,
-    bool? hasActiveFilters,
-    d.CertificationFilters? appliedServerFilters,
-    String? lastActivityId,
-  }) {
-    return NetworkCertificationsState(
-      certifications: certifications ?? this.certifications,
-      isLoading: isLoading ?? this.isLoading,
-      hasNextPage: hasNextPage ?? this.hasNextPage,
-      cursor: cursor ?? this.cursor,
-      error: error ?? this.error,
-      hasActiveFilters: hasActiveFilters ?? this.hasActiveFilters,
-      appliedServerFilters: appliedServerFilters ?? this.appliedServerFilters,
-      lastActivityId: lastActivityId ?? this.lastActivityId,
-    );
-  }
-}
-
 /// Notifier for managing network-wide certification activity
-class NetworkCertificationsNotifier extends Notifier<NetworkCertificationsState> {
-  StreamSubscription<String?>? _networkCertificationsSubscription;
-  bool _isLoadingGuard = false;
+class NetworkCertificationsNotifier extends BasePaginatedNotifier<CertificationDisplayItem> {
+  @override
+  String get persistKey => 'networkCertifications_${ref.read(durtProvider).network.name}';
 
   @override
-  NetworkCertificationsState build() {
-    ref.onDispose(() => _networkCertificationsSubscription?.cancel());
+  String get itemsJsonKey => 'certifications';
 
-    // Persist state to local SQLite DB for instant display on app restart
-    final network = ref.read(durtProvider).network.name;
-    persist(
-      ref.watch(persistStorageProvider.future),
-      key: 'networkCertifications_$network',
-      encode: (state) => jsonEncode(state.toJson()),
-      decode: (json) => NetworkCertificationsState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+  @override
+  Map<String, dynamic> itemToJson(CertificationDisplayItem item) => item.toJson();
+
+  @override
+  CertificationDisplayItem itemFromJson(Map<String, dynamic> json) => CertificationDisplayItem.fromJson(json);
+
+  @override
+  Stream<String?>? createSubscription() => d.SquidService.client.subscribeNetworkCertifications();
+
+  @override
+  Future<PaginatedResult<CertificationDisplayItem>?> fetchPage({required int count, String? cursor}) async {
+    final result = await d.SquidService.client.getNetworkCertifications(number: count, cursor: cursor);
+    if (result == null) return null;
+
+    final certificationResults = await Future.wait(
+      result.edges.map((edge) => CertificationDisplayItem.fromNetworkCertificationNode(edge.node, ref)),
     );
+    final items = certificationResults.whereType<CertificationDisplayItem>().toList();
 
-    // React to Squid connection changes: reload + resubscribe when connected
-    ref.listen(squidConnectionStatusProvider, (previous, next) {
-      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
-        log.i('🔄 Squid connected - loading network certifications');
-        loadCertifications();
-        _subscribeToNetworkCertifications();
-      }
-    });
-
-    // Only start initial load if Squid is already connected;
-    // otherwise the squidConnectionStatusProvider listener handles it.
-    Future.microtask(() {
-      final status = ref.read(squidConnectionStatusProvider);
-      if (status == d.ConnectionStatus.connected) {
-        loadCertifications();
-        _subscribeToNetworkCertifications();
-      }
-    });
-
-    // Start with isLoading: true to avoid flash of "no data" before loading starts
-    return const NetworkCertificationsState(isLoading: true);
-  }
-
-  /// Subscribe to network-wide certification activity (triggers refreshes when new certifications are issued)
-  void _subscribeToNetworkCertifications() {
-    // Cancel existing subscription before creating new one
-    _networkCertificationsSubscription?.cancel();
-
-    // Check if we have Squid connection
-    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
-    if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      log.w('Cannot subscribe to network certifications: Squid not connected');
-      return;
-    }
-
-    try {
-      _networkCertificationsSubscription = d.SquidService.client.subscribeNetworkCertifications().listen(
-        (activityId) {
-          if (activityId != null && activityId != state.lastActivityId) {
-            state = state.copyWith(lastActivityId: activityId);
-            _onNetworkCertificationActivity();
-          } else if (activityId != null) {
-            log.d('Received known certification activity ID: $activityId');
-          }
-        },
-        onError: (error) {
-          log.e('Network certification subscription error: $error');
-        },
-      );
-    } catch (e) {
-      log.e('Failed to setup network certification subscription: $e');
-    }
-  }
-
-  /// Handle network certification activity by refreshing the certification history
-  void _onNetworkCertificationActivity() async {
-    try {
-      // Don't refresh if we're already loading
-      if (state.isLoading) {
-        log.d('Skipping network certification refresh: already loading');
-        return;
-      }
-
-      // Refresh the complete certification history
-      await _refreshNetworkCertifications();
-    } catch (e) {
-      log.e('Error handling network certification activity: $e');
-    }
-  }
-
-  /// Refresh network certifications (used for activity-triggered updates)
-  Future<void> _refreshNetworkCertifications() async {
-    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
-    if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      log.w('Cannot refresh: Squid not connected');
-      return;
-    }
-
-    try {
-      // Fetch fresh network-wide certifications
-      final result = await d.SquidService.client.getNetworkCertifications(number: 20, cursor: null);
-
-      if (result != null) {
-        final certificationResults = await Future.wait(
-          result.edges.map((edge) => CertificationDisplayItem.fromNetworkCertificationNode(edge.node, ref)),
-        );
-        final newCertifications = certificationResults.whereType<CertificationDisplayItem>().toList();
-
-        // Check if we actually have new certifications by comparing with current state
-        final hasNewCertifications =
-            newCertifications.isNotEmpty &&
-            (state.certifications.isEmpty ||
-                (newCertifications.first.timestamp.isAfter(state.certifications.first.timestamp)));
-
-        if (hasNewCertifications) {
-          log.i('Found ${newCertifications.length} new network certifications');
-        }
-
-        state = state.copyWith(
-          certifications: newCertifications,
-          hasNextPage: result.pageInfo.hasNextPage,
-          cursor: result.pageInfo.endCursor,
-        );
-      } else {
-        log.w('Received null result from getNetworkCertifications');
-      }
-    } catch (e) {
-      log.e('Error refreshing network certifications: $e');
-    }
-  }
-
-  /// Load the first page of network certifications
-  Future<void> loadCertifications() async {
-    // Prevent concurrent loads
-    if (_isLoadingGuard) return;
-    _isLoadingGuard = true;
-
-    try {
-      await _loadCertificationsInner();
-    } finally {
-      _isLoadingGuard = false;
-    }
-  }
-
-  Future<void> _loadCertificationsInner() async {
-    // Check if we have Squid connection
-    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
-
-    if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      state = state.copyWith(isLoading: false, error: 'No network connection');
-      return;
-    }
-
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      // Fetch network-wide certifications
-      final result = await d.SquidService.client.getNetworkCertifications(number: 20, cursor: null);
-
-      if (result == null) {
-        state = state.copyWith(certifications: [], isLoading: false, hasNextPage: false, cursor: null);
-        return;
-      }
-
-      final certificationResults = await Future.wait(
-        result.edges.map((edge) => CertificationDisplayItem.fromNetworkCertificationNode(edge.node, ref)),
-      );
-      final certifications = certificationResults.whereType<CertificationDisplayItem>().toList();
-
-      state = state.copyWith(
-        certifications: certifications,
-        isLoading: false,
-        hasNextPage: result.pageInfo.hasNextPage,
-        cursor: result.pageInfo.endCursor,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  /// Load the next page of network certifications
-  Future<void> loadMoreCertifications() async {
-    if (state.isLoading || !state.hasNextPage) return;
-
-    // Check if we have Squid connection
-    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
-    if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      return;
-    }
-
-    state = state.copyWith(isLoading: true);
-
-    try {
-      // Fetch more network certifications using cursor pagination
-      final result = await d.SquidService.client.getNetworkCertifications(number: 20, cursor: state.cursor);
-
-      if (result == null) {
-        state = state.copyWith(isLoading: false);
-        return;
-      }
-
-      final certificationResults = await Future.wait(
-        result.edges.map((edge) => CertificationDisplayItem.fromNetworkCertificationNode(edge.node, ref)),
-      );
-      final newCertifications = certificationResults.whereType<CertificationDisplayItem>().toList();
-
-      state = state.copyWith(
-        certifications: [...state.certifications, ...newCertifications],
-        isLoading: false,
-        hasNextPage: result.pageInfo.hasNextPage,
-        cursor: result.pageInfo.endCursor,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  /// Refresh the network certifications (public method for manual refresh)
-  Future<void> refresh() async {
-    state = NetworkCertificationsState(lastActivityId: state.lastActivityId);
-    await loadCertifications();
+    return PaginatedResult(
+      items: items,
+      hasNextPage: result.pageInfo.hasNextPage,
+      endCursor: result.pageInfo.endCursor,
+    );
   }
 }
 
 /// Server-side filtered network certifications notifier
-class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertificationsState> {
+class ServerFilteredNetworkCertificationsNotifier extends Notifier<PaginatedState<CertificationDisplayItem>> {
   Timer? _debounceTimer;
+  bool _hasActiveFilters = false;
+  d.CertificationFilters? _appliedServerFilters;
 
   @override
-  NetworkCertificationsState build() {
+  PaginatedState<CertificationDisplayItem> build() {
     ref.onDispose(() => _debounceTimer?.cancel());
 
     // Listen to filter changes
@@ -309,11 +61,18 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
       }
     });
 
+    // React to Squid connection changes: reload when connected
+    ref.listen(squidConnectionStatusProvider, (previous, next) {
+      if (previous != d.ConnectionStatus.connected && next == d.ConnectionStatus.connected) {
+        log.i('Squid connected - loading filtered network certifications');
+        _loadNetworkCertificationsWithFilters();
+      }
+    });
+
     // Initial load asynchronously
     Future.microtask(() => _loadNetworkCertificationsWithFilters());
 
-    // Start with isLoading: true to avoid flash of "no data" before loading starts
-    return const NetworkCertificationsState(isLoading: true);
+    return const PaginatedState(isLoading: true);
   }
 
   /// Debounce filter updates to avoid excessive API calls
@@ -326,7 +85,7 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
 
   /// Convert Gecko filters to Durt2 filters
   d.CertificationFilters _convertToServerFilters(CertificationFilterCriteria geckoFilters) {
-    final serverFilters = d.CertificationFilters(
+    return d.CertificationFilters(
       issuerNameSearch: geckoFilters.issuerSearch,
       receiverNameSearch: geckoFilters.receiverSearch,
       startDate: geckoFilters.dateRange.startDate,
@@ -335,39 +94,31 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
       exactMatchIssuer: geckoFilters.exactMatchIssuer,
       exactMatchReceiver: geckoFilters.exactMatchReceiver,
     );
-
-    return serverFilters;
   }
 
   /// Load network certifications with current filters
   Future<void> _loadNetworkCertificationsWithFilters() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      log.e('❌ [CERTIFICATION DEBUG] No network connection');
+      log.e('No network connection for filtered certifications');
       state = state.copyWith(error: 'No network connection');
       return;
     }
 
     final geckoFilters = ref.read(certificationFiltersProvider);
-    final hasFilters = geckoFilters.hasActiveFilters;
+    _hasActiveFilters = geckoFilters.hasActiveFilters;
 
     // Reset state when switching filter modes to avoid cursor conflicts
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-      hasActiveFilters: hasFilters,
-      certifications: [], // Clear existing certifications when filters change
-      cursor: null, // Reset cursor to avoid conflicts
-    );
+    state = state.copyWith(isLoading: true, error: null, items: [], cursor: null);
 
     try {
-      if (hasFilters) {
+      if (_hasActiveFilters) {
         // Use server-side filtering via Durt2 (always start fresh, no cursor)
-        final serverFilters = _convertToServerFilters(geckoFilters);
+        _appliedServerFilters = _convertToServerFilters(geckoFilters);
         final result = await d.SquidService.client.getNetworkCertificationsFiltered(
           number: 20,
-          cursor: null, // Always start fresh to avoid cursor conflicts
-          filters: serverFilters,
+          cursor: null,
+          filters: _appliedServerFilters!,
         );
 
         if (result != null) {
@@ -377,15 +128,14 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
           final displayItems = itemResults.whereType<CertificationDisplayItem>().toList();
 
           state = state.copyWith(
-            certifications: displayItems,
+            items: displayItems,
             isLoading: false,
             hasNextPage: result.hasNextPage,
             cursor: result.endCursor,
-            appliedServerFilters: serverFilters,
           );
         } else {
           state = state.copyWith(
-            certifications: [],
+            items: [],
             isLoading: false,
             hasNextPage: false,
             error: 'Failed to load filtered network certifications',
@@ -395,11 +145,10 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
         // No filters: use standard efficient approach
         final baseState = ref.read(networkCertificationsProvider);
         state = state.copyWith(
-          certifications: baseState.certifications,
+          items: baseState.items,
           isLoading: false,
           hasNextPage: baseState.hasNextPage,
           cursor: baseState.cursor,
-          appliedServerFilters: null, // No server filters applied
         );
       }
     } catch (e) {
@@ -422,12 +171,12 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
     state = state.copyWith(isLoading: true);
 
     try {
-      if (state.hasActiveFilters && state.appliedServerFilters != null) {
+      if (_hasActiveFilters && _appliedServerFilters != null) {
         // Load more with server filters (use only server-generated cursors)
         final result = await d.SquidService.client.getNetworkCertificationsFiltered(
           number: 20,
-          cursor: state.cursor, // Use the cursor from server filtering results
-          filters: state.appliedServerFilters!,
+          cursor: state.cursor,
+          filters: _appliedServerFilters!,
         );
 
         if (result != null) {
@@ -437,7 +186,7 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
           final newItems = itemResults.whereType<CertificationDisplayItem>().toList();
 
           state = state.copyWith(
-            certifications: [...state.certifications, ...newItems],
+            items: [...state.items, ...newItems],
             isLoading: false,
             hasNextPage: result.hasNextPage,
             cursor: result.endCursor,
@@ -445,41 +194,42 @@ class ServerFilteredNetworkCertificationsNotifier extends Notifier<NetworkCertif
         }
       } else {
         // Load more without filters (delegate to existing provider)
-        await ref.read(networkCertificationsProvider.notifier).loadMoreCertifications();
+        await ref.read(networkCertificationsProvider.notifier).loadMoreItems();
         final baseState = ref.read(networkCertificationsProvider);
         state = state.copyWith(
-          certifications: baseState.certifications,
+          items: baseState.items,
           isLoading: false,
           hasNextPage: baseState.hasNextPage,
           cursor: baseState.cursor,
         );
       }
     } catch (e) {
-      log.e('❌ Error loading more network certifications: $e');
+      log.e('Error loading more network certifications: $e');
       state = state.copyWith(isLoading: false);
     }
   }
 
   /// Refresh network certifications
   Future<void> refresh() async {
-    state = const NetworkCertificationsState();
+    state = const PaginatedState();
     await _loadNetworkCertificationsWithFilters();
   }
 }
 
 /// Provider for network certifications
-final networkCertificationsProvider = NotifierProvider<NetworkCertificationsNotifier, NetworkCertificationsState>(
-  NetworkCertificationsNotifier.new,
-);
+final networkCertificationsProvider =
+    NotifierProvider<NetworkCertificationsNotifier, PaginatedState<CertificationDisplayItem>>(
+      NetworkCertificationsNotifier.new,
+    );
 
 /// Provider for server-filtered network certifications
 final serverFilteredNetworkCertificationsProvider =
-    NotifierProvider<ServerFilteredNetworkCertificationsNotifier, NetworkCertificationsState>(
+    NotifierProvider<ServerFilteredNetworkCertificationsNotifier, PaginatedState<CertificationDisplayItem>>(
       ServerFilteredNetworkCertificationsNotifier.new,
     );
 
 /// Adaptive network certifications provider that chooses between server and client filtering
-final adaptiveFilteredNetworkCertificationsProvider = Provider<NetworkCertificationsState>((ref) {
+final adaptiveFilteredNetworkCertificationsProvider = Provider<PaginatedState<CertificationDisplayItem>>((ref) {
   final filters = ref.watch(certificationFiltersProvider);
 
   if (filters.hasActiveFilters) {
@@ -498,7 +248,7 @@ Future<void> loadMoreNetworkCertifications(WidgetRef ref) async {
   if (filters.hasActiveFilters) {
     await ref.read(serverFilteredNetworkCertificationsProvider.notifier).loadMore();
   } else {
-    await ref.read(networkCertificationsProvider.notifier).loadMoreCertifications();
+    await ref.read(networkCertificationsProvider.notifier).loadMoreItems();
   }
 }
 

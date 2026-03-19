@@ -1,5 +1,4 @@
 // ignore_for_file: file_names
-// ignore_for_file: must_be_immutable
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -139,7 +138,7 @@ class _OnboardingStepSixMigratedState extends ConsumerState<OnboardingStepSixMig
                         ),
                         style: scaledTextStyle(
                           fontSize: 25,
-                          color: challengeState.inputColor ?? Colors.black,
+                          color: challengeState.isValid ? context.geckoColors.success : Colors.black,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

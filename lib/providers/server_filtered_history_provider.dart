@@ -4,64 +4,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/models/transaction_filters.dart';
+import 'package:gecko/providers/base_paginated_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/providers/transaction_history_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/providers/providers.dart';
 
-/// State for server-filtered transaction history
-class ServerFilteredHistoryState {
-  final List<TransactionDisplayItem> transactions;
-  final bool isLoading;
-  final bool hasNextPage;
-  final String? cursor;
-  final String? error;
-  final bool hasActiveFilters;
-  final d.TransactionFilters? appliedServerFilters;
-
-  const ServerFilteredHistoryState({
-    this.transactions = const [],
-    this.isLoading = false,
-    this.hasNextPage = true,
-    this.cursor,
-    this.error,
-    this.hasActiveFilters = false,
-    this.appliedServerFilters,
-  });
-
-  ServerFilteredHistoryState copyWith({
-    List<TransactionDisplayItem>? transactions,
-    bool? isLoading,
-    bool? hasNextPage,
-    String? cursor,
-    String? error,
-    bool? hasActiveFilters,
-    d.TransactionFilters? appliedServerFilters,
-  }) {
-    return ServerFilteredHistoryState(
-      transactions: transactions ?? this.transactions,
-      isLoading: isLoading ?? this.isLoading,
-      hasNextPage: hasNextPage ?? this.hasNextPage,
-      cursor: cursor ?? this.cursor,
-      error: error ?? this.error,
-      hasActiveFilters: hasActiveFilters ?? this.hasActiveFilters,
-      appliedServerFilters: appliedServerFilters ?? this.appliedServerFilters,
-    );
-  }
-}
-
 /// Notifier for server-side filtered transaction history
-class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState> {
+class ServerFilteredHistoryNotifier extends Notifier<PaginatedState<TransactionDisplayItem>> {
   ServerFilteredHistoryNotifier(this._address);
   final String _address;
 
   Timer? _debounceTimer;
+  bool _hasActiveFilters = false;
+  d.TransactionFilters? _appliedServerFilters;
 
   String get address => _address;
 
   @override
-  ServerFilteredHistoryState build() {
+  PaginatedState<TransactionDisplayItem> build() {
     ref.onDispose(() => _debounceTimer?.cancel());
 
     // Listen to filter changes
@@ -75,7 +37,7 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
     Future.microtask(() => _loadTransactionsWithFilters());
 
     // Start with isLoading: true to avoid flash of "no data" before loading starts
-    return const ServerFilteredHistoryState(isLoading: true);
+    return const PaginatedState(isLoading: true);
   }
 
   /// Debounce filter updates to avoid excessive API calls
@@ -88,7 +50,7 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
 
   /// Convert Gecko filters to Durt2 filters
   d.TransactionFilters _convertToServerFilters(TransactionFilterCriteria geckoFilters) {
-    final serverFilters = d.TransactionFilters(
+    return d.TransactionFilters(
       fromAddress: geckoFilters.directionFilter?.fromAddress,
       toAddress: geckoFilters.directionFilter?.toAddress,
       commentSearch: geckoFilters.commentSearch,
@@ -101,30 +63,22 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
       exactMatchComment: geckoFilters.exactMatchComment,
       exactMatchDirection: geckoFilters.exactMatchDirection,
     );
-
-    return serverFilters;
   }
 
   /// Load transactions with current filters
   Future<void> _loadTransactionsWithFilters() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      log.e('❌ [GECKO DEBUG] No network connection');
+      log.e('No network connection for filtered transactions');
       state = state.copyWith(error: 'No network connection');
       return;
     }
 
     final geckoFilters = ref.read(transactionFiltersProvider);
-    final hasFilters = geckoFilters.hasActiveFilters;
+    _hasActiveFilters = geckoFilters.hasActiveFilters;
 
     // Reset state when switching filter modes to avoid cursor conflicts
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-      hasActiveFilters: hasFilters,
-      transactions: [], // Clear existing transactions when filters change
-      cursor: null, // Reset cursor to avoid conflicts
-    );
+    state = state.copyWith(isLoading: true, error: null, items: [], cursor: null);
 
     try {
       final genesisTime = await ref.read(genesisTimeProvider.future);
@@ -133,14 +87,14 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
         return;
       }
 
-      if (hasFilters) {
+      if (_hasActiveFilters) {
         // Use server-side filtering via Durt2 (always start fresh, no cursor)
-        final serverFilters = _convertToServerFilters(geckoFilters);
+        _appliedServerFilters = _convertToServerFilters(geckoFilters);
         final result = await d.SquidService.client.getAccountHistoryFiltered(
           address,
           number: 20,
-          cursor: null, // Always start fresh to avoid cursor conflicts
-          filters: serverFilters,
+          cursor: null,
+          filters: _appliedServerFilters!,
         );
 
         if (result != null) {
@@ -149,15 +103,14 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
               .toList();
 
           state = state.copyWith(
-            transactions: displayItems,
+            items: displayItems,
             isLoading: false,
             hasNextPage: result.hasNextPage,
             cursor: result.endCursor,
-            appliedServerFilters: serverFilters,
           );
         } else {
           state = state.copyWith(
-            transactions: [],
+            items: [],
             isLoading: false,
             hasNextPage: false,
             error: 'Failed to load filtered transactions',
@@ -167,11 +120,10 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
         // No filters: use standard efficient approach
         final baseState = ref.read(transactionHistoryProvider(address));
         state = state.copyWith(
-          transactions: baseState.transactions,
+          items: baseState.items,
           isLoading: false,
           hasNextPage: baseState.hasNextPage,
           cursor: baseState.cursor,
-          appliedServerFilters: null,
         );
       }
     } catch (e) {
@@ -200,13 +152,13 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
         return;
       }
 
-      if (state.hasActiveFilters && state.appliedServerFilters != null) {
+      if (_hasActiveFilters && _appliedServerFilters != null) {
         // Load more with server filters (use only server-generated cursors)
         final result = await d.SquidService.client.getAccountHistoryFiltered(
           address,
           number: 20,
-          cursor: state.cursor, // Use the cursor from server filtering results
-          filters: state.appliedServerFilters!,
+          cursor: state.cursor,
+          filters: _appliedServerFilters!,
         );
 
         if (result != null) {
@@ -215,7 +167,7 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
               .toList();
 
           state = state.copyWith(
-            transactions: [...state.transactions, ...newItems],
+            items: [...state.items, ...newItems],
             isLoading: false,
             hasNextPage: result.hasNextPage,
             cursor: result.endCursor,
@@ -225,14 +177,14 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
         // Load more without filters (delegate to existing providers)
         final includeUD = ref.read(universalDividendsToggleProvider);
         if (includeUD) {
-          await ref.read(combinedHistoryProvider(address).notifier).loadMoreTransactions();
+          await ref.read(combinedHistoryProvider(address).notifier).loadMoreItems();
         } else {
-          await ref.read(transfersOnlyHistoryProvider(address).notifier).loadMoreTransactions();
+          await ref.read(transfersOnlyHistoryProvider(address).notifier).loadMoreItems();
         }
 
         final baseState = ref.read(transactionHistoryProvider(address));
         state = state.copyWith(
-          transactions: baseState.transactions,
+          items: baseState.items,
           isLoading: false,
           hasNextPage: baseState.hasNextPage,
           cursor: baseState.cursor,
@@ -246,13 +198,13 @@ class ServerFilteredHistoryNotifier extends Notifier<ServerFilteredHistoryState>
 
   /// Refresh transactions
   Future<void> refresh() async {
-    state = const ServerFilteredHistoryState();
+    state = const PaginatedState();
     await _loadTransactionsWithFilters();
   }
 }
 
 /// Provider for server-filtered transaction history
 final serverFilteredHistoryProvider =
-    NotifierProvider.family<ServerFilteredHistoryNotifier, ServerFilteredHistoryState, String>(
+    NotifierProvider.family<ServerFilteredHistoryNotifier, PaginatedState<TransactionDisplayItem>, String>(
       (address) => ServerFilteredHistoryNotifier(address),
     );

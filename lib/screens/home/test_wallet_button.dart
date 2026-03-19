@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/utils/debug_test_wallet.dart';
@@ -32,10 +33,10 @@ class TestWalletButton extends ConsumerWidget {
           child: OutlinedButton(
             style:
                 OutlinedButton.styleFrom(
-                  side: BorderSide(width: scaleSize(2), color: Colors.orange),
+                  side: BorderSide(width: scaleSize(2), color: context.geckoColors.warning),
                   padding: EdgeInsets.symmetric(vertical: scaleSize(8)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  backgroundColor: Colors.orange.withValues(alpha: 0.1),
+                  backgroundColor: context.geckoColors.warning.withValues(alpha: 0.1),
                 ).copyWith(
                   elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
                     if (states.contains(WidgetState.pressed)) return 0;
@@ -47,11 +48,11 @@ class TestWalletButton extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.bug_report, color: Colors.orange, size: scaleSize(20)),
+                Icon(Icons.bug_report, color: context.geckoColors.warning, size: scaleSize(20)),
                 ScaledSizedBox(width: 8),
                 Text(
                   "Import Test Wallet (Dev Mode)",
-                  style: scaledTextStyle(fontSize: 16, color: Colors.orange, fontWeight: FontWeight.w600),
+                  style: scaledTextStyle(fontSize: 16, color: context.geckoColors.warning, fontWeight: FontWeight.w600),
                 ),
               ],
             ),

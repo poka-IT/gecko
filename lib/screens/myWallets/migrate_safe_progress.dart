@@ -1,9 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 
 import 'package:durt2/durt2.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -302,7 +301,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                       children: [
                         Icon(
                           _migrationSuccess ? Icons.check_circle_outline : Icons.error_outline,
-                          color: _migrationSuccess ? Colors.green : Colors.red,
+                          color: _migrationSuccess ? context.geckoColors.success : context.geckoColors.danger,
                           size: 50,
                         ),
                         const SizedBox(height: 16),
@@ -351,6 +350,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                                 ref.invalidate(identityWalletsAsyncProvider);
 
                                 // Navigate to switch safe screen
+                                if (!mounted) return;
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(builder: (context) => const SwitchSafe()),
@@ -360,6 +360,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                                 // Set the mnemonic in the provider for the next screen
                                 await ref.read(mnemonicStateProvider.notifier).setMnemonic(widget.newMnemonic);
 
+                                if (!mounted) return;
                                 await AppNavigator.pushAndRemoveUntilWithFader(
                                   context,
                                   RouteNames.onboardingStepSeven,
@@ -404,15 +405,15 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
         statusText = 'migratingStatus'.tr();
         break;
       case MigrationStatus.success:
-        leading = const Icon(Icons.check_circle, color: Colors.green);
+        leading = Icon(Icons.check_circle, color: context.geckoColors.success);
         statusText = 'successStatus'.tr();
         break;
       case MigrationStatus.failed:
-        leading = const Icon(Icons.error, color: Colors.red);
+        leading = Icon(Icons.error, color: context.geckoColors.danger);
         statusText = 'failedStatus'.tr();
         break;
       case MigrationStatus.empty:
-        leading = const Icon(Icons.info_outline, color: Colors.blueGrey);
+        leading = Icon(Icons.info_outline, color: context.geckoColors.info);
         statusText = 'walletIsEmptyNoMigrationNeeded'.tr();
         break;
     }
@@ -461,7 +462,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
           ],
         ),
         onTap: onTap,
-        trailing: onTap != null ? const Icon(Icons.info_outline, color: Colors.blueGrey) : null,
+        trailing: onTap != null ? Icon(Icons.info_outline, color: context.geckoColors.info) : null,
       ),
     );
   }

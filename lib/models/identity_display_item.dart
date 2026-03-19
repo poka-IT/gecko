@@ -3,6 +3,7 @@ import 'package:durt2/durt2.dart'
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/providers/gecko_colors.dart';
 import 'package:gecko/utils.dart';
 
 class IdentityDisplayItem {
@@ -121,24 +122,24 @@ class IdentityDisplayItem {
   }
 
   /// Get appropriate color for status
-  Color getStatusColor() {
+  Color getStatusColor(GeckoColors colors) {
     switch (status) {
       case 'Member':
-        return Colors.green;
+        return colors.statusMember;
       case 'Unconfirmed':
-        return Colors.blue;
+        return colors.statusCreated;
       case 'NotMember':
-        return Colors.orange;
+        return colors.statusConfirmed;
       case 'Removed':
-        return Colors.orange;
+        return colors.statusConfirmed;
       case 'Revoked':
-        return Colors.red;
+        return colors.statusExpired;
       case 'Unvalidated':
-        return Colors.grey;
+        return colors.statusNone;
       case 'Unknown':
-        return Colors.grey;
+        return colors.statusNone;
       default:
-        return Colors.red;
+        return colors.statusExpired;
     }
   }
 

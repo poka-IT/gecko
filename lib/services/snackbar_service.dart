@@ -53,25 +53,13 @@ class SnackbarService {
     );
   }
 
-  @Deprecated('Use copyMnemonicToClipboard instead for auto-clear security')
-  static void showMnemonicCopied(BuildContext context) {
-    _showSnackBar(
-      context,
-      message: "thisMnemonicHasBeenCopiedToClipboard".tr(),
-      duration: 4,
-      backgroundColor: context.colorScheme.onSurface,
-      textColor: context.colorScheme.surfaceContainer,
-      fontSize: 13,
-    );
-  }
-
   /// Shows a success snackbar with green styling.
   static void showSuccess(BuildContext context, {required String message, int duration = 4}) {
     _showSnackBar(
       context,
       message: message,
       duration: duration,
-      backgroundColor: Colors.green.shade700,
+      backgroundColor: context.geckoColors.success,
       textColor: Colors.white,
       fontSize: 14,
     );
@@ -83,7 +71,7 @@ class SnackbarService {
       context,
       message: message,
       duration: duration,
-      backgroundColor: Colors.red.shade700,
+      backgroundColor: context.geckoColors.danger,
       textColor: Colors.white,
       fontSize: 14,
     );
@@ -95,7 +83,7 @@ class SnackbarService {
       context,
       message: message,
       duration: duration,
-      backgroundColor: Colors.orange.shade700,
+      backgroundColor: context.geckoColors.warning,
       textColor: Colors.white,
       fontSize: 14,
     );

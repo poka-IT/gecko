@@ -102,7 +102,7 @@ class HistoryView extends StatelessWidget {
                 Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
                 Text(
                   'blockchainStart'.tr(),
-                  style: scaledTextStyle(fontSize: 19, color: Colors.blueAccent, fontWeight: FontWeight.w400),
+                  style: scaledTextStyle(fontSize: 19, color: context.geckoColors.info, fontWeight: FontWeight.w400),
                 ),
                 Image(image: const AssetImage('assets/party.png'), height: scaleSize(31)),
               ],

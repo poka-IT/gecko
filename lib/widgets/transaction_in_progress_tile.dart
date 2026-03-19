@@ -229,7 +229,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
     _subscription?.cancel();
     // Fermer la snackbar si elle est affichée quand le widget est disposé
     if (_errorSnackbarShown) {
-      ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
     }
     super.dispose();
   }
@@ -341,12 +341,12 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                 // Title
                 Row(
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red[700], size: 24),
+                    Icon(Icons.error_outline, color: context.geckoColors.danger, size: 24),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'transactionFailedTitle'.tr(),
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red[700]),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.geckoColors.danger),
                       ),
                     ),
                   ],
@@ -372,14 +372,14 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                 Icon(
                                   isCopied ? Icons.check : Icons.copy,
                                   size: 14,
-                                  color: isCopied ? Colors.green[600] : Colors.grey[600],
+                                  color: isCopied ? context.geckoColors.success : Colors.grey[600],
                                 ),
                                 SizedBox(width: 4),
                                 Text(
                                   isCopied ? 'copied'.tr() : 'copy'.tr(),
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: isCopied ? Colors.green[600] : Colors.grey[600],
+                                    color: isCopied ? context.geckoColors.success : Colors.grey[600],
                                   ),
                                 ),
                               ],
@@ -401,7 +401,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                   ),
                   child: SelectableText(
                     errorMessage ?? 'Unknown error occurred',
-                    style: TextStyle(fontSize: 14, fontFamily: 'Monospace', color: Colors.red[800]),
+                    style: TextStyle(fontSize: 14, fontFamily: 'Monospace', color: context.geckoColors.dangerText),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -466,25 +466,25 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
             final fromWallet = ref.read(walletServiceProvider).defaultWallet;
             final transactionData = _currentTransactionData;
 
-            ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
             // Calculate bottom margin based on bottom app bar visibility
-            final container = ProviderScope.containerOf(homeContext);
+            final container = ProviderScope.containerOf(context);
             final bottomBarState = container.read(bottomAppBarProvider);
             final isBottomBarVisible = bottomBarState.isBottomBarActuallyVisible;
             final bottomMargin = isBottomBarVisible
                 ? scaleSize(67) + 16.0
                 : 16.0; // Bottom bar height + standard margin
 
-            ScaffoldMessenger.of(homeContext).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: GestureDetector(
                   onTap: () {
                     // Close the SnackBar first
-                    ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     // Then show the error details
                     _showTransactionErrorDetails(
-                      context: homeContext,
+                      context: context,
                       errorMessage: errorMessage,
                       fromWallet: fromWallet,
                       transactionData: transactionData,
@@ -528,7 +528,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                         GestureDetector(
                           onTap: () {
                             _status = TransactionStatus(state: TransactionState.none);
-                            ScaffoldMessenger.of(homeContext).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           },
                           child: Container(
                             padding: EdgeInsets.all(4),
@@ -543,7 +543,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                     ),
                   ),
                 ),
-                backgroundColor: Colors.red[700],
+                backgroundColor: context.geckoColors.danger,
                 duration: Duration(days: 365), // Persist indefinitely
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -717,7 +717,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                         Icon(
                                           Icons.call_made, // Always outgoing for transaction in progress
                                           size: scaleSize(14),
-                                          color: Colors.blue,
+                                          color: context.geckoColors.info,
                                         ),
                                         ScaledSizedBox(width: 6),
                                         // Comment text
@@ -780,14 +780,14 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                   color:
                                       (_status.state == TransactionState.inBlock ||
                                           _status.state == TransactionState.finalized)
-                                      ? Colors.green.withValues(alpha: 0.1)
+                                      ? context.geckoColors.success.withValues(alpha: 0.1)
                                       : context.colorScheme.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(scaleSize(4)),
                                   border: Border.all(
                                     color:
                                         (_status.state == TransactionState.inBlock ||
                                             _status.state == TransactionState.finalized)
-                                        ? Colors.green.withValues(alpha: 0.3)
+                                        ? context.geckoColors.success.withValues(alpha: 0.3)
                                         : context.colorScheme.primary.withValues(alpha: 0.3),
                                     width: 1,
                                   ),
@@ -803,7 +803,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                                     color:
                                         (_status.state == TransactionState.inBlock ||
                                             _status.state == TransactionState.finalized)
-                                        ? Colors.green
+                                        ? context.geckoColors.success
                                         : context.colorScheme.primary,
                                     fontWeight: FontWeight.w500,
                                   ),

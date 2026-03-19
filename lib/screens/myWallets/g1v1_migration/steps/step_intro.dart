@@ -81,19 +81,19 @@ class StepIntro extends ConsumerWidget {
 
                 // Warning card
                 Card(
-                  color: Colors.orange.shade50,
+                  color: context.geckoColors.warningContainer,
                   elevation: 0,
                   margin: EdgeInsets.zero,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.orange.shade300, width: 1),
+                    side: BorderSide(color: context.geckoColors.warning.withValues(alpha: 0.5), width: 1),
                   ),
                   child: Padding(
                     padding: EdgeInsets.all(scaleSize(10)),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: scaleSize(22)),
+                        Icon(Icons.warning_amber_rounded, color: context.geckoColors.warning, size: scaleSize(22)),
                         ScaledSizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -104,7 +104,7 @@ class StepIntro extends ConsumerWidget {
                                 style: scaledTextStyle(
                                   fontSize: isSmallScreen ? 12 : 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.orange.shade900,
+                                  color: context.geckoColors.warningText,
                                 ),
                               ),
                               ScaledSizedBox(height: 2),
@@ -112,7 +112,7 @@ class StepIntro extends ConsumerWidget {
                                 'migration_intro_irreversible_detail'.tr(),
                                 style: scaledTextStyle(
                                   fontSize: isSmallScreen ? 11 : 12,
-                                  color: Colors.orange.shade800,
+                                  color: context.geckoColors.warningText,
                                 ),
                               ),
                             ],

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:durt2/durt2.dart' show SafeEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -150,7 +148,8 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                       await ref.read(walletActionsProvider.notifier).switchSafe(currentSafe);
                       PinCodeService.pinCode = '';
                       await ref.read(biometricProvider.notifier).refresh();
-                      if (!await PinCodeService.askPinCode(canSwitch: true)) return;
+                      if (!context.mounted) return;
+                      if (!await PinCodeService.askPinCode(context, canSwitch: true)) return;
 
                       // Pop back to the existing WalletsHome which has already rebuilt
                       // with new safe data via switchSafe(). The fade animation in

@@ -66,7 +66,10 @@ build:android:apk:
     - echo "Building Gecko Android APKs v${VERSION}+${BUILD}"
 
     # Clean and build
-    - flutter build apk --release --split-per-abi --build-name $VERSION --build-number $BUILD
+    - flutter build apk --release --split-per-abi --split-debug-info=build/sentry-symbols --build-name $VERSION --build-number $BUILD
+
+    # Upload debug symbols to Sentry (requires SENTRY_AUTH_TOKEN CI variable)
+    - dart run sentry_dart_plugin 2>/dev/null || echo "Sentry symbol upload skipped (SENTRY_AUTH_TOKEN not set?)"
 
     # Rename APKs with version
     - mkdir -p artifacts/android
@@ -315,7 +318,8 @@ build:android:bundle:
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
     - echo "Building Gecko Android Bundle v${VERSION}+${BUILD}"
 
-    - flutter build appbundle --release --build-name $VERSION --build-number $BUILD
+    - flutter build appbundle --release --split-debug-info=build/sentry-symbols --build-name $VERSION --build-number $BUILD
+    - dart run sentry_dart_plugin 2>/dev/null || echo "Sentry symbol upload skipped"
 
     - mkdir -p artifacts/android
     - mv build/app/outputs/bundle/release/app-release.aab artifacts/android/gecko-${VERSION}+${BUILD}.aab
@@ -347,7 +351,8 @@ build:linux:x64:
   allow_failure: true
   script:
     - flutter pub get --offline || flutter pub get
-    - flutter build linux --release --build-name=$VERSION --build-number=$BUILD --verbose
+    - flutter build linux --release --split-debug-info=build/sentry-symbols --build-name=$VERSION --build-number=$BUILD --verbose
+    - dart run sentry_dart_plugin 2>/dev/null || echo "Sentry symbol upload skipped"
     - mkdir -p artifacts/linux
     - export ARCH=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/x64/')
     - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-x64.tar.gz" -C build/linux/${ARCH}/release/bundle .
@@ -360,7 +365,8 @@ build:linux:arm64:
   image: poka/gecko-ci-linux:arm64
   script:
     - flutter pub get --offline || flutter pub get
-    - flutter build linux --release --build-name=$VERSION --build-number=$BUILD --verbose
+    - flutter build linux --release --split-debug-info=build/sentry-symbols --build-name=$VERSION --build-number=$BUILD --verbose
+    - dart run sentry_dart_plugin 2>/dev/null || echo "Sentry symbol upload skipped"
     - mkdir -p artifacts/linux
     - export ARCH=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/x64/')
     - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-arm64.tar.gz" -C build/linux/${ARCH}/release/bundle .

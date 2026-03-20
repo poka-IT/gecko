@@ -85,20 +85,28 @@ class SentryService {
 
     await SentryFlutter.init((options) {
       options.dsn = dsn;
-      // options.replay.sessionSampleRate = 1.0;
-      // options.replay.onErrorSampleRate = 1.0;
 
-      // // Privacy settings for PII masking
-      // //TODO: Set this to false in production for Ğ1
-      // options.privacy.maskAllText = false;
-      // options.privacy.maskAllImages = false;
-
-      // Configure automatic error reporting with diagnostic data
+      // Error reporting
       options.beforeSend = _beforeSendCallback;
+      options.sampleRate = 1.0;
+      options.maxBreadcrumbs = 1000;
+      options.maxCacheItems = 1000;
 
-      options.maxBreadcrumbs = 1000; // Maximum breadcrumbs
-      options.sampleRate = 1.0; // Send 100% of events
-      options.maxCacheItems = 1000; // Maximum cache
+      // Native crash diagnostics
+      options.attachThreads = true;
+      options.attachScreenshot = true;
+      options.enableAutoNativeBreadcrumbs = true;
+
+      // Performance monitoring (20% sampling to limit overhead)
+      options.tracesSampleRate = 0.2;
+      options.enableAutoPerformanceTracing = true;
+
+      // ANR detection (Android) and app hang tracking (iOS)
+      options.anrEnabled = true;
+      options.enableAppHangTracking = true;
+
+      // Structured logs
+      options.enableLogs = true;
     }, appRunner: appRunner);
 
     // Mark as initialized

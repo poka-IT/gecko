@@ -38,6 +38,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:gecko/services/app_info_service.dart';
 import 'package:gecko/services/config_service.dart';
 import 'package:gecko/services/sentry_service.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:gecko/services/log_collection_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/services/empty_string_asset_loader.dart';
@@ -231,78 +232,78 @@ class Gecko extends StatelessWidget {
           // Activate lifecycle observer for WebSocket reconnection after background
           ref.watch(appLifecycleProvider);
 
-          return SentryContextProvider(
-            child: Builder(
-              builder: (context) {
-                // Create the navigator observer with Riverpod ref
-                final navigatorObserver = BottomAppBarNavigatorObserver(ref);
-                final textScale = ref.watch(textScalingProvider);
-                final themeMode = ref.watch(currentThemeModeProvider);
+          return SentryWidget(
+            child: SentryContextProvider(
+              child: Builder(
+                builder: (context) {
+                  // Create the navigator observer with Riverpod ref
+                  final navigatorObserver = BottomAppBarNavigatorObserver(ref);
+                  final textScale = ref.watch(textScalingProvider);
+                  final themeMode = ref.watch(currentThemeModeProvider);
 
-                // Override Intl.defaultLocale with a safe fallback for locales
-                // not supported by the intl package (e.g. Esperanto "eo").
-                // easy_localization sets Intl.defaultLocale automatically,
-                // which would crash every DateFormat call for unsupported locales.
-                Intl.defaultLocale = safeLocale(context.locale.languageCode);
+                  // Override Intl.defaultLocale with a safe fallback for locales
+                  // not supported by the intl package (e.g. Esperanto "eo").
+                  // easy_localization sets Intl.defaultLocale automatically,
+                  // which would crash every DateFormat call for unsupported locales.
+                  Intl.defaultLocale = safeLocale(context.locale.languageCode);
 
-                return MaterialApp(
-                  localizationsDelegates: [...eoLocalizationDelegates, ...context.localizationDelegates],
-                  supportedLocales: context.supportedLocales,
-                  locale: context.locale,
-                  theme: lightTheme,
-                  darkTheme: darkTheme,
-                  themeMode: themeMode,
-                  navigatorKey: _navigatorKey,
-                  navigatorObservers: [
-                    navigatorObserver,
-                    // Add RouteObserver for immediate bottom bar state updates
-                    globalRouteObserver,
-                  ],
-                  builder: (context, child) {
-                    // Apply text scaling using Builder to preserve original MediaQuery context
-                    final scaledChild = Builder(
-                      builder: (builderContext) {
-                        final originalData = MediaQuery.of(builderContext);
-                        return MediaQuery(
-                          data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
-                          child: child!,
-                        );
-                      },
-                    );
+                  return MaterialApp(
+                    localizationsDelegates: [...eoLocalizationDelegates, ...context.localizationDelegates],
+                    supportedLocales: context.supportedLocales,
+                    locale: context.locale,
+                    theme: lightTheme,
+                    darkTheme: darkTheme,
+                    themeMode: themeMode,
+                    navigatorKey: _navigatorKey,
+                    navigatorObservers: [SentryNavigatorObserver(), navigatorObserver, globalRouteObserver],
+                    builder: (context, child) {
+                      // Apply text scaling using Builder to preserve original MediaQuery context
+                      final scaledChild = Builder(
+                        builder: (builderContext) {
+                          final originalData = MediaQuery.of(builderContext);
+                          return MediaQuery(
+                            data: originalData.copyWith(textScaler: TextScaler.linear(textScale)),
+                            child: child!,
+                          );
+                        },
+                      );
 
-                    final responsiveChild = ResponsiveBreakpoints.builder(
-                      child: scaledChild,
-                      breakpoints: [
-                        const Breakpoint(start: 0, end: 450, name: MOBILE),
-                        const Breakpoint(start: 451, end: 800, name: TABLET),
-                        const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
-                      ],
-                    );
+                      final responsiveChild = ResponsiveBreakpoints.builder(
+                        child: scaledChild,
+                        breakpoints: [
+                          const Breakpoint(start: 0, end: 450, name: MOBILE),
+                          const Breakpoint(start: 451, end: 800, name: TABLET),
+                          const Breakpoint(start: 801, end: double.infinity, name: DESKTOP),
+                        ],
+                      );
 
-                    // Wrap with padding wrapper to avoid content being hidden behind bottom bar
-                    final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
+                      // Wrap with padding wrapper to avoid content being hidden behind bottom bar
+                      final childWithPadding = PageWithBottomPaddingWrapper(child: responsiveChild);
 
-                    // Wrap with offline overlay and version overlay
-                    final finalChild = showVersionOverlay ? VersionOverlay(child: childWithPadding) : childWithPadding;
+                      // Wrap with offline overlay and version overlay
+                      final finalChild = showVersionOverlay
+                          ? VersionOverlay(child: childWithPadding)
+                          : childWithPadding;
 
-                    // Add the global bottom app bar as an overlay
-                    // Wrap with ReadyCertificationListener to handle certification ready notifications globally
-                    return GlobalSearchShortcutScope(
-                      child: ReadyCertificationListener(
-                        child: Stack(
-                          children: [
-                            GlobalOfflineOverlay(child: finalChild),
-                            Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
-                          ],
+                      // Add the global bottom app bar as an overlay
+                      // Wrap with ReadyCertificationListener to handle certification ready notifications globally
+                      return GlobalSearchShortcutScope(
+                        child: ReadyCertificationListener(
+                          child: Stack(
+                            children: [
+                              GlobalOfflineOverlay(child: finalChild),
+                              Positioned(bottom: 0, left: 0, right: 0, child: const GlobalBottomAppBar()),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  title: 'Ğecko',
-                  initialRoute: AppRoutes.initialRoute,
-                  routes: AppRoutes.getRoutes(),
-                );
-              },
+                      );
+                    },
+                    title: 'Ğecko',
+                    initialRoute: AppRoutes.initialRoute,
+                    routes: AppRoutes.getRoutes(),
+                  );
+                },
+              ),
             ),
           );
         },

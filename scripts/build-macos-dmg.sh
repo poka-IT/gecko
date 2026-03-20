@@ -117,7 +117,7 @@ fi
 
 # Step 5: Build macOS release
 print_step "Building macOS release (this may take a few minutes)..."
-flutter build macos --release
+flutter build macos --release --split-debug-info=build/sentry-symbols
 
 # Verify build success
 if [[ ! -d "$APP_PATH" ]]; then

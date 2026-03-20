@@ -3,6 +3,8 @@ import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 /// Provider for managing Universal Dividends toggle state with persistent storage.
 ///
@@ -113,8 +115,8 @@ class SettingsService {
       await g1WalletsBox.clear();
       log.d('Cleared G1WalletsList cache');
 
-      // Clear transaction status cache (handled by app restart)
-      log.d('Transaction status cache will be cleared on app restart');
+      // Clear Riverpod persistent cache (SQLite)
+      await _clearRiverpodPersistCache();
 
       // Clear Squid and Duniter endpoint caches
       await _clearEndpointCaches();
@@ -123,6 +125,19 @@ class SettingsService {
     } catch (e) {
       log.e('❌ Error clearing caches: $e');
       rethrow;
+    }
+  }
+
+  /// Clear Riverpod persistent SQLite cache (transaction history, certifications, etc.)
+  Future<void> _clearRiverpodPersistCache() async {
+    try {
+      final dbPath = join(await getDatabasesPath(), 'gecko_riverpod_cache.db');
+      final db = await openDatabase(dbPath);
+      await db.delete('riverpod');
+      await db.close();
+      log.d('✅ Cleared Riverpod persist cache');
+    } catch (e) {
+      log.w('⚠️ Error clearing Riverpod persist cache: $e');
     }
   }
 

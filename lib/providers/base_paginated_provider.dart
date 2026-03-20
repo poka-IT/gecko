@@ -167,7 +167,7 @@ abstract class BasePaginatedNotifier<T> extends Notifier<PaginatedState<T>> {
       }
     });
 
-    return const PaginatedState(isLoading: true);
+    return PaginatedState<T>(isLoading: true);
   }
 
   // ── Subscription ──

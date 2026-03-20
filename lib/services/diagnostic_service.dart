@@ -249,7 +249,13 @@ class DiagnosticService {
         'timezone': DateTime.now().timeZoneName,
       };
 
-      // Memory and storage
+      // Memory usage
+      healthInfo['memory'] = {
+        'current_rss_mb': (ProcessInfo.currentRss / 1024 / 1024).toStringAsFixed(1),
+        'max_rss_mb': (ProcessInfo.maxRss / 1024 / 1024).toStringAsFixed(1),
+      };
+
+      // Storage
       healthInfo['resources'] = {'storage_keys': ConfigService(configBox).keyCount};
     } catch (e) {
       healthInfo['error'] = e.toString();

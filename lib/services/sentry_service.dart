@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' hide log;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -101,6 +103,47 @@ class SentryService {
 
     // Mark as initialized
     _isInitialized = true;
+
+    // Start lifecycle and memory pressure observers for better crash diagnostics
+    _startLifecycleObserver();
+    _startMemoryPressureListener();
+  }
+
+  // ignore: unused_field — stored to prevent GC collection
+  static AppLifecycleListener? _lifecycleListener;
+
+  /// Record app lifecycle transitions as Sentry breadcrumbs.
+  /// Helps diagnose native crashes (Linux SIGABRT) and iOS watchdog terminations
+  /// by showing what the app was doing before the crash.
+  static void _startLifecycleObserver() {
+    _lifecycleListener = AppLifecycleListener(
+      onStateChange: (state) {
+        final memoryMb = (ProcessInfo.currentRss / 1024 / 1024).toStringAsFixed(1);
+        addBreadcrumb(
+          'App lifecycle: ${state.name}',
+          category: 'app.lifecycle',
+          data: {'state': state.name, 'memory_rss_mb': memoryMb},
+        );
+      },
+    );
+  }
+
+  /// Listen for OS memory pressure warnings (iOS/Android) and record as Sentry breadcrumbs.
+  /// Helps diagnose WatchdogTermination (iOS killing app for RAM overuse).
+  static void _startMemoryPressureListener() {
+    SystemChannels.system.setMessageHandler((message) async {
+      if (message == '{"type":"memoryPressure"}') {
+        final memoryMb = (ProcessInfo.currentRss / 1024 / 1024).toStringAsFixed(1);
+        final maxMemoryMb = (ProcessInfo.maxRss / 1024 / 1024).toStringAsFixed(1);
+        addBreadcrumb(
+          'OS memory pressure warning',
+          category: 'device.memory',
+          level: SentryLevel.warning,
+          data: {'current_rss_mb': memoryMb, 'max_rss_mb': maxMemoryMb},
+        );
+      }
+      return null;
+    });
   }
 
   /// Update the current context and ref for diagnostic data collection

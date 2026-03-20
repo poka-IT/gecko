@@ -148,9 +148,11 @@ class _MnemonicScannerState extends State<MnemonicScanner> with WidgetsBindingOb
         }
       }
     } on CameraException catch (e) {
-      // Camera closed or iOS background restriction — ignore silently
+      // Ignore all camera errors after disposal/unmount (race condition with iOS background)
+      if (_isDisposed || !mounted) return;
       if (e.description?.contains('Camera is closed') == true) return;
       if (e.description?.contains('Cannot Record') == true) return;
+      if (e.description?.contains('-11800') == true) return;
       if (kDebugMode) {
         debugPrint('MnemonicScanner: Camera error: $e');
       }

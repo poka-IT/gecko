@@ -72,8 +72,6 @@ if forum_mode == "apk_only":
     # Simple message for manual APK builds
     complete_message = f"""{base_message}
 
-This is a **BETA** build for ĞTest network.
-
 **Download APKs:**
 
 📱 **[Download armeabi-v7a APK]({apk_base_url}/gecko-{version}-v7a.apk)** (anciens téléphones)

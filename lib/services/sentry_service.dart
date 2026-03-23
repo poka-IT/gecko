@@ -172,9 +172,11 @@ class SentryService {
     for (final exception in exceptions) {
       final type = exception.type ?? '';
       final value = exception.value ?? '';
-      if (type == 'SocketException' ||
-          type == 'OSError' ||
-          value.contains('SocketException') ||
+      // Match SocketException by type (always network-related)
+      if (type == 'SocketException') return true;
+      // Match specific network error messages regardless of exception type
+      // (OSError with network messages, chained SocketException in value, etc.)
+      if (value.contains('SocketException') ||
           value.contains('Software caused connection abort') ||
           value.contains('Reading from a closed socket') ||
           value.contains('Connection reset by peer')) {

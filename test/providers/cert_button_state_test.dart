@@ -14,6 +14,7 @@ library;
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gecko/models/migration_data.dart';
 import 'package:gecko/providers/certification_queue_provider.dart'
     show
         CertButtonAction,
@@ -56,12 +57,17 @@ void main() {
     d.CertificationQueueState? queueState,
     Map<String, RecentCertData>? recentCertifications,
     StorageState storageState = StorageState.onlineMode,
+    MigrationData? migrationFromData,
   }) async {
     final effectiveQueueState = queueState ?? d.CertificationQueueState.empty(issuerAddress);
 
     final container = ProviderContainer(
       overrides: [
         storageStateProvider.overrideWith(() => _MockStorageStateNotifier(storageState)),
+        migrationDataProvider((
+          direction: MigrationDirection.from,
+          address: targetAddress,
+        )).overrideWith((ref) async => migrationFromData),
         certStateProvider(targetAddress).overrideWith(() => _MockCertStateNotifier(certState)),
         smartIdtyStatusStreamProvider(targetAddress).overrideWith((ref) => AsyncValue.data(targetIdtyStatus)),
         certificationExistsProvider(targetAddress).overrideWith((ref) async => certificationExists),
@@ -113,6 +119,58 @@ void main() {
         certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
       );
       expect(result.action, CertButtonAction.none);
+      container.dispose();
+    });
+
+    test('target migré (changeOwnerKey) → disabled (migratedAccountCannotBeCertified)', () async {
+      final container = await createContainer(
+        certState: d.CertState(status: d.CertStatus.canCert),
+        migrationFromData: MigrationData(
+          fromAddress: targetAddress,
+          toAddress: '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy',
+          migrationDate: DateTime.now().subtract(const Duration(days: 10)),
+          identityName: 'TestUser',
+        ),
+      );
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
+      expect(result.action, CertButtonAction.disabled);
+      expect(result.disabledReason, 'migratedAccountCannotBeCertified');
+      container.dispose();
+    });
+
+    test('target migré prime sur canCert et queue non-vide', () async {
+      final container = await createContainer(
+        certState: d.CertState(status: d.CertStatus.canCert),
+        queueState: createQueueWithTarget(isReady: true),
+        migrationFromData: MigrationData(
+          fromAddress: targetAddress,
+          toAddress: '5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy',
+          migrationDate: DateTime.now().subtract(const Duration(days: 10)),
+        ),
+      );
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
+      expect(
+        result.action,
+        CertButtonAction.disabled,
+        reason: 'Le check migration doit primer sur tous les autres checks',
+      );
+      expect(result.disabledReason, 'migratedAccountCannotBeCertified');
+      container.dispose();
+    });
+
+    test('target non-migré → passe au check suivant', () async {
+      final container = await createContainer(
+        certState: d.CertState(status: d.CertStatus.canCert),
+        migrationFromData: null,
+      );
+      final result = await container.read(
+        certButtonStateProvider((issuerAddress: issuerAddress, targetAddress: targetAddress)).future,
+      );
+      expect(result.action, CertButtonAction.certifyNow);
       container.dispose();
     });
 
@@ -349,6 +407,10 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           storageStateProvider.overrideWith(() => _MockStorageStateNotifier(StorageState.onlineMode)),
+          migrationDataProvider((
+            direction: MigrationDirection.from,
+            address: targetAddress,
+          )).overrideWith((ref) async => null),
           certStateProvider(
             targetAddress,
           ).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
@@ -391,6 +453,10 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           storageStateProvider.overrideWith(() => _MockStorageStateNotifier(StorageState.onlineMode)),
+          migrationDataProvider((
+            direction: MigrationDirection.from,
+            address: targetAddress,
+          )).overrideWith((ref) async => null),
           certStateProvider(
             targetAddress,
           ).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),
@@ -460,6 +526,10 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           storageStateProvider.overrideWith(() => _MockStorageStateNotifier(StorageState.onlineMode)),
+          migrationDataProvider((
+            direction: MigrationDirection.from,
+            address: targetAddress,
+          )).overrideWith((ref) async => null),
           certStateProvider(
             targetAddress,
           ).overrideWith(() => _MockCertStateNotifier(d.CertState(status: d.CertStatus.canCert))),

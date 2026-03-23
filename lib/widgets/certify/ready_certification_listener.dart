@@ -147,6 +147,23 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     final navContext = Gecko.navigatorContext;
     if (navContext == null) return;
 
+    // Check if target has migrated since the certification was queued
+    final migrationData = await ref.read(migrationFromDataProvider(pendingCert.receiverAddress).future);
+    if (migrationData != null) {
+      log.d('🚫 [GlobalCertListener] Target ${pendingCert.receiverAddress} has migrated, removing from queue');
+      final queueNotifier = ref.read(certificationQueueProvider(issuerAddress).notifier);
+      await queueNotifier.removeFromQueue(pendingCert.id);
+      final ctx = Gecko.navigatorContext;
+      if (ctx != null) {
+        showConfirmationDialog(
+          context: ctx,
+          type: ConfirmationDialogType.error,
+          message: 'migratedAccountCannotBeCertified'.tr(),
+        );
+      }
+      return;
+    }
+
     // Capture provider references BEFORE async operations
     final walletService = ref.read(walletServiceProvider);
     final queueNotifier = ref.read(certificationQueueProvider(issuerAddress).notifier);

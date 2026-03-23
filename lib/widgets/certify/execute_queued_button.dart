@@ -8,6 +8,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
+import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
@@ -70,6 +71,21 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
 
     setState(() => _isProcessing = true);
     try {
+      // Check if target has migrated since the certification was queued
+      final migrationData = await ref.read(migrationFromDataProvider(widget.address).future);
+      if (migrationData != null) {
+        log.d('🚫 [ExecuteQueuedButton] Target ${widget.address} has migrated, removing from queue');
+        final queueNotifier = ref.read(certificationQueueProvider(widget.issuerAddress).notifier);
+        await queueNotifier.removeFromQueue(widget.pendingCert.id);
+        if (!context.mounted) return;
+        showConfirmationDialog(
+          context: context,
+          type: ConfirmationDialogType.error,
+          message: 'migratedAccountCannotBeCertified'.tr(),
+        );
+        return;
+      }
+
       // Capture provider references BEFORE async operations
       final walletService = ref.read(walletServiceProvider);
       final queueNotifier = ref.read(certificationQueueProvider(widget.issuerAddress).notifier);

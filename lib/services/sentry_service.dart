@@ -161,8 +161,38 @@ class SentryService {
   }
 
   /// Callback executed before sending events to Sentry
+  /// Check if a Sentry event is a network socket error (SocketException, OSError).
+  /// These occur when WebSocket/HTTP connections drop in background mode
+  /// and are automatically recovered by the auto-reconnect mechanism.
+  /// They are NOT actual crashes — Flutter catches them via PlatformDispatcher
+  /// but the Sentry SDK reports them as "fatal" because they are unhandled.
+  static bool _isNetworkSocketError(SentryEvent event) {
+    final exceptions = event.exceptions;
+    if (exceptions == null || exceptions.isEmpty) return false;
+    for (final exception in exceptions) {
+      final type = exception.type ?? '';
+      final value = exception.value ?? '';
+      if (type == 'SocketException' ||
+          type == 'OSError' ||
+          value.contains('SocketException') ||
+          value.contains('Software caused connection abort') ||
+          value.contains('Reading from a closed socket') ||
+          value.contains('Connection reset by peer')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   static SentryEvent? _beforeSendCallback(SentryEvent event, Hint hint) {
     try {
+      // Downgrade network socket errors from fatal to warning.
+      // These are expected during background mode / network changes and
+      // auto-recover via reconnection — they don't crash the app.
+      if (_isNetworkSocketError(event)) {
+        event.level = SentryLevel.warning;
+      }
+
       // Generate diagnostic data
       final diagnosticData = DiagnosticService.instance.generateDiagnosticData(
         context: _currentContext,

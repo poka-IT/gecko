@@ -1,0 +1,129 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gecko/globals.dart';
+import 'package:gecko/services/nfc_hce_service.dart';
+import 'package:gecko/services/nfc_service.dart';
+
+/// Whether NFC is available on this device.
+///
+/// Returns false on desktop, web, or devices without NFC hardware.
+final nfcAvailabilityProvider = FutureProvider<bool>((ref) async {
+  return NfcService.isAvailable();
+});
+
+/// Whether HCE (Host Card Emulation) is supported (Android only).
+final nfcHceSupportedProvider = FutureProvider<bool>((ref) async {
+  return NfcHceService.isSupported();
+});
+
+/// NFC operation state for UI feedback.
+enum NfcSessionState { idle, polling, reading, emulating, success, error }
+
+/// State for an NFC session.
+class NfcSessionData {
+  final NfcSessionState state;
+  final String? errorMessage;
+  final String? paymentUri;
+
+  const NfcSessionData({this.state = NfcSessionState.idle, this.errorMessage, this.paymentUri});
+
+  NfcSessionData copyWith({NfcSessionState? state, String? errorMessage, String? paymentUri}) {
+    return NfcSessionData(
+      state: state ?? this.state,
+      errorMessage: errorMessage ?? this.errorMessage,
+      paymentUri: paymentUri ?? this.paymentUri,
+    );
+  }
+}
+
+/// Notifier for managing NFC HCE emulation and reader mode state.
+class NfcSessionNotifier extends Notifier<NfcSessionData> {
+  StreamSubscription<Map<String, dynamic>>? _eventSub;
+
+  @override
+  NfcSessionData build() {
+    // Listen to HCE events from native side (Android only)
+    if (!kIsWeb && Platform.isAndroid) {
+      _eventSub = NfcHceService.eventStream.listen(_onHceEvent);
+      ref.onDispose(() {
+        _eventSub?.cancel();
+        NfcHceService.stopEmulation();
+        NfcHceService.stopReaderMode();
+      });
+    }
+    return const NfcSessionData();
+  }
+
+  /// Start HCE emulation (seller mode — phone acts as NFC card).
+  Future<void> startEmulation(String uri) async {
+    state = state.copyWith(state: NfcSessionState.emulating);
+    await NfcHceService.setKeepScreenOn(true);
+    final success = await NfcHceService.startEmulation(uri);
+    if (!success) {
+      state = NfcSessionData(state: NfcSessionState.error, errorMessage: 'HCE not available');
+      await NfcHceService.setKeepScreenOn(false);
+    }
+  }
+
+  /// Stop HCE emulation.
+  Future<void> stopEmulation() async {
+    await NfcHceService.stopEmulation();
+    await NfcHceService.setKeepScreenOn(false);
+    state = const NfcSessionData();
+  }
+
+  /// Start reader mode (buyer mode — phone reads HCE device).
+  Future<void> startReaderMode({int timeoutMs = 15000}) async {
+    state = state.copyWith(state: NfcSessionState.polling);
+    final success = await NfcHceService.startReaderMode(timeoutMs: timeoutMs);
+    if (!success) {
+      // Fallback to flutter_nfc_kit poll for iOS
+      state = state.copyWith(state: NfcSessionState.reading);
+      final result = await NfcService.readFromHceDevice();
+      if (result != null) {
+        state = NfcSessionData(state: NfcSessionState.success, paymentUri: result);
+      } else {
+        state = const NfcSessionData();
+      }
+    }
+  }
+
+  /// Stop reader mode.
+  Future<void> stopReaderMode() async {
+    await NfcHceService.stopReaderMode();
+    state = const NfcSessionData();
+  }
+
+  /// Reset to idle state.
+  void reset() {
+    state = const NfcSessionData();
+  }
+
+  void _onHceEvent(Map<String, dynamic> event) {
+    final type = event['type'] as String?;
+    log.d('HCE event: $type');
+
+    switch (type) {
+      case 'emulation_started':
+        state = state.copyWith(state: NfcSessionState.emulating);
+      case 'emulation_stopped':
+        state = const NfcSessionData();
+      case 'tag_discovered':
+        state = state.copyWith(state: NfcSessionState.reading);
+      case 'payment_read':
+        final uri = event['paymentUri'] as String?;
+        state = NfcSessionData(state: NfcSessionState.success, paymentUri: uri);
+      case 'communication_error':
+        final msg = event['message'] as String?;
+        state = NfcSessionData(state: NfcSessionState.error, errorMessage: msg);
+      case 'reader_mode_timeout':
+        state = const NfcSessionData();
+    }
+  }
+}
+
+/// Provider for NFC session state (HCE emulation + reader mode).
+final nfcSessionProvider = NotifierProvider<NfcSessionNotifier, NfcSessionData>(NfcSessionNotifier.new);

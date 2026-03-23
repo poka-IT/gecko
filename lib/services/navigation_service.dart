@@ -11,14 +11,28 @@ import 'package:gecko/widgets/page_route_no_transition.dart';
 /// desktop/mobile UX mismatches.
 class NavigationService {
   /// Opens a profile view: desktop modal or mobile full-screen.
-  static void openProfile(BuildContext context, {required String address, String? username, String? fromAddress}) {
+  ///
+  /// If [autoOpenPayment] is true, the payment popup will be opened automatically
+  /// (e.g. when a `june://` URI with an amount was scanned via NFC/QR).
+  static void openProfile(
+    BuildContext context, {
+    required String address,
+    String? username,
+    String? fromAddress,
+    bool autoOpenPayment = false,
+  }) {
     if (isDesktopLayout(context)) {
       showDesktopProfileModal(context, address: address, username: username);
     } else {
       Navigator.push(
         context,
         PageNoTransit(
-          builder: (context) => ProfileViewScreen(address: address, username: username, fromAddress: fromAddress),
+          builder: (context) => ProfileViewScreen(
+            address: address,
+            username: username,
+            fromAddress: fromAddress,
+            autoOpenPayment: autoOpenPayment,
+          ),
         ),
       );
     }

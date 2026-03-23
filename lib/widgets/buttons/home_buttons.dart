@@ -4,6 +4,7 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/nfc_providers.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/routes.dart';
@@ -194,7 +195,30 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
       label: "scanQRCode".tr(),
     );
 
-    // Wide screen: 3 buttons in a row inside a glass container, anchored to bottom
+    // NFC button — only shown when NFC hardware is available
+    final nfcAvailable = ref.watch(nfcAvailabilityProvider);
+    final nfcButton = nfcAvailable.when(
+      data: (available) => available
+          ? _buildLabeledButton(
+              baseColor: context.colorScheme.primary,
+              offset: 0.5,
+              onTap: () async {
+                final scanNfc = ref.read(nfcScanProvider);
+                await scanNfc(context);
+              },
+              child: Padding(
+                key: keyNfcScan,
+                padding: EdgeInsets.all(scaleSize(20)),
+                child: Icon(Icons.nfc_rounded, size: scaleSize(50), color: Colors.white),
+              ),
+              label: 'nfcScan'.tr(),
+            )
+          : null,
+      loading: () => null,
+      error: (_, _) => null,
+    );
+
+    // Wide screen: buttons in a row inside a glass container, anchored to bottom
     if (isWide) {
       final showImage = ref.watch(backgroundImageProvider);
       return SizedBox.expand(
@@ -218,7 +242,14 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [searchButton, const SizedBox(width: 64), walletsButton, const SizedBox(width: 64), qrButton],
+                children: [
+                  searchButton,
+                  const SizedBox(width: 64),
+                  walletsButton,
+                  const SizedBox(width: 64),
+                  qrButton,
+                  // NFC button is not shown on desktop (NFC not available)
+                ],
               ),
             ),
             SizedBox(height: screenHeight * 0.08),
@@ -260,7 +291,12 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
                     ),
                     Padding(
                       padding: EdgeInsets.only(top: scaleSize(30)),
-                      child: qrButton,
+                      child: nfcButton != null
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [qrButton, ScaledSizedBox(width: 50), nfcButton],
+                            )
+                          : qrButton,
                     ),
                     ScaledSizedBox(height: isTall ? 40 : 20),
                   ],

@@ -111,27 +111,68 @@ final payCommentControllerProvider = Provider.family<TextEditingController, Stri
   return controller;
 });
 
+/// One-shot prefill data for payments initiated via NFC/QR `june://` URIs.
+///
+/// Set before navigating to profile, consumed and cleared by PaymentPopupWidget.
+class PaymentPrefillNotifier extends Notifier<({double amount, String? comment})?> {
+  @override
+  ({double amount, String? comment})? build() => null;
+
+  void set({required double amount, String? comment}) => state = (amount: amount, comment: comment);
+  void clear() => state = null;
+}
+
+final paymentPrefillProvider = NotifierProvider<PaymentPrefillNotifier, ({double amount, String? comment})?>(
+  PaymentPrefillNotifier.new,
+);
+
 /// Provider for QR code scanning functionality
 final qrScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
   return (BuildContext context) async {
     final qrScannerService = ref.read(qrScannerServiceProvider);
 
     final result = await qrScannerService.scanQrCode(context);
-
-    if (result.isSuccess && result.address != null) {
-      // Navigate to wallet view with the scanned address
-      Navigator.popUntil(Gecko.navigatorContext!, ModalRoute.withName(RouteNames.home));
-      NavigationService.openProfile(Gecko.navigatorContext!, address: result.address!);
-    } else if (result.isInvalidAddress) {
-      if (!context.mounted) return;
-      SnackbarService.showError(context, message: 'qrCodeNotAddress'.tr(), duration: 2);
-    } else if (result.isError) {
-      if (!context.mounted) return;
-      SnackbarService.showError(context, message: result.errorMessage ?? 'Scan failed', duration: 2);
-    }
-    // If cancelled, do nothing
+    _handleScanResult(ref, context, result);
   };
 });
+
+/// Provider for NFC scanning functionality.
+///
+/// Uses flutter_nfc_kit which auto-detects both NDEF tags and HCE devices.
+/// When an ISO-DEP tag without NDEF is found, sends SELECT APDU with G1NKGO
+/// AID for cross-app compatibility with Ginkgo.
+final nfcScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
+  return (BuildContext context) async {
+    final qrScannerService = ref.read(qrScannerServiceProvider);
+    final result = await qrScannerService.readNfc();
+    if (!context.mounted) return;
+    _handleScanResult(ref, context, result);
+  };
+});
+
+/// Shared handler for QR and NFC scan results.
+void _handleScanResult(Ref ref, BuildContext context, QrScanResult result) {
+  if (result.isSuccess && result.address != null) {
+    // Store prefill data for the payment popup (consumed after popup opens)
+    if (result.amount != null) {
+      ref.read(paymentPrefillProvider.notifier).set(amount: result.amount!, comment: result.comment);
+    }
+
+    Navigator.popUntil(Gecko.navigatorContext!, ModalRoute.withName(RouteNames.home));
+    NavigationService.openProfile(
+      Gecko.navigatorContext!,
+      address: result.address!,
+      autoOpenPayment: result.amount != null,
+    );
+  } else if (result.isInvalidAddress) {
+    if (!context.mounted) return;
+    SnackbarService.showError(context, message: 'qrCodeNotAddress'.tr(), duration: 2);
+  } else if (result.isError) {
+    if (!context.mounted) return;
+    SnackbarService.showError(context, message: result.errorMessage ?? 'Scan failed', duration: 2);
+  }
+  // If cancelled, do nothing
+}
 
 /// Provider for identicon generation
 final identiconProvider = Provider.family<String, String>((ref, pubkey) {

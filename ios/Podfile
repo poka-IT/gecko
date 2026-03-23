@@ -45,6 +45,10 @@ post_install do |installer|
       current_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
       # Force update ALL targets to 15.5, regardless of current value
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+
+      # Exclude arm64 from simulator builds — forces Rosetta (x86_64) on Apple Silicon.
+      # Required because vendor frameworks (MLImage/Google ML Kit) don't include arm64-simulator slices.
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
       puts "Forced #{target.name} deployment target from #{current_target} to 15.5"
       
       # Also force update other iOS version settings that might conflict

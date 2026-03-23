@@ -125,3 +125,9 @@ const keyMigrationCreateNewWallet = Key('keyMigrationCreateNewWallet');
 
 // Cesium profile view
 const keyViewProfile = Key('keyViewProfile');
+
+// NFC
+const keyNfcScan = Key('keyNfcScan');
+const keyNfcWrite = Key('keyNfcWrite');
+const keyNfcReceive = Key('keyNfcReceive');
+const keyAppBarNfc = Key('keyAppBarNfc');

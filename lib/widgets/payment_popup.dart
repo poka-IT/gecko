@@ -151,6 +151,21 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
 
     final commentController = ref.read(payCommentControllerProvider(widget.toAddress));
     commentController.clear();
+
+    // Apply prefill data from NFC/QR june:// URI (one-shot, consumed here)
+    final prefill = ref.read(paymentPrefillProvider);
+    if (prefill != null) {
+      amountController.text = prefill.amount.toString();
+      ref.read(profileViewProvider(widget.toAddress).notifier).setPayAmount(prefill.amount.toString());
+      if (prefill.comment != null && prefill.comment!.isNotEmpty) {
+        commentController.text = prefill.comment!;
+        ref.read(profileViewProvider(widget.toAddress).notifier).setPayComment(prefill.comment!);
+        ref.read(profileViewProvider(widget.toAddress).notifier).toggleCommentVisibility();
+      }
+      // Clear prefill — it's consumed
+      ref.read(paymentPrefillProvider.notifier).clear();
+      setState(() => canValidate = true);
+    }
   }
 
   // Load balances asynchronously with proper widget lifecycle management

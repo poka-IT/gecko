@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/nfc_service.dart';
+import 'package:gecko/services/payment_uri_service.dart';
 import 'package:gecko/services/sentry_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -19,6 +21,22 @@ class QrScannerService {
   final Ref _ref;
 
   QrScannerService(this._ref);
+
+  /// Processes raw content (address, pubkey, or `june://` URI) and returns a scan result.
+  ///
+  /// Public entry point for deep link handler and other non-camera inputs.
+  QrScanResult processContent(String content) => _processScannedContent(content);
+
+  /// Reads an NFC tag and processes the content.
+  ///
+  /// Returns a [QrScanResult] with the parsed address and optional payment data.
+  Future<QrScanResult> readNfc() async {
+    final content = await NfcService.readTag();
+    if (content == null || content.isEmpty) {
+      return QrScanResult.cancelled();
+    }
+    return _processScannedContent(content);
+  }
 
   /// Checks system resources before scanning to prevent native crashes
   Future<Map<String, dynamic>> _checkSystemResources() async {
@@ -238,29 +256,43 @@ class QrScannerService {
     }
   }
 
-  /// Processes the scanned QR code content and validates it as an address or pubkey.
+  /// Processes the scanned QR code or NFC content and validates it.
+  ///
+  /// Supports raw addresses, v1 pubkeys, and `june://` payment URIs.
   QrScanResult _processScannedContent(String content) {
     final utils = _ref.read(utilsProvider);
 
-    if (_isAddressOrPubkey(content)) {
-      String finalAddress;
-
-      if (_isAddress(content)) {
-        finalAddress = utils.isAddressValidToSs58(content);
-      } else {
-        // Convert pubkey to address
-        final addressTmp = utils.pubkeyV1ToAddress(content);
-        finalAddress = utils.isAddressValidToSs58(addressTmp);
+    // Try parsing as a payment URI first (g1://, june://, or duniter:key/)
+    if (PaymentUriService.isPaymentUri(content)) {
+      final uriData = PaymentUriService.decode(content);
+      if (uriData != null && !uriData.isExpired) {
+        final address = _resolveAddress(uriData.rawAddress, utils);
+        if (address != null) {
+          return QrScanResult.success(address, amount: uriData.amount, comment: uriData.comment);
+        }
       }
-
-      return QrScanResult.success(finalAddress);
-    } else {
       return QrScanResult.invalidAddress();
     }
+
+    // Fall back to raw address or pubkey
+    final address = _resolveAddress(content, utils);
+    if (address != null) {
+      return QrScanResult.success(address);
+    }
+    return QrScanResult.invalidAddress();
   }
 
-  /// Checks if the input is a valid address or public key.
-  bool _isAddressOrPubkey(String input) => _isAddress(input) || _isPubkey(input);
+  /// Resolves a raw string to a valid SS58 address, or returns null.
+  String? _resolveAddress(String input, dynamic utils) {
+    if (_isAddress(input)) {
+      return utils.isAddressValidToSs58(input);
+    }
+    if (_isPubkey(input)) {
+      final addressTmp = utils.pubkeyV1ToAddress(input);
+      return utils.isAddressValidToSs58(addressTmp);
+    }
+    return null;
+  }
 
   /// Validates if the input is a valid address.
   bool _isAddress(String address) {
@@ -346,17 +378,19 @@ class QrScannerService {
   }
 }
 
-/// Result class for QR code scanning operations.
+/// Result class for QR code and NFC scanning operations.
 class QrScanResult {
   final String? address;
   final QrScanStatus status;
   final String? errorMessage;
+  final double? amount;
+  final String? comment;
 
-  const QrScanResult._({this.address, required this.status, this.errorMessage});
+  const QrScanResult._({this.address, required this.status, this.errorMessage, this.amount, this.comment});
 
-  /// Creates a successful scan result with a valid address.
-  factory QrScanResult.success(String address) {
-    return QrScanResult._(address: address, status: QrScanStatus.success);
+  /// Creates a successful scan result with a valid address and optional payment data.
+  factory QrScanResult.success(String address, {double? amount, String? comment}) {
+    return QrScanResult._(address: address, status: QrScanStatus.success, amount: amount, comment: comment);
   }
 
   /// Creates an error result with an error message.

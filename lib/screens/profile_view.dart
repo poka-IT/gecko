@@ -26,10 +26,17 @@ const double buttonSize = 75;
 const double buttonFontSize = 13;
 
 class ProfileViewScreen extends ConsumerStatefulWidget {
-  const ProfileViewScreen({required this.address, required this.username, this.fromAddress, super.key});
+  const ProfileViewScreen({
+    required this.address,
+    required this.username,
+    this.fromAddress,
+    this.autoOpenPayment = false,
+    super.key,
+  });
   final String address;
   final String? username;
   final String? fromAddress;
+  final bool autoOpenPayment;
 
   @override
   ConsumerState<ProfileViewScreen> createState() => _ProfileViewScreenState();
@@ -46,6 +53,14 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
     address = widget.address;
     username = widget.username;
     _headerDataFuture = _loadWalletData();
+
+    // Auto-open payment popup when navigating from a june:// URI with amount
+    if (widget.autoOpenPayment) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _handleTransfer(ref);
+      });
+    }
   }
 
   Future<WalletHeaderData> _loadWalletData() async {

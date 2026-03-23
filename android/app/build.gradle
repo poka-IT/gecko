@@ -51,7 +51,7 @@ android {
         applicationId "fr.axiomteam.gecko"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion  // Required by camera_android_camerax plugin
+        minSdkVersion 26  // Android 8.0+ (required by flutter_nfc_kit)
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

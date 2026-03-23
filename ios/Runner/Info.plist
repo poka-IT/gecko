@@ -51,6 +51,22 @@
 		<string>Camera permission is required for barcode scanning.</string>
 		<key>NSFaceIDUsageDescription</key>
 		<string>This app uses Face ID or Touch ID to securely unlock your wallet and authenticate transactions.</string>
+		<key>NFCReaderUsageDescription</key>
+		<string>This app uses NFC to read and write payment information on NFC tags.</string>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Viewer</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>june</string>
+					<string>g1</string>
+				</array>
+				<key>CFBundleURLName</key>
+				<string>fr.axiomteam.gecko</string>
+			</dict>
+		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>UIApplicationSceneManifest</key>

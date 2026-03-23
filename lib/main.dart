@@ -26,6 +26,7 @@ import 'package:gecko/providers/text_scaling_provider.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
 import 'package:gecko/providers/squid_invalidation_provider.dart';
 import 'package:gecko/providers/app_lifecycle_provider.dart';
+import 'package:gecko/providers/deep_link_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gecko/routes.dart';
@@ -231,6 +232,9 @@ class Gecko extends StatelessWidget {
 
           // Activate lifecycle observer for WebSocket reconnection after background
           ref.watch(appLifecycleProvider);
+
+          // Activate deep link listener for june:// URIs
+          ref.watch(deepLinkProvider);
 
           return SentryWidget(
             child: SentryContextProvider(

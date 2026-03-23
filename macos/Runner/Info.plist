@@ -31,6 +31,20 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<!-- Privacy usage descriptions required by macOS TCC -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>june</string>
+				<string>g1</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>fr.axiom-team.gecko</string>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Gecko needs camera access to scan QR codes.</string>
 	<key>NSMicrophoneUsageDescription</key>

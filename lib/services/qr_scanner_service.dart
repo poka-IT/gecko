@@ -19,6 +19,7 @@ import 'package:gecko/widgets/desktop/modals/qr_scanner_modal.dart';
 /// and result processing for wallet addresses and public keys.
 class QrScannerService {
   final Ref _ref;
+  bool _isScanning = false;
 
   QrScannerService(this._ref);
 
@@ -152,6 +153,18 @@ class QrScannerService {
   /// Returns a [QrScanResult] containing the processed address and scan status.
   /// Handles camera permissions and validates the scanned content.
   Future<QrScanResult> scanQrCode(BuildContext context) async {
+    // Prevent concurrent scan requests (race condition on permission handler)
+    if (_isScanning) return QrScanResult.cancelled();
+    _isScanning = true;
+
+    try {
+      return await _scanQrCodeInternal(context);
+    } finally {
+      _isScanning = false;
+    }
+  }
+
+  Future<QrScanResult> _scanQrCodeInternal(BuildContext context) async {
     // Check system resources before attempting to scan
     final systemResources = await _checkSystemResources();
 

@@ -155,6 +155,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
   TransactionStatus _status = TransactionStatus(state: TransactionState.pending);
   bool _isVisible = true;
   bool _errorSnackbarShown = false;
+  ScaffoldMessengerState? _scaffoldMessenger;
   TransactionInProgressData _currentTransactionData;
 
   _TransactionInProgressTuleState()
@@ -227,9 +228,9 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
   @override
   void dispose() {
     _subscription?.cancel();
-    // Fermer la snackbar si elle est affichée quand le widget est disposé
+    // Fermer la snackbar via la référence capturée (pas de context lookup)
     if (_errorSnackbarShown) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _scaffoldMessenger?.hideCurrentSnackBar();
     }
     super.dispose();
   }
@@ -466,7 +467,12 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
             final fromWallet = ref.read(walletServiceProvider).defaultWallet;
             final transactionData = _currentTransactionData;
 
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            // Capturer le ScaffoldMessengerState une seule fois pour le réutiliser
+            // dans les callbacks et dans dispose(), sans re-lookup du context
+            final messenger = ScaffoldMessenger.of(context);
+            _scaffoldMessenger = messenger;
+
+            messenger.hideCurrentSnackBar();
 
             // Calculate bottom margin based on bottom app bar visibility
             final container = ProviderScope.containerOf(context);
@@ -476,13 +482,13 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                 ? scaleSize(67) + 16.0
                 : 16.0; // Bottom bar height + standard margin
 
-            ScaffoldMessenger.of(context).showSnackBar(
+            messenger.showSnackBar(
               SnackBar(
                 content: GestureDetector(
                   onTap: () {
-                    // Close the SnackBar first
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    // Then show the error details
+                    messenger.hideCurrentSnackBar();
+                    // showModalBottomSheet nécessite un context monté
+                    if (!mounted) return;
                     _showTransactionErrorDetails(
                       context: context,
                       errorMessage: errorMessage,
@@ -528,7 +534,7 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                         GestureDetector(
                           onTap: () {
                             _status = TransactionStatus(state: TransactionState.none);
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            messenger.hideCurrentSnackBar();
                           },
                           child: Container(
                             padding: EdgeInsets.all(4),

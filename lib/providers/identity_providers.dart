@@ -467,9 +467,13 @@ final identityWalletsAsyncProvider = FutureProvider<List<d.WalletEntity>>((ref) 
 
   // Only keep wallets with member (validated) identity status
   for (final wallet in wallets) {
-    final status = await storageService.getIdtyStatus(wallet.address);
-    if (status == d.IdtyStatus.validated) {
-      memberWallets.add(wallet);
+    try {
+      final status = await storageService.getIdtyStatus(wallet.address);
+      if (status == d.IdtyStatus.validated) {
+        memberWallets.add(wallet);
+      }
+    } catch (_) {
+      // Skip wallets that can't be checked (e.g., offline mode)
     }
   }
 
@@ -497,9 +501,13 @@ final allSafesIdentityWalletsProvider = FutureProvider<List<d.WalletEntity>>((re
   final memberWallets = <d.WalletEntity>[];
 
   for (final wallet in allWallets) {
-    final status = await storageService.getIdtyStatus(wallet.address);
-    if (status == d.IdtyStatus.validated) {
-      memberWallets.add(wallet);
+    try {
+      final status = await storageService.getIdtyStatus(wallet.address);
+      if (status == d.IdtyStatus.validated) {
+        memberWallets.add(wallet);
+      }
+    } catch (_) {
+      // Skip wallets that can't be checked (e.g., offline mode)
     }
   }
 

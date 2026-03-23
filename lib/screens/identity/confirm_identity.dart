@@ -130,9 +130,18 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     if (!context.mounted) return;
     if (!await showMnemonicChallenge(context: context, ref: ref, address: widget.address)) return;
 
-    final keypair = await ref
-        .read(walletServiceProvider)
-        .getKeyPairFromAddress(address: widget.address, pinCode: PinCodeService.pinCode);
+    final DurtKeyPair keypair;
+    try {
+      keypair = await ref
+          .read(walletServiceProvider)
+          .getKeyPairFromAddress(address: widget.address, pinCode: PinCodeService.pinCode);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('incorrectPinCode'.tr()), backgroundColor: context.geckoColors.danger));
+      return;
+    }
     final transactionStatus = ref.read(duniterServiceProvider).confirmIdentity(keypair: keypair, name: name);
 
     // Convert to broadcast stream to allow multiple listeners

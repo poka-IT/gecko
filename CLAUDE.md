@@ -251,6 +251,21 @@ Gecko sends rich diagnostic context with every Sentry event. Key tags to check:
 - `diagnostic_device_info_*` — screen size, pixel ratio (helps identify desktop vs mobile)
 - `diagnostic_app_info_platform` — android, ios, linux, macos, windows
 
+### Fixing Sentry issues — quality rules
+
+When fixing a Sentry crash, **never write a band-aid that silences the symptom**. Always fix the root cause:
+
+1. **No empty `catch` blocks to silence crashes.** A `catch` is only justified if the caught scenario is an expected, documented edge case (e.g., offline mode during a network query) AND the recovery behavior is correct for the flow (e.g., returning partial results, showing a user-facing error). If a catch is needed, verify the existing codebase already uses the same pattern for the same call — be consistent.
+
+2. **No `if (!mounted) return;` as a band-aid.** If a callback fires after widget disposal, ask *why* the callback still references stale state. Common root causes and real fixes:
+   - **`ScaffoldMessenger.of(context)` in late callbacks/dispose**: capture `ScaffoldMessengerState` once when creating the snackbar/widget, store it as a field, reuse it everywhere. No context re-lookup needed.
+   - **Timer/stream callbacks after disposal**: cancel them in `dispose()`, don't guard with `mounted`.
+   - `mounted` checks ARE appropriate when protecting code that genuinely needs a live widget tree (e.g., `showModalBottomSheet`, `Navigator.push`, `showDialog`), because those operations require an active overlay/context by design.
+
+3. **Understand the flow before writing the fix.** Read the full stacktrace, check diagnostic tags (PIN state, connection state, lifecycle state), read the source code of every frame in the stacktrace that's in our codebase. The fix must make sense in context of the actual user flow, not just suppress the exception.
+
+4. **Before proposing a fix, ask yourself:** "Does this fix address why the error happens, or does it just prevent the crash from being reported?" If the answer is the latter, dig deeper.
+
 ### After fixing a Sentry issue
 
 Once a fix is committed, provide the user with direct links to each resolved Sentry issue so they can manually mark them as **"Resolve in Next Release"** in the Sentry UI. Format:

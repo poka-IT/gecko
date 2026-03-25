@@ -42,7 +42,10 @@ Plans:
   3. User sees per-contact totals (amount sent, amount received, transaction count) and aggregate totals across all selected contacts
   4. User sees a list of "other contacts" discovered from the analyzed transactions who were not in the initial selection
   5. User can copy a markdown summary of the analysis results to the clipboard
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 02-01-PLAN.md -- Data layer: state model, service (query/aggregation/markdown), provider (progressive analysis)
+- [ ] 02-02-PLAN.md -- UI screen, widgets, route registration, entry point, translations
 **UI hint**: yes
 
 ## Progress
@@ -53,4 +56,4 @@ Phases execute in numeric order: 1 -> 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Certification Alerts | 2/2 | Complete | 2026-03-25 |
-| 2. Market Analysis | 0/TBD | Not started | - |
+| 2. Market Analysis | 0/2 | Not started | - |

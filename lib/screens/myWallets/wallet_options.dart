@@ -425,6 +425,40 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 ),
               ),
             ),
+            // Market Analysis button
+            InkWell(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  RouteNames.marketAnalysis,
+                  arguments: MarketAnalysisArguments(walletAddress: widget.wallet.address),
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: scaleSize(17),
+                  vertical: scaleSize(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.analytics_outlined,
+                      size: scaleSize(22),
+                      color: context.geckoColors.info.withValues(alpha: 0.8),
+                    ),
+                    ScaledSizedBox(width: 18),
+                    Expanded(
+                      child: Text(
+                        'marketAnalysis'.tr(),
+                        style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             if (!hasIdentity && (!isAlone || (widget.embeddedMode && isDesktopLayout(context))))
               deleteWallet(context, ref, currentSafe),
             if (hasIdentity) ManageMembershipButton(address: widget.wallet.address),

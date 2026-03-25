@@ -28,6 +28,7 @@ import 'package:gecko/screens/search.dart';
 import 'package:gecko/screens/search_result.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
 import 'package:gecko/screens/cesium_profile_view_screen.dart';
+import 'package:gecko/screens/market_analysis_screen.dart';
 
 /// Base class for route arguments - provides type safety
 abstract class RouteArguments {}
@@ -186,6 +187,13 @@ class CertificationQueueArguments extends RouteArguments {
   CertificationQueueArguments({required this.issuerAddress});
 }
 
+/// Arguments for market analysis route
+class MarketAnalysisArguments extends RouteArguments {
+  final String walletAddress;
+
+  MarketAnalysisArguments({required this.walletAddress});
+}
+
 /// Arguments for print wallet
 class PrintWalletArguments extends RouteArguments {
   final String sentence;
@@ -221,6 +229,7 @@ class RouteNames {
   static const String safeSelection = '/safeSelection';
   static const String certificationQueue = '/certificationQueue';
   static const String cesiumProfileView = '/cesiumprofileview';
+  static const String marketAnalysis = '/marketAnalysis';
 
   /// Generate wallet options route with address parameter
   static String walletOptionsWithAddress(String address) => '/walletoptions/$address';
@@ -509,6 +518,10 @@ class AppRoutes {
       RouteNames.cesiumProfileView: (context) {
         final address = ModalRoute.of(context)?.settings.arguments as String;
         return CesiumProfileViewScreen(address: address);
+      },
+      RouteNames.marketAnalysis: (context) {
+        final args = RouteUtils.getArguments<MarketAnalysisArguments>(context);
+        return MarketAnalysisScreen(walletAddress: args.walletAddress);
       },
     };
   }

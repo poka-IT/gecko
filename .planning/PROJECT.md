@@ -24,13 +24,15 @@ Les utilisateurs doivent pouvoir surveiller la santé de leur réseau de certifi
 - ✓ Mode hors-ligne partiel — existing
 - ✓ Alertes de certification dans la liste des certifications (icones expirée/bientôt expirée) — Validated in Phase 1: Certification Alerts
 - ✓ Indicateur d'alerte certification visible depuis l'accueil/contacts — Validated in Phase 1: Certification Alerts
+- ✓ Analyse de marché : sélection de période (max 365 jours) — Validated in Phase 2: Market Analysis
+- ✓ Analyse de marché : sélection de contacts à analyser — Validated in Phase 2: Market Analysis
+- ✓ Analyse de marché : totaux envoyés/reçus par contact — Validated in Phase 2: Market Analysis
+- ✓ Analyse de marché : découverte des autres contacts impliqués dans les transactions — Validated in Phase 2: Market Analysis
+- ✓ Analyse de marché : export/résumé markdown des résultats — Validated in Phase 2: Market Analysis
 
 ### Active
-- [ ] Analyse de marché : sélection de période (max 365 jours)
-- [ ] Analyse de marché : sélection de contacts à analyser
-- [ ] Analyse de marché : totaux envoyés/reçus par contact
-- [ ] Analyse de marché : découverte des autres contacts impliqués dans les transactions
-- [ ] Analyse de marché : export/résumé markdown des résultats
+
+(No active requirements — all milestone v0.2 requirements validated)
 
 ### Out of Scope
 
@@ -60,8 +62,8 @@ Les utilisateurs doivent pouvoir surveiller la santé de leur réseau de certifi
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Alertes visibles depuis l'accueil | Ma.aude souligne l'importance de "s'entraider" vs "chacun pour soi" | — Pending |
-| Analyse de marché complète (comme Ginkgo) | Besoin réel pour les épiceries participatives et vérification d'activité | — Pending |
+| Alertes visibles depuis l'accueil | Ma.aude souligne l'importance de "s'entraider" vs "chacun pour soi" | Delivered (Phase 1) |
+| Analyse de marché complète (comme Ginkgo) | Besoin réel pour les épiceries participatives et vérification d'activité | Delivered (Phase 2) |
 | Pas de recherche par nom de portefeuille simple | Problème de sécurité (usurpation), attend solution Duniter | — Pending |
 
 ## Evolution
@@ -82,4 +84,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after Phase 1 completion*
+*Last updated: 2026-03-25 after Phase 2 completion — all milestone v0.2 phases complete*

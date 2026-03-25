@@ -12,6 +12,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/providers/cert_alert_provider.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
@@ -72,6 +73,25 @@ class ContactsList extends ConsumerWidget {
       ),
       if (parts.length > 1) TextSpan(text: parts[1]),
     ];
+  }
+
+  Widget _buildContactAlert(BuildContext context, WidgetRef ref, String contactAddress) {
+    final alertStatus = ref.watch(contactCertAlertProvider(contactAddress));
+    if (alertStatus == CertAlertStatus.none) return const SizedBox.shrink();
+    final color = alertStatus == CertAlertStatus.expired
+        ? context.geckoColors.danger
+        : context.geckoColors.warning;
+    return Padding(
+      padding: EdgeInsets.only(right: scaleSize(8)),
+      child: Container(
+        width: scaleSize(8),
+        height: scaleSize(8),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+        ),
+      ),
+    );
   }
 
   @override
@@ -147,10 +167,11 @@ class ContactsList extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 ScaledSizedBox(
-                                  width: 110,
+                                  width: 125,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
+                                      _buildContactAlert(context, ref, g1Wallet.address),
                                       Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [Balance(address: g1Wallet.address, size: scaleSize(13))],

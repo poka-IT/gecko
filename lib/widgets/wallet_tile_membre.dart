@@ -8,7 +8,9 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
+import 'package:gecko/widgets/cert_alert_dot.dart';
 import 'package:gecko/widgets/certifications.dart';
+import 'package:gecko/widgets/certs_list.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
@@ -86,10 +88,20 @@ class WalletTileMembre extends ConsumerWidget {
                           Positioned(
                             left: scaleSize(16),
                             top: scaleSize(16),
-                            child: Image.asset(
-                              'assets/medal.png',
-                              color: context.colorScheme.primary.withValues(alpha: 0.8),
-                              height: scaleSize(28),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Image.asset(
+                                  'assets/medal.png',
+                                  color: context.colorScheme.primary.withValues(alpha: 0.8),
+                                  height: scaleSize(28),
+                                ),
+                                Positioned(
+                                  right: -scaleSize(3),
+                                  top: -scaleSize(3),
+                                  child: CertAlertDot(address: freshWallet.address, direction: CertDirection.received),
+                                ),
+                              ],
                             ),
                           ),
                         ],

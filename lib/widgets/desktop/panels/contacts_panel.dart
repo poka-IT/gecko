@@ -9,6 +9,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/providers/cert_alert_provider.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
@@ -290,6 +291,23 @@ class _DesktopContactsPanelState extends ConsumerState<DesktopContactsPanel> {
                 ),
               ),
               const SizedBox(width: 4),
+              Builder(
+                builder: (context) {
+                  final alertStatus = ref.watch(contactCertAlertProvider(contact.address));
+                  if (alertStatus == CertAlertStatus.none) return const SizedBox.shrink();
+                  final color = alertStatus == CertAlertStatus.expired
+                      ? context.geckoColors.danger
+                      : context.geckoColors.warning;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Container(
+                      width: scaleSize(7),
+                      height: scaleSize(7),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+                    ),
+                  );
+                },
+              ),
               Balance(address: contact.address, size: 11, color: context.colorScheme.onSurface),
               if (showDragHandle && reorderIndex != null) ...[
                 const SizedBox(width: 4),

@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 Plans:
 - [x] 01-01-PLAN.md -- Cert alert provider, dot widget, and CERT-01 verification
-- [ ] 01-02-PLAN.md -- Wire alert indicators into home wallet tiles and contact lists
+- [x] 01-02-PLAN.md -- Wire alert indicators into home wallet tiles and contact lists
 **UI hint**: yes
 
 ### Phase 2: Market Analysis
@@ -52,5 +52,5 @@ Phases execute in numeric order: 1 -> 2
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Certification Alerts | 0/2 | Planning complete | - |
+| 1. Certification Alerts | 2/2 | Complete | 2026-03-25 |
 | 2. Market Analysis | 0/TBD | Not started | - |

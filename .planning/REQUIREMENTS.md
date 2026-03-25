@@ -24,7 +24,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CERT-01 | Phase 1 | Complete |
-| CERT-02 | Phase 1 | Pending |
+| CERT-02 | Phase 1 | Complete |
 | MARKET-01 | Phase 2 | Pending |
 | MARKET-02 | Phase 2 | Pending |
 | MARKET-03 | Phase 2 | Pending |

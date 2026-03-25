@@ -15,12 +15,7 @@ import 'package:gecko/widgets/certs_list.dart';
 /// Designed to be positioned on top of wallet tiles or contact avatars
 /// using a [Stack] + [Positioned] layout.
 class CertAlertDot extends ConsumerWidget {
-  const CertAlertDot({
-    super.key,
-    required this.address,
-    required this.direction,
-    this.size = 10,
-  });
+  const CertAlertDot({super.key, required this.address, required this.direction, this.size = 10});
 
   /// The wallet or contact address to check certifications for.
   final String address;

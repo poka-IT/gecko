@@ -25,7 +25,10 @@ enum CertAlertStatus {
 ///
 /// For home wallet tiles: use [CertDirection.received].
 /// For contact entries: use [CertDirection.sent].
-final certAlertStatusProvider = Provider.family<CertAlertStatus, ({String address, CertDirection direction})>((ref, params) {
+final certAlertStatusProvider = Provider.family<CertAlertStatus, ({String address, CertDirection direction})>((
+  ref,
+  params,
+) {
   final certState = ref.watch(certificationListProvider((address: params.address, direction: params.direction)));
 
   if (certState.isLoading || certState.certifications.isEmpty) {
@@ -67,9 +70,7 @@ final contactCertAlertProvider = Provider.family<CertAlertStatus, String>((ref, 
   bool hasExpiringSoon = false;
 
   for (final wallet in walletsState.wallets) {
-    final certState = ref.watch(
-      certificationListProvider((address: wallet.address, direction: CertDirection.sent)),
-    );
+    final certState = ref.watch(certificationListProvider((address: wallet.address, direction: CertDirection.sent)));
 
     if (certState.isLoading || certState.certifications.isEmpty) continue;
 

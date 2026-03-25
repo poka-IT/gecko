@@ -1,12 +1,18 @@
-# Gecko — Nouvelles fonctionnalités v0.2
+# Gecko — Wallet Duniter v2s
 
 ## What This Is
 
-Ğecko est un wallet mobile Flutter pour la blockchain Duniter v2s (Ḡ1v2). Ce milestone ajoute deux fonctionnalités demandées par la communauté : des alertes visuelles de certification (expiration, renouvellement) visibles dès l'accueil, et un outil d'analyse de marché permettant d'auditer les transactions d'un compte sur une période donnée.
+Ğecko est un wallet mobile Flutter pour la blockchain Duniter v2s (Ḡ1v2). Il offre la gestion de wallets, les paiements, la certification d'identités, des alertes visuelles de certification (expiration/renouvellement), et un outil d'analyse de marché pour auditer l'activité transactionnelle sur une période.
 
 ## Core Value
 
-Les utilisateurs doivent pouvoir surveiller la santé de leur réseau de certifications et analyser leur activité transactionnelle sans quitter l'app.
+Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé de leur réseau de certifications et analyser leur activité transactionnelle sans quitter l'app.
+
+## Current State
+
+**v0.2 shipped** (2026-03-25) — 2 phases, 4 plans, +1314 LOC
+- Alertes de certification visibles depuis l'accueil, les contacts et la liste des certifications
+- Analyse de marché avec sélection de période/contacts, totaux par contact, découverte d'autres contacts, export markdown
 
 ## Requirements
 
@@ -22,17 +28,17 @@ Les utilisateurs doivent pouvoir surveiller la santé de leur réseau de certifi
 - ✓ Multi-wallet (coffre fort) — existing
 - ✓ Support desktop et mobile — existing
 - ✓ Mode hors-ligne partiel — existing
-- ✓ Alertes de certification dans la liste des certifications (icones expirée/bientôt expirée) — Validated in Phase 1: Certification Alerts
-- ✓ Indicateur d'alerte certification visible depuis l'accueil/contacts — Validated in Phase 1: Certification Alerts
-- ✓ Analyse de marché : sélection de période (max 365 jours) — Validated in Phase 2: Market Analysis
-- ✓ Analyse de marché : sélection de contacts à analyser — Validated in Phase 2: Market Analysis
-- ✓ Analyse de marché : totaux envoyés/reçus par contact — Validated in Phase 2: Market Analysis
-- ✓ Analyse de marché : découverte des autres contacts impliqués dans les transactions — Validated in Phase 2: Market Analysis
-- ✓ Analyse de marché : export/résumé markdown des résultats — Validated in Phase 2: Market Analysis
+- ✓ Alertes de certification (icones expirée/bientôt expirée) — v0.2
+- ✓ Indicateur d'alerte certification depuis l'accueil/contacts — v0.2
+- ✓ Analyse de marché : sélection de période (max 365 jours) — v0.2
+- ✓ Analyse de marché : sélection de contacts à analyser — v0.2
+- ✓ Analyse de marché : totaux envoyés/reçus par contact — v0.2
+- ✓ Analyse de marché : découverte des autres contacts — v0.2
+- ✓ Analyse de marché : export markdown — v0.2
 
 ### Active
 
-(No active requirements — all milestone v0.2 requirements validated)
+(No active requirements — start next milestone with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -44,44 +50,30 @@ Les utilisateurs doivent pouvoir surveiller la santé de leur réseau de certifi
 ## Context
 
 - Retours utilisateur de Ma.aude sur le forum, power-user gérant plusieurs comptes pour une épicerie participative
-- Ginkgo (dans `../ginkgo`) implémente déjà ces deux fonctionnalités et sert de référence
-- Les alertes de certification dans Ginkgo utilisent `expireOn - currentBlockHeight` avec un seuil de ~835 jours (201600 blocs)
-- L'analyse de marché dans Ginkgo utilise l'indexeur GraphQL Squid avec filtres `timestampFrom`/`timestampTo`
-- Gecko utilise déjà `durt2` qui fournit les souscriptions blockchain et l'accès à l'indexeur Squid
-- Architecture Riverpod 3 : les nouveaux providers doivent suivre les conventions existantes (pas de codegen, AsyncNotifier pour l'état async)
+- Ginkgo (dans `../ginkgo`) sert de référence fonctionnelle pour les nouvelles features
+- Architecture Riverpod 3 : providers manuels (pas de codegen), AsyncNotifier pour l'état async
+- durt2 fournit les souscriptions blockchain et l'accès à l'indexeur Squid (GraphQL)
 
 ## Constraints
 
 - **Tech stack**: Flutter/Dart, Riverpod 3 (pas de codegen), durt2 pour blockchain
-- **Données**: Les données de certification (expireOn, isActive) viennent de durt2 storage subscriptions
-- **Indexeur**: L'historique de transactions filtré par date nécessite l'indexeur Squid (GraphQL)
-- **UX**: Portrait only (mobile), libre (desktop) — les deux layouts doivent être supportés
-- **Inspiration**: Le code de Ginkgo (`../ginkgo`) sert de référence fonctionnelle, pas de copie de code
+- **Données**: Certifications via durt2 storage subscriptions, transactions via Squid indexer
+- **UX**: Portrait only (mobile), libre (desktop)
+- **Inspiration**: Ginkgo (`../ginkgo`) comme référence fonctionnelle
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Alertes visibles depuis l'accueil | Ma.aude souligne l'importance de "s'entraider" vs "chacun pour soi" | Delivered (Phase 1) |
-| Analyse de marché complète (comme Ginkgo) | Besoin réel pour les épiceries participatives et vérification d'activité | Delivered (Phase 2) |
-| Pas de recherche par nom de portefeuille simple | Problème de sécurité (usurpation), attend solution Duniter | — Pending |
+| Alertes visibles depuis l'accueil | Ma.aude : "s'entraider" vs "chacun pour soi" | ✓ Delivered (v0.2) |
+| Analyse de marché complète | Besoin épiceries participatives + vérification d'activité | ✓ Delivered (v0.2) |
+| Dot indicator (pas de compteur) | Simplicité visuelle, indicateur worst-status | ✓ Good |
+| calendar_date_picker2 pour range picker | Validé par Ginkgo, meilleur UX que 2x showDatePicker | ✓ Good |
+| Pas de recherche par nom simple | Risque usurpation, attend solution Duniter | — Pending |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd:transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd:complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
-
 ---
-*Last updated: 2026-03-25 after Phase 2 completion — all milestone v0.2 phases complete*
+*Last updated: 2026-03-25 after v0.2 milestone completion*

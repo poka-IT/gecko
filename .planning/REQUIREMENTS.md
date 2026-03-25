@@ -25,8 +25,8 @@
 |-------------|-------|--------|
 | CERT-01 | Phase 1 | Complete |
 | CERT-02 | Phase 1 | Complete |
-| MARKET-01 | Phase 2 | Pending |
-| MARKET-02 | Phase 2 | Pending |
-| MARKET-03 | Phase 2 | Pending |
-| MARKET-04 | Phase 2 | Pending |
-| MARKET-05 | Phase 2 | Pending |
+| MARKET-01 | Phase 2 | Complete |
+| MARKET-02 | Phase 2 | Complete |
+| MARKET-03 | Phase 2 | Complete |
+| MARKET-04 | Phase 2 | Complete |
+| MARKET-05 | Phase 2 | Complete |

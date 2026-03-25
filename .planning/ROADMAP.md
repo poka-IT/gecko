@@ -44,7 +44,7 @@ Plans:
   5. User can copy a markdown summary of the analysis results to the clipboard
 **Plans:** 2 plans
 Plans:
-- [ ] 02-01-PLAN.md -- Data layer: state model, service (query/aggregation/markdown), provider (progressive analysis)
+- [x] 02-01-PLAN.md -- Data layer: state model, service (query/aggregation/markdown), provider (progressive analysis)
 - [ ] 02-02-PLAN.md -- UI screen, widgets, route registration, entry point, translations
 **UI hint**: yes
 

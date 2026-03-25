@@ -435,10 +435,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 );
               },
               child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: scaleSize(17),
-                  vertical: scaleSize(12),
-                ),
+                padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [

@@ -65,9 +65,7 @@ class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
     final contacts = ref.watch(allContactsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('marketAnalysis'.tr()),
-      ),
+      appBar: AppBar(title: Text('marketAnalysis'.tr())),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(scaleSize(16)),
         child: Center(
@@ -91,9 +89,9 @@ class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
                   contacts: contacts,
                   selectedAddresses: state.selectedContactAddresses,
                   onToggle: (addr) => ref.read(marketAnalysisProvider.notifier).toggleContact(addr),
-                  onSelectAll: () => ref.read(marketAnalysisProvider.notifier).selectAllContacts(
-                        contacts.map((c) => c.address).toList(),
-                      ),
+                  onSelectAll: () => ref
+                      .read(marketAnalysisProvider.notifier)
+                      .selectAllContacts(contacts.map((c) => c.address).toList()),
                   onDeselectAll: () => ref.read(marketAnalysisProvider.notifier).deselectAllContacts(),
                 ),
                 ScaledSizedBox(height: 16),
@@ -103,10 +101,7 @@ class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
                   onPressed: state.canAnalyze && !state.isAnalyzing
                       ? () => ref.read(marketAnalysisProvider.notifier).runAnalysis(widget.walletAddress)
                       : null,
-                  child: Text(
-                    'runAnalysis'.tr(),
-                    style: scaledTextStyle(fontSize: 15),
-                  ),
+                  child: Text('runAnalysis'.tr(), style: scaledTextStyle(fontSize: 15)),
                 ),
 
                 // Error display

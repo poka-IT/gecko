@@ -199,18 +199,11 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
         results[contactAddress] = result;
 
         // Progressive state update.
-        state = state.copyWith(
-          contactResults: Map.unmodifiable(results),
-          processedContacts: i + 1,
-        );
+        state = state.copyWith(contactResults: Map.unmodifiable(results), processedContacts: i + 1);
       }
 
       // Discover other contacts.
-      var otherResults = service.discoverOtherContacts(
-        allItems,
-        walletAddress,
-        state.selectedContactAddresses,
-      );
+      var otherResults = service.discoverOtherContacts(allItems, walletAddress, state.selectedContactAddresses);
 
       // Resolve names for discovered contacts.
       final resolved = <String, ContactAnalysisResult>{};
@@ -233,10 +226,7 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
         resolved[entry.key] = r;
       }
 
-      state = state.copyWith(
-        otherContactResults: Map.unmodifiable(resolved),
-        isAnalyzing: false,
-      );
+      state = state.copyWith(otherContactResults: Map.unmodifiable(resolved), isAnalyzing: false);
     } catch (e, st) {
       log.e('Market analysis failed', error: e, stackTrace: st);
       state = state.copyWith(isAnalyzing: false, error: e.toString());

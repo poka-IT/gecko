@@ -40,11 +40,7 @@ class ContactSelector extends ConsumerWidget {
     if (contacts.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: scaleSize(16)),
-        child: Text(
-          'noContactsForAnalysis'.tr(),
-          style: scaledTextStyle(fontSize: 14),
-          textAlign: TextAlign.center,
-        ),
+        child: Text('noContactsForAnalysis'.tr(), style: scaledTextStyle(fontSize: 14), textAlign: TextAlign.center),
       );
     }
 
@@ -57,16 +53,10 @@ class ContactSelector extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'selectContacts'.tr(),
-              style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            ),
+            Text('selectContacts'.tr(), style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             TextButton(
               onPressed: allSelected ? onDeselectAll : onSelectAll,
-              child: Text(
-                allSelected ? 'deselectAll'.tr() : 'selectAll'.tr(),
-                style: scaledTextStyle(fontSize: 13),
-              ),
+              child: Text(allSelected ? 'deselectAll'.tr() : 'selectAll'.tr(), style: scaledTextStyle(fontSize: 13)),
             ),
           ],
         ),
@@ -88,15 +78,8 @@ class ContactSelector extends ConsumerWidget {
                 height: scaleSize(40),
                 child: DatapodAvatar(address: contact.address, size: scaleSize(40)),
               ),
-              title: Text(
-                displayName,
-                style: scaledTextStyle(fontSize: 15),
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                getShortPubkey(contact.address),
-                style: scaledTextStyle(fontSize: 12),
-              ),
+              title: Text(displayName, style: scaledTextStyle(fontSize: 15), overflow: TextOverflow.ellipsis),
+              subtitle: Text(getShortPubkey(contact.address), style: scaledTextStyle(fontSize: 12)),
               controlAffinity: ListTileControlAffinity.trailing,
               dense: true,
             );

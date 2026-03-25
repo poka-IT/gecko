@@ -10,12 +10,7 @@ import 'package:gecko/services/snackbar_service.dart';
 /// Provides three preset shortcuts (30, 90, 365 days) and a custom range button
 /// that opens a calendar dialog. Enforces a maximum 365-day range (D-02).
 class DateRangeSelector extends ConsumerWidget {
-  const DateRangeSelector({
-    super.key,
-    required this.onDateRangeSelected,
-    this.startDate,
-    this.endDate,
-  });
+  const DateRangeSelector({super.key, required this.onDateRangeSelected, this.startDate, this.endDate});
 
   /// Callback invoked when a valid date range is selected.
   final void Function(DateTime start, DateTime end) onDateRangeSelected;
@@ -46,10 +41,7 @@ class DateRangeSelector extends ConsumerWidget {
         OutlinedButton.icon(
           onPressed: () => _openCustomRangePicker(context),
           icon: Icon(Icons.calendar_month, size: scaleSize(18)),
-          label: Text(
-            'customRange'.tr(),
-            style: scaledTextStyle(fontSize: 14),
-          ),
+          label: Text('customRange'.tr(), style: scaledTextStyle(fontSize: 14)),
         ),
         // Display current selection
         if (startDate != null && endDate != null) ...[
@@ -68,7 +60,8 @@ class DateRangeSelector extends ConsumerWidget {
     final presetStart = now.subtract(Duration(days: days));
 
     // Check if this preset is currently active
-    final isActive = startDate != null &&
+    final isActive =
+        startDate != null &&
         endDate != null &&
         startDate!.difference(presetStart).inDays.abs() <= 1 &&
         endDate!.difference(now).inDays.abs() <= 1;

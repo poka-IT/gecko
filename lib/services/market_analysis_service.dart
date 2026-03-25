@@ -31,8 +31,8 @@ class ContactAnalysisResult {
     BigInt? totalReceived,
     this.sentCount = 0,
     this.receivedCount = 0,
-  })  : totalSent = totalSent ?? BigInt.zero,
-        totalReceived = totalReceived ?? BigInt.zero;
+  }) : totalSent = totalSent ?? BigInt.zero,
+       totalReceived = totalReceived ?? BigInt.zero;
 
   /// Total number of transactions (sent + received).
   int get transactionCount => sentCount + receivedCount;
@@ -77,9 +77,7 @@ class MarketAnalysisService {
       }
 
       for (final node in result.items) {
-        allItems.add(
-          TransactionDisplayItem.fromFilteredGraphQLNode(node, walletAddress, genesisTime),
-        );
+        allItems.add(TransactionDisplayItem.fromFilteredGraphQLNode(node, walletAddress, genesisTime));
       }
 
       if (!result.hasNextPage) break;
@@ -91,10 +89,7 @@ class MarketAnalysisService {
 
   /// Aggregates a list of transaction items into sent/received totals for
   /// [contactAddress].
-  ContactAnalysisResult aggregateTransactions(
-    List<TransactionDisplayItem> items,
-    String contactAddress,
-  ) {
+  ContactAnalysisResult aggregateTransactions(List<TransactionDisplayItem> items, String contactAddress) {
     var totalSent = BigInt.zero;
     var totalReceived = BigInt.zero;
     var sentCount = 0;
@@ -188,9 +183,7 @@ class MarketAnalysisService {
       grandCount += r.transactionCount;
     }
 
-    buf.writeln(
-      '| **Total** | **${_fmtAmount(grandSent)}** | **${_fmtAmount(grandReceived)}** | **$grandCount** |',
-    );
+    buf.writeln('| **Total** | **${_fmtAmount(grandSent)}** | **${_fmtAmount(grandReceived)}** | **$grandCount** |');
 
     // Other contacts section (only if non-empty)
     if (otherContactResults.isNotEmpty) {

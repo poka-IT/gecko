@@ -53,24 +53,16 @@ class AnalysisResults extends ConsumerWidget {
         ],
 
         // Aggregate summary card
-        if (state.hasResults) ...[
-          _buildSummaryCard(context),
-          ScaledSizedBox(height: 12),
-        ],
+        if (state.hasResults) ...[_buildSummaryCard(context), ScaledSizedBox(height: 12)],
 
         // Per-contact result cards
         if (state.contactResults.isNotEmpty)
-          ...state.contactResults.entries.map(
-            (entry) => _buildContactCard(context, entry.value, showAvatar: true),
-          ),
+          ...state.contactResults.entries.map((entry) => _buildContactCard(context, entry.value, showAvatar: true)),
 
         // Other contacts section
         if (state.otherContactResults.isNotEmpty) ...[
           ScaledSizedBox(height: 16),
-          Text(
-            'otherContacts'.tr(),
-            style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
+          Text('otherContacts'.tr(), style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ScaledSizedBox(height: 8),
           ...state.otherContactResults.entries.map(
             (entry) => _buildContactCard(context, entry.value, showAvatar: false),
@@ -83,10 +75,7 @@ class AnalysisResults extends ConsumerWidget {
           ElevatedButton.icon(
             onPressed: onExport,
             icon: Icon(Icons.copy, size: scaleSize(18)),
-            label: Text(
-              'copyMarkdownReport'.tr(),
-              style: scaledTextStyle(fontSize: 14),
-            ),
+            label: Text('copyMarkdownReport'.tr(), style: scaledTextStyle(fontSize: 14)),
           ),
           ScaledSizedBox(height: 16),
         ],
@@ -102,10 +91,7 @@ class AnalysisResults extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'totalSummary'.tr(),
-              style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            Text('totalSummary'.tr(), style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ScaledSizedBox(height: 12),
             _buildAmountRow(context, 'totalSent'.tr(), state.totalSent),
             ScaledSizedBox(height: 6),
@@ -114,10 +100,7 @@ class AnalysisResults extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'transactions'.tr(),
-                  style: scaledTextStyle(fontSize: 14),
-                ),
+                Text('transactions'.tr(), style: scaledTextStyle(fontSize: 14)),
                 Text(
                   '${state.totalTransactionCount}',
                   style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -175,10 +158,7 @@ class AnalysisResults extends ConsumerWidget {
                       if (result.username != null)
                         Text(
                           getShortPubkey(result.address),
-                          style: scaledTextStyle(
-                            fontSize: 11,
-                            color: context.colorScheme.outline,
-                          ),
+                          style: scaledTextStyle(fontSize: 11, color: context.colorScheme.outline),
                         ),
                     ],
                   ),

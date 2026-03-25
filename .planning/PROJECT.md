@@ -22,11 +22,10 @@ Les utilisateurs doivent pouvoir surveiller la santé de leur réseau de certifi
 - ✓ Multi-wallet (coffre fort) — existing
 - ✓ Support desktop et mobile — existing
 - ✓ Mode hors-ligne partiel — existing
+- ✓ Alertes de certification dans la liste des certifications (icones expirée/bientôt expirée) — Validated in Phase 1: Certification Alerts
+- ✓ Indicateur d'alerte certification visible depuis l'accueil/contacts — Validated in Phase 1: Certification Alerts
 
 ### Active
-
-- [ ] Alertes de certification dans la liste des certifications (icones expirée/bientôt expirée)
-- [ ] Indicateur d'alerte certification visible depuis l'accueil/contacts
 - [ ] Analyse de marché : sélection de période (max 365 jours)
 - [ ] Analyse de marché : sélection de contacts à analyser
 - [ ] Analyse de marché : totaux envoyés/reçus par contact
@@ -83,4 +82,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after initialization*
+*Last updated: 2026-03-25 after Phase 1 completion*

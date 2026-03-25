@@ -28,7 +28,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Alert indicators update automatically when a certification is renewed on-chain (no manual refresh needed)
 **Plans:** 2 plans
 Plans:
-- [ ] 01-01-PLAN.md -- Cert alert provider, dot widget, and CERT-01 verification
+- [x] 01-01-PLAN.md -- Cert alert provider, dot widget, and CERT-01 verification
 - [ ] 01-02-PLAN.md -- Wire alert indicators into home wallet tiles and contact lists
 **UI hint**: yes
 

@@ -98,10 +98,51 @@ class SafeOptionsContent extends ConsumerWidget {
     }
     final isAlone = walletCount == 1;
     final safeFirstWallet = currentSafe.wallets.isNotEmpty ? currentSafe.wallets.first : null;
+    final isActiveSafe = currentSafe.number == walletService.defaultSafeBoxNumber;
 
     return Column(
       spacing: 5,
       children: [
+        if (!isActiveSafe && isDesktopLayout(context))
+          InkWell(
+            onTap: () async {
+              await ref.read(walletActionsProvider.notifier).switchSafe(currentSafe.number);
+              if (!context.mounted) return;
+              Navigator.of(context).pop();
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(12)),
+              child: Row(
+                children: [
+                  Icon(Icons.radio_button_checked, size: scaleSize(24), color: context.colorScheme.primary),
+                  ScaledSizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'setActiveSafe'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 16,
+                            color: context.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'setActiveSafeHint'.tr(),
+                          style: scaledTextStyle(
+                            fontSize: 12,
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         InkWell(
           key: keyShowSeed,
           onTap: () async {

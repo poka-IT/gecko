@@ -170,7 +170,9 @@ class DesktopWalletOverview extends ConsumerWidget {
 
   Widget _buildSafeHeader(BuildContext context, WidgetRef ref, DesktopSafeWalletGroup group, {bool compact = false}) {
     final safeLabel = WalletNameService.displayName(group.safe.name);
-    return Row(
+
+    final iconAndName = Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: compact ? 38 : 34,
@@ -188,7 +190,7 @@ class DesktopWalletOverview extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 10),
-        Expanded(
+        Flexible(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -211,16 +213,55 @@ class DesktopWalletOverview extends ConsumerWidget {
             ],
           ),
         ),
+      ],
+    );
+
+    return Row(
+      children: [
+        Expanded(
+          child: group.isCurrent
+              ? iconAndName
+              : MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () => ref.read(walletActionsProvider.notifier).switchSafe(group.safe.number),
+                    child: iconAndName,
+                  ),
+                ),
+        ),
         if (group.isCurrent)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-            decoration: BoxDecoration(
-              color: context.colorScheme.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(999),
+          Tooltip(
+            message: 'activeSafeTooltip'.tr(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              decoration: BoxDecoration(
+                color: context.colorScheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                'identityActive'.tr(),
+                style: scaledTextStyle(fontSize: 10, color: context.colorScheme.primary, fontWeight: FontWeight.w700),
+              ),
             ),
-            child: Text(
-              'identityActive'.tr(),
-              style: scaledTextStyle(fontSize: 10, color: context.colorScheme.primary, fontWeight: FontWeight.w700),
+          ),
+        if (!group.isCurrent)
+          Tooltip(
+            message: 'setActiveSafe'.tr(),
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => ref.read(walletActionsProvider.notifier).switchSafe(group.safe.number),
+                  child: Icon(
+                    Icons.radio_button_unchecked,
+                    size: 16,
+                    color: context.colorScheme.onSurface.withValues(alpha: 0.35),
+                  ),
+                ),
+              ),
             ),
           ),
         const SizedBox(width: 4),

@@ -191,90 +191,97 @@ class NetworkTotals {
 
 /// Fetches exact network totals from Squid using GraphQL connection totalCount,
 /// independent from the paginated lists currently loaded in UI providers.
+///
 /// Throttled: skips re-fetch if last successful fetch was < 10 seconds ago.
-DateTime _lastTotalsFetch = DateTime.fromMillisecondsSinceEpoch(0);
-NetworkTotals? _lastTotalsResult;
-String? _lastTotalsNetwork;
+/// Cache is scoped to the provider container (no global mutable state).
+class NetworkTotalsNotifier extends AsyncNotifier<NetworkTotals> {
+  DateTime _lastFetch = DateTime.fromMillisecondsSinceEpoch(0);
+  NetworkTotals? _cached;
+  String? _lastNetwork;
 
-final networkTotalsProvider = FutureProvider<NetworkTotals>((ref) async {
-  final currentNetwork = ref.watch(networkProvider).name;
-  ref.watch(squidCacheBusterProvider);
-  ref.watch(networkActivityProvider.select((state) => state.lastActivityId));
-  ref.watch(networkIdentitiesProvider.select((state) => state.lastActivityId));
-  ref.watch(networkCertificationsProvider.select((state) => state.lastActivityId));
+  @override
+  Future<NetworkTotals> build() async {
+    final currentNetwork = ref.watch(networkProvider).name;
+    ref.watch(squidCacheBusterProvider);
+    ref.watch(networkActivityProvider.select((state) => state.lastActivityId));
+    ref.watch(networkIdentitiesProvider.select((state) => state.lastActivityId));
+    ref.watch(networkCertificationsProvider.select((state) => state.lastActivityId));
 
-  // Reset cache on network switch
-  if (_lastTotalsNetwork != currentNetwork) {
-    _lastTotalsResult = null;
-    _lastTotalsNetwork = currentNetwork;
-  }
-
-  // Throttle: return cached result if last fetch was recent
-  if (_lastTotalsResult != null && DateTime.now().difference(_lastTotalsFetch).inSeconds < 10) {
-    return _lastTotalsResult!;
-  }
-
-  final squidStatus = ref.watch(squidConnectionStatusProvider);
-  if (squidStatus != d.ConnectionStatus.connected) {
-    // Return cached result if available, otherwise empty
-    return _lastTotalsResult ?? const NetworkTotals.empty();
-  }
-
-  const document = r'''
-    query GetNetworkTotals {
-      transfers(first: 1) {
-        totalCount
-      }
-      memberIdentities: identities(first: 1, filter: {status: {equalTo: "Member"}}) {
-        totalCount
-      }
-      unconfirmedIdentities: identities(first: 1, filter: {status: {equalTo: "Unconfirmed"}}) {
-        totalCount
-      }
-      unvalidatedIdentities: identities(first: 1, filter: {status: {equalTo: "Unvalidated"}}) {
-        totalCount
-      }
-      expiredIdentities: identities(first: 1, filter: {status: {equalTo: "NotMember"}}) {
-        totalCount
-      }
-      certs(first: 1, filter: {isActive: {equalTo: true}}) {
-        totalCount
-      }
+    // Reset cache on network switch
+    if (_lastNetwork != currentNetwork) {
+      _cached = null;
+      _lastNetwork = currentNetwork;
     }
-  ''';
 
-  final result = await d.SquidService.client.query(
-    QueryOptions(document: gql(document), fetchPolicy: FetchPolicy.networkOnly),
-  );
+    // Throttle: return cached result if last fetch was recent
+    if (_cached != null && DateTime.now().difference(_lastFetch).inSeconds < 10) {
+      return _cached!;
+    }
 
-  if (result.hasException) {
-    log.w('Squid query failed: ${result.exception}');
-    return _lastTotalsResult ?? const NetworkTotals.empty();
+    final squidStatus = ref.watch(squidConnectionStatusProvider);
+    if (squidStatus != d.ConnectionStatus.connected) {
+      return _cached ?? const NetworkTotals.empty();
+    }
+
+    const document = r'''
+      query GetNetworkTotals {
+        transfers(first: 1) {
+          totalCount
+        }
+        memberIdentities: identities(first: 1, filter: {status: {equalTo: "Member"}}) {
+          totalCount
+        }
+        unconfirmedIdentities: identities(first: 1, filter: {status: {equalTo: "Unconfirmed"}}) {
+          totalCount
+        }
+        unvalidatedIdentities: identities(first: 1, filter: {status: {equalTo: "Unvalidated"}}) {
+          totalCount
+        }
+        expiredIdentities: identities(first: 1, filter: {status: {equalTo: "NotMember"}}) {
+          totalCount
+        }
+        certs(first: 1, filter: {isActive: {equalTo: true}}) {
+          totalCount
+        }
+      }
+    ''';
+
+    final result = await d.SquidService.client.query(
+      QueryOptions(document: gql(document), fetchPolicy: FetchPolicy.networkOnly),
+    );
+
+    if (result.hasException) {
+      log.w('Squid query failed: ${result.exception}');
+      return _cached ?? const NetworkTotals.empty();
+    }
+
+    final data = result.data;
+    if (data == null) {
+      return const NetworkTotals.empty();
+    }
+
+    int readTotal(String key) {
+      final section = data[key] as Map<String, dynamic>?;
+      return (section?['totalCount'] as int?) ?? 0;
+    }
+
+    final totals = NetworkTotals(
+      transactions: readTotal('transfers'),
+      certifications: readTotal('certs'),
+      memberIdentities: readTotal('memberIdentities'),
+      unconfirmedIdentities: readTotal('unconfirmedIdentities'),
+      unvalidatedIdentities: readTotal('unvalidatedIdentities'),
+      expiredIdentities: readTotal('expiredIdentities'),
+    );
+
+    _lastFetch = DateTime.now();
+    _cached = totals;
+    return totals;
   }
+}
 
-  final data = result.data;
-  if (data == null) {
-    return const NetworkTotals.empty();
-  }
-
-  int readTotal(String key) {
-    final section = data[key] as Map<String, dynamic>?;
-    return (section?['totalCount'] as int?) ?? 0;
-  }
-
-  final totals = NetworkTotals(
-    transactions: readTotal('transfers'),
-    certifications: readTotal('certs'),
-    memberIdentities: readTotal('memberIdentities'),
-    unconfirmedIdentities: readTotal('unconfirmedIdentities'),
-    unvalidatedIdentities: readTotal('unvalidatedIdentities'),
-    expiredIdentities: readTotal('expiredIdentities'),
-  );
-
-  _lastTotalsFetch = DateTime.now();
-  _lastTotalsResult = totals;
-  return totals;
-});
+/// Provides network totals with built-in throttled caching.
+final networkTotalsProvider = AsyncNotifierProvider<NetworkTotalsNotifier, NetworkTotals>(NetworkTotalsNotifier.new);
 
 /// App initialization state
 class AppInitState {

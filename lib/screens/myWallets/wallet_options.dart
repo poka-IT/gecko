@@ -396,38 +396,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   ),
                 ),
               ),
-            // Cesium+ Profile button
-            InkWell(
-              onTap: () {
-                if (widget.embeddedMode && isDesktopLayout(context)) {
-                  Navigator.of(context).pop();
-                  showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
-                } else {
-                  Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
-                }
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.person_outline,
-                      size: scaleSize(22),
-                      color: context.geckoColors.info.withValues(alpha: 0.8),
-                    ),
-                    ScaledSizedBox(width: 18),
-                    Expanded(
-                      child: Text(
-                        "cesiumProfile".tr(),
-                        style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
-                        softWrap: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildCesiumProfileButton(context),
             // Market Analysis button
             InkWell(
               onTap: () {
@@ -482,38 +451,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         children: [
           buildConfirmIdentitySection(context, ref),
           buildOptionsSection(context),
-          // Show Cesium+ Profile button while loading
-          InkWell(
-            onTap: () {
-              if (widget.embeddedMode && isDesktopLayout(context)) {
-                Navigator.of(context).pop();
-                showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
-              } else {
-                Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.person_outline,
-                    size: scaleSize(22),
-                    color: context.geckoColors.info.withValues(alpha: 0.8),
-                  ),
-                  ScaledSizedBox(width: 18),
-                  Expanded(
-                    child: Text(
-                      "cesiumProfile".tr(),
-                      style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
-                      softWrap: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildCesiumProfileButton(context),
           if (isAlone)
             isLegacyWallet
                 ? _buildLegacyWalletOptions()
@@ -527,44 +465,44 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
         children: [
           buildConfirmIdentitySection(context, ref),
           buildOptionsSection(context),
-          // Show Cesium+ Profile button on error
-          InkWell(
-            onTap: () {
-              if (widget.embeddedMode && isDesktopLayout(context)) {
-                Navigator.of(context).pop();
-                showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
-              } else {
-                Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.person_outline,
-                    size: scaleSize(22),
-                    color: context.geckoColors.info.withValues(alpha: 0.8),
-                  ),
-                  ScaledSizedBox(width: 18),
-                  Expanded(
-                    child: Text(
-                      "cesiumProfile".tr(),
-                      style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
-                      softWrap: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildCesiumProfileButton(context),
           if (isAlone)
             isLegacyWallet
                 ? _buildLegacyWalletOptions()
                 : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
           ScaledSizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  /// Cesium+ profile button — used in data, loading, and error states.
+  Widget _buildCesiumProfileButton(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        if (widget.embeddedMode && isDesktopLayout(context)) {
+          Navigator.of(context).pop();
+          showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
+        } else {
+          Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.person_outline, size: scaleSize(22), color: context.geckoColors.info.withValues(alpha: 0.8)),
+            ScaledSizedBox(width: 18),
+            Expanded(
+              child: Text(
+                "cesiumProfile".tr(),
+                style: scaledTextStyle(fontSize: 16, color: context.colorScheme.onSurface),
+                softWrap: true,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -129,6 +129,15 @@ final state = await container.read(certButtonStateProvider(address).future);
 
 Uses `easy_localization` with translations in `assets/translations/`. Supported: en, fr, es, it.
 
+**CRITICAL: Always use proper UTF-8 accented characters in ALL translation strings.** Never write ASCII-only approximations. This applies to every language:
+- **French**: é, è, ê, ë, à, â, ù, û, ô, î, ï, ç (e.g. "Sélectionner" not "Selectionner", "période" not "periode", "reçu" not "recu")
+- **Spanish**: á, é, í, ó, ú, ñ, ü (e.g. "análisis" not "analisis", "días" not "dias", "conexión" not "conexion")
+- **Italian**: à, è, é, ì, ò, ù (e.g. "può" not "puo", "perché" not "perche")
+- **Esperanto**: ĉ, ĝ, ĥ, ĵ, ŝ, ŭ
+- **German**: ä, ö, ü, ß
+
+When adding or modifying translation strings, double-check every word for missing diacritics before committing.
+
 ## Git Commit Conventions
 
 - When a commit fixes a GitLab issue, include `Closes #<number>` in the commit message (e.g. `fix: membership banner too early\n\nCloses #156`). This auto-closes the issue on GitLab.

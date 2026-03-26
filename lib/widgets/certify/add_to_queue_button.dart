@@ -225,12 +225,13 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
         return;
       }
 
-      // Add to local queue
+      // Add to local queue (pass certState for cert-specific timing constraints)
       final success = await queueNotifier.addToQueue(
         receiverAddress: widget.address,
         certType: certType,
         receiverUid: walletName,
         receiverName: walletName,
+        certState: widget.certState,
       );
 
       if (!context.mounted) return;

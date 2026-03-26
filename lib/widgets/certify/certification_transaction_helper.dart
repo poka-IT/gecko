@@ -4,12 +4,14 @@ import 'package:durt2/durt2.dart' show TransactionState, TransactionStatus;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/widgets/transaction_status.dart' show lookupTransactionError;
 
 /// Helper class for executing certification transactions with proper cache management
 class CertificationTransactionHelper {
@@ -43,6 +45,10 @@ class CertificationTransactionHelper {
     final duniterService = ref.read(duniterServiceProvider);
     final container = ProviderScope.containerOf(context);
 
+    // Capture ScaffoldMessenger now while context is valid,
+    // so stream errors can show a snackbar even after navigation.
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     // Mark as in progress immediately
     notifier.markInProgress(issuerAddress, targetAddress);
 
@@ -70,6 +76,7 @@ class CertificationTransactionHelper {
         issuerAddress: issuerAddress,
         targetAddress: targetAddress,
         container: container,
+        scaffoldMessenger: scaffoldMessenger,
       );
 
       // Optional callback before navigation (e.g., queue removal, sync)
@@ -102,6 +109,7 @@ class CertificationTransactionHelper {
     required String issuerAddress,
     required String targetAddress,
     required ProviderContainer container,
+    required ScaffoldMessengerState scaffoldMessenger,
   }) {
     bool hasHandled = false;
     late StreamSubscription<TransactionStatus> subscription;
@@ -125,6 +133,7 @@ class CertificationTransactionHelper {
           hasHandled = true;
           log.d('❌ [CertificationHelper] Transaction ERROR - removing from cache');
           notifier.removeCertification(issuerAddress, targetAddress);
+          _showErrorSnackbar(scaffoldMessenger, status.errorMessage);
           subscription.cancel();
         }
       },
@@ -133,6 +142,7 @@ class CertificationTransactionHelper {
         hasHandled = true;
         log.d('❌ [CertificationHelper] Stream ERROR - removing from cache: $error');
         notifier.removeCertification(issuerAddress, targetAddress);
+        _showErrorSnackbar(scaffoldMessenger, error.toString());
         subscription.cancel();
       },
       onDone: () {
@@ -143,5 +153,25 @@ class CertificationTransactionHelper {
       },
       cancelOnError: false,
     );
+  }
+
+  /// Show a translated error message via the captured ScaffoldMessenger.
+  static void _showErrorSnackbar(ScaffoldMessengerState scaffoldMessenger, String? errorMessage) {
+    final translated = lookupTransactionError(errorMessage);
+    final message = translated ?? errorMessage ?? 'Unknown error';
+    try {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          padding: EdgeInsets.all(scaleSize(19)),
+          content: Text(message, style: scaledTextStyle(fontSize: 14, color: Colors.white)),
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      // ScaffoldMessenger may have been disposed if the app navigated away entirely
+      log.w('Could not show error snackbar: $message');
+    }
   }
 }

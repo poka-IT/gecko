@@ -71,46 +71,6 @@ class CertificationQueueService {
     return box.keys.cast<String>().toList();
   }
 
-  /// Calculate the expected date for a certification at a given position in the queue
-  ///
-  /// [position] - 1-based position in the queue
-  /// [certPeriodBlocks] - Number of blocks between certifications
-  /// [currentBlockNumber] - Current block number
-  /// [nextIssuableBlock] - Block when the issuer can next certify (null if can certify now)
-  static DateTime calculateExpectedDate({
-    required int position,
-    required int certPeriodBlocks,
-    required int currentBlockNumber,
-    required int? nextIssuableBlock,
-    int blockTimeSeconds = 6,
-  }) {
-    // Start from when the issuer can next certify
-    // If nextIssuableBlock is in the past, use current block as base
-    // (the first cert will execute "now", so subsequent ones wait from now)
-    int baseBlock = nextIssuableBlock ?? currentBlockNumber;
-    if (baseBlock < currentBlockNumber) {
-      baseBlock = currentBlockNumber;
-    }
-
-    // Add (position - 1) certification periods for queue position
-    // Position 1 = ready at nextIssuableBlock
-    // Position 2 = ready at nextIssuableBlock + certPeriodBlocks
-    // etc.
-    final targetBlock = baseBlock + ((position - 1) * certPeriodBlocks);
-
-    // Calculate how many blocks until the target block
-    final blocksUntilTarget = targetBlock - currentBlockNumber;
-
-    // If target block is in the past or now, return current time
-    if (blocksUntilTarget <= 0) {
-      return DateTime.now();
-    }
-
-    // Convert blocks to seconds and add to current time
-    final secondsUntilTarget = blocksUntilTarget * blockTimeSeconds;
-    return DateTime.now().add(Duration(seconds: secondsUntilTarget));
-  }
-
   /// Update all expected dates in a queue based on current blockchain state
   static d.CertificationQueueState updateExpectedDates({
     required d.CertificationQueueState queue,
@@ -127,16 +87,19 @@ class CertificationQueueService {
       final cert = queue.pendingCertifications[i];
       final position = i + 1;
 
-      final expectedDate = calculateExpectedDate(
-        position: position,
-        certPeriodBlocks: certPeriodBlocks,
+      // Calculate position-based block
+      var expectedBlock = (nextIssuableBlock ?? currentBlockNumber) + ((position - 1) * certPeriodBlocks);
+
+      // Enforce cert-specific minimum constraint (e.g. canRenewIn)
+      if (cert.minAvailableBlock != null && cert.minAvailableBlock! > expectedBlock) {
+        expectedBlock = cert.minAvailableBlock!;
+      }
+
+      final expectedDate = _blockToDate(
+        targetBlock: expectedBlock,
         currentBlockNumber: currentBlockNumber,
-        nextIssuableBlock: nextIssuableBlock,
         blockTimeSeconds: blockTimeSeconds,
       );
-
-      // Calculate expected block
-      final expectedBlock = (nextIssuableBlock ?? currentBlockNumber) + ((position - 1) * certPeriodBlocks);
 
       updatedCertifications.add(
         cert.copyWith(position: position, expectedAvailableDate: expectedDate, expectedAvailableBlock: expectedBlock),
@@ -150,5 +113,16 @@ class CertificationQueueService {
       // not a user action. Updating lastUpdated would make local always appear
       // newer than remote, breaking CesiumPlus sync.
     );
+  }
+
+  /// Convert a target block number to a DateTime relative to now.
+  static DateTime _blockToDate({
+    required int targetBlock,
+    required int currentBlockNumber,
+    required int blockTimeSeconds,
+  }) {
+    final blocksUntil = targetBlock - currentBlockNumber;
+    if (blocksUntil <= 0) return DateTime.now();
+    return DateTime.now().add(Duration(seconds: blocksUntil * blockTimeSeconds));
   }
 }

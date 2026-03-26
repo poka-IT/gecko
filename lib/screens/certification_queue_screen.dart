@@ -153,6 +153,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
         // Queue list
         Expanded(
           child: ReorderableListView.builder(
+            buildDefaultDragHandles: false,
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 80),
             onReorder: (oldIndex, newIndex) => _onReorder(oldIndex, newIndex),
             itemCount: queue.pendingCertifications.length,

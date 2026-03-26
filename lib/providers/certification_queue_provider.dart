@@ -416,6 +416,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     int? receiverIndex,
     String? receiverUid,
     String? receiverName,
+    d.CertState? certState,
   }) async {
     final currentQueue = state.value;
     if (currentQueue == null) {
@@ -443,16 +444,29 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         : (blockchainNext ?? localNext);
 
     final position = currentQueue.queueLength + 1;
+    final blockTimeSeconds = storageService.currencyConstants.blockTimeSeconds;
 
-    final expectedDate = CertificationQueueService.calculateExpectedDate(
-      position: position,
-      certPeriodBlocks: certPeriodBlocks,
-      currentBlockNumber: currentBlock,
-      nextIssuableBlock: effectiveNext,
-      blockTimeSeconds: storageService.currencyConstants.blockTimeSeconds,
-    );
+    // Compute cert-specific minimum constraint block (e.g. canRenewIn delay)
+    int? minAvailableBlock;
+    if (certState != null && certState.duration != null) {
+      final minBlock =
+          currentBlock + (certState.duration!.inSeconds / (blockTimeSeconds > 0 ? blockTimeSeconds : 6)).ceil();
+      minAvailableBlock = minBlock;
+    }
 
-    final expectedBlock = (effectiveNext ?? currentBlock) + ((position - 1) * certPeriodBlocks);
+    // Position-based expected block
+    var expectedBlock = (effectiveNext ?? currentBlock) + ((position - 1) * certPeriodBlocks);
+
+    // Enforce cert-specific minimum (e.g. canRenewIn delay)
+    if (minAvailableBlock != null && minAvailableBlock > expectedBlock) {
+      expectedBlock = minAvailableBlock;
+    }
+
+    // Derive date from the already-constrained block
+    final blocksUntil = expectedBlock - currentBlock;
+    final finalDate = blocksUntil <= 0
+        ? DateTime.now()
+        : DateTime.now().add(Duration(seconds: blocksUntil * blockTimeSeconds));
 
     final newCert = d.PendingCertification(
       id: const Uuid().v4(),
@@ -462,9 +476,10 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       receiverName: receiverName,
       addedAt: DateTime.now(),
       expectedAvailableBlock: expectedBlock,
-      expectedAvailableDate: expectedDate,
+      expectedAvailableDate: finalDate,
       position: position,
       certType: certType,
+      minAvailableBlock: minAvailableBlock,
     );
 
     final newCertifications = [...currentQueue.pendingCertifications, newCert];

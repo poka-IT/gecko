@@ -964,6 +964,8 @@
     "homeAlertAutoRevocation": "révocation auto le {}",
     "homeAlertMembershipPendingEval": "Renouvellement d'adhésion en cours d'évaluation",
     "homeAlertMembershipExpiringSoon": "Votre adhésion expire dans {} jours",
-    "homeAlertCertExpired": "Une certification reçue a expiré",
-    "homeAlertCertExpiringSoon": "Une certification reçue expire bientôt"
+    "homeAlertSentCertExpired": "Votre certification de {} a expiré",
+    "homeAlertSentCertExpiringSoon": "Votre certification de {} expire dans {} jours",
+    "homeAlertReceivedCertExpired": "La certification de {} a expiré",
+    "homeAlertReceivedCertExpiringSoon": "La certification de {} expire dans {} jours"
 }

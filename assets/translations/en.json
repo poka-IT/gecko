@@ -970,6 +970,8 @@
     "homeAlertAutoRevocation": "auto-revocation on {}",
     "homeAlertMembershipPendingEval": "Membership renewal pending evaluation",
     "homeAlertMembershipExpiringSoon": "Your membership expires in {} days",
-    "homeAlertCertExpired": "A received certification has expired",
-    "homeAlertCertExpiringSoon": "A received certification expires soon"
+    "homeAlertSentCertExpired": "Your certification of {} has expired",
+    "homeAlertSentCertExpiringSoon": "Your certification of {} expires in {} days",
+    "homeAlertReceivedCertExpired": "Certification from {} has expired",
+    "homeAlertReceivedCertExpiringSoon": "Certification from {} expires in {} days"
 }

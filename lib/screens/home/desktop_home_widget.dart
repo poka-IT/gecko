@@ -7,6 +7,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/home_alert_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/screens/home/gecko_home_widget.dart' show handleHomeAlertTap;
 import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/network_activity_provider.dart';
 import 'package:gecko/providers/network_certifications_provider.dart';
@@ -499,7 +500,9 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
                   return GestureDetector(
                     onTap: () {
-                      if (!alert.hasAlert && homeMessage == "noLizard".tr()) {
+                      if (alert.hasAlert) {
+                        handleHomeAlertTap(context, alert);
+                      } else if (homeMessage == "noLizard".tr()) {
                         homeMessageNotifier.showWisdomOfTheDay(context);
                       }
                     },

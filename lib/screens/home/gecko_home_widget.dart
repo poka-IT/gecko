@@ -6,6 +6,7 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/providers/home_alert_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/screens/home/desktop_home_widget.dart';
 import 'package:gecko/widgets/optimized_background.dart';
@@ -15,6 +16,29 @@ import 'package:gecko/widgets/buttons/home_settings_button.dart';
 import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
+
+/// Handles tap on a home alert message — navigates to the appropriate screen.
+///
+/// Used by both mobile and desktop home widgets.
+void handleHomeAlertTap(BuildContext context, HomeAlertState alert) {
+  switch (alert.action) {
+    case HomeAlertAction.openProfile:
+      if (alert.targetAddress != null) {
+        NavigationService.openProfile(context, address: alert.targetAddress!, username: alert.targetName);
+      }
+    case HomeAlertAction.openCertList:
+      if (alert.walletAddress != null) {
+        NavigationService.openProfile(context, address: alert.walletAddress!);
+      }
+    case HomeAlertAction.walletOptions:
+      // For membership alerts, open own wallet profile
+      if (alert.walletAddress != null) {
+        NavigationService.openProfile(context, address: alert.walletAddress!);
+      }
+    case HomeAlertAction.nothing:
+      break;
+  }
+}
 
 /// Home screen widget displayed when wallets exist
 class GeckoHomeWidget extends ConsumerWidget {
@@ -91,8 +115,9 @@ class GeckoHomeWidget extends ConsumerWidget {
 
                                 return GestureDetector(
                                   onTap: () {
-                                    // Easter egg: only trigger when no alert is active
-                                    if (!alert.hasAlert && homeMessage == "noLizard".tr()) {
+                                    if (alert.hasAlert) {
+                                      handleHomeAlertTap(context, alert);
+                                    } else if (homeMessage == "noLizard".tr()) {
                                       homeMessageNotifier.showWisdomOfTheDay(context);
                                     }
                                   },

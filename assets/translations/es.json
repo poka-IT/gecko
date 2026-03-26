@@ -970,6 +970,8 @@
     "homeAlertAutoRevocation": "revocación automática el {}",
     "homeAlertMembershipPendingEval": "Renovación de membresía en evaluación",
     "homeAlertMembershipExpiringSoon": "Tu membresía expira en {} días",
-    "homeAlertCertExpired": "Una certificación recibida ha expirado",
-    "homeAlertCertExpiringSoon": "Una certificación recibida expira pronto"
+    "homeAlertSentCertExpired": "Tu certificación de {} ha expirado",
+    "homeAlertSentCertExpiringSoon": "Tu certificación de {} expira en {} días",
+    "homeAlertReceivedCertExpired": "La certificación de {} ha expirado",
+    "homeAlertReceivedCertExpiringSoon": "La certificación de {} expira en {} días"
 }

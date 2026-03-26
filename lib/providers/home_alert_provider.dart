@@ -2,11 +2,12 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/membership_renewal.dart';
-import 'package:gecko/providers/cert_alert_provider.dart';
+import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/membership_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
+import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certs_list.dart';
 
 /// Priority levels for home alerts, highest to lowest.
@@ -15,29 +16,50 @@ import 'package:gecko/widgets/certs_list.dart';
 /// (handled separately by [ConnectionStatusNotifier]) take absolute
 /// precedence and are NOT part of this enum.
 enum HomeAlertPriority {
-  /// Identity has expired — membership impossible until re-created.
+  /// Identity has expired.
   identityExpired(100),
 
-  /// Membership has expired — can be renewed.
+  /// Membership has expired.
   membershipExpired(90),
 
   /// A membership renewal is pending evaluation.
   membershipPendingEval(80),
 
-  /// Membership expires soon (in the last half of the renewal window).
+  /// Membership expires soon.
   membershipExpiringSoon(70),
 
-  /// One or more received certifications have expired.
-  certExpired(60),
+  /// A certification we SENT has expired — we can re-certify.
+  sentCertExpired(65),
 
-  /// One or more received certifications expire within 30 days.
-  certExpiringSoon(50),
+  /// A certification we SENT expires soon — we can re-certify.
+  sentCertExpiringSoon(55),
 
-  /// Everything is healthy — show default message.
+  /// A certification we RECEIVED has expired.
+  receivedCertExpired(50),
+
+  /// A certification we RECEIVED expires soon.
+  receivedCertExpiringSoon(40),
+
+  /// Everything is healthy.
   none(0);
 
   const HomeAlertPriority(this.value);
   final int value;
+}
+
+/// What action to perform when the user taps the alert message.
+enum HomeAlertAction {
+  /// Navigate to wallet options (membership renewal).
+  walletOptions,
+
+  /// Navigate to a contact's profile (to re-certify them).
+  openProfile,
+
+  /// Navigate to our cert list (informational, received cert expiring).
+  openCertList,
+
+  /// No action.
+  nothing,
 }
 
 /// Immutable snapshot of the highest-priority home alert.
@@ -48,10 +70,26 @@ class HomeAlertState {
   /// The formatted, user-facing message (with emoji prefix).
   final String message;
 
-  /// Address of the wallet that triggered the alert (for navigation).
+  /// Address of the wallet that triggered the alert.
   final String? walletAddress;
 
-  const HomeAlertState({this.priority = HomeAlertPriority.none, this.message = '', this.walletAddress});
+  /// Address of the target contact (for profile navigation).
+  final String? targetAddress;
+
+  /// Name of the target contact (for profile navigation).
+  final String? targetName;
+
+  /// What to do when the message is tapped.
+  final HomeAlertAction action;
+
+  const HomeAlertState({
+    this.priority = HomeAlertPriority.none,
+    this.message = '',
+    this.walletAddress,
+    this.targetAddress,
+    this.targetName,
+    this.action = HomeAlertAction.nothing,
+  });
 
   bool get hasAlert => priority != HomeAlertPriority.none;
 }
@@ -59,14 +97,14 @@ class HomeAlertState {
 /// Aggregates alerts from all owned wallets and returns the single
 /// highest-priority alert.
 ///
-/// Watches only lightweight, already-loaded sources:
-/// - [walletsListProvider] (cached in ObjectBox)
-/// - [membershipStatusProvider] per wallet (throttled, ≤1 fetch/10 blocks)
-/// - [smartIdtyStatusStreamProvider] per wallet (persistent stream)
-/// - [certAlertStatusProvider] per wallet (derived from cert list)
+/// Watches only sources that are already loaded or throttled:
+/// - [walletsListProvider] — cached, always available
+/// - [membershipStatusProvider] — throttled (≤1 fetch per 10 blocks)
+/// - [smartIdtyStatusStreamProvider] — persistent stream for owned wallets
+/// - [certificationListProvider] — already subscribed for cert tiles/alerts
 ///
-/// Does NOT trigger new network fetches — all dependencies are either
-/// already subscribed or throttled by their own providers.
+/// Scans both RECEIVED and SENT certifications to find the specific
+/// person and expiration date for the alert message.
 class HomeAlertNotifier extends Notifier<HomeAlertState> {
   @override
   HomeAlertState build() {
@@ -83,17 +121,15 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
       if (alert.priority.value > best.priority.value) {
         best = alert;
       }
-      // Short-circuit: identity expired is max priority
       if (best.priority == HomeAlertPriority.identityExpired) break;
     }
 
     return best;
   }
 
-  /// Checks all alert conditions for a single wallet and returns the
-  /// highest-priority alert found.
+  /// Checks all alert conditions for a single wallet.
   HomeAlertState _checkWallet(String address) {
-    // 1. Check identity status (real-time stream, no extra cost)
+    // --- Identity & Membership alerts ---
     final idtyStatusAsync = ref.watch(smartIdtyStatusStreamProvider(address));
     final idtyStatus = idtyStatusAsync.asData?.value;
 
@@ -102,68 +138,152 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
         priority: HomeAlertPriority.identityExpired,
         message: '⛔ ${'homeAlertIdentityExpired'.tr()}',
         walletAddress: address,
+        action: HomeAlertAction.walletOptions,
       );
     }
 
-    // 2. Check membership status (throttled, safe to watch)
-    final membershipAsync = ref.watch(membershipStatusProvider(address));
-    final membership = membershipAsync.asData?.value;
+    if (idtyStatus != null && idtyStatus != d.IdtyStatus.none) {
+      final membershipAsync = ref.watch(membershipStatusProvider(address));
+      final membership = membershipAsync.asData?.value;
 
-    if (membership != null && idtyStatus != null && idtyStatus != d.IdtyStatus.none) {
-      final info = MembershipRenewal.calculateRenewalInfo(membership);
-
-      // 2a. Membership expired
-      if (info.isExpired && idtyStatus == d.IdtyStatus.expired) {
-        final autoRevocText = info.autoRevocationDate != null
-            ? ' (${'homeAlertAutoRevocation'.tr(args: [DateFormat('dd/MM').format(info.autoRevocationDate!)])})'
-            : '';
-        return HomeAlertState(
-          priority: HomeAlertPriority.membershipExpired,
-          message: '🔴 ${'homeAlertMembershipExpired'.tr()}$autoRevocText',
-          walletAddress: address,
-        );
-      }
-
-      // 2b. Pending evaluation
-      if (info.hasPendingRenewal) {
-        return HomeAlertState(
-          priority: HomeAlertPriority.membershipPendingEval,
-          message: '⏳ ${'homeAlertMembershipPendingEval'.tr()}',
-          walletAddress: address,
-        );
-      }
-
-      // 2c. Membership expiring soon (last half of renewal window)
-      if (_shouldShowMembershipAlert(info)) {
-        final daysLeft = info.expireDate != null ? info.expireDate!.difference(DateTime.now()).inDays : 0;
-        return HomeAlertState(
-          priority: HomeAlertPriority.membershipExpiringSoon,
-          message: '⚠️ ${'homeAlertMembershipExpiringSoon'.tr(args: ['$daysLeft'])}',
-          walletAddress: address,
-        );
+      if (membership != null) {
+        final alert = _checkMembership(address, idtyStatus, membership);
+        if (alert != null) return alert;
       }
     }
 
-    // 3. Check received cert alerts (derived from already-loaded cert list)
-    final certStatus = ref.watch(certAlertStatusProvider((address: address, direction: CertDirection.received)));
+    // --- Sent cert alerts (actionable: we can re-certify) ---
+    final sentAlert = _findExpiringCert(address, CertDirection.sent);
+    if (sentAlert != null) return sentAlert;
 
-    if (certStatus == CertAlertStatus.expired) {
-      return HomeAlertState(
-        priority: HomeAlertPriority.certExpired,
-        message: '📋 ${'homeAlertCertExpired'.tr()}',
-        walletAddress: address,
-      );
-    }
-
-    if (certStatus == CertAlertStatus.expiringSoon) {
-      return HomeAlertState(
-        priority: HomeAlertPriority.certExpiringSoon,
-        message: '📋 ${'homeAlertCertExpiringSoon'.tr()}',
-        walletAddress: address,
-      );
-    }
+    // --- Received cert alerts (informational) ---
+    final receivedAlert = _findExpiringCert(address, CertDirection.received);
+    if (receivedAlert != null) return receivedAlert;
 
     return const HomeAlertState();
+  }
+
+  /// Checks membership status and returns an alert if needed.
+  HomeAlertState? _checkMembership(String address, d.IdtyStatus idtyStatus, d.MembershipStatus membership) {
+    final info = MembershipRenewal.calculateRenewalInfo(membership);
+
+    if (info.isExpired && idtyStatus == d.IdtyStatus.expired) {
+      final autoRevocText = info.autoRevocationDate != null
+          ? ' (${'homeAlertAutoRevocation'.tr(args: [DateFormat('dd/MM').format(info.autoRevocationDate!)])})'
+          : '';
+      return HomeAlertState(
+        priority: HomeAlertPriority.membershipExpired,
+        message: '🔴 ${'homeAlertMembershipExpired'.tr()}$autoRevocText',
+        walletAddress: address,
+        action: HomeAlertAction.walletOptions,
+      );
+    }
+
+    if (info.hasPendingRenewal) {
+      return HomeAlertState(
+        priority: HomeAlertPriority.membershipPendingEval,
+        message: '⏳ ${'homeAlertMembershipPendingEval'.tr()}',
+        walletAddress: address,
+        action: HomeAlertAction.walletOptions,
+      );
+    }
+
+    if (_shouldShowMembershipAlert(info)) {
+      final daysLeft = info.expireDate != null ? info.expireDate!.difference(DateTime.now()).inDays : 0;
+      return HomeAlertState(
+        priority: HomeAlertPriority.membershipExpiringSoon,
+        message: '⚠️ ${'homeAlertMembershipExpiringSoon'.tr(args: ['$daysLeft'])}',
+        walletAddress: address,
+        action: HomeAlertAction.walletOptions,
+      );
+    }
+
+    return null;
+  }
+
+  /// Finds the first expiring/expired cert in [direction] for [walletAddress]
+  /// and builds a specific alert message with the contact's name.
+  HomeAlertState? _findExpiringCert(String walletAddress, CertDirection direction) {
+    final certState = ref.watch(certificationListProvider((address: walletAddress, direction: direction)));
+
+    if (certState.isLoading || certState.certifications.isEmpty) return null;
+
+    final now = DateTime.now();
+    CertDisplayItem? worstCert;
+    bool isExpired = false;
+    bool isExpiringSoon = false;
+
+    for (final cert in certState.certifications) {
+      if (cert.expireDate == null) continue;
+
+      if (now.isAfter(cert.expireDate!)) {
+        // Expired — highest severity for this direction
+        worstCert = cert;
+        isExpired = true;
+        break; // Can't get worse
+      }
+
+      if (cert.expireDate!.difference(now).inDays <= 30) {
+        // Only keep the soonest-expiring cert
+        if (worstCert == null || cert.expireDate!.isBefore(worstCert.expireDate!)) {
+          worstCert = cert;
+          isExpiringSoon = true;
+        }
+      }
+    }
+
+    if (worstCert == null) return null;
+
+    final contactName = worstCert.name.isNotEmpty ? worstCert.name : getShortPubkey(worstCert.address);
+    final daysLeft = worstCert.expireDate!.difference(now).inDays;
+
+    if (direction == CertDirection.sent) {
+      // Sent cert: WE certified this person → we can re-certify
+      if (isExpired) {
+        return HomeAlertState(
+          priority: HomeAlertPriority.sentCertExpired,
+          message: '🔄 ${'homeAlertSentCertExpired'.tr(args: [contactName])}',
+          walletAddress: walletAddress,
+          targetAddress: worstCert.address,
+          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
+          action: HomeAlertAction.openProfile,
+        );
+      }
+      if (isExpiringSoon) {
+        return HomeAlertState(
+          priority: HomeAlertPriority.sentCertExpiringSoon,
+          message: '🔄 ${'homeAlertSentCertExpiringSoon'.tr(args: [contactName, '$daysLeft'])}',
+          walletAddress: walletAddress,
+          targetAddress: worstCert.address,
+          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
+          action: HomeAlertAction.openProfile,
+        );
+      }
+    } else {
+      // Received cert: someone certified US → informational
+      if (isExpired) {
+        return HomeAlertState(
+          priority: HomeAlertPriority.receivedCertExpired,
+          message: '📋 ${'homeAlertReceivedCertExpired'.tr(args: [contactName])}',
+          walletAddress: walletAddress,
+          targetAddress: worstCert.address,
+          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
+          action: HomeAlertAction.openCertList,
+        );
+      }
+      if (isExpiringSoon) {
+        return HomeAlertState(
+          priority: HomeAlertPriority.receivedCertExpiringSoon,
+          message: '📋 ${'homeAlertReceivedCertExpiringSoon'.tr(args: [contactName, '$daysLeft'])}',
+          walletAddress: walletAddress,
+          targetAddress: worstCert.address,
+          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
+          action: HomeAlertAction.openCertList,
+        );
+      }
+    }
+
+    return null;
   }
 
   /// Returns true when membership is in the last half of the renewal window.
@@ -178,7 +298,6 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
       return timeLeft <= threshold;
     }
 
-    // Fallback: ≤30 days
     final daysLeft = info.expireDate!.difference(DateTime.now()).inDays;
     return daysLeft <= 30;
   }

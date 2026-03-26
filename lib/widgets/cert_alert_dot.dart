@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
@@ -7,7 +8,7 @@ import 'package:gecko/widgets/certs_list.dart';
 
 /// A small colored dot indicator for certification alert status.
 ///
-/// Renders a circular badge overlay:
+/// Renders a circular badge overlay with tooltip:
 /// - Red ([CertAlertStatus.expired]) when any certification has expired
 /// - Orange ([CertAlertStatus.expiringSoon]) when any certification expires within 30 days
 /// - Nothing ([SizedBox.shrink]) when all certifications are healthy
@@ -40,13 +41,22 @@ class CertAlertDot extends ConsumerWidget {
       CertAlertStatus.none => Colors.transparent, // unreachable
     };
 
-    return Container(
-      width: scaleSize(size),
-      height: scaleSize(size),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: Border.all(color: Colors.white, width: 1.5),
+    final tooltipMessage = switch (status) {
+      CertAlertStatus.expired => 'certAlertExpired'.tr(),
+      CertAlertStatus.expiringSoon => 'certAlertExpiringSoon'.tr(),
+      CertAlertStatus.none => '',
+    };
+
+    return Tooltip(
+      message: tooltipMessage,
+      child: Container(
+        width: scaleSize(size),
+        height: scaleSize(size),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+          border: Border.all(color: Colors.white, width: 1.5),
+        ),
       ),
     );
   }

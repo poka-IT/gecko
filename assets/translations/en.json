@@ -960,5 +960,7 @@
     "days365": "365 days",
     "analyzingContacts": "Analyzing contacts...",
     "analysisRequiresConnection": "Market analysis requires an active indexer connection.",
-    "copiedToClipboard": "Copied to clipboard"
+    "copiedToClipboard": "Copied to clipboard",
+    "certAlertExpired": "A certification has expired",
+    "certAlertExpiringSoon": "A certification expires within 30 days"
 }

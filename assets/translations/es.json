@@ -960,5 +960,7 @@
     "days365": "365 días",
     "analyzingContacts": "Analizando contactos...",
     "analysisRequiresConnection": "El análisis de mercado requiere una conexión activa al indexador.",
-    "copiedToClipboard": "Copiado al portapapeles"
+    "copiedToClipboard": "Copiado al portapapeles",
+    "certAlertExpired": "Una certificación ha expirado",
+    "certAlertExpiringSoon": "Una certificación expira en menos de 30 días"
 }

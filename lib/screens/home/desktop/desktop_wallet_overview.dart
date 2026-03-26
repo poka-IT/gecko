@@ -13,6 +13,8 @@ import 'package:gecko/screens/onBoarding/import_choice_screen.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/widgets/cert_alert_dot.dart';
+import 'package:gecko/widgets/certs_list.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
@@ -444,26 +446,36 @@ class DesktopWalletOverview extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                  Container(
-                    width: scaleSize(34),
-                    height: scaleSize(34),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
-                    ),
-                    child: ClipOval(
-                      child:
-                          wallet.imagePath != null &&
-                              wallet.imagePath!.isNotEmpty &&
-                              !wallet.imagePath!.startsWith('assets/')
-                          ? CachedAvatarImage(
-                              imagePath: wallet.imagePath!,
-                              fit: BoxFit.cover,
-                              isCircular: false,
-                              fallback: Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
-                            )
-                          : Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
-                    ),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: scaleSize(34),
+                        height: scaleSize(34),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.08)),
+                        ),
+                        child: ClipOval(
+                          child:
+                              wallet.imagePath != null &&
+                                  wallet.imagePath!.isNotEmpty &&
+                                  !wallet.imagePath!.startsWith('assets/')
+                              ? CachedAvatarImage(
+                                  imagePath: wallet.imagePath!,
+                                  fit: BoxFit.cover,
+                                  isCircular: false,
+                                  fallback: Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
+                                )
+                              : Image.asset('assets/avatars/${wallet.number % 4}.png', fit: BoxFit.cover),
+                        ),
+                      ),
+                      Positioned(
+                        right: -scaleSize(2),
+                        top: -scaleSize(2),
+                        child: CertAlertDot(address: wallet.address, direction: CertDirection.received, size: 9),
+                      ),
+                    ],
                   ),
                   const SizedBox(width: 10),
                   Expanded(

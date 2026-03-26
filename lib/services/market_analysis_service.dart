@@ -87,6 +87,45 @@ class MarketAnalysisService {
     return allItems;
   }
 
+  /// Fetches all paginated transaction pages for [walletAddress] within the
+  /// given date range, WITHOUT filtering by contact address.
+  ///
+  /// Used to discover "other contacts" — addresses involved in transactions
+  /// that are not in the user's initial selection.
+  Future<List<TransactionDisplayItem>> fetchAllPagesUnfiltered(
+    String walletAddress,
+    DateTime startDate,
+    DateTime endDate,
+    DateTime genesisTime,
+  ) async {
+    final filters = d.TransactionFilters(startDate: startDate.toUtc(), endDate: endDate.toUtc());
+
+    final allItems = <TransactionDisplayItem>[];
+    String? cursor;
+
+    while (true) {
+      final result = await d.SquidService.client.getAccountHistoryFiltered(
+        walletAddress,
+        number: 50,
+        cursor: cursor,
+        filters: filters,
+      );
+
+      if (result == null) {
+        return allItems;
+      }
+
+      for (final node in result.items) {
+        allItems.add(TransactionDisplayItem.fromFilteredGraphQLNode(node, walletAddress, genesisTime));
+      }
+
+      if (!result.hasNextPage) break;
+      cursor = result.endCursor;
+    }
+
+    return allItems;
+  }
+
   /// Aggregates a list of transaction items into sent/received totals for
   /// [contactAddress].
   ContactAnalysisResult aggregateTransactions(List<TransactionDisplayItem> items, String contactAddress) {

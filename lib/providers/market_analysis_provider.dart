@@ -1,7 +1,6 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
-import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/market_analysis_service.dart';
@@ -161,7 +160,6 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
 
       final service = ref.read(marketAnalysisServiceProvider);
       final squid = ref.read(squidServiceProvider);
-      final allItems = <TransactionDisplayItem>[];
       final results = <String, ContactAnalysisResult>{};
 
       for (var i = 0; i < addresses.length; i++) {
@@ -175,8 +173,6 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
           state.endDate!,
           genesisTime,
         );
-
-        allItems.addAll(items);
 
         // Aggregate.
         var result = service.aggregateTransactions(items, contactAddress);
@@ -202,8 +198,20 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
         state = state.copyWith(contactResults: Map.unmodifiable(results), processedContacts: i + 1);
       }
 
-      // Discover other contacts.
-      var otherResults = service.discoverOtherContacts(allItems, walletAddress, state.selectedContactAddresses);
+      // Fetch ALL transactions in the period (no contact filter) to discover other contacts.
+      final allUnfilteredItems = await service.fetchAllPagesUnfiltered(
+        walletAddress,
+        state.startDate!,
+        state.endDate!,
+        genesisTime,
+      );
+
+      // Discover other contacts from the unfiltered transaction set.
+      var otherResults = service.discoverOtherContacts(
+        allUnfilteredItems,
+        walletAddress,
+        state.selectedContactAddresses,
+      );
 
       // Resolve names for discovered contacts.
       final resolved = <String, ContactAnalysisResult>{};

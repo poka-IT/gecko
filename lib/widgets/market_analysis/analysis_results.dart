@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/market_analysis_provider.dart';
+import 'package:gecko/screens/cesium_profile_view_screen.dart';
 import 'package:gecko/services/market_analysis_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
@@ -125,81 +126,103 @@ class AnalysisResults extends ConsumerWidget {
   }
 
   /// Builds a card for a single contact's analysis results.
+  /// Tapping the card navigates to the contact's profile.
   Widget _buildContactCard(BuildContext context, ContactAnalysisResult result, {required bool showAvatar}) {
     final displayName = result.username ?? getShortPubkey(result.address);
 
     return Card(
       margin: EdgeInsets.only(bottom: scaleSize(8)),
-      child: Padding(
-        padding: EdgeInsets.all(scaleSize(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Contact header
-            Row(
-              children: [
-                if (showAvatar) ...[
-                  SizedBox(
-                    width: scaleSize(36),
-                    height: scaleSize(36),
-                    child: DatapodAvatar(address: result.address, size: scaleSize(36)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => CesiumProfileViewScreen(address: result.address),
+              transitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.easeInOut));
+                return SlideTransition(position: animation.drive(tween), child: child);
+              },
+            ),
+          );
+        },
+        child: Padding(
+          padding: EdgeInsets.all(scaleSize(12)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Contact header
+              Row(
+                children: [
+                  if (showAvatar) ...[
+                    SizedBox(
+                      width: scaleSize(36),
+                      height: scaleSize(36),
+                      child: DatapodAvatar(address: result.address, size: scaleSize(36)),
+                    ),
+                    ScaledSizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName,
+                          style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (result.username != null)
+                          Text(
+                            getShortPubkey(result.address),
+                            style: scaledTextStyle(fontSize: 11, color: context.colorScheme.outline),
+                          ),
+                      ],
+                    ),
                   ),
-                  ScaledSizedBox(width: 10),
                 ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              ScaledSizedBox(height: 8),
+              // Sent / Received / Count
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('sent'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
+                        BalanceDisplay(value: result.totalSent, size: 13),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('received'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
+                        BalanceDisplay(value: result.totalReceived, size: 13),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        displayName,
-                        style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
+                        'transactions'.tr(),
+                        style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline),
                       ),
-                      if (result.username != null)
-                        Text(
-                          getShortPubkey(result.address),
-                          style: scaledTextStyle(fontSize: 11, color: context.colorScheme.outline),
-                        ),
+                      Text(
+                        '${result.transactionCount}',
+                        style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            ScaledSizedBox(height: 8),
-            // Sent / Received / Count
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('sent'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
-                      BalanceDisplay(value: result.totalSent, size: 13),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('received'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
-                      BalanceDisplay(value: result.totalReceived, size: 13),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text('transactions'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
-                    Text(
-                      '${result.transactionCount}',
-                      style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

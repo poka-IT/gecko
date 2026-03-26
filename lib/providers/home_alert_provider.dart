@@ -2,12 +2,11 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/membership_renewal.dart';
-import 'package:gecko/providers/certification_list_providers.dart';
+import 'package:gecko/providers/cert_alert_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/membership_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
-import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certs_list.dart';
 
 /// Priority levels for home alerts, highest to lowest.
@@ -203,90 +202,54 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
 
   /// Finds the first expiring/expired cert in [direction] for [walletAddress]
   /// and builds a specific alert message with the contact's name.
+  /// Build a HomeAlertState from the shared certAlertDetailProvider.
   HomeAlertState? _findExpiringCert(String walletAddress, CertDirection direction) {
-    final certState = ref.watch(certificationListProvider((address: walletAddress, direction: direction)));
+    final detail = ref.watch(certAlertDetailProvider((address: walletAddress, direction: direction)));
 
-    if (certState.isLoading || certState.certifications.isEmpty) return null;
+    if (detail.status == CertAlertStatus.none) return null;
 
-    final now = DateTime.now();
-    CertDisplayItem? worstCert;
-    bool isExpired = false;
-    bool isExpiringSoon = false;
-
-    for (final cert in certState.certifications) {
-      if (cert.expireDate == null) continue;
-
-      if (now.isAfter(cert.expireDate!)) {
-        // Expired — highest severity for this direction
-        worstCert = cert;
-        isExpired = true;
-        break; // Can't get worse
-      }
-
-      // Sent certs: 60-day threshold (actionable — we can re-certify)
-      // Received certs: 30-day threshold (informational only)
-      final threshold = direction == CertDirection.sent ? 60 : 30;
-      if (cert.expireDate!.difference(now).inDays <= threshold) {
-        // Only keep the soonest-expiring cert
-        if (worstCert == null || cert.expireDate!.isBefore(worstCert.expireDate!)) {
-          worstCert = cert;
-          isExpiringSoon = true;
-        }
-      }
-    }
-
-    if (worstCert == null) return null;
-
-    final contactName = worstCert.name.isNotEmpty ? worstCert.name : getShortPubkey(worstCert.address);
-    final daysLeft = worstCert.expireDate!.difference(now).inDays;
+    final contactName = detail.contactName ?? '?';
+    final daysLeft = detail.daysLeft ?? 0;
 
     if (direction == CertDirection.sent) {
-      // Sent cert: WE certified this person → we can re-certify
-      if (isExpired) {
+      if (detail.status == CertAlertStatus.expired) {
         return HomeAlertState(
           priority: HomeAlertPriority.sentCertExpired,
           message: '🔄 ${'homeAlertSentCertExpired'.tr(args: [contactName])}',
           walletAddress: walletAddress,
-          targetAddress: worstCert.address,
-          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
+          targetAddress: detail.contactAddress,
+          targetName: detail.contactName,
           action: HomeAlertAction.openProfile,
         );
       }
-      if (isExpiringSoon) {
-        return HomeAlertState(
-          priority: HomeAlertPriority.sentCertExpiringSoon,
-          message: '🔄 ${'homeAlertSentCertExpiringSoon'.tr(args: [contactName, '$daysLeft'])}',
-          walletAddress: walletAddress,
-          targetAddress: worstCert.address,
-          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
-          action: HomeAlertAction.openProfile,
-        );
-      }
+      return HomeAlertState(
+        priority: HomeAlertPriority.sentCertExpiringSoon,
+        message: '🔄 ${'homeAlertSentCertExpiringSoon'.tr(args: [contactName, '$daysLeft'])}',
+        walletAddress: walletAddress,
+        targetAddress: detail.contactAddress,
+        targetName: detail.contactName,
+        action: HomeAlertAction.openProfile,
+      );
     } else {
-      // Received cert: someone certified US → informational
-      if (isExpired) {
+      if (detail.status == CertAlertStatus.expired) {
         return HomeAlertState(
           priority: HomeAlertPriority.receivedCertExpired,
           message: '📋 ${'homeAlertReceivedCertExpired'.tr(args: [contactName])}',
           walletAddress: walletAddress,
-          targetAddress: worstCert.address,
-          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
+          targetAddress: detail.contactAddress,
+          targetName: detail.contactName,
           action: HomeAlertAction.openCertList,
         );
       }
-      if (isExpiringSoon) {
-        return HomeAlertState(
-          priority: HomeAlertPriority.receivedCertExpiringSoon,
-          message: '📋 ${'homeAlertReceivedCertExpiringSoon'.tr(args: [contactName, '$daysLeft'])}',
-          walletAddress: walletAddress,
-          targetAddress: worstCert.address,
-          targetName: worstCert.name.isNotEmpty ? worstCert.name : null,
-          action: HomeAlertAction.openCertList,
-        );
-      }
+      return HomeAlertState(
+        priority: HomeAlertPriority.receivedCertExpiringSoon,
+        message: '📋 ${'homeAlertReceivedCertExpiringSoon'.tr(args: [contactName, '$daysLeft'])}',
+        walletAddress: walletAddress,
+        targetAddress: detail.contactAddress,
+        targetName: detail.contactName,
+        action: HomeAlertAction.openCertList,
+      );
     }
-
-    return null;
   }
 
   /// Returns true when membership is in the last half of the renewal window.

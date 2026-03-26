@@ -95,7 +95,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 children: [
                   MigrationAlertCard(address: widget.wallet.address),
                   MembershipAlertCard(address: widget.wallet.address),
-                  CertAlertBanner(address: widget.wallet.address),
+                  CertAlertBanner(address: widget.wallet.address, username: widget.wallet.name),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
                     child: Column(

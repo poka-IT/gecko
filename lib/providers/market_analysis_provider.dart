@@ -1,6 +1,7 @@
 import 'package:durt2/durt2.dart' as d;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/market_analysis_service.dart';
@@ -22,6 +23,9 @@ class MarketAnalysisState {
   /// Discovered contacts not in the initial selection.
   final Map<String, ContactAnalysisResult> otherContactResults;
 
+  /// Raw transaction items per contact address (for detail inspection).
+  final Map<String, List<TransactionDisplayItem>> contactTransactions;
+
   /// Whether an analysis is currently running.
   final bool isAnalyzing;
 
@@ -40,6 +44,7 @@ class MarketAnalysisState {
     this.selectedContactAddresses = const {},
     this.contactResults = const {},
     this.otherContactResults = const {},
+    this.contactTransactions = const {},
     this.isAnalyzing = false,
     this.processedContacts = 0,
     this.totalContacts = 0,
@@ -52,6 +57,7 @@ class MarketAnalysisState {
     Set<String>? selectedContactAddresses,
     Map<String, ContactAnalysisResult>? contactResults,
     Map<String, ContactAnalysisResult>? otherContactResults,
+    Map<String, List<TransactionDisplayItem>>? contactTransactions,
     bool? isAnalyzing,
     int? processedContacts,
     int? totalContacts,
@@ -64,6 +70,7 @@ class MarketAnalysisState {
       selectedContactAddresses: selectedContactAddresses ?? this.selectedContactAddresses,
       contactResults: contactResults ?? this.contactResults,
       otherContactResults: otherContactResults ?? this.otherContactResults,
+      contactTransactions: contactTransactions ?? this.contactTransactions,
       isAnalyzing: isAnalyzing ?? this.isAnalyzing,
       processedContacts: processedContacts ?? this.processedContacts,
       totalContacts: totalContacts ?? this.totalContacts,
@@ -161,6 +168,7 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
       final service = ref.read(marketAnalysisServiceProvider);
       final squid = ref.read(squidServiceProvider);
       final results = <String, ContactAnalysisResult>{};
+      final transactions = <String, List<TransactionDisplayItem>>{};
 
       for (var i = 0; i < addresses.length; i++) {
         final contactAddress = addresses[i];
@@ -173,6 +181,9 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
           state.endDate!,
           genesisTime,
         );
+
+        // Store raw transaction items for detail inspection.
+        transactions[contactAddress] = items;
 
         // Aggregate.
         var result = service.aggregateTransactions(items, contactAddress);
@@ -195,7 +206,11 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
         results[contactAddress] = result;
 
         // Progressive state update.
-        state = state.copyWith(contactResults: Map.unmodifiable(results), processedContacts: i + 1);
+        state = state.copyWith(
+          contactResults: Map.unmodifiable(results),
+          contactTransactions: Map.unmodifiable(transactions),
+          processedContacts: i + 1,
+        );
       }
 
       // Fetch ALL transactions in the period (no contact filter) to discover other contacts.

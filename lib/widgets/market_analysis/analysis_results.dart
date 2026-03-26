@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/models/transaction_display_item.dart';
 import 'package:gecko/providers/market_analysis_provider.dart';
 import 'package:gecko/services/market_analysis_service.dart';
 import 'package:gecko/services/navigation_service.dart';
@@ -56,9 +57,16 @@ class AnalysisResults extends ConsumerWidget {
         // Aggregate summary card
         if (state.hasResults) ...[_buildSummaryCard(context), ScaledSizedBox(height: 12)],
 
-        // Per-contact result cards
+        // Per-contact result cards (expandable with transaction details)
         if (state.contactResults.isNotEmpty)
-          ...state.contactResults.entries.map((entry) => _buildContactCard(context, entry.value, showAvatar: true)),
+          ...state.contactResults.entries.map(
+            (entry) => _buildContactCard(
+              context,
+              entry.value,
+              showAvatar: true,
+              transactions: state.contactTransactions[entry.key],
+            ),
+          ),
 
         // Other contacts section
         if (state.otherContactResults.isNotEmpty) ...[
@@ -126,92 +134,151 @@ class AnalysisResults extends ConsumerWidget {
   }
 
   /// Builds a card for a single contact's analysis results.
-  /// Tapping the card navigates to the contact's profile.
-  Widget _buildContactCard(BuildContext context, ContactAnalysisResult result, {required bool showAvatar}) {
+  ///
+  /// When [transactions] is provided, the card is expandable to show individual
+  /// transaction details. Tapping the contact name navigates to their profile.
+  Widget _buildContactCard(
+    BuildContext context,
+    ContactAnalysisResult result, {
+    required bool showAvatar,
+    List<TransactionDisplayItem>? transactions,
+  }) {
     final displayName = result.username ?? getShortPubkey(result.address);
+    final hasTransactions = transactions != null && transactions.isNotEmpty;
 
-    return Card(
-      margin: EdgeInsets.only(bottom: scaleSize(8)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          NavigationService.openProfile(context, address: result.address, username: result.username);
-        },
-        child: Padding(
-          padding: EdgeInsets.all(scaleSize(12)),
+    final header = Row(
+      children: [
+        if (showAvatar) ...[
+          SizedBox(
+            width: scaleSize(36),
+            height: scaleSize(36),
+            child: DatapodAvatar(address: result.address, size: scaleSize(36)),
+          ),
+          ScaledSizedBox(width: 10),
+        ],
+        Expanded(
+          child: GestureDetector(
+            onTap: () => NavigationService.openProfile(context, address: result.address, username: result.username),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.colorScheme.primary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (result.username != null)
+                  Text(
+                    getShortPubkey(result.address),
+                    style: scaledTextStyle(fontSize: 11, color: context.colorScheme.outline),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final summaryRow = Row(
+      children: [
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Contact header
-              Row(
-                children: [
-                  if (showAvatar) ...[
-                    SizedBox(
-                      width: scaleSize(36),
-                      height: scaleSize(36),
-                      child: DatapodAvatar(address: result.address, size: scaleSize(36)),
-                    ),
-                    ScaledSizedBox(width: 10),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          displayName,
-                          style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (result.username != null)
-                          Text(
-                            getShortPubkey(result.address),
-                            style: scaledTextStyle(fontSize: 11, color: context.colorScheme.outline),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              ScaledSizedBox(height: 8),
-              // Sent / Received / Count
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('sent'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
-                        BalanceDisplay(value: result.totalSent, size: 13),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('received'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
-                        BalanceDisplay(value: result.totalReceived, size: 13),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'transactions'.tr(),
-                        style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline),
-                      ),
-                      Text(
-                        '${result.transactionCount}',
-                        style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              Text('sent'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
+              BalanceDisplay(value: result.totalSent, size: 13),
             ],
           ),
         ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('received'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
+              BalanceDisplay(value: result.totalReceived, size: 13),
+            ],
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text('transactions'.tr(), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
+            Text('${result.transactionCount}', style: scaledTextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ],
+    );
+
+    if (!hasTransactions) {
+      // Non-expandable card (other contacts without transaction details)
+      return Card(
+        margin: EdgeInsets.only(bottom: scaleSize(8)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => NavigationService.openProfile(context, address: result.address, username: result.username),
+          child: Padding(
+            padding: EdgeInsets.all(scaleSize(12)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [header, ScaledSizedBox(height: 8), summaryRow],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Expandable card with transaction details
+    return Card(
+      margin: EdgeInsets.only(bottom: scaleSize(8)),
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(4)),
+        childrenPadding: EdgeInsets.fromLTRB(scaleSize(12), 0, scaleSize(12), scaleSize(12)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [header, ScaledSizedBox(height: 8), summaryRow],
+        ),
+        children: [
+          Divider(height: 1),
+          ScaledSizedBox(height: 8),
+          ...transactions.map((tx) => _buildTransactionRow(context, tx)),
+        ],
+      ),
+    );
+  }
+
+  /// Builds a single transaction detail row within an expanded contact card.
+  Widget _buildTransactionRow(BuildContext context, TransactionDisplayItem tx) {
+    final dateFmt = DateFormat('dd/MM/yy HH:mm');
+    final color = tx.isReceived ? context.geckoColors.success : context.geckoColors.danger;
+    final prefix = tx.isReceived ? '+' : '-';
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: scaleSize(4)),
+      child: Row(
+        children: [
+          // Date
+          Text(dateFmt.format(tx.timestamp), style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline)),
+          const Spacer(),
+          // Comment (if any)
+          if (tx.comment != null && tx.comment!.isNotEmpty) ...[
+            Flexible(
+              child: Text(
+                tx.comment!,
+                style: scaledTextStyle(fontSize: 12, color: context.colorScheme.outline),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+            ScaledSizedBox(width: 8),
+          ],
+          // Amount with sign and color
+          Text(
+            prefix,
+            style: scaledTextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w600),
+          ),
+          BalanceDisplay(value: tx.amount, size: 13, color: color),
+        ],
       ),
     );
   }

@@ -965,5 +965,12 @@
     "certAlertExpired": "Una certificazione è scaduta",
     "certAlertExpiringSoon": "Una certificazione scade entro 30 giorni",
     "certBannerExpired": "Una o più certificazioni ricevute sono scadute",
-    "certBannerExpiringSoon": "Una o più certificazioni ricevute scadono entro 30 giorni"
+    "certBannerExpiringSoon": "Una o più certificazioni ricevute scadono entro 30 giorni",
+    "homeAlertIdentityExpired": "La tua identità è scaduta!",
+    "homeAlertMembershipExpired": "La tua adesione è scaduta!",
+    "homeAlertAutoRevocation": "revoca automatica il {}",
+    "homeAlertMembershipPendingEval": "Rinnovo adesione in fase di valutazione",
+    "homeAlertMembershipExpiringSoon": "La tua adesione scade tra {} giorni",
+    "homeAlertCertExpired": "Una certificazione ricevuta è scaduta",
+    "homeAlertCertExpiringSoon": "Una certificazione ricevuta scade a breve"
 }

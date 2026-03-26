@@ -958,5 +958,12 @@
     "certAlertExpired": "Une certification a expiré",
     "certAlertExpiringSoon": "Une certification expire dans moins de 30 jours",
     "certBannerExpired": "Une ou plusieurs certifications reçues ont expiré",
-    "certBannerExpiringSoon": "Une ou plusieurs certifications reçues expirent dans moins de 30 jours"
+    "certBannerExpiringSoon": "Une ou plusieurs certifications reçues expirent dans moins de 30 jours",
+    "homeAlertIdentityExpired": "Votre identité a expiré !",
+    "homeAlertMembershipExpired": "Votre adhésion a expiré !",
+    "homeAlertAutoRevocation": "révocation auto le {}",
+    "homeAlertMembershipPendingEval": "Renouvellement d'adhésion en cours d'évaluation",
+    "homeAlertMembershipExpiringSoon": "Votre adhésion expire dans {} jours",
+    "homeAlertCertExpired": "Une certification reçue a expiré",
+    "homeAlertCertExpiringSoon": "Une certification reçue expire bientôt"
 }

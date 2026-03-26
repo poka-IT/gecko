@@ -10,6 +10,7 @@ import 'package:gecko/providers/network_certifications_provider.dart';
 import 'package:gecko/providers/network_identities_provider.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/connection_providers.dart';
+import 'package:gecko/providers/home_alert_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/squid_cache_buster.dart';
 import 'package:gecko/services/config_service.dart';
@@ -49,7 +50,15 @@ final appVersionProvider = FutureProvider<String>((ref) async {
   return appInfoService.appVersion;
 });
 
-/// Home message state and notifier
+/// Home message state and notifier.
+///
+/// Manages the message displayed on the home screen. Priority order:
+/// 1. Connection status messages (set externally by [ConnectionStatusNotifier])
+/// 2. Contextual alerts from [homeAlertProvider] (cert/membership expiration)
+/// 3. Default "noLizard" message when everything is healthy
+///
+/// Temporary messages (connection, easter eggs) auto-reset to the current
+/// alert or default message after a delay.
 class HomeMessageNotifier extends Notifier<String> {
   Timer? _resetTimer;
 
@@ -59,62 +68,85 @@ class HomeMessageNotifier extends Notifier<String> {
     return '';
   }
 
-  /// Change the home message
+  /// Returns the best idle message: alert if any, otherwise "noLizard".
+  String _idleMessage() {
+    try {
+      final alert = ref.read(homeAlertProvider);
+      if (alert.hasAlert) return alert.message;
+    } catch (_) {
+      // Provider not yet initialized — fall back to default
+    }
+    return "noLizard".tr();
+  }
+
+  /// Change the home message.
+  ///
+  /// When [reset] is true, the message auto-resets after 5 seconds to the
+  /// current alert message (or "noLizard" if no alerts).
   Future<void> changeMessage(String newMessage, [bool reset = false]) async {
     state = newMessage;
 
     if (reset) {
       _resetTimer?.cancel();
       _resetTimer = Timer(const Duration(seconds: 5), () {
-        // Check connection status before changing to "noLizard"
-        // Only set "noLizard" if both Duniter and Squid are in good state
         try {
           final duniterStatus = ref.read(duniterConnectionStatusProvider);
           final squidStatus = ref.read(squidConnectionStatusProvider);
 
-          // Only show "noLizard" if we have a good connection
           if (duniterStatus == d.ConnectionStatus.connected && squidStatus == d.ConnectionStatus.connected) {
-            state = "noLizard".tr();
+            state = _idleMessage();
           }
-          // If connections are bad, keep the current message (which should reflect the connection state)
         } catch (e) {
           log.w('Error checking connection status in changeMessage: $e');
-          // If we can't check status, don't change the message to be safe
         }
       });
     }
   }
 
-  /// Show wisdom of the day easter egg
+  /// Updates the home message to reflect the current alert state.
+  ///
+  /// Called by the home screen when the alert provider changes.
+  /// Only updates if no connection issue is active (connection messages
+  /// take absolute precedence).
+  void syncWithAlert(HomeAlertState alert) {
+    try {
+      final duniterStatus = ref.read(duniterConnectionStatusProvider);
+      final squidStatus = ref.read(squidConnectionStatusProvider);
+
+      if (duniterStatus != d.ConnectionStatus.connected || squidStatus != d.ConnectionStatus.connected) {
+        return; // Connection message takes precedence
+      }
+    } catch (_) {
+      return;
+    }
+
+    state = alert.hasAlert ? alert.message : "noLizard".tr();
+  }
+
+  /// Show wisdom of the day easter egg.
   Future<void> showWisdomOfTheDay(BuildContext context) async {
     try {
-      // Get current locale language code
       final currentLocale = context.locale;
       final languageCode = currentLocale.languageCode;
 
-      // Get wisdom of the day
       final wisdomService = WisdomService();
       final wisdom = await wisdomService.getWisdomOfTheDay(languageCode);
 
       if (wisdom != null) {
         state = wisdom;
 
-        // Reset to normal message after 8 seconds
         _resetTimer?.cancel();
         _resetTimer = Timer(const Duration(seconds: 8), () {
-          // Check connection status before changing back to "noLizard"
           try {
             final duniterStatus = ref.read(duniterConnectionStatusProvider);
             final squidStatus = ref.read(squidConnectionStatusProvider);
 
-            // Only show "noLizard" if we have a good connection
             if (duniterStatus == d.ConnectionStatus.connected && squidStatus == d.ConnectionStatus.connected) {
-              state = "noLizard".tr();
+              state = _idleMessage();
             }
           } catch (e) {
             log.w('Error checking connection status in wisdom easter egg: $e');
-            // If we can't check status, go back to "noLizard" anyway for the easter egg
-            state = "noLizard".tr();
+            state = _idleMessage();
           }
         });
       }

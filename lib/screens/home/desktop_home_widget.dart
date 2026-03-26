@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/home_alert_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/services/config_service.dart';
 import 'package:gecko/providers/network_activity_provider.dart';
@@ -490,9 +491,15 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
                 builder: (context, ref, _) {
                   final homeMessage = ref.watch(homeMessageProvider);
                   final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+
+                  final alert = ref.watch(homeAlertProvider);
+                  ref.listen(homeAlertProvider, (_, next) {
+                    homeMessageNotifier.syncWithAlert(next);
+                  });
+
                   return GestureDetector(
                     onTap: () {
-                      if (homeMessage == "noLizard".tr()) {
+                      if (!alert.hasAlert && homeMessage == "noLizard".tr()) {
                         homeMessageNotifier.showWisdomOfTheDay(context);
                       }
                     },

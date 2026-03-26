@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 import 'package:gecko/extensions.dart';
+import 'package:gecko/providers/home_alert_provider.dart';
 import 'package:gecko/providers/home_providers.dart';
 import 'package:gecko/providers/settings_provider.dart';
 import 'package:gecko/screens/home/desktop_home_widget.dart';
@@ -82,10 +83,16 @@ class GeckoHomeWidget extends ConsumerWidget {
                                 final homeMessage = ref.watch(homeMessageProvider);
                                 final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
 
+                                // Sync home message with alert state changes
+                                final alert = ref.watch(homeAlertProvider);
+                                ref.listen(homeAlertProvider, (_, next) {
+                                  homeMessageNotifier.syncWithAlert(next);
+                                });
+
                                 return GestureDetector(
                                   onTap: () {
-                                    // Easter egg: only trigger when message is "noLizard"
-                                    if (homeMessage == "noLizard".tr()) {
+                                    // Easter egg: only trigger when no alert is active
+                                    if (!alert.hasAlert && homeMessage == "noLizard".tr()) {
                                       homeMessageNotifier.showWisdomOfTheDay(context);
                                     }
                                   },

@@ -33,6 +33,7 @@ import 'package:gecko/routes.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/screens/certification_queue_screen.dart';
+import 'package:gecko/widgets/cert_alert_banner.dart';
 import 'package:gecko/widgets/membership_alert_card.dart';
 import 'package:gecko/widgets/migration_alert_card.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
@@ -94,6 +95,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 children: [
                   MigrationAlertCard(address: widget.wallet.address),
                   MembershipAlertCard(address: widget.wallet.address),
+                  CertAlertBanner(address: widget.wallet.address),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
                     child: Column(

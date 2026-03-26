@@ -962,5 +962,7 @@
     "analysisRequiresConnection": "El análisis de mercado requiere una conexión activa al indexador.",
     "copiedToClipboard": "Copiado al portapapeles",
     "certAlertExpired": "Una certificación ha expirado",
-    "certAlertExpiringSoon": "Una certificación expira en menos de 30 días"
+    "certAlertExpiringSoon": "Una certificación expira en menos de 30 días",
+    "certBannerExpired": "Una o más certificaciones recibidas han expirado",
+    "certBannerExpiringSoon": "Una o más certificaciones recibidas expiran en menos de 30 días"
 }

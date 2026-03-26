@@ -963,5 +963,7 @@
     "analysisRequiresConnection": "L'analisi di mercato richiede una connessione attiva all'indicizzatore.",
     "copiedToClipboard": "Copiato negli appunti",
     "certAlertExpired": "Una certificazione è scaduta",
-    "certAlertExpiringSoon": "Una certificazione scade entro 30 giorni"
+    "certAlertExpiringSoon": "Una certificazione scade entro 30 giorni",
+    "certBannerExpired": "Una o più certificazioni ricevute sono scadute",
+    "certBannerExpiringSoon": "Una o più certificazioni ricevute scadono entro 30 giorni"
 }

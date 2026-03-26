@@ -962,5 +962,7 @@
     "analysisRequiresConnection": "Market analysis requires an active indexer connection.",
     "copiedToClipboard": "Copied to clipboard",
     "certAlertExpired": "A certification has expired",
-    "certAlertExpiringSoon": "A certification expires within 30 days"
+    "certAlertExpiringSoon": "A certification expires within 30 days",
+    "certBannerExpired": "One or more received certifications have expired",
+    "certBannerExpiringSoon": "One or more received certifications expire within 30 days"
 }

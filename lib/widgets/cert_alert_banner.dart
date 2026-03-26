@@ -1,9 +1,11 @@
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/cert_alert_provider.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/widgets/certs_list.dart';
 
 /// A discrete banner showing certification alert status for a wallet.
@@ -22,6 +24,13 @@ class CertAlertBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Only show cert alerts for wallets that have an identity
+    final idtyAsync = ref.watch(smartIdtyStatusStreamProvider(address));
+    final idtyStatus = idtyAsync.asData?.value;
+    if (idtyStatus == null || idtyStatus == IdtyStatus.none || idtyStatus == IdtyStatus.unknown) {
+      return const SizedBox.shrink();
+    }
+
     final status = ref.watch(certAlertStatusProvider((address: address, direction: CertDirection.received)));
 
     if (status == CertAlertStatus.none) {

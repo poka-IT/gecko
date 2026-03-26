@@ -174,6 +174,18 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
 
     setState(() => _isProcessing = true);
     try {
+      // Check if target has migrated — adding a migrated address to queue is pointless
+      final migrationData = await ref.read(migrationFromDataProvider(widget.address).future);
+      if (migrationData != null) {
+        if (!context.mounted) return;
+        showConfirmationDialog(
+          context: context,
+          type: ConfirmationDialogType.error,
+          message: 'migratedAccountCannotBeCertified'.tr(),
+        );
+        return;
+      }
+
       // IMPORTANT: Capture all provider references BEFORE any async operation
       // to avoid "ref used after widget unmounted" errors
       final walletService = ref.read(walletServiceProvider);

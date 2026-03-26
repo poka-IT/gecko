@@ -82,9 +82,8 @@ class CertificationQueueService {
     required int certPeriodBlocks,
     required int currentBlockNumber,
     required int? nextIssuableBlock,
+    int blockTimeSeconds = 6,
   }) {
-    const blockTimeSeconds = 6;
-
     // Start from when the issuer can next certify
     // If nextIssuableBlock is in the past, use current block as base
     // (the first cert will execute "now", so subsequent ones wait from now)
@@ -118,6 +117,7 @@ class CertificationQueueService {
     required int certPeriodBlocks,
     required int currentBlockNumber,
     required int? nextIssuableBlock,
+    int blockTimeSeconds = 6,
   }) {
     if (queue.pendingCertifications.isEmpty) return queue;
 
@@ -132,6 +132,7 @@ class CertificationQueueService {
         certPeriodBlocks: certPeriodBlocks,
         currentBlockNumber: currentBlockNumber,
         nextIssuableBlock: nextIssuableBlock,
+        blockTimeSeconds: blockTimeSeconds,
       );
 
       // Calculate expected block

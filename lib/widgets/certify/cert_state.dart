@@ -33,8 +33,9 @@ class _CertStateWidgetState extends ConsumerState<CertStateWidget> {
     // Keep last known data to avoid flicker during provider refresh
     final issuerWallet = issuerWalletAsync.asData?.value;
     if (issuerWallet == null) {
-      // During loading, show cached widget if available to avoid flicker
-      return _lastBuiltWidget ?? _buildLegacyWidget(context, ref);
+      // During loading, show cached widget if available, or nothing to avoid
+      // showing a legacy button that ignores the queue system.
+      return _lastBuiltWidget ?? const SizedBox.shrink();
     }
 
     final issuerAddress = issuerWallet.address;
@@ -44,8 +45,7 @@ class _CertStateWidgetState extends ConsumerState<CertStateWidget> {
 
     final buttonState = buttonStateAsync.asData?.value;
     if (buttonState == null) {
-      // During loading, show cached widget if available to avoid flicker
-      return _lastBuiltWidget ?? _buildLegacyWidget(context, ref);
+      return _lastBuiltWidget ?? const SizedBox.shrink();
     }
 
     final result = _buildFromButtonState(context, ref, buttonState, issuerAddress);
@@ -112,42 +112,6 @@ class _CertStateWidgetState extends ConsumerState<CertStateWidget> {
     };
   }
 
-  /// Fallback to legacy widget building when button state is loading/error
-  Widget _buildLegacyWidget(BuildContext context, WidgetRef ref) {
-    String label;
-    bool canCertify = false;
-
-    switch (widget.certState.status) {
-      case CertStatus.canCert:
-        label = 'certify'.tr();
-        canCertify = true;
-        break;
-      case CertStatus.canRenewIn:
-        label = 'canRenewCertInX'.tr(args: [formatDuration(widget.certState.duration!)]);
-        break;
-      case CertStatus.mustWaitBeforeCert:
-        label = 'mustWaitXBeforeCertify'.tr(args: [formatDuration(widget.certState.duration!)]);
-        break;
-      case CertStatus.mustConfirmIdentity:
-        label = 'mustConfirmHisIdentity'.tr();
-        break;
-      case CertStatus.emptyWallet:
-        label = 'emptyWalletCannotBeCertified'.tr();
-        break;
-      case CertStatus.revoked:
-        label = 'revokedAccountCannotBeCertified'.tr();
-        break;
-      case CertStatus.none:
-        return const SizedBox.shrink();
-    }
-
-    if (canCertify) {
-      return _buildCertifyButton(ref);
-    } else {
-      return _buildDisabledButton(label);
-    }
-  }
-
   Widget _buildCertifyButton(WidgetRef ref) {
     // Check if certification already exists to determine if it's a renewal
     final certExistsAsync = ref.watch(certificationExistsProvider(widget.address));
@@ -176,9 +140,5 @@ class _CertStateWidgetState extends ConsumerState<CertStateWidget> {
         return 'months'.tr(args: [months.toString()]);
       }(),
     };
-  }
-
-  Widget _buildDisabledButton(String label) {
-    return WaitToCertWidget(label: label, duration: formatDuration(widget.certState.duration ?? Duration.zero));
   }
 }

@@ -185,7 +185,8 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     // Listen to block height to check ready certifications.
     // Only check when needed, not every block (~6s):
     // 1. When block height reaches the next cert's expected block (becomes ready)
-    // 2. Every 50 blocks (~5 min) to catch external blockchain state changes
+    // 2. Every 100 blocks (~10 min) to catch external blockchain state changes
+    //    (e.g. cert counter updated by another device via CesiumPlus)
     ref.listen(blockHeightProvider, (previous, next) async {
       if (next == 0 || next == previous) return;
       final currentState = state.value;
@@ -193,7 +194,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
       final targetBlock = currentState.pendingCertifications.first.expectedAvailableBlock;
       final certMayBeReady = targetBlock != null && next >= targetBlock && !currentState.hasReadyCertification;
-      final periodicSync = previous != null && (next ~/ 50) > (previous ~/ 50);
+      final periodicSync = previous != null && (next ~/ 100) > (previous ~/ 100);
 
       if (certMayBeReady || periodicSync) {
         await _checkAndNotifyReadyCertifications();
@@ -243,6 +244,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         certPeriodBlocks: certPeriodBlocks,
         currentBlockNumber: currentBlock,
         nextIssuableBlock: effectiveNext,
+        blockTimeSeconds: storageService.currencyConstants.blockTimeSeconds,
       );
     } catch (e) {
       log.e('[CertQueueProvider] Error updating queue dates: $e');
@@ -311,12 +313,11 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         }
 
         if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
-          int attempts = 0;
-          while (durt.datapodConnectionStatus != d.ConnectionStatus.connected && attempts < 15) {
-            await Future.delayed(const Duration(seconds: 1));
-            attempts++;
-          }
-          if (durt.datapodConnectionStatus != d.ConnectionStatus.connected) {
+          try {
+            await durt.datapodConnectionStatusStream
+                .firstWhere((status) => status == d.ConnectionStatus.connected)
+                .timeout(const Duration(seconds: 15));
+          } on TimeoutException {
             log.w('[CertQueueSync] CesiumPlus not connected after 15s, skipping sync');
             return;
           }
@@ -440,6 +441,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       certPeriodBlocks: certPeriodBlocks,
       currentBlockNumber: currentBlock,
       nextIssuableBlock: certData.nextIssuableOn,
+      blockTimeSeconds: storageService.currencyConstants.blockTimeSeconds,
     );
 
     final expectedBlock = (certData.nextIssuableOn ?? currentBlock) + ((position - 1) * certPeriodBlocks);
@@ -530,6 +532,7 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
         certPeriodBlocks: certPeriodBlocks,
         currentBlockNumber: currentBlock,
         nextIssuableBlock: optimisticNextIssuable,
+        blockTimeSeconds: storageService.currencyConstants.blockTimeSeconds,
       );
       // Preserve lastUpdated and isSynced (updateExpectedDates doesn't touch them)
       newQueue = newQueue.copyWith(lastUpdated: DateTime.now(), isSynced: false);

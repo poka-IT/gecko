@@ -397,14 +397,17 @@ class CertStateNotifier extends AsyncNotifier<d.CertState?> {
 
     final certState = await _getCertState(effectiveWallet.address, toAddress);
 
-    // Listen to block height to refresh cert state on each new block (replaces Timer.periodic)
-    // Only refresh when in a waiting state (duration > 0)
+    // Listen to block height to refresh cert state periodically while in a waiting state.
+    // Throttled to every 10 blocks (~60s) to avoid excessive RPC calls (getCertState
+    // makes 5 parallel queries). Exact timing is not critical for countdown display.
     ref.listen(blockHeightProvider, (previous, next) {
       if (next == 0 || next == previous) return;
       final currentState = state.value;
       if (currentState == null) return;
       final hasWaitingDuration = currentState.duration != null && currentState.duration! > Duration.zero;
       if (!hasWaitingDuration) return;
+      // Only refresh every 10 blocks to limit RPC load
+      if (previous != null && (next ~/ 10) == (previous ~/ 10)) return;
       _refreshCertState();
     });
 

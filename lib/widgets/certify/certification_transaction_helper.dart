@@ -114,11 +114,12 @@ class CertificationTransactionHelper {
           hasHandled = true;
           log.d('✅ [CertificationHelper] Transaction SUCCESS - marking as completed');
           notifier.markCompleted(issuerAddress, targetAddress);
-          // Invalidate identity status and cert existence for the target
+          // Invalidate identity status, cert existence, and cert state for the target
           // so child widgets (CertifyButton, AddToQueueButton) get fresh data.
           // This is critical after an invitation that creates a new identity.
           container.invalidate(idtyStatusStreamProvider(targetAddress));
           container.invalidate(certificationExistsProvider(targetAddress));
+          container.invalidate(certStateProvider(targetAddress));
           subscription.cancel();
         } else if (status.state == TransactionState.error) {
           hasHandled = true;

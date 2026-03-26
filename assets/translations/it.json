@@ -966,6 +966,8 @@
     "certAlertExpiringSoon": "Una certificazione scade entro 30 giorni",
     "certBannerExpired": "Una o più certificazioni ricevute sono scadute",
     "certBannerExpiringSoon": "Una o più certificazioni ricevute scadono entro 30 giorni",
+    "noNetworkConnection": "Nessuna connessione di rete disponibile",
+    "storageNotReady": "Archiviazione non pronta, attendere",
     "homeAlertIdentityExpired": "La tua identità è scaduta!",
     "homeAlertMembershipExpired": "La tua adesione è scaduta!",
     "homeAlertAutoRevocation": "revoca automatica il {}",

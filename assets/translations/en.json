@@ -965,6 +965,8 @@
     "certAlertExpiringSoon": "A certification expires within 30 days",
     "certBannerExpired": "One or more received certifications have expired",
     "certBannerExpiringSoon": "One or more received certifications expire within 30 days",
+    "noNetworkConnection": "No network connection available",
+    "storageNotReady": "Storage not ready, please wait",
     "homeAlertIdentityExpired": "Your identity has expired!",
     "homeAlertMembershipExpired": "Your membership has expired!",
     "homeAlertAutoRevocation": "auto-revocation on {}",

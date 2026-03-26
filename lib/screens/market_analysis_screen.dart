@@ -114,7 +114,7 @@ class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
               if (state.error != null) ...[
                 ScaledSizedBox(height: 8),
                 Text(
-                  state.error!,
+                  state.error!.tr(),
                   style: scaledTextStyle(fontSize: 13, color: context.geckoColors.danger),
                   textAlign: TextAlign.center,
                 ),

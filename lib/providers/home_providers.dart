@@ -129,7 +129,7 @@ class HomeMessageNotifier extends Notifier<String> {
       final currentLocale = context.locale;
       final languageCode = currentLocale.languageCode;
 
-      final wisdomService = WisdomService();
+      final wisdomService = ref.read(wisdomServiceProvider);
       final wisdom = await wisdomService.getWisdomOfTheDay(languageCode);
 
       if (wisdom != null) {

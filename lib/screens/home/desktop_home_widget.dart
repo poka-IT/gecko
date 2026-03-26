@@ -486,32 +486,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
           child: DefaultTextStyle(
             textAlign: TextAlign.center,
             style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w700),
-            child: Consumer(
-              builder: (context, ref, _) {
-                final homeMessage = ref.watch(homeMessageProvider);
-                final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
-
-                final alert = ref.watch(homeAlertProvider);
-                ref.listen(homeAlertProvider, (_, next) {
-                  homeMessageNotifier.syncWithAlert(next);
-                });
-
-                return GestureDetector(
-                  onTap: () {
-                    if (alert.hasAlert) {
-                      handleHomeAlertTap(context, alert);
-                    } else if (homeMessage == "noLizard".tr()) {
-                      homeMessageNotifier.showWisdomOfTheDay(context);
-                    }
-                  },
-                  child: AnimatedFadeOutIn<String>(
-                    data: homeMessage,
-                    duration: const Duration(milliseconds: 200),
-                    builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ),
-                );
-              },
-            ),
+            child: const _DesktopHomeMessageDisplay(),
           ),
         ),
         const SizedBox(height: 18),
@@ -590,6 +565,37 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Desktop variant of the home message display with alert sync.
+class _DesktopHomeMessageDisplay extends ConsumerWidget {
+  const _DesktopHomeMessageDisplay();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeMessage = ref.watch(homeMessageProvider);
+    final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+
+    final alert = ref.watch(homeAlertProvider);
+    ref.listen(homeAlertProvider, (_, next) {
+      homeMessageNotifier.syncWithAlert(next);
+    });
+
+    return GestureDetector(
+      onTap: () {
+        if (alert.hasAlert) {
+          handleHomeAlertTap(context, alert);
+        } else if (homeMessage == "noLizard".tr()) {
+          homeMessageNotifier.showWisdomOfTheDay(context);
+        }
+      },
+      child: AnimatedFadeOutIn<String>(
+        data: homeMessage,
+        duration: const Duration(milliseconds: 200),
+        builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
       ),
     );
   }

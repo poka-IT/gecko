@@ -108,7 +108,7 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
   void setDateRange(DateTime start, DateTime end) {
     final days = end.difference(start).inDays;
     if (days > 365) {
-      state = state.copyWith(error: 'dateRangeExceeded');
+      state = state.copyWith(error: 'dateRangeExceeds365');
       return;
     }
     state = state.copyWith(startDate: start, endDate: end, clearError: true);
@@ -141,6 +141,8 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
   /// progressively after each contact, then discovers other contacts from
   /// the collected transaction data.
   Future<void> runAnalysis(String walletAddress) async {
+    if (state.isAnalyzing) return;
+
     // Pre-flight: check Squid connectivity.
     final squidStatus = ref.read(squidConnectionStatusProvider);
     if (squidStatus != d.ConnectionStatus.connected) {

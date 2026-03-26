@@ -102,33 +102,7 @@ class GeckoHomeWidget extends ConsumerWidget {
                               fontWeight: FontWeight.w700,
                               shadows: textShadows,
                             ),
-                            child: Consumer(
-                              builder: (context, ref, _) {
-                                final homeMessage = ref.watch(homeMessageProvider);
-                                final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
-
-                                // Sync home message with alert state changes
-                                final alert = ref.watch(homeAlertProvider);
-                                ref.listen(homeAlertProvider, (_, next) {
-                                  homeMessageNotifier.syncWithAlert(next);
-                                });
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    if (alert.hasAlert) {
-                                      handleHomeAlertTap(context, alert);
-                                    } else if (homeMessage == "noLizard".tr()) {
-                                      homeMessageNotifier.showWisdomOfTheDay(context);
-                                    }
-                                  },
-                                  child: AnimatedFadeOutIn<String>(
-                                    data: homeMessage,
-                                    duration: const Duration(milliseconds: 200),
-                                    builder: (value) => Text(value),
-                                  ),
-                                );
-                              },
-                            ),
+                            child: const _HomeMessageDisplay(),
                           ),
                         ),
                       ),
@@ -157,6 +131,41 @@ class GeckoHomeWidget extends ConsumerWidget {
             SafeArea(child: HomeButtons(isEasterEggActive: isEasterEggActive)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Displays the home message with alert sync and tap navigation.
+///
+/// Extracted as a dedicated [ConsumerWidget] so that [ref.listen] is called
+/// in [build] (proper Riverpod lifecycle) rather than inside a nested
+/// [Consumer.builder] callback.
+class _HomeMessageDisplay extends ConsumerWidget {
+  const _HomeMessageDisplay();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeMessage = ref.watch(homeMessageProvider);
+    final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+
+    final alert = ref.watch(homeAlertProvider);
+    ref.listen(homeAlertProvider, (_, next) {
+      homeMessageNotifier.syncWithAlert(next);
+    });
+
+    return GestureDetector(
+      onTap: () {
+        if (alert.hasAlert) {
+          handleHomeAlertTap(context, alert);
+        } else if (homeMessage == "noLizard".tr()) {
+          homeMessageNotifier.showWisdomOfTheDay(context);
+        }
+      },
+      child: AnimatedFadeOutIn<String>(
+        data: homeMessage,
+        duration: const Duration(milliseconds: 200),
+        builder: (value) => Text(value),
       ),
     );
   }

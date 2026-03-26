@@ -147,7 +147,7 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
       final membership = membershipAsync.asData?.value;
 
       if (membership != null) {
-        final alert = _checkMembership(address, idtyStatus, membership);
+        final alert = _checkMembership(address, membership);
         if (alert != null) return alert;
       }
     }
@@ -164,10 +164,10 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
   }
 
   /// Checks membership status and returns an alert if needed.
-  HomeAlertState? _checkMembership(String address, d.IdtyStatus idtyStatus, d.MembershipStatus membership) {
+  HomeAlertState? _checkMembership(String address, d.MembershipStatus membership) {
     final info = MembershipRenewal.calculateRenewalInfo(membership);
 
-    if (info.isExpired && idtyStatus == d.IdtyStatus.expired) {
+    if (info.isExpired) {
       final autoRevocText = info.autoRevocationDate != null
           ? ' (${'homeAlertAutoRevocation'.tr(args: [DateFormat('dd/MM').format(info.autoRevocationDate!)])})'
           : '';

@@ -9,8 +9,10 @@ import 'package:gecko/providers/network_activity_provider.dart';
 import 'package:gecko/providers/network_certifications_provider.dart';
 import 'package:gecko/providers/network_identities_provider.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/home_alert_provider.dart';
+import 'package:gecko/widgets/certs_list.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/squid_cache_buster.dart';
 import 'package:gecko/services/config_service.dart';
@@ -437,6 +439,20 @@ class AppInitNotifier extends Notifier<AppInitState> {
               await ref.read(durtProvider).connect(verbose: false);
               log.d('💡 Successfully connected to Duniter');
               state = state.copyWith(isConnected: true);
+
+              // Reload cert data now that squid is available.
+              // On first launch (no persist cache), certs fail to load at startup
+              // because squid isn't ready yet. This ensures they load after connection.
+              final wallets = ref.read(walletsListProvider);
+              if (!wallets.isLoading) {
+                for (final wallet in wallets.wallets) {
+                  for (final direction in CertDirection.values) {
+                    ref
+                        .read(certificationListProvider((address: wallet.address, direction: direction)).notifier)
+                        .loadCertifications();
+                  }
+                }
+              }
             } catch (e) {
               log.e('🔴 Failed to connect to Duniter: $e');
 

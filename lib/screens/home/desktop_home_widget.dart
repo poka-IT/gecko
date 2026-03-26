@@ -585,7 +585,7 @@ class _DesktopHomeMessageDisplay extends ConsumerWidget {
     });
 
     final isIdle = homeMessage == HomeMessageNotifier.idleKey;
-    final displayText = isIdle ? 'noLizard'.tr() : homeMessage;
+    final displayText = isIdle ? (alert.hasAlert ? alert.message : 'noLizard'.tr()) : homeMessage;
 
     return GestureDetector(
       onTap: () {

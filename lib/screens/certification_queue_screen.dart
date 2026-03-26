@@ -15,6 +15,7 @@ import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
+import 'package:gecko/widgets/datapod_avatar.dart';
 
 class CertificationQueueScreen extends ConsumerStatefulWidget {
   const CertificationQueueScreen({super.key, required this.issuerAddress, this.embeddedMode = false});
@@ -114,27 +115,35 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     return Column(
       children: [
-        // Header with queue info
-        Container(
-          padding: const EdgeInsets.all(16),
-          color: context.colorScheme.surfaceContainerHighest,
+        // Compact header
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(10)),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'queueLength'.tr(args: [queue.queueLength.toString()]),
-                style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: scaledTextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
               ),
+              const Spacer(),
               if (queue.hasReadyCertification)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: scaleSize(10), vertical: scaleSize(4)),
                   decoration: BoxDecoration(
-                    color: context.geckoColors.success,
-                    borderRadius: BorderRadius.circular(20),
+                    color: context.geckoColors.success.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: context.geckoColors.success.withValues(alpha: 0.4)),
                   ),
                   child: Text(
                     'certificationReady'.tr(),
-                    style: scaledTextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: scaledTextStyle(
+                      fontSize: 11,
+                      color: context.geckoColors.success,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
             ],
@@ -212,77 +221,149 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
   Widget _buildCertificationTile(BuildContext context, d.PendingCertification cert, {Key? key, bool isFirst = false}) {
     final isReady = cert.isReady;
     final displayName = cert.receiverName ?? cert.receiverUid ?? getShortPubkey(cert.receiverAddress);
-
-    // Calculate remaining time info
+    final hasName = cert.receiverName != null || cert.receiverUid != null;
     final timeInfo = _getTimeInfo(cert);
 
-    // Determine card styling based on position and readiness
-    final isHighlighted = isFirst || isReady;
-    final cardColor = isReady
-        ? context.geckoColors.successContainer
-        : (isFirst ? context.geckoColors.infoContainer : null);
-    final elevation = isHighlighted ? 4.0 : 1.0;
+    // Accent color: green if ready, subtle border if first
+    final accentColor = isReady
+        ? context.geckoColors.success
+        : isFirst
+        ? context.colorScheme.primary
+        : null;
 
-    return Card(
+    return Container(
       key: key,
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: isFirst ? 8 : 6),
-      elevation: elevation,
-      color: cardColor,
-      shape: isFirst
-          ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: isReady
-                    ? context.geckoColors.success.withValues(alpha: 0.5)
-                    : context.geckoColors.info.withValues(alpha: 0.5),
-                width: 2,
-              ),
-            )
-          : null,
-      child: Padding(
-        padding: EdgeInsets.all(isFirst ? 4 : 0),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: _buildPositionBadge(cert.position, isReady, isFirst: isFirst),
-          title: GestureDetector(
-            onTap: () {
-              NavigationService.openProfile(context, address: cert.receiverAddress, username: displayName);
-            },
-            child: Text(
-              displayName,
-              style: scaledTextStyle(
-                fontSize: isFirst ? 18 : 16,
-                fontWeight: FontWeight.w600,
-                color: context.geckoColors.infoText,
-              ),
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      margin: EdgeInsets.symmetric(horizontal: scaleSize(8), vertical: scaleSize(3)),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(scaleSize(12)),
+        border: Border.all(
+          color: accentColor?.withValues(alpha: 0.4) ?? context.colorScheme.outline.withValues(alpha: 0.1),
+          width: accentColor != null ? 1.5 : 1,
+        ),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 1))],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(scaleSize(12)),
+        onTap: () => NavigationService.openProfile(context, address: cert.receiverAddress, username: displayName),
+        child: Padding(
+          padding: EdgeInsets.all(scaleSize(12)),
+          child: Row(
             children: [
-              ScaledSizedBox(height: 6),
-              _buildCertTypeBadge(cert.certType),
-              ScaledSizedBox(height: 8),
-              _buildTimeDisplay(timeInfo, isReady, cert.expectedAvailableDate),
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isReady)
-                IconButton(
-                  icon: Icon(Icons.play_circle_filled, color: context.geckoColors.successText, size: scaleSize(32)),
-                  tooltip: 'executeNow'.tr(),
-                  onPressed: () => _executeCertification(cert),
+              // Avatar with position overlay
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  DatapodAvatar(address: cert.receiverAddress, size: 40, name: hasName ? displayName : null),
+                  Positioned(
+                    right: -scaleSize(4),
+                    bottom: -scaleSize(4),
+                    child: Container(
+                      width: scaleSize(20),
+                      height: scaleSize(20),
+                      decoration: BoxDecoration(
+                        color: isReady ? context.geckoColors.success : context.colorScheme.surfaceContainerHighest,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: context.colorScheme.surfaceContainer, width: 2),
+                      ),
+                      child: Center(
+                        child: isReady
+                            ? Icon(Icons.check, color: Colors.white, size: scaleSize(12))
+                            : Text(
+                                '${cert.position}',
+                                style: scaledTextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.colorScheme.onSurface,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              ScaledSizedBox(width: 12),
+
+              // Name + type + time
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name
+                    Text(
+                      displayName,
+                      style: scaledTextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: context.colorScheme.onSurface,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (hasName) ...[
+                      ScaledSizedBox(height: 1),
+                      Text(
+                        getShortPubkey(cert.receiverAddress),
+                        style: scaledTextStyle(
+                          fontSize: 11,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                    ScaledSizedBox(height: 4),
+                    // Type badge + time on same row
+                    Row(
+                      children: [
+                        _buildCertTypeBadge(cert.certType),
+                        const Spacer(),
+                        _buildTimeDisplay(timeInfo, isReady, cert.expectedAvailableDate),
+                      ],
+                    ),
+                  ],
                 ),
-              IconButton(
-                icon: Icon(Icons.delete_outline, color: context.geckoColors.danger, size: scaleSize(24)),
-                tooltip: 'remove'.tr(),
-                onPressed: () => _removeFromQueue(cert),
               ),
-              ReorderableDragStartListener(
-                index: cert.position - 1,
-                child: Icon(Icons.drag_handle, color: Colors.grey.shade400),
+              ScaledSizedBox(width: 8),
+
+              // Actions column
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isReady)
+                    SizedBox(
+                      width: scaleSize(32),
+                      height: scaleSize(32),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(Icons.play_circle_filled, color: context.geckoColors.success, size: scaleSize(26)),
+                        tooltip: 'executeNow'.tr(),
+                        onPressed: () => _executeCertification(cert),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: scaleSize(32),
+                      height: scaleSize(32),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: Icon(
+                          Icons.close,
+                          color: context.geckoColors.danger.withValues(alpha: 0.6),
+                          size: scaleSize(18),
+                        ),
+                        tooltip: 'remove'.tr(),
+                        onPressed: () => _removeFromQueue(cert),
+                      ),
+                    ),
+                  ScaledSizedBox(height: 2),
+                  ReorderableDragStartListener(
+                    index: cert.position - 1,
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: context.colorScheme.outline.withValues(alpha: 0.3),
+                      size: scaleSize(18),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -324,88 +405,23 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     }
   }
 
-  /// Build time display widget
+  /// Build compact inline time display.
   Widget _buildTimeDisplay(
     ({String primary, String? secondary, bool isToday, bool isTomorrow}) timeInfo,
     bool isReady,
     DateTime? expectedDate,
   ) {
-    final primaryColor = isReady
-        ? context.geckoColors.successText
+    final color = isReady
+        ? context.geckoColors.success
         : timeInfo.isToday
-        ? context.geckoColors.warningText
-        : timeInfo.isTomorrow
-        ? context.geckoColors.infoText
-        : Colors.grey.shade600;
+        ? context.geckoColors.warning
+        : context.colorScheme.onSurface.withValues(alpha: 0.5);
 
-    return Row(
-      children: [
-        Icon(
-          isReady
-              ? Icons.check_circle
-              : timeInfo.isToday
-              ? Icons.schedule
-              : Icons.calendar_today,
-          size: scaleSize(14),
-          color: primaryColor,
-        ),
-        ScaledSizedBox(width: 6),
-        Text(
-          timeInfo.primary,
-          style: scaledTextStyle(
-            fontSize: 13,
-            fontWeight: isReady || timeInfo.isToday ? FontWeight.w600 : FontWeight.w500,
-            color: primaryColor,
-          ),
-        ),
-        if (timeInfo.secondary != null) ...[
-          ScaledSizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4)),
-            child: Text(timeInfo.secondary!, style: scaledTextStyle(fontSize: 11, color: Colors.grey.shade700)),
-          ),
-        ],
-      ],
-    );
-  }
+    final text = timeInfo.secondary != null ? '${timeInfo.primary} · ${timeInfo.secondary}' : timeInfo.primary;
 
-  Widget _buildPositionBadge(int position, bool isReady, {bool isFirst = false}) {
-    final size = isFirst ? 48.0 : 40.0;
-    final iconSize = isFirst ? 28.0 : 24.0;
-    final fontSize = isFirst ? 16.0 : 14.0;
-
-    Color bgColor;
-    if (isReady) {
-      bgColor = context.geckoColors.success;
-    } else if (isFirst) {
-      bgColor = context.geckoColors.info;
-    } else {
-      bgColor = context.geckoColors.infoContainer;
-    }
-
-    return Container(
-      width: scaleSize(size),
-      height: scaleSize(size),
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-        boxShadow: isFirst
-            ? [BoxShadow(color: bgColor.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 2))]
-            : null,
-      ),
-      child: Center(
-        child: isReady
-            ? Icon(Icons.check, color: Colors.white, size: scaleSize(iconSize))
-            : Text(
-                '#$position',
-                style: scaledTextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.bold,
-                  color: isFirst ? Colors.white : context.geckoColors.infoText,
-                ),
-              ),
-      ),
+    return Text(
+      text,
+      style: scaledTextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500),
     );
   }
 

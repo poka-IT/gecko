@@ -138,6 +138,21 @@ Uses `easy_localization` with translations in `assets/translations/`. Supported:
 
 When adding or modifying translation strings, double-check every word for missing diacritics before committing.
 
+## Desktop / Mobile Dual Layout
+
+**CRITICAL: Every new screen MUST support both mobile (full-screen push) and desktop (modal) layouts.** Never push a mobile-only screen on desktop.
+
+**Pattern to follow:**
+1. Create the screen widget with an `embeddedMode` parameter (omits AppBar when `true`)
+2. Create a desktop modal wrapper in `lib/widgets/desktop/modals/` using `showDesktopModal()`
+3. At the navigation call site, use `isDesktopLayout(context)` to route:
+   - Desktop: close current modal if in `embeddedMode`, then call `showDesktop*Modal()`
+   - Mobile: `Navigator.pushNamed()` as usual
+
+**Reference:** `NavigationService.openProfile()` in `lib/services/navigation_service.dart` is the canonical example (desktop → `showDesktopProfileModal`, mobile → `Navigator.push` with `ProfileViewScreen`).
+
+**Existing desktop modals:** `lib/widgets/desktop/modals/` — activity, profile, cesium_profile, certification_queue, market_analysis, settings, etc.
+
 ## Git Commit Conventions
 
 - When a commit fixes a GitLab issue, include `Closes #<number>` in the commit message (e.g. `fix: membership banner too early\n\nCloses #156`). This auto-closes the issue on GitLab.

@@ -32,20 +32,6 @@ class MarketAnalysisScreen extends ConsumerStatefulWidget {
 }
 
 class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
-  late final MarketAnalysisNotifier _notifier;
-
-  @override
-  void initState() {
-    super.initState();
-    _notifier = ref.read(marketAnalysisProvider.notifier);
-  }
-
-  @override
-  void dispose() {
-    _notifier.reset();
-    super.dispose();
-  }
-
   String get _walletName {
     final squid = ref.read(squidServiceProvider);
     return squid.walletNameIndexer[widget.walletAddress] ?? getShortPubkey(widget.walletAddress);

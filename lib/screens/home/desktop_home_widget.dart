@@ -584,16 +584,19 @@ class _DesktopHomeMessageDisplay extends ConsumerWidget {
       homeMessageNotifier.syncWithAlert(next);
     });
 
+    final isIdle = homeMessage == HomeMessageNotifier.idleKey;
+    final displayText = isIdle ? 'noLizard'.tr() : homeMessage;
+
     return GestureDetector(
       onTap: () {
         if (alert.hasAlert) {
           handleHomeAlertTap(context, alert);
-        } else if (homeMessage == "noLizard".tr()) {
+        } else if (isIdle) {
           homeMessageNotifier.showWisdomOfTheDay(context);
         }
       },
       child: AnimatedFadeOutIn<String>(
-        data: homeMessage,
+        data: displayText,
         duration: const Duration(milliseconds: 200),
         builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
       ),

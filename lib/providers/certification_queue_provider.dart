@@ -434,17 +434,25 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     final currentBlock = await storageService.getCurrentBlockHeight();
     final certPeriodBlocks = storageService.getCertPeriodBlocks();
 
+    // Use max(blockchain, local) to avoid stale blockchain value after a recent cert execution
+    // (same logic as _updateQueueDates)
+    final blockchainNext = certData.nextIssuableOn;
+    final localNext = currentQueue.nextIssuableOn;
+    final effectiveNext = (blockchainNext != null && localNext != null)
+        ? (blockchainNext > localNext ? blockchainNext : localNext)
+        : (blockchainNext ?? localNext);
+
     final position = currentQueue.queueLength + 1;
 
     final expectedDate = CertificationQueueService.calculateExpectedDate(
       position: position,
       certPeriodBlocks: certPeriodBlocks,
       currentBlockNumber: currentBlock,
-      nextIssuableBlock: certData.nextIssuableOn,
+      nextIssuableBlock: effectiveNext,
       blockTimeSeconds: storageService.currencyConstants.blockTimeSeconds,
     );
 
-    final expectedBlock = (certData.nextIssuableOn ?? currentBlock) + ((position - 1) * certPeriodBlocks);
+    final expectedBlock = (effectiveNext ?? currentBlock) + ((position - 1) * certPeriodBlocks);
 
     final newCert = d.PendingCertification(
       id: const Uuid().v4(),

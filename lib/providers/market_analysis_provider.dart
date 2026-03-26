@@ -277,6 +277,9 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
 }
 
 /// Provides the [MarketAnalysisNotifier] for the market analysis feature.
-final marketAnalysisProvider = NotifierProvider<MarketAnalysisNotifier, MarketAnalysisState>(
+///
+/// Auto-disposed when no screen is listening — state resets automatically
+/// when navigating away, no manual reset needed.
+final marketAnalysisProvider = NotifierProvider.autoDispose<MarketAnalysisNotifier, MarketAnalysisState>(
   MarketAnalysisNotifier.new,
 );

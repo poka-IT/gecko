@@ -135,6 +135,12 @@ class CertificationTransactionHelper {
         notifier.removeCertification(issuerAddress, targetAddress);
         subscription.cancel();
       },
+      onDone: () {
+        if (hasHandled) return;
+        hasHandled = true;
+        log.w('⚠️ [CertificationHelper] Stream closed without terminal state — clearing in-progress');
+        notifier.removeCertification(issuerAddress, targetAddress);
+      },
       cancelOnError: false,
     );
   }

@@ -62,13 +62,21 @@ final appVersionProvider = FutureProvider<String>((ref) async {
 class HomeMessageNotifier extends Notifier<String> {
   Timer? _resetTimer;
 
+  /// Sentinel value indicating the idle "noLizard" state.
+  ///
+  /// Compared by identity, not by translated string, to avoid locale-switch bugs.
+  static const idleKey = '__idle__';
+
   @override
   String build() {
     ref.onDispose(() => _resetTimer?.cancel());
-    return '';
+    return idleKey;
   }
 
-  /// Returns the best idle message: alert if any, otherwise "noLizard".
+  /// Whether the current state is the idle default message.
+  bool get isIdle => state == idleKey;
+
+  /// Returns the best idle message: alert if any, otherwise the idle sentinel.
   String _idleMessage() {
     try {
       final alert = ref.read(homeAlertProvider);
@@ -76,7 +84,7 @@ class HomeMessageNotifier extends Notifier<String> {
     } catch (_) {
       // Provider not yet initialized — fall back to default
     }
-    return "noLizard".tr();
+    return idleKey;
   }
 
   /// Change the home message.
@@ -120,7 +128,7 @@ class HomeMessageNotifier extends Notifier<String> {
       return;
     }
 
-    state = alert.hasAlert ? alert.message : "noLizard".tr();
+    state = alert.hasAlert ? alert.message : idleKey;
   }
 
   /// Show wisdom of the day easter egg.

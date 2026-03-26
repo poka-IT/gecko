@@ -972,6 +972,6 @@
     "homeAlertMembershipExpiringSoon": "Tu membresía expira en {} días",
     "homeAlertSentCertExpired": "Tu certificación de {} ha expirado",
     "homeAlertSentCertExpiringSoon": "Tu certificación de {} expira en {} días",
-    "homeAlertReceivedCertExpired": "La certificación de {} ha expirado",
-    "homeAlertReceivedCertExpiringSoon": "La certificación de {} expira en {} días"
+    "homeAlertReceivedCertExpired": "La certificación recibida de {} ha expirado",
+    "homeAlertReceivedCertExpiringSoon": "La certificación recibida de {} expira en {} días"
 }

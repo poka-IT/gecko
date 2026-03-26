@@ -223,7 +223,10 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
         break; // Can't get worse
       }
 
-      if (cert.expireDate!.difference(now).inDays <= 30) {
+      // Sent certs: 90-day threshold (actionable — we can re-certify)
+      // Received certs: 30-day threshold (informational only)
+      final threshold = direction == CertDirection.sent ? 90 : 30;
+      if (cert.expireDate!.difference(now).inDays <= threshold) {
         // Only keep the soonest-expiring cert
         if (worstCert == null || cert.expireDate!.isBefore(worstCert.expireDate!)) {
           worstCert = cert;

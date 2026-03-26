@@ -972,6 +972,6 @@
     "homeAlertMembershipExpiringSoon": "Your membership expires in {} days",
     "homeAlertSentCertExpired": "Your certification of {} has expired",
     "homeAlertSentCertExpiringSoon": "Your certification of {} expires in {} days",
-    "homeAlertReceivedCertExpired": "Certification from {} has expired",
-    "homeAlertReceivedCertExpiringSoon": "Certification from {} expires in {} days"
+    "homeAlertReceivedCertExpired": "Certification received from {} has expired",
+    "homeAlertReceivedCertExpiringSoon": "Certification received from {} expires in {} days"
 }

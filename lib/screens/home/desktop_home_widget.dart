@@ -481,39 +481,36 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
             );
           },
         ),
-        SizedBox(
-          height: scaleSize(42),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 2, left: 48, right: 24),
-            child: DefaultTextStyle(
-              textAlign: TextAlign.center,
-              style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w700),
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final homeMessage = ref.watch(homeMessageProvider);
-                  final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
+        Padding(
+          padding: const EdgeInsets.only(top: 2, bottom: 4, left: 48, right: 24),
+          child: DefaultTextStyle(
+            textAlign: TextAlign.center,
+            style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w700),
+            child: Consumer(
+              builder: (context, ref, _) {
+                final homeMessage = ref.watch(homeMessageProvider);
+                final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
 
-                  final alert = ref.watch(homeAlertProvider);
-                  ref.listen(homeAlertProvider, (_, next) {
-                    homeMessageNotifier.syncWithAlert(next);
-                  });
+                final alert = ref.watch(homeAlertProvider);
+                ref.listen(homeAlertProvider, (_, next) {
+                  homeMessageNotifier.syncWithAlert(next);
+                });
 
-                  return GestureDetector(
-                    onTap: () {
-                      if (alert.hasAlert) {
-                        handleHomeAlertTap(context, alert);
-                      } else if (homeMessage == "noLizard".tr()) {
-                        homeMessageNotifier.showWisdomOfTheDay(context);
-                      }
-                    },
-                    child: AnimatedFadeOutIn<String>(
-                      data: homeMessage,
-                      duration: const Duration(milliseconds: 200),
-                      builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    ),
-                  );
-                },
-              ),
+                return GestureDetector(
+                  onTap: () {
+                    if (alert.hasAlert) {
+                      handleHomeAlertTap(context, alert);
+                    } else if (homeMessage == "noLizard".tr()) {
+                      homeMessageNotifier.showWisdomOfTheDay(context);
+                    }
+                  },
+                  child: AnimatedFadeOutIn<String>(
+                    data: homeMessage,
+                    duration: const Duration(milliseconds: 200),
+                    builder: (value) => Text(value, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  ),
+                );
+              },
             ),
           ),
         ),

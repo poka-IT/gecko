@@ -483,7 +483,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
         SizedBox(
           height: scaleSize(42),
           child: Padding(
-            padding: const EdgeInsets.only(top: 2, left: 24, right: 24),
+            padding: const EdgeInsets.only(top: 2, left: 48, right: 24),
             child: DefaultTextStyle(
               textAlign: TextAlign.center,
               style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w700),

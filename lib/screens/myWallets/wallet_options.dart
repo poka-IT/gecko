@@ -41,6 +41,7 @@ import 'package:gecko/widgets/desktop/modals/certification_queue_modal.dart';
 import 'package:gecko/widgets/desktop/modals/cesium_profile_modal.dart';
 import 'package:gecko/widgets/desktop/modals/confirm_identity_modal.dart';
 import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
+import 'package:gecko/widgets/desktop/modals/market_analysis_modal.dart';
 import 'package:gecko/widgets/desktop/modals/safe_options_modal.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
@@ -428,11 +429,16 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             // Market Analysis button
             InkWell(
               onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  RouteNames.marketAnalysis,
-                  arguments: MarketAnalysisArguments(walletAddress: widget.wallet.address),
-                );
+                if (isDesktopLayout(context)) {
+                  if (widget.embeddedMode) Navigator.of(context).pop();
+                  showDesktopMarketAnalysisModal(context, walletAddress: widget.wallet.address);
+                } else {
+                  Navigator.pushNamed(
+                    context,
+                    RouteNames.marketAnalysis,
+                    arguments: MarketAnalysisArguments(walletAddress: widget.wallet.address),
+                  );
+                }
               },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(12)),

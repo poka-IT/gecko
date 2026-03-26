@@ -19,10 +19,13 @@ import 'package:gecko/widgets/market_analysis/date_range_selector.dart';
 /// Provides a 3-step flow: date range selection, contact multi-selection,
 /// and analysis results display with markdown export capability.
 class MarketAnalysisScreen extends ConsumerStatefulWidget {
-  const MarketAnalysisScreen({super.key, required this.walletAddress});
+  const MarketAnalysisScreen({super.key, required this.walletAddress, this.embeddedMode = false});
 
   /// Address of the wallet to analyze.
   final String walletAddress;
+
+  /// When true, omits the AppBar (used inside desktop modals).
+  final bool embeddedMode;
 
   @override
   ConsumerState<MarketAnalysisScreen> createState() => _MarketAnalysisScreenState();
@@ -69,69 +72,73 @@ class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
     final state = ref.watch(marketAnalysisProvider);
     final contacts = ref.watch(allContactsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text('marketAnalysis'.tr())),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(scaleSize(16)),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Step 1: Date range selection
-                DateRangeSelector(
-                  onDateRangeSelected: (start, end) {
-                    ref.read(marketAnalysisProvider.notifier).setDateRange(start, end);
-                  },
-                  startDate: state.startDate,
-                  endDate: state.endDate,
+    final body = SingleChildScrollView(
+      padding: EdgeInsets.all(scaleSize(16)),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Step 1: Date range selection
+              DateRangeSelector(
+                onDateRangeSelected: (start, end) {
+                  ref.read(marketAnalysisProvider.notifier).setDateRange(start, end);
+                },
+                startDate: state.startDate,
+                endDate: state.endDate,
+              ),
+              ScaledSizedBox(height: 20),
+
+              // Step 2: Contact selection
+              ContactSelector(
+                contacts: contacts,
+                selectedAddresses: state.selectedContactAddresses,
+                onToggle: (addr) => ref.read(marketAnalysisProvider.notifier).toggleContact(addr),
+                onSelectAll: () => ref
+                    .read(marketAnalysisProvider.notifier)
+                    .selectAllContacts(contacts.map((c) => c.address).toList()),
+                onDeselectAll: () => ref.read(marketAnalysisProvider.notifier).deselectAllContacts(),
+              ),
+              ScaledSizedBox(height: 16),
+
+              // Run Analysis button
+              ElevatedButton(
+                onPressed: state.canAnalyze && !state.isAnalyzing
+                    ? () => ref.read(marketAnalysisProvider.notifier).runAnalysis(widget.walletAddress)
+                    : null,
+                child: Text('runAnalysis'.tr(), style: scaledTextStyle(fontSize: 15)),
+              ),
+
+              // Error display
+              if (state.error != null) ...[
+                ScaledSizedBox(height: 8),
+                Text(
+                  state.error!,
+                  style: scaledTextStyle(fontSize: 13, color: context.geckoColors.danger),
+                  textAlign: TextAlign.center,
                 ),
-                ScaledSizedBox(height: 20),
-
-                // Step 2: Contact selection
-                ContactSelector(
-                  contacts: contacts,
-                  selectedAddresses: state.selectedContactAddresses,
-                  onToggle: (addr) => ref.read(marketAnalysisProvider.notifier).toggleContact(addr),
-                  onSelectAll: () => ref
-                      .read(marketAnalysisProvider.notifier)
-                      .selectAllContacts(contacts.map((c) => c.address).toList()),
-                  onDeselectAll: () => ref.read(marketAnalysisProvider.notifier).deselectAllContacts(),
-                ),
-                ScaledSizedBox(height: 16),
-
-                // Run Analysis button
-                ElevatedButton(
-                  onPressed: state.canAnalyze && !state.isAnalyzing
-                      ? () => ref.read(marketAnalysisProvider.notifier).runAnalysis(widget.walletAddress)
-                      : null,
-                  child: Text('runAnalysis'.tr(), style: scaledTextStyle(fontSize: 15)),
-                ),
-
-                // Error display
-                if (state.error != null) ...[
-                  ScaledSizedBox(height: 8),
-                  Text(
-                    state.error!,
-                    style: scaledTextStyle(fontSize: 13, color: context.geckoColors.danger),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-
-                // Step 3: Results display
-                if (state.hasResults || state.isAnalyzing)
-                  AnalysisResults(
-                    state: state,
-                    walletAddress: widget.walletAddress,
-                    walletName: _walletName,
-                    onExport: _exportMarkdownReport,
-                  ),
               ],
-            ),
+
+              // Step 3: Results display
+              if (state.hasResults || state.isAnalyzing)
+                AnalysisResults(
+                  state: state,
+                  walletAddress: widget.walletAddress,
+                  walletName: _walletName,
+                  onExport: _exportMarkdownReport,
+                ),
+            ],
           ),
         ),
       ),
+    );
+
+    if (widget.embeddedMode) return body;
+
+    return Scaffold(
+      appBar: AppBar(title: Text('marketAnalysis'.tr())),
+      body: body,
     );
   }
 }

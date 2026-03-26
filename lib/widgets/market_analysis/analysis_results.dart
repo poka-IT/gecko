@@ -74,7 +74,12 @@ class AnalysisResults extends ConsumerWidget {
           Text('otherContacts'.tr(), style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ScaledSizedBox(height: 8),
           ...state.otherContactResults.entries.map(
-            (entry) => _buildContactCard(context, entry.value, showAvatar: false),
+            (entry) => _buildContactCard(
+              context,
+              entry.value,
+              showAvatar: false,
+              transactions: state.contactTransactions[entry.key],
+            ),
           ),
         ],
 

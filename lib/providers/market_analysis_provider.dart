@@ -228,6 +228,12 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
         state.selectedContactAddresses,
       );
 
+      // Group unfiltered transactions by other-contact address for detail inspection.
+      final otherTransactions = <String, List<TransactionDisplayItem>>{};
+      for (final addr in otherResults.keys) {
+        otherTransactions[addr] = allUnfilteredItems.where((tx) => tx.address == addr).toList();
+      }
+
       // Resolve names for discovered contacts.
       final resolved = <String, ContactAnalysisResult>{};
       for (final entry in otherResults.entries) {
@@ -249,7 +255,13 @@ class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
         resolved[entry.key] = r;
       }
 
-      state = state.copyWith(otherContactResults: Map.unmodifiable(resolved), isAnalyzing: false);
+      // Merge selected + other transactions for the UI.
+      final allTransactions = <String, List<TransactionDisplayItem>>{...transactions, ...otherTransactions};
+      state = state.copyWith(
+        otherContactResults: Map.unmodifiable(resolved),
+        contactTransactions: Map.unmodifiable(allTransactions),
+        isAnalyzing: false,
+      );
     } catch (e, st) {
       log.e('Market analysis failed', error: e, stackTrace: st);
       state = state.copyWith(isAnalyzing: false, error: e.toString());

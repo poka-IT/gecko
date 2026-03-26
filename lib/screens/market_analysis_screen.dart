@@ -29,12 +29,17 @@ class MarketAnalysisScreen extends ConsumerStatefulWidget {
 }
 
 class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
+  late final MarketAnalysisNotifier _notifier;
+
+  @override
+  void initState() {
+    super.initState();
+    _notifier = ref.read(marketAnalysisProvider.notifier);
+  }
+
   @override
   void dispose() {
-    // Reset state after frame to avoid modifying provider during dispose
-    Future.microtask(() {
-      ref.read(marketAnalysisProvider.notifier).reset();
-    });
+    _notifier.reset();
     super.dispose();
   }
 

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/market_analysis_provider.dart';
-import 'package:gecko/screens/cesium_profile_view_screen.dart';
 import 'package:gecko/services/market_analysis_service.dart';
+import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance_display.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
@@ -135,19 +135,7 @@ class AnalysisResults extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => CesiumProfileViewScreen(address: result.address),
-              transitionDuration: const Duration(milliseconds: 300),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                const begin = Offset(1.0, 0.0);
-                const end = Offset.zero;
-                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.easeInOut));
-                return SlideTransition(position: animation.drive(tween), child: child);
-              },
-            ),
-          );
+          NavigationService.openProfile(context, address: result.address, username: result.username);
         },
         child: Padding(
           padding: EdgeInsets.all(scaleSize(12)),

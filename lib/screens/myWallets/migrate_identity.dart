@@ -132,24 +132,25 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
     }
 
     // Copy local avatar file from old wallet to new wallet
+    // Skip bundled asset paths (assets/avatars/*) — only copy real files on disk.
     try {
       final oldWallet = walletService.getWalletData(fromAddress);
-      if (oldWallet.imagePath != null && oldWallet.imagePath!.isNotEmpty) {
-        final oldFile = File(oldWallet.imagePath!);
+      final imagePath = oldWallet.imagePath;
+      if (imagePath != null && imagePath.isNotEmpty && !imagePath.startsWith('assets/')) {
+        final oldFile = File(imagePath);
         if (await oldFile.exists()) {
-          final extension = oldFile.path.split('.').length > 1 ? '.${oldFile.path.split('.').last}' : '';
-          final newPath = '${avatarsDirectory.path}/$toAddress$extension';
+          final dotIndex = oldFile.path.lastIndexOf('.');
+          final ext = dotIndex != -1 ? oldFile.path.substring(dotIndex) : '';
+          final newPath = '${avatarsDirectory.path}/$toAddress$ext';
           await oldFile.copy(newPath);
 
-          // Update new wallet data with the avatar path
           try {
             final newWallet = walletService.getWalletData(toAddress);
             newWallet.imagePath = newPath;
             await walletService.walletBox.putAsync(newWallet);
             log.i('Local avatar copied to new wallet at $newPath');
           } catch (e) {
-            // New wallet may not exist yet in the database — that's fine
-            log.d('Could not update new wallet avatar path (wallet may not exist yet): $e');
+            log.d('Could not update new wallet avatar path: $e');
           }
         }
       }
@@ -522,29 +523,29 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                   final broadcastStream = transactionStream.asBroadcastStream();
 
                                   // Listen to transaction stream to invalidate providers on success
-                                  // and trigger CesiumPlus profile migration
-                                  // Use mounted check to avoid using ref after widget disposal
+                                  // and trigger CesiumPlus profile migration (once only).
                                   final capturedToKeypair = toKeypair!;
+                                  bool profileMigrationTriggered = false;
                                   final invalidateSubscription = broadcastStream.listen((status) {
                                     if (status.state == TransactionState.finalized ||
                                         status.state == TransactionState.inBlock) {
                                       if (mounted) {
-                                        // Invalidate identity-related providers to refresh cache
                                         ref.invalidate(persistentIdtyStatusStreamProvider(widget.address));
                                         ref.invalidate(smartIdtyStatusStreamProvider(widget.address));
-                                        // Also invalidate any other identity-related providers
                                         ref.invalidate(idtyStatusStreamProvider(widget.address));
                                       }
 
-                                      // Fire-and-forget CesiumPlus profile migration
-                                      _migrateCesiumProfile(
-                                        fromAddress: fromAddress,
-                                        toAddress: capturedToKeypair.address,
-                                        fromKeypair: fromKeypair,
-                                        toKeypair: capturedToKeypair,
-                                        cesiumPlusService: cesiumPlusService,
-                                        walletService: walletService,
-                                      );
+                                      if (!profileMigrationTriggered) {
+                                        profileMigrationTriggered = true;
+                                        _migrateCesiumProfile(
+                                          fromAddress: fromAddress,
+                                          toAddress: capturedToKeypair.address,
+                                          fromKeypair: fromKeypair,
+                                          toKeypair: capturedToKeypair,
+                                          cesiumPlusService: cesiumPlusService,
+                                          walletService: walletService,
+                                        );
+                                      }
                                     }
                                   });
 

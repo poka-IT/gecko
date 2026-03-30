@@ -196,18 +196,15 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
       _isInitialLoad = false;
     }
 
-    // Filter and sort certifications: active first, then expired at the end
+    // Partition certifications in a single pass: active vs expired
     final allCerts = certState.certifications;
-    final hasExpiredCerts = allCerts.any((c) => !c.isActive);
-    final List<CertDisplayItem> displayedCerts;
-    if (_showExpired) {
-      // Show all: active first, then expired
-      final active = allCerts.where((c) => c.isActive).toList();
-      final expired = allCerts.where((c) => !c.isActive).toList();
-      displayedCerts = [...active, ...expired];
-    } else {
-      displayedCerts = allCerts.where((c) => c.isActive).toList();
+    final active = <CertDisplayItem>[];
+    final expired = <CertDisplayItem>[];
+    for (final c in allCerts) {
+      (c.isActive ? active : expired).add(c);
     }
+    final hasExpiredCerts = expired.isNotEmpty;
+    final displayedCerts = _showExpired ? [...active, ...expired] : active;
 
     return Center(
       child: ConstrainedBox(

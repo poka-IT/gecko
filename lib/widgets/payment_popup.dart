@@ -859,10 +859,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
                                             }
                                           },
                                           maxLines: 1,
-                                          style: scaledTextStyle(
-                                            fontSize: 13,
-                                            color: context.colorScheme.onSecondaryContainer,
-                                          ),
+                                          style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface),
                                           decoration: InputDecoration(
                                             hintText: 'optionalComment'.tr(),
                                             hintStyle: TextStyle(color: context.colorScheme.onSurfaceVariant),

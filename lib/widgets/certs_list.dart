@@ -264,7 +264,7 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
                   );
                 }
 
-                // Handle empty state
+                // Handle empty state (no certs at all)
                 if (certState.certifications.isEmpty && !certState.isLoading) {
                   return Container(
                     padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
@@ -283,6 +283,67 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
                             style: scaledTextStyle(
                               fontSize: 15,
                               color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                // Handle case where all certs are expired and toggle is off
+                if (active.isEmpty && !_showExpired && !certState.isLoading) {
+                  return Container(
+                    padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            widget.direction == CertDirection.received ? Icons.call_received : Icons.call_made,
+                            size: scaleSize(32),
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.3),
+                          ),
+                          ScaledSizedBox(height: 12),
+                          Text(
+                            "noDataToDisplay".tr(),
+                            style: scaledTextStyle(
+                              fontSize: 15,
+                              color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          ScaledSizedBox(height: 12),
+                          GestureDetector(
+                            onTap: () => setState(() => _showExpired = true),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: scaleSize(10), vertical: scaleSize(5)),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(scaleSize(14)),
+                                color: context.colorScheme.surfaceContainer,
+                                border: Border.all(
+                                  color: context.colorScheme.outline.withValues(alpha: 0.15),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.visibility,
+                                    size: scaleSize(13),
+                                    color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                  ScaledSizedBox(width: 5),
+                                  Text(
+                                    'showExpiredCerts'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: 11,
+                                      color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

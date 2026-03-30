@@ -62,6 +62,12 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 function VCRedistInstalled: Boolean;
 var
   Installed: Cardinal;
+  Bld: Cardinal;
 begin
-  Result := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64', 'Installed', Installed) and (Installed = 1);
+  // Check that VC++ Redist 14.x is installed AND build >= 31938 (14.36+, VS 2022 17.6+)
+  // Older builds (e.g. 14.29 from 2021) crash with gecko due to missing C++ runtime features
+  Result := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64', 'Installed', Installed)
+    and (Installed = 1)
+    and RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64', 'Bld', Bld)
+    and (Bld >= 31938);
 end;

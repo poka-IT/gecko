@@ -191,7 +191,6 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
         for (final edge in certConnection.edges) {
           final cert = edge.node;
-          if (!cert.isActive) continue;
 
           final String? personAddress = cert.issuer?.accountId;
           final String? personName = cert.issuer?.name;
@@ -211,6 +210,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
                   name: personName ?? '',
                   date: timestamp,
                   expireDate: expireDate,
+                  isActive: cert.isActive,
                 ),
               );
             }
@@ -222,7 +222,6 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
         for (final edge in certConnection.edges) {
           final cert = edge.node;
-          if (!cert.isActive) continue;
 
           final String? personAddress = cert.receiver?.accountId;
           final String? personName = cert.receiver?.name;
@@ -242,6 +241,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
                   name: personName ?? '',
                   date: timestamp,
                   expireDate: expireDate,
+                  isActive: cert.isActive,
                 ),
               );
             }

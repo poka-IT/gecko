@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
@@ -38,7 +39,9 @@ class _DesktopActivityContentState extends ConsumerState<_DesktopActivityContent
     Future.microtask(() {
       if (mounted) ref.read(transactionFiltersProvider.notifier).reset();
     });
-    ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
+    if (ref.read(storageStateProvider) == StorageState.onlineMode) {
+      ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
+    }
   }
 
   @override

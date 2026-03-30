@@ -22,111 +22,118 @@ class CertTile extends StatelessWidget {
       children: listCerts.map((cert) {
         final newKey = keyID++;
 
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(3)),
-          decoration: BoxDecoration(
-            color: context.colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(scaleSize(12)),
-            border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.1), width: 1),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 1)),
-            ],
-          ),
-          child: InkWell(
-            key: keyTransaction(newKey),
-            onTap: cert.address.isNotEmpty
-                ? () {
-                    NavigationService.openProfile(
-                      context,
+        return Opacity(
+          opacity: cert.isActive ? 1.0 : 0.55,
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: scaleSize(4), vertical: scaleSize(3)),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(scaleSize(12)),
+              border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.1), width: 1),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 1)),
+              ],
+            ),
+            child: InkWell(
+              key: keyTransaction(newKey),
+              onTap: cert.address.isNotEmpty
+                  ? () {
+                      NavigationService.openProfile(
+                        context,
+                        address: cert.address,
+                        username: cert.name.isNotEmpty ? cert.name : null,
+                      );
+                    }
+                  : null,
+              borderRadius: BorderRadius.circular(scaleSize(12)),
+              child: Padding(
+                padding: EdgeInsets.all(scaleSize(12)),
+                child: Row(
+                  children: [
+                    // Avatar
+                    DatapodAvatar(
                       address: cert.address,
-                      username: cert.name.isNotEmpty ? cert.name : null,
-                    );
-                  }
-                : null,
-            borderRadius: BorderRadius.circular(scaleSize(12)),
-            child: Padding(
-              padding: EdgeInsets.all(scaleSize(12)),
-              child: Row(
-                children: [
-                  // Avatar
-                  DatapodAvatar(address: cert.address, size: avatarSize, name: cert.name.isNotEmpty ? cert.name : null),
+                      size: avatarSize,
+                      name: cert.name.isNotEmpty ? cert.name : null,
+                    ),
 
-                  ScaledSizedBox(width: 12),
+                    ScaledSizedBox(width: 12),
 
-                  // Main content area
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Name (if available)
-                        if (cert.name.isNotEmpty) ...[
+                    // Main content area
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Name (if available)
+                          if (cert.name.isNotEmpty) ...[
+                            Text(
+                              cert.name,
+                              style: scaledTextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: context.colorScheme.onSurface,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            ScaledSizedBox(height: 2),
+                          ],
+
+                          // Address
                           Text(
-                            cert.name,
+                            getShortPubkey(cert.address),
                             style: scaledTextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: context.colorScheme.onSurface,
+                              fontSize: cert.name.isNotEmpty ? 13 : 16,
+                              color: context.colorScheme.onSurface.withValues(alpha: cert.name.isNotEmpty ? 0.6 : 1.0),
+                              fontFamily: 'monospace',
+                              fontWeight: cert.name.isNotEmpty ? FontWeight.normal : FontWeight.w600,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                          ScaledSizedBox(height: 2),
                         ],
+                      ),
+                    ),
 
-                        // Address
+                    ScaledSizedBox(width: 12),
+
+                    // Expiration info column
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        // Expiration countdown
+                        _buildExpirationDisplay(context, cert),
+
+                        ScaledSizedBox(height: 8),
+
+                        // Date
                         Text(
-                          getShortPubkey(cert.address),
+                          cert.date.year == DateTime.now().year
+                              ? DateFormat.MMMd(
+                                  safeLocale(Localizations.localeOf(context).languageCode),
+                                ).format(cert.date)
+                              : DateFormat.yMMMd(
+                                  safeLocale(Localizations.localeOf(context).languageCode),
+                                ).format(cert.date),
                           style: scaledTextStyle(
-                            fontSize: cert.name.isNotEmpty ? 13 : 16,
-                            color: context.colorScheme.onSurface.withValues(alpha: cert.name.isNotEmpty ? 0.6 : 1.0),
-                            fontFamily: 'monospace',
-                            fontWeight: cert.name.isNotEmpty ? FontWeight.normal : FontWeight.w600,
+                            fontSize: 11,
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w500,
                           ),
-                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        ScaledSizedBox(height: 2),
+
+                        // Time
+                        Text(
+                          DateFormat.Hm().format(cert.date),
+                          style: scaledTextStyle(
+                            fontSize: 10,
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-
-                  ScaledSizedBox(width: 12),
-
-                  // Expiration info column
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      // Expiration countdown
-                      _buildExpirationDisplay(context, cert),
-
-                      ScaledSizedBox(height: 8),
-
-                      // Date
-                      Text(
-                        cert.date.year == DateTime.now().year
-                            ? DateFormat.MMMd(
-                                safeLocale(Localizations.localeOf(context).languageCode),
-                              ).format(cert.date)
-                            : DateFormat.yMMMd(
-                                safeLocale(Localizations.localeOf(context).languageCode),
-                              ).format(cert.date),
-                        style: scaledTextStyle(
-                          fontSize: 11,
-                          color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-
-                      ScaledSizedBox(height: 2),
-
-                      // Time
-                      Text(
-                        DateFormat.Hm().format(cert.date),
-                        style: scaledTextStyle(
-                          fontSize: 10,
-                          color: context.colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

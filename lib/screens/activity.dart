@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:flutter/material.dart';
+import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
@@ -37,7 +38,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> with TickerProv
     Future.microtask(() {
       if (mounted) ref.read(transactionFiltersProvider.notifier).reset();
     });
-    ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
+    if (ref.read(storageStateProvider) == StorageState.onlineMode) {
+      ref.read(storageServiceProvider).getOldOwnerKey(widget.address);
+    }
     _headerDataFuture = _loadWalletData();
   }
 

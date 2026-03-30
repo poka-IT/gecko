@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:durt2/durt2.dart'
     show
         MigrateWalletChecks,
@@ -7,7 +9,8 @@ import 'package:durt2/durt2.dart'
         TransactionState,
         DurtKeyPair,
         WalletService,
-        DuniterService;
+        DuniterService,
+        CesiumPlusService;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
@@ -98,6 +101,60 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
         state: TransactionState.error,
         errorMessage: 'migrationError'.tr(args: [e.toString()]),
       );
+    }
+  }
+
+  /// Migrates the CesiumPlus profile and local avatar from old to new address.
+  /// Fire-and-forget: logs errors but never throws.
+  static Future<void> _migrateCesiumProfile({
+    required String fromAddress,
+    required String toAddress,
+    required DurtKeyPair fromKeypair,
+    required DurtKeyPair toKeypair,
+    required CesiumPlusService cesiumPlusService,
+    required WalletService walletService,
+  }) async {
+    try {
+      // Migrate CesiumPlus profile (avatar, description, city, socials, tags, geo)
+      final success = await cesiumPlusService.migrateProfile(
+        oldAddress: fromAddress,
+        newAddress: toAddress,
+        newSignFunction: toKeypair.sign,
+        oldSignFunction: fromKeypair.sign,
+      );
+      if (success) {
+        log.i('CesiumPlus profile migrated from $fromAddress to $toAddress');
+      } else {
+        log.w('CesiumPlus profile migration returned false');
+      }
+    } catch (e) {
+      log.e('CesiumPlus profile migration failed (non-blocking): $e');
+    }
+
+    // Copy local avatar file from old wallet to new wallet
+    try {
+      final oldWallet = walletService.getWalletData(fromAddress);
+      if (oldWallet.imagePath != null && oldWallet.imagePath!.isNotEmpty) {
+        final oldFile = File(oldWallet.imagePath!);
+        if (await oldFile.exists()) {
+          final extension = oldFile.path.split('.').length > 1 ? '.${oldFile.path.split('.').last}' : '';
+          final newPath = '${avatarsDirectory.path}/$toAddress$extension';
+          await oldFile.copy(newPath);
+
+          // Update new wallet data with the avatar path
+          try {
+            final newWallet = walletService.getWalletData(toAddress);
+            newWallet.imagePath = newPath;
+            await walletService.walletBox.putAsync(newWallet);
+            log.i('Local avatar copied to new wallet at $newPath');
+          } catch (e) {
+            // New wallet may not exist yet in the database — that's fine
+            log.d('Could not update new wallet avatar path (wallet may not exist yet): $e');
+          }
+        }
+      }
+    } catch (e) {
+      log.e('Local avatar copy failed (non-blocking): $e');
     }
   }
 
@@ -444,10 +501,18 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                   // Capture services before navigation (ref won't be valid after pop)
                                   final walletService = ref.read(walletServiceProvider);
                                   final duniterService = ref.read(duniterServiceProvider);
+                                  final cesiumPlusService = ref.read(cesiumPlusServiceProvider);
+                                  final pinCode = PinCodeService.pinCode;
+
+                                  // Get fromKeypair now (PIN is available) for CesiumPlus migration later
+                                  final fromKeypair = await walletService.getKeyPairFromAddress(
+                                    address: fromAddress,
+                                    pinCode: pinCode,
+                                  );
 
                                   final transactionStream = _performMigration(
                                     fromAddress: fromAddress,
-                                    pinCode: PinCodeService.pinCode,
+                                    pinCode: pinCode,
                                     toKeypair: toKeypair!,
                                     walletService: walletService,
                                     duniterService: duniterService,
@@ -457,16 +522,29 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                                   final broadcastStream = transactionStream.asBroadcastStream();
 
                                   // Listen to transaction stream to invalidate providers on success
+                                  // and trigger CesiumPlus profile migration
                                   // Use mounted check to avoid using ref after widget disposal
+                                  final capturedToKeypair = toKeypair!;
                                   final invalidateSubscription = broadcastStream.listen((status) {
-                                    if ((status.state == TransactionState.finalized ||
-                                            status.state == TransactionState.inBlock) &&
-                                        mounted) {
-                                      // Invalidate identity-related providers to refresh cache
-                                      ref.invalidate(persistentIdtyStatusStreamProvider(widget.address));
-                                      ref.invalidate(smartIdtyStatusStreamProvider(widget.address));
-                                      // Also invalidate any other identity-related providers
-                                      ref.invalidate(idtyStatusStreamProvider(widget.address));
+                                    if (status.state == TransactionState.finalized ||
+                                        status.state == TransactionState.inBlock) {
+                                      if (mounted) {
+                                        // Invalidate identity-related providers to refresh cache
+                                        ref.invalidate(persistentIdtyStatusStreamProvider(widget.address));
+                                        ref.invalidate(smartIdtyStatusStreamProvider(widget.address));
+                                        // Also invalidate any other identity-related providers
+                                        ref.invalidate(idtyStatusStreamProvider(widget.address));
+                                      }
+
+                                      // Fire-and-forget CesiumPlus profile migration
+                                      _migrateCesiumProfile(
+                                        fromAddress: fromAddress,
+                                        toAddress: capturedToKeypair.address,
+                                        fromKeypair: fromKeypair,
+                                        toKeypair: capturedToKeypair,
+                                        cesiumPlusService: cesiumPlusService,
+                                        walletService: walletService,
+                                      );
                                     }
                                   });
 

@@ -14,14 +14,22 @@ class CertDisplayItem {
   final String name;
   final DateTime date;
   final DateTime? expireDate;
+  final bool isActive;
 
-  CertDisplayItem({required this.address, required this.name, required this.date, this.expireDate});
+  CertDisplayItem({
+    required this.address,
+    required this.name,
+    required this.date,
+    this.expireDate,
+    this.isActive = true,
+  });
 
   Map<String, dynamic> toJson() => {
     'address': address,
     'name': name,
     'date': date.toIso8601String(),
     'expireDate': expireDate?.toIso8601String(),
+    'isActive': isActive,
   };
 
   factory CertDisplayItem.fromJson(Map<String, dynamic> json) => CertDisplayItem(
@@ -29,6 +37,7 @@ class CertDisplayItem {
     name: json['name'] as String,
     date: DateTime.parse(json['date'] as String),
     expireDate: json['expireDate'] != null ? DateTime.parse(json['expireDate'] as String) : null,
+    isActive: json['isActive'] as bool? ?? true,
   );
 }
 
@@ -50,6 +59,7 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
   bool _isInitialLoad = true;
   DateTime? _lastCertTimestamp;
   bool _isDisposed = false;
+  bool _showExpired = false;
 
   bool get _isAtTop => _scrollController.hasClients && _scrollController.position.pixels <= 50;
 
@@ -155,29 +165,48 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
 
     // Check for new certifications using timestamp comparison
     if (!_isInitialLoad && !certState.isLoading && certState.certifications.isNotEmpty) {
-      // Extract timestamp from first certification
-      final currentLatestTimestamp = certState.certifications.first.date;
+      // Extract timestamp from first certification (only active ones for timestamp tracking)
+      final activeCerts = certState.certifications.where((c) => c.isActive).toList();
+      if (activeCerts.isNotEmpty) {
+        final currentLatestTimestamp = activeCerts.first.date;
 
-      // Check if we have a newer certification than before
-      if (_lastCertTimestamp != null && currentLatestTimestamp.isAfter(_lastCertTimestamp!)) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _onNewCertificationReceived();
-        });
+        // Check if we have a newer certification than before
+        if (_lastCertTimestamp != null && currentLatestTimestamp.isAfter(_lastCertTimestamp!)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _onNewCertificationReceived();
+          });
+        }
+
+        // Always update the latest timestamp
+        _lastCertTimestamp = currentLatestTimestamp;
       }
-
-      // Always update the latest timestamp
-      _lastCertTimestamp = currentLatestTimestamp;
     }
 
     // Set initial timestamp after first load
     if (_isInitialLoad && !certState.isLoading && certState.certifications.isNotEmpty) {
-      _lastCertTimestamp = certState.certifications.first.date;
+      final activeCerts = certState.certifications.where((c) => c.isActive).toList();
+      if (activeCerts.isNotEmpty) {
+        _lastCertTimestamp = activeCerts.first.date;
+      }
       _isInitialLoad = false;
     }
 
     // Mark initial load as complete even if no certifications
     if (_isInitialLoad && !certState.isLoading) {
       _isInitialLoad = false;
+    }
+
+    // Filter and sort certifications: active first, then expired at the end
+    final allCerts = certState.certifications;
+    final hasExpiredCerts = allCerts.any((c) => !c.isActive);
+    final List<CertDisplayItem> displayedCerts;
+    if (_showExpired) {
+      // Show all: active first, then expired
+      final active = allCerts.where((c) => c.isActive).toList();
+      final expired = allCerts.where((c) => !c.isActive).toList();
+      displayedCerts = [...active, ...expired];
+    } else {
+      displayedCerts = allCerts.where((c) => c.isActive).toList();
     }
 
     return Center(
@@ -295,7 +324,56 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
                         right: scaleSize(8),
                       ), // Extra bottom padding for fade effect
                       children: <Widget>[
-                        Column(children: <Widget>[CertTile(listCerts: certState.certifications)]),
+                        // Toggle button for expired certs (only shown when expired certs exist)
+                        if (hasExpiredCerts)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: scaleSize(4)),
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: () => setState(() => _showExpired = !_showExpired),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: scaleSize(10), vertical: scaleSize(5)),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(scaleSize(14)),
+                                    color: _showExpired
+                                        ? context.colorScheme.primary.withValues(alpha: 0.1)
+                                        : context.colorScheme.surfaceContainer,
+                                    border: Border.all(
+                                      color: _showExpired
+                                          ? context.colorScheme.primary.withValues(alpha: 0.3)
+                                          : context.colorScheme.outline.withValues(alpha: 0.15),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _showExpired ? Icons.visibility : Icons.visibility_off,
+                                        size: scaleSize(13),
+                                        color: _showExpired
+                                            ? context.colorScheme.primary
+                                            : context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                      ),
+                                      ScaledSizedBox(width: 5),
+                                      Text(
+                                        'showExpiredCerts'.tr(),
+                                        style: scaledTextStyle(
+                                          fontSize: 11,
+                                          color: _showExpired
+                                              ? context.colorScheme.primary
+                                              : context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                          fontWeight: _showExpired ? FontWeight.w600 : FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        Column(children: <Widget>[CertTile(listCerts: displayedCerts)]),
                         // Show loading indicator at the bottom when refreshing
                         if (certState.isLoading && certState.certifications.isNotEmpty)
                           Container(

@@ -582,6 +582,7 @@
     "migration_v2_address_label": "Dirección v2",
     "minCertificationsRequired": "Número de certificaciones requeridas para ser miembro",
     "minSmithCertifications": "Número de certificaciones para convertirse en forjador",
+    "minReferringMemberCertifications": "Número de certificaciones para convertirse en miembro referente",
     "minimum": "Mínimo",
     "minimumAmountRequired": "Mínimo {} requerido para esta cuenta",
     "minutes": "{} minutos",

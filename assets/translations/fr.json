@@ -562,6 +562,7 @@
     "membershipValidity": "Durée de vie d'une adhésion qui a été prise en compte",
     "maxDistanceReferees": "Distance maximale, par les certifications, entre un nouvel entrant et les membres référents",
     "minSmithCertifications": "Nombre de certifications pour devenir forgeron",
+    "minReferringMemberCertifications": "Nombre de certifications pour devenir membre référent",
     "xPercentRule": "Pourcentage minimum de membres référents à atteindre pour respecter la règle de distance",
     "currencyDescription": "{currencyName} est une monnaie libre, démarrée il y a {startedAgo}. Elle compte actuellement {membersCount} membres, qui produisent et perçoivent un Dividende Universel (DU), chaque {udPeriod}.",
     "errorLoadingCurrencyData": "Erreur lors du chargement des données de la monnaie",

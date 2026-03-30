@@ -542,6 +542,7 @@
     "membershipValidity": "Vivdaŭro de aliĝo, kiu estis akceptita",
     "maxDistanceReferees": "Maksimuma distanco, per la atestaĵoj, inter nova eniranto kaj la referencaj membroj",
     "minSmithCertifications": "Nombro de atestaĵoj por fariĝi forĝisto",
+    "minReferringMemberCertifications": "Nombro de atestaĵoj por fariĝi referenca membro",
     "xPercentRule": "Minimuma procento de referencaj membroj atingenda por konformiĝi al la regulo pri distanco",
     "currencyDescription": "{currencyName} estas libera mono, kiu ekis antaŭ {startedAgo}. Ĝi nun nombras {membersCount} membrojn, kiuj produktas kaj ricevas Universalan Dividendon (UD), ĉiun {udPeriod}n.",
     "errorLoadingCurrencyData": "Eraro dum la ŝarĝado de la datenoj pri la mono",

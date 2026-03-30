@@ -735,6 +735,7 @@
     "sendErrorReportsDescription": "Helfen Sie, Gecko zu verbessern, indem Sie anonyme Absturzberichte senden",
     "showBackgroundImage": "Hintergrundbild auf der Startseite",
     "showBackgroundImageDescription": "Hintergrundbild auf dem Startbildschirm anzeigen",
+    "showExpiredCerts": "Abgelaufene",
     "returnToHome": "Zurück zur Startseite",
     "revokeAdhesion": "Mitgliedschaft widerrufen",
     "revokeMyIdentity": "Meine Identität widerrufen",

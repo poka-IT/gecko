@@ -761,6 +761,7 @@
     "sendErrorReportsDescription": "Ayudar a mejorar Gecko enviando informes de fallos anónimos",
     "showBackgroundImage": "Imagen de fondo del inicio",
     "showBackgroundImageDescription": "Mostrar la imagen de fondo en la pantalla de inicio",
+    "showExpiredCerts": "Expiradas",
     "revokeAdhesion": "Revocación de adhesión",
     "revokeMyIdentity": "Revocar mi identidad",
     "revoked": "Revocada",

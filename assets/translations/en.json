@@ -756,6 +756,7 @@
     "sendErrorReportsDescription": "Help improve Gecko by sending anonymous crash reports",
     "showBackgroundImage": "Home background image",
     "showBackgroundImageDescription": "Display the background image on the home screen",
+    "showExpiredCerts": "Expired",
     "revokeAdhesion": "Adhesion revocation",
     "revokeMyIdentity": "Revoke my identity",
     "revoked": "Revoked",

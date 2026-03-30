@@ -57,6 +57,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
   String _pinErrorMessage = '';
   bool _isProcessing = false;
   bool _biometricSetupAttempted = false;
+  int _validationGeneration = 0;
   late FocusNode _pinFocusNode;
   late TextEditingController _pinTextController;
   late PinInputController _pinController;
@@ -357,7 +358,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                               filled: true,
                               fillColor: context.colorScheme.surfaceContainer,
                             ),
-                            textInputAction: index < 11 ? TextInputAction.next : TextInputAction.done,
+                            textInputAction: TextInputAction.none,
                             onSubmitted: (_) {
                               if (index < 11) {
                                 _wordFocusNodes[index + 1].requestFocus();
@@ -370,7 +371,9 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                               await ref.read(mnemonicInputProvider.notifier).updateWord(index, cleanText);
 
                               // Auto-advance: if word uniquely identifies a BIP39 word, move to next
-                              if (cleanText.length >= 3 && index < 11) {
+                              if (cleanText.isNotEmpty && index < 11) {
+                                // Track this validation call to discard stale results
+                                final thisGeneration = ++_validationGeneration;
                                 try {
                                   // ignore: use_build_context_synchronously
                                   final languageCode = context.locale.languageCode;
@@ -380,7 +383,10 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                                     checkRedundance: true,
                                     preferredLanguage: preferredLanguage,
                                   );
-                                  if (isUnique && mounted) {
+                                  // Only advance if this is still the latest validation AND this field still has focus
+                                  if (isUnique &&
+                                      thisGeneration == _validationGeneration &&
+                                      _wordFocusNodes[index].hasFocus) {
                                     _wordFocusNodes[index + 1].requestFocus();
                                   }
                                 } catch (_) {}

@@ -278,12 +278,16 @@ class _TransactionInProgressTuleState extends ConsumerState<TransactionInProgres
                   ],
                 ),
                 ScaledSizedBox(height: 16),
-                SelectableText(
-                  comment,
-                  style: scaledTextStyle(
-                    fontSize: 15,
-                    color: context.colorScheme.onSurface.withValues(alpha: 0.85),
-                    height: 1.4,
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      comment,
+                      style: scaledTextStyle(
+                        fontSize: 15,
+                        color: context.colorScheme.onSurface.withValues(alpha: 0.85),
+                        height: 1.4,
+                      ),
+                    ),
                   ),
                 ),
               ],

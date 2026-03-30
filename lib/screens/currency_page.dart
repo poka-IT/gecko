@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,7 +73,7 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
                     ScaledSizedBox(height: 24),
                     _buildCurrencySection(context, currencyData.currencyParams),
                     ScaledSizedBox(height: 24),
-                    _buildWotSection(context, currencyData.wotParams),
+                    _buildWotSection(context, currencyData.wotParams, currencyData.currencyParams.members),
                   ],
                 ),
               ),
@@ -269,7 +270,7 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
     );
   }
 
-  Widget _buildWotSection(BuildContext context, WotParameters params) {
+  Widget _buildWotSection(BuildContext context, WotParameters params, int membersCount) {
     return Container(
       decoration: BoxDecoration(
         color: context.colorScheme.surfaceContainer,
@@ -340,6 +341,11 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
                   _buildWotRow(context, 'membershipValidity'.tr(), _formatDuration(params.msValidity)),
                   _buildWotRow(context, 'maxDistanceReferees'.tr(), params.stepMax.toString()),
                   _buildWotRow(context, 'minSmithCertifications'.tr(), params.certToBeSmith.toString()),
+                  _buildWotRow(
+                    context,
+                    'minReferringMemberCertifications'.tr(),
+                    math.pow(membersCount, 1.0 / params.stepMax).ceil().toString(),
+                  ),
                   _buildWotRow(context, 'xPercentRule'.tr(), '${(params.xPercent * 100).toStringAsFixed(2)}%'),
                 ],
               ],

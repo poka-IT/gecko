@@ -167,17 +167,20 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
   @override
   FutureOr<d.CertificationQueueState?> build() async {
-    // Check storage state first
     final storageState = ref.watch(storageStateProvider);
-    if (storageState == StorageState.notInitialized) {
-      return null;
-    }
 
-    // Load from local storage first
+    // Load from local Hive storage regardless of storage state.
+    // The queue is persisted locally and should be available even offline.
     var queue = await CertificationQueueService.loadQueue(issuerAddress);
 
     // If no local queue, create an empty one
     queue ??= d.CertificationQueueState.empty(issuerAddress);
+
+    // If storage is not initialized yet, return the local queue as-is
+    // without attempting blockchain date updates or remote sync.
+    if (storageState == StorageState.notInitialized) {
+      return queue;
+    }
 
     // Update expected dates based on current blockchain state
     queue = await _updateQueueDates(queue);
@@ -353,8 +356,16 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
           return;
         }
 
-        finalQueue = await _updateQueueDates(remoteQueue);
-        finalQueue = finalQueue.copyWith(isSynced: true);
+        // Guard: never overwrite a non-empty local queue with an empty remote queue.
+        // This prevents data loss when CesiumPlus returns an empty queue due to
+        // sync issues, stale data, or a fresh remote profile.
+        if (hasLocalItems && remoteQueue.isEmpty) {
+          log.d('[CertQueueSync] Remote queue is empty but local has items, keeping local');
+          finalQueue = loadedQueue.copyWith(isSynced: false);
+        } else {
+          finalQueue = await _updateQueueDates(remoteQueue);
+          finalQueue = finalQueue.copyWith(isSynced: true);
+        }
       } else if (hasLocalItems) {
         finalQueue = loadedQueue.copyWith(isSynced: false);
       } else {

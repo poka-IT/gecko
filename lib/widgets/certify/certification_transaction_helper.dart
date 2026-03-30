@@ -9,6 +9,7 @@ import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/services/certification_queue_service.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/transaction_status.dart' show lookupTransactionError;
@@ -77,6 +78,7 @@ class CertificationTransactionHelper {
         targetAddress: targetAddress,
         container: container,
         scaffoldMessenger: scaffoldMessenger,
+        removeFromPersistentQueue: true,
       );
 
       // Optional callback before navigation (e.g., queue removal, sync)
@@ -102,7 +104,11 @@ class CertificationTransactionHelper {
     }
   }
 
-  /// Listen to the transaction stream and update the cache when the transaction completes
+  /// Listen to the transaction stream and update the cache when the transaction completes.
+  ///
+  /// When [removeFromPersistentQueue] is true and the transaction fails,
+  /// also removes the target from the persistent Hive queue to prevent
+  /// phantom entries that linger indefinitely after a failed certification.
   static void _listenToTransactionResult({
     required RecentCertificationsNotifier notifier,
     required Stream<TransactionStatus> transactionStream,
@@ -110,6 +116,7 @@ class CertificationTransactionHelper {
     required String targetAddress,
     required ProviderContainer container,
     required ScaffoldMessengerState scaffoldMessenger,
+    bool removeFromPersistentQueue = false,
   }) {
     bool hasHandled = false;
     late StreamSubscription<TransactionStatus> subscription;
@@ -133,6 +140,9 @@ class CertificationTransactionHelper {
           hasHandled = true;
           log.d('❌ [CertificationHelper] Transaction ERROR - removing from cache');
           notifier.removeCertification(issuerAddress, targetAddress);
+          if (removeFromPersistentQueue) {
+            _removeFromPersistentQueue(container, issuerAddress, targetAddress);
+          }
           _showErrorSnackbar(scaffoldMessenger, status.errorMessage);
           subscription.cancel();
         }
@@ -142,6 +152,9 @@ class CertificationTransactionHelper {
         hasHandled = true;
         log.d('❌ [CertificationHelper] Stream ERROR - removing from cache: $error');
         notifier.removeCertification(issuerAddress, targetAddress);
+        if (removeFromPersistentQueue) {
+          _removeFromPersistentQueue(container, issuerAddress, targetAddress);
+        }
         _showErrorSnackbar(scaffoldMessenger, error.toString());
         subscription.cancel();
       },
@@ -150,9 +163,48 @@ class CertificationTransactionHelper {
         hasHandled = true;
         log.w('⚠️ [CertificationHelper] Stream closed without terminal state — clearing in-progress');
         notifier.removeCertification(issuerAddress, targetAddress);
+        if (removeFromPersistentQueue) {
+          _removeFromPersistentQueue(container, issuerAddress, targetAddress);
+        }
       },
       cancelOnError: false,
     );
+  }
+
+  /// Remove a failed certification from the persistent Hive queue.
+  /// This prevents phantom entries that stay indefinitely after a failed transaction.
+  /// Uses the provider if available, falls back to direct Hive removal.
+  static Future<void> _removeFromPersistentQueue(
+    ProviderContainer container,
+    String issuerAddress,
+    String targetAddress,
+  ) async {
+    try {
+      final queueNotifier = container.read(certificationQueueProvider(issuerAddress).notifier);
+      await queueNotifier.removeByAddress(targetAddress);
+      log.d('🗑️ [CertificationHelper] Removed failed cert target $targetAddress from persistent queue');
+    } catch (e) {
+      // Fallback: remove directly from Hive if provider is not available
+      log.w('[CertificationHelper] Could not remove via provider, trying direct Hive removal: $e');
+      try {
+        final queue = await CertificationQueueService.loadQueue(issuerAddress);
+        if (queue != null && queue.containsAddress(targetAddress)) {
+          final filtered = queue.pendingCertifications.where((c) => c.receiverAddress != targetAddress).toList();
+          for (var i = 0; i < filtered.length; i++) {
+            filtered[i] = filtered[i].copyWith(position: i + 1);
+          }
+          final updatedQueue = queue.copyWith(
+            pendingCertifications: filtered,
+            lastUpdated: DateTime.now(),
+            isSynced: false,
+          );
+          await CertificationQueueService.saveQueue(updatedQueue);
+          log.d('🗑️ [CertificationHelper] Removed failed cert target $targetAddress from Hive directly');
+        }
+      } catch (e2) {
+        log.e('[CertificationHelper] Failed to remove from Hive: $e2');
+      }
+    }
   }
 
   /// Show a translated error message via the captured ScaffoldMessenger.

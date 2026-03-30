@@ -13,6 +13,7 @@ import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 
+import 'package:gecko/main.dart';
 import 'package:gecko/screens/license_page.dart';
 import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -159,14 +160,11 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     });
 
     if (!mounted) return;
-    // Capture parent context before popping, since `context` becomes invalid after pop
-    final parentContext = navigatorState.context;
     navigatorState.pop();
 
     try {
       await navigateToTransactionProgress(
-        // ignore: use_build_context_synchronously
-        parentContext,
+        widget.embeddedMode ? Gecko.navigatorContext! : navigatorState.context,
         transactionStatus: broadcastStream,
         transType: 'comfirmIdty',
         fromAddress: widget.address,

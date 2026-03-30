@@ -537,6 +537,17 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
                                 );
                                 final historyItems = historyView.buildItems(context);
 
+                                // Auto-load next page if content is too short to scroll
+                                // (e.g., 20 UDs collapsed into 1 tile)
+                                if (historyState.hasNextPage && !historyState.isLoading) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (!mounted || !_scrollController.hasClients) return;
+                                    if (_scrollController.position.maxScrollExtent <= 0) {
+                                      loadMoreTransactions(ref, widget.address);
+                                    }
+                                  });
+                                }
+
                                 return CustomScrollView(
                                   key: keyListTransactions,
                                   controller: _scrollController,

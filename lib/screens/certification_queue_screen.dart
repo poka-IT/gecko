@@ -315,7 +315,7 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
                     // Type badge + time on same row
                     Row(
                       children: [
-                        _buildCertTypeBadge(cert.certType),
+                        _buildCertTypeBadge(_effectiveCertType(cert)),
                         const Spacer(),
                         _buildTimeDisplay(timeInfo, isReady, cert.expectedAvailableDate),
                       ],
@@ -424,6 +424,14 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
       text,
       style: scaledTextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500),
     );
+  }
+
+  /// If the cert was queued as "renewal" but the underlying certification has since
+  /// expired, downgrade the display type to "certification".
+  d.CertificationType _effectiveCertType(d.PendingCertification cert) {
+    if (cert.certType != d.CertificationType.renewal) return cert.certType;
+    final exists = ref.watch(certificationExistsProvider(cert.receiverAddress)).value ?? true;
+    return exists ? d.CertificationType.renewal : d.CertificationType.certification;
   }
 
   Widget _buildCertTypeBadge(d.CertificationType type) {

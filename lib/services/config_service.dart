@@ -25,6 +25,14 @@ class ConfigService {
   double? get windowHeight => _box.get('windowHeight') as double?;
   set windowHeight(double? value) => _box.put('windowHeight', value);
 
+  /// Persisted window X position (set on move).
+  double? get windowX => _box.get('windowX') as double?;
+  set windowX(double? value) => _box.put('windowX', value);
+
+  /// Persisted window Y position (set on move).
+  double? get windowY => _box.get('windowY') as double?;
+  set windowY(double? value) => _box.put('windowY', value);
+
   /// Whether the minimum window size constraint is bypassed.
   bool get bypassMinWindowSize => (_box.get('bypassMinWindowSize', defaultValue: false) as bool?) ?? false;
   set bypassMinWindowSize(bool value) => _box.put('bypassMinWindowSize', value);

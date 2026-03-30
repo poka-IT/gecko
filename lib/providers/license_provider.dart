@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 /// Provider that fetches the Ğ1 monetary license for a given language code.
 /// Falls back to English if the requested language is not available.
 final licenseProvider = FutureProvider.family<String, String>((ref, langCode) async {
-  final supportedLangs = {'fr', 'en', 'es', 'it'};
+  final supportedLangs = {'fr', 'en', 'es', 'it', 'eo'};
   final lang = supportedLangs.contains(langCode) ? langCode : 'en';
 
   final url = Uri.parse(

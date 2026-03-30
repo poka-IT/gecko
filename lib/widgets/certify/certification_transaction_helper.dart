@@ -4,12 +4,14 @@ import 'package:durt2/durt2.dart' show TransactionState, TransactionStatus;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/services/certification_queue_service.dart';
+import 'package:gecko/services/contact_service.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/transaction_status.dart' show lookupTransactionError;
@@ -76,6 +78,7 @@ class CertificationTransactionHelper {
         transactionStream: transactionStream,
         issuerAddress: issuerAddress,
         targetAddress: targetAddress,
+        targetUsername: targetUsername,
         container: container,
         scaffoldMessenger: scaffoldMessenger,
         removeFromPersistentQueue: true,
@@ -114,6 +117,7 @@ class CertificationTransactionHelper {
     required Stream<TransactionStatus> transactionStream,
     required String issuerAddress,
     required String targetAddress,
+    String? targetUsername,
     required ProviderContainer container,
     required ScaffoldMessengerState scaffoldMessenger,
     bool removeFromPersistentQueue = false,
@@ -129,6 +133,11 @@ class CertificationTransactionHelper {
           hasHandled = true;
           log.d('✅ [CertificationHelper] Transaction SUCCESS - marking as completed');
           notifier.markCompleted(issuerAddress, targetAddress);
+
+          // Auto-add certified person to contacts
+          final contactService = container.read(contactServiceProvider);
+          contactService.addContact(G1WalletsList(address: targetAddress, username: targetUsername));
+
           // Invalidate identity status, cert existence, and cert state for the target
           // so child widgets (CertifyButton, AddToQueueButton) get fresh data.
           // This is critical after an invitation that creates a new identity.

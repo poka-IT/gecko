@@ -167,18 +167,26 @@ Future<void> _showDesktopWindow() async {
   final savedHeight = config.windowHeight;
   final size = (savedWidth != null && savedHeight != null) ? Size(savedWidth, savedHeight) : defaultSize;
 
+  // Restore saved window position, if available and on-screen
+  final savedX = config.windowX;
+  final savedY = config.windowY;
+  final hasValidPosition = savedX != null && savedY != null && savedX >= 0 && savedY >= 0;
+
   final bypassMinSize = config.bypassMinWindowSize;
   const minSize = Size(800, 600);
   final windowOptions = WindowOptions(
     size: size,
     minimumSize: bypassMinSize ? null : minSize,
-    center: true,
+    center: !hasValidPosition,
     title: 'Ğecko',
     titleBarStyle: TitleBarStyle.normal,
   );
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     if (!bypassMinSize) {
       await windowManager.setMinimumSize(minSize);
+    }
+    if (hasValidPosition) {
+      await windowManager.setPosition(Offset(savedX, savedY));
     }
     await windowManager.show();
     await windowManager.focus();
@@ -190,17 +198,26 @@ Future<void> _showDesktopWindow() async {
 }
 
 class _DesktopWindowListener extends WindowListener {
-  Timer? _resizeDebounce;
+  Timer? _saveDebounce;
 
-  @override
-  void onWindowResize() async {
-    _resizeDebounce?.cancel();
-    _resizeDebounce = Timer(const Duration(milliseconds: 500), () async {
+  void _debounceSaveWindowGeometry() {
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 500), () async {
       final size = await windowManager.getSize();
-      ConfigService(configBox).windowWidth = size.width;
-      ConfigService(configBox).windowHeight = size.height;
+      final position = await windowManager.getPosition();
+      final config = ConfigService(configBox);
+      config.windowWidth = size.width;
+      config.windowHeight = size.height;
+      config.windowX = position.dx;
+      config.windowY = position.dy;
     });
   }
+
+  @override
+  void onWindowResize() => _debounceSaveWindowGeometry();
+
+  @override
+  void onWindowMove() => _debounceSaveWindowGeometry();
 
   @override
   void onWindowClose() async {

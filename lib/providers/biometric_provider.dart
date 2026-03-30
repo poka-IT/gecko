@@ -141,14 +141,7 @@ class BiometricNotifier extends Notifier<BiometricState> {
   /// Refresh biometric state (uses default safe)
   Future<void> refresh() async {
     _targetSafeNumber = null;
-
-    // Force a small delay to ensure storage operations are completed
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    // Clear any cached state first
     state = state.copyWith(isEnrolledForCurrentSafe: false, isLoading: true, isInitialized: false, errorMessage: null);
-
-    // Force a complete re-initialization to ensure fresh state
     await _initializeBiometric();
   }
 

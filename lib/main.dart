@@ -221,6 +221,7 @@ class _DesktopWindowListener extends WindowListener {
 
   @override
   void onWindowClose() async {
+    _saveDebounce?.cancel();
     // Clean up Hive boxes to release file locks and avoid mutex deadlocks on Windows
     try {
       await Hive.close();

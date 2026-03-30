@@ -147,7 +147,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
           try {
             final newWallet = walletService.getWalletData(toAddress);
             newWallet.imagePath = newPath;
-            await walletService.walletBox.putAsync(newWallet);
+            walletService.walletBox.put(newWallet);
             log.i('Local avatar copied to new wallet at $newPath');
           } catch (e) {
             log.d('Could not update new wallet avatar path: $e');

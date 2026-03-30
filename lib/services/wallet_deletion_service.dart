@@ -144,22 +144,29 @@ class WalletDeletionService {
 
     // Handle navigation
     if (walletService.safeBox.isEmpty()) {
-      // No safes left
-      navigator.pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
-      await Future.delayed(const Duration(milliseconds: 50));
-      ref.read(walletActionsProvider.notifier).invalidateProviders();
+      // No safes left — update states before navigation to avoid rebuilds on stale providers
       ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(-1);
       ref.read(walletsListProvider.notifier).clear();
+
+      navigator.pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
+
+      // Yield to let the navigation frame complete before invalidating non-autoDispose providers
+      await Future.delayed(const Duration(milliseconds: 300));
+      ref.read(walletActionsProvider.notifier).invalidateProviders();
     } else {
-      // Switch to another safe
+      // Safes remain — navigate first to unmount old widgets, then switch safe
       final remainingSafes = walletService.safeBox.getAll();
+      if (remainingSafes.isEmpty) return;
+
+      navigator.popUntil(ModalRoute.withName(RouteNames.home));
+      await Future.delayed(const Duration(milliseconds: 100));
+
       final newDefaultSafe = remainingSafes.first.number;
       try {
         await ref.read(walletActionsProvider.notifier).switchSafe(newDefaultSafe);
       } catch (e) {
         ref.read(walletsListProvider.notifier).clear();
       }
-      navigator.popUntil(ModalRoute.withName(RouteNames.home));
     }
   }
 

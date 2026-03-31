@@ -1012,5 +1012,10 @@
     "youAreMember": "Vous êtes membre",
     "youAreNotMember": "Vous n'êtes pas membre",
     "zoomDraw": "Zoomer et dessiner",
-    "zoomToDraw": "Zoomer pour dessiner sur la signature"
+    "zoomToDraw": "Zoomer pour dessiner sur la signature",
+    "nameConflictWarning": "Ce nom est identique à l'identité vérifiée \"{}\" (adresse {})",
+    "selfDeclaredName": "auto-déclaré",
+    "selfDeclaredNameLabel": "Nom auto-déclaré",
+    "selfDeclaredNameTooltip": "Ce nom a été choisi par le propriétaire du portefeuille. Il n'est pas vérifié par la toile de confiance.",
+    "verifiedIdentity": "Identité vérifiée"
 }

@@ -1018,5 +1018,10 @@
     "youAreMember": "Sei membro",
     "youAreNotMember": "Non sei membro",
     "zoomDraw": "Zoom e disegna",
-    "zoomToDraw": "Zoom per disegnare sulla firma"
+    "zoomToDraw": "Zoom per disegnare sulla firma",
+    "nameConflictWarning": "Questo nome è identico all'identità verificata \"{}\" (indirizzo {})",
+    "selfDeclaredName": "autodichiarato",
+    "selfDeclaredNameLabel": "Nome autodichiarato",
+    "selfDeclaredNameTooltip": "Questo nome è stato scelto dal proprietario del portafoglio. Non è verificato dalla rete di fiducia.",
+    "verifiedIdentity": "Identità verificata"
 }

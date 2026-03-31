@@ -1017,5 +1017,10 @@
     "youAreMember": "Eres miembro",
     "youAreNotMember": "No eres miembro",
     "zoomDraw": "Zoom y dibujar",
-    "zoomToDraw": "Zoom para dibujar en la firma"
+    "zoomToDraw": "Zoom para dibujar en la firma",
+    "nameConflictWarning": "Este nombre es idéntico a la identidad verificada \"{}\" (dirección {})",
+    "selfDeclaredName": "autodeclarado",
+    "selfDeclaredNameLabel": "Nombre autodeclarado",
+    "selfDeclaredNameTooltip": "Este nombre fue elegido por el propietario de la billetera. No está verificado por la red de confianza.",
+    "verifiedIdentity": "Identidad verificada"
 }

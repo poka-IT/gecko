@@ -101,6 +101,7 @@ class _OnboardingStepNineState extends ConsumerState<OnboardingStepNine> {
     return GeckoPinField(
       key: keyPinForm,
       pinController: _pinController,
+      autoDismissKeyboard: false,
       length: pinLength,
       onChanged: (value) {
         if (hasError && value.isNotEmpty) {

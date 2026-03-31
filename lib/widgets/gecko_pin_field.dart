@@ -19,6 +19,7 @@ class GeckoPinField extends StatelessWidget {
     this.pinColor,
     this.enabled = true,
     this.autoFocus = true,
+    this.autoDismissKeyboard = true,
     this.length = 4,
   });
 
@@ -28,6 +29,7 @@ class GeckoPinField extends StatelessWidget {
   final Color? pinColor;
   final bool enabled;
   final bool autoFocus;
+  final bool autoDismissKeyboard;
   final int length;
 
   @override
@@ -40,6 +42,7 @@ class GeckoPinField extends StatelessWidget {
         textCapitalization: TextCapitalization.none,
         pinController: pinController,
         autoFocus: autoFocus,
+        autoDismissKeyboard: autoDismissKeyboard,
         enabled: enabled,
         length: length,
         obscureText: true,

@@ -469,6 +469,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
           if (!_pinConfirmed)
             GeckoPinField(
               pinController: _pinController,
+              autoDismissKeyboard: false,
               length: pinLength,
               onChanged: (value) {
                 if (_pinError && value.isNotEmpty) setState(() => _pinError = false);
@@ -494,6 +495,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
           else
             GeckoPinField(
               pinController: _confirmPinController,
+              autoDismissKeyboard: false,
               length: _pinCode.isEmpty ? pinLength : _pinCode.length,
               onChanged: (value) {
                 if (_pinError && value.isNotEmpty) setState(() => _pinError = false);

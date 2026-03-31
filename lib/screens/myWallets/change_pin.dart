@@ -77,6 +77,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
       children: [
         GeckoPinField(
           pinController: _pinController,
+          autoDismissKeyboard: false,
           pinColor: pinColor,
           length: pinLength,
           onCompleted: (pin) async {

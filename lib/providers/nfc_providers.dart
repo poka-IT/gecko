@@ -17,11 +17,6 @@ final nfcAvailabilityProvider = FutureProvider<NFCAvailability>((ref) async {
   return NfcService.checkAvailability();
 });
 
-/// Whether HCE (Host Card Emulation) is supported (Android only).
-final nfcHceSupportedProvider = FutureProvider<bool>((ref) async {
-  return NfcHceService.isSupported();
-});
-
 /// NFC operation state for UI feedback.
 enum NfcSessionState { idle, polling, reading, emulating, success, error }
 
@@ -74,27 +69,6 @@ class NfcSessionNotifier extends Notifier<NfcSessionData> {
   Future<void> stopEmulation() async {
     await NfcHceService.stopEmulation();
     await NfcHceService.setKeepScreenOn(false);
-    state = const NfcSessionData();
-  }
-
-  /// Start reader mode (buyer mode — phone reads HCE device).
-  Future<void> startReaderMode({int timeoutMs = 15000}) async {
-    state = state.copyWith(state: NfcSessionState.polling);
-    final success = await NfcHceService.startReaderMode(timeoutMs: timeoutMs);
-    if (!success) {
-      state = state.copyWith(state: NfcSessionState.reading);
-      final result = await NfcService.readFromHceDevice();
-      if (result != null) {
-        state = NfcSessionData(state: NfcSessionState.success, paymentUri: result);
-      } else {
-        state = const NfcSessionData();
-      }
-    }
-  }
-
-  /// Stop reader mode.
-  Future<void> stopReaderMode() async {
-    await NfcHceService.stopReaderMode();
     state = const NfcSessionData();
   }
 

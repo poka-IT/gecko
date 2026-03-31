@@ -954,6 +954,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       key: keyPinForm,
       pinController: _pinController,
       autoFocus: shouldAutoFocus,
+      autoDismissKeyboard: false,
       enabled: isFieldEnabled,
       pinColor: pinColor,
       length: pinLenght,

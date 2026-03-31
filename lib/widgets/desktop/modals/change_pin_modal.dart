@@ -93,6 +93,7 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
         else if (!_isConfirmStep)
           GeckoPinField(
             pinController: _pinController,
+            autoDismissKeyboard: false,
             pinColor: _pinColor,
             length: pinLength,
             onCompleted: (pin) {
@@ -122,6 +123,7 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
         else
           GeckoPinField(
             pinController: _confirmController,
+            autoDismissKeyboard: false,
             pinColor: _pinColor,
             length: _newPin.length,
             onCompleted: (pin) async {

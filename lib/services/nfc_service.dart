@@ -15,7 +15,7 @@ import 'package:gecko/globals.dart';
 class NfcService {
   // G1NKGO AID for HCE device detection (shared with Ginkgo)
   static const _g1nkgoAid = 'F047314E4B474F';
-  static final _selectApdu = '00A404000707${_g1nkgoAid}00';
+  static final _selectApdu = '00A4040007${_g1nkgoAid}00';
 
   /// Checks NFC hardware status on this device.
   ///

@@ -607,6 +607,7 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
           if (!_pinConfirmed)
             GeckoPinField(
               pinController: _pinController,
+              autoDismissKeyboard: false,
               length: pinLength,
               onChanged: (value) {
                 if (_pinError && value.isNotEmpty) setState(() => _pinError = false);
@@ -632,6 +633,7 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
           else
             GeckoPinField(
               pinController: _confirmPinController,
+              autoDismissKeyboard: false,
               length: _pinCode.isEmpty ? pinLength : _pinCode.length,
               onChanged: (value) {
                 if (_pinError && value.isNotEmpty) setState(() => _pinError = false);

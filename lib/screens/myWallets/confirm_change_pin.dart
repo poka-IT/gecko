@@ -85,6 +85,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
   Widget pinForm(BuildContext context) {
     return GeckoPinField(
       pinController: _pinController,
+      autoDismissKeyboard: false,
       pinColor: pinColor,
       length: pinLength,
       onCompleted: (pin) async {

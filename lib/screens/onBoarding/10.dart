@@ -666,6 +666,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     return GeckoPinField(
       key: keyPinForm,
       pinController: _pinController,
+      autoDismissKeyboard: false,
       pinColor: pinColor,
       length: pinLenght,
       onCompleted: (pin) async {

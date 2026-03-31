@@ -138,7 +138,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
   Future<void> loadCertifications() async {
     final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
     if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      state = state.copyWith(hasError: true, error: 'No network connection');
+      state = state.copyWith(isLoading: false, hasError: true, error: 'No network connection');
       return;
     }
 

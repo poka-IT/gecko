@@ -19,7 +19,6 @@ apk_job_id = os.getenv('APK_JOB_ID', '')
 linux_x64_job_id = os.getenv('LINUX_X64_JOB_ID', '')
 linux_arm64_job_id = os.getenv('LINUX_ARM64_JOB_ID', '')
 windows_x64_job_id = os.getenv('WINDOWS_X64_JOB_ID', '')
-macos_job_id = os.getenv('MACOS_JOB_ID', '')
 ci_project_url = os.getenv('CI_PROJECT_URL', '')
 ci_commit_tag = os.getenv('CI_COMMIT_TAG', '')
 forum_mode = os.getenv('FORUM_MODE', 'complete')
@@ -34,18 +33,28 @@ apk_base_url = f"{ci_project_url}/-/jobs/{apk_job_id}/artifacts/raw/artifacts/an
 linux_x64_base_url = f"{ci_project_url}/-/jobs/{linux_x64_job_id}/artifacts/raw/artifacts/linux" if linux_x64_job_id else ""
 linux_arm64_base_url = f"{ci_project_url}/-/jobs/{linux_arm64_job_id}/artifacts/raw/artifacts/linux" if linux_arm64_job_id else ""
 windows_x64_base_url = f"{ci_project_url}/-/jobs/{windows_x64_job_id}/artifacts/raw/artifacts/windows" if windows_x64_job_id else ""
-macos_base_url = f"{ci_project_url}/-/jobs/{macos_job_id}/artifacts/raw/artifacts/macos" if macos_job_id else ""
 
 # Get changelog from git
 import subprocess
 try:
     # Get the last tag to compare with
-    last_tag_result = subprocess.run(['git', 'describe', '--tags', '--abbrev=0', 'HEAD~1'], 
-                                   capture_output=True, text=True, cwd='.')
-    if last_tag_result.returncode == 0:
+    # For production releases: find the previous production tag (skip beta tags)
+    # For beta releases: find the previous tag of any kind
+    if is_beta:
+        last_tag_result = subprocess.run(['git', 'describe', '--tags', '--abbrev=0', 'HEAD~1'],
+                                       capture_output=True, text=True, cwd='.')
+    else:
+        # List all production tags (no -beta suffix), sorted by version descending, skip the current one
+        tag_list_result = subprocess.run(
+            ['bash', '-c', 'git tag --sort=-v:refname | grep -E "^v[0-9]+\\.[0-9]+\\.[0-9]+$" | sed -n "2p"'],
+            capture_output=True, text=True, cwd='.')
+        # Fake a similar result object
+        last_tag_result = tag_list_result
+
+    if last_tag_result.returncode == 0 and last_tag_result.stdout.strip():
         last_tag = last_tag_result.stdout.strip()
         # Get commits between last tag and current version (with fixed 8-char hash)
-        changelog_result = subprocess.run(['git', 'log', f'{last_tag}..HEAD', '--oneline', '--no-merges', '--abbrev=8'], 
+        changelog_result = subprocess.run(['git', 'log', f'{last_tag}..HEAD', '--oneline', '--no-merges', '--abbrev=8'],
                                         capture_output=True, text=True, cwd='.')
         if changelog_result.returncode == 0 and changelog_result.stdout.strip():
             changelog_lines = changelog_result.stdout.strip().split('\n')
@@ -125,15 +134,9 @@ Pour rejoindre le programme beta sur le Play Store : [s'inscrire ici](https://pl
 
 • **[Google Play Store](https://play.google.com/store/apps/details?id=fr.axiomteam.gecko)** ({play_store_note})
 
-🍎 **iOS:**
-
-• **[App Store](https://apps.apple.com/fr/app/gecko-g1-wallet/id6739944308)** (disponible sous 24-48h)
-
 🖥️ **Desktop:**
 
 • **[Linux Desktop (tar.gz)]({linux_arm64_base_url}/gecko-{version}-linux-arm64.tar.gz)** (ARM64){optional_desktop_lines}
-
-• **[macOS Desktop (dmg)]({macos_base_url}/gecko-{version}-macos-arm64.zip)** (Apple Silicon)
 
 **Changelog:**
 {changelog}"""

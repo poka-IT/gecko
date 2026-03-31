@@ -22,9 +22,9 @@
 #    - GOOGLE_PLAY_RELEASE_STATUS: release status (draft, completed) [optional]
 #
 # USAGE:
-#   ./scripts/deploy-android.sh                  # Deploy to Google Play Store
+#   ./scripts/deploy-android.sh                  # Deploy to production track
+#   ./scripts/deploy-android.sh --beta           # Deploy to beta (open testing) track
 #   ./scripts/deploy-android.sh --validate-only  # Validate only (no upload)
-#   ./scripts/deploy-android.sh -v               # Validate only (short form)
 #   ./scripts/deploy-android.sh --changelog "Bug fixes and improvements"  # With changelog
 #
 # The script will:

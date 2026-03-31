@@ -540,15 +540,18 @@ release:gitlab:
         IS_BETA="true"
       fi
 
+      # Write all tags to a file to avoid SIGPIPE with pipes + set -e
+      git tag --sort=-v:refname > /tmp/all_tags.txt
       if [ -n "$IS_BETA" ]; then
-        LAST_VERSION=$(git tag --sort=-v:refname | sed -n '2p')
+        LAST_VERSION=$(sed -n '2p' /tmp/all_tags.txt)
       else
-        LAST_VERSION=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?$' | sed -n '2p')
+        LAST_VERSION=$(grep -E '^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?$' /tmp/all_tags.txt | sed -n '2p')
       fi
 
       if [ -n "$LAST_VERSION" ]; then
-        git log --pretty="format:- %s ([%h]($CI_PROJECT_URL/-/commit/%h))" HEAD...$LAST_VERSION --reverse | head -30 > release_description.txt
-        TOTAL_COMMITS=$(git rev-list --count HEAD...$LAST_VERSION)
+        git log --pretty="format:- %s ([%h]($CI_PROJECT_URL/-/commit/%h))" HEAD...$LAST_VERSION --reverse > /tmp/changelog_full.txt
+        head -30 /tmp/changelog_full.txt > release_description.txt
+        TOTAL_COMMITS=$(wc -l < /tmp/changelog_full.txt)
         if [ "$TOTAL_COMMITS" -gt 30 ]; then
           echo "" >> release_description.txt
           echo "- ... and $((TOTAL_COMMITS - 30)) more commits" >> release_description.txt

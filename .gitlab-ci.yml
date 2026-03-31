@@ -131,9 +131,9 @@ publish:forum:complete:
     - job: deploy:android:playstore
     # - job: deploy:ios:appstore
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ # Production release
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?$/ # Production release (v1.1.4 or v1.1.4+182)
       when: on_success
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-beta/ # Beta release
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?-beta/ # Beta release (v1.1.4-beta or v1.1.4+182-beta)
       when: on_success
   script:
     - export VERSION=$(cat artifacts/version.txt)
@@ -547,8 +547,8 @@ release:gitlab:
     - job: publish:forum:complete
       optional: true # Not triggered for beta releases
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ # Production tags only
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-beta/ # Beta tags (pre-release)
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?$/ # Production tags (v1.1.4 or v1.1.4+182)
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?-beta/ # Beta tags (v1.1.4-beta or v1.1.4+182-beta)
     - when: never
   script:
     - apk update && apk add git
@@ -579,7 +579,7 @@ release:gitlab:
       if [ -n "$IS_BETA" ]; then
         LAST_VERSION=$(git tag --sort=-v:refname | sed -n '2p')
       else
-        LAST_VERSION=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed -n '2p')
+        LAST_VERSION=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?$' | sed -n '2p')
       fi
     - |
       if [ -n "$LAST_VERSION" ]; then

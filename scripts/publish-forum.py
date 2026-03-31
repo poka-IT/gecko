@@ -46,7 +46,7 @@ try:
     else:
         # List all production tags (no -beta suffix), sorted by version descending, skip the current one
         tag_list_result = subprocess.run(
-            ['bash', '-c', 'git tag --sort=-v:refname | grep -E "^v[0-9]+\\.[0-9]+\\.[0-9]+$" | sed -n "2p"'],
+            ['bash', '-c', 'git tag --sort=-v:refname | grep -E "^v[0-9]+\\.[0-9]+\\.[0-9]+(\\+[0-9]+)?$" | sed -n "2p"'],
             capture_output=True, text=True, cwd='.')
         # Fake a similar result object
         last_tag_result = tag_list_result
@@ -134,9 +134,15 @@ Pour rejoindre le programme beta sur le Play Store : [s'inscrire ici](https://pl
 
 • **[Google Play Store](https://play.google.com/store/apps/details?id=fr.axiomteam.gecko)** ({play_store_note})
 
+🍎 **iOS:**
+
+• **[App Store](https://apps.apple.com/fr/app/gecko-g1-wallet/id6739944308)** (disponible sous 24-48h)
+
 🖥️ **Desktop:**
 
 • **[Linux Desktop (tar.gz)]({linux_arm64_base_url}/gecko-{version}-linux-arm64.tar.gz)** (ARM64){optional_desktop_lines}
+
+• **[macOS Desktop (dmg)]()** (Apple Silicon)
 
 **Changelog:**
 {changelog}"""

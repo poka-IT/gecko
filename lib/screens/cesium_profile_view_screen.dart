@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/cesium_name_provider.dart';
 import 'package:gecko/providers/cesium_profile_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/widgets/name_source_badge.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,6 +23,19 @@ class CesiumProfileViewScreen extends ConsumerWidget {
     final profileAsync = ref.watch(cesiumProfileProvider(address));
     final identityNameAsync = ref.watch(hybridIdentityNameProvider(address));
     final displayName = identityNameAsync.hasValue ? identityNameAsync.value : null;
+
+    // Determine if this is an identity name or CesiumPlus name
+    final hasIdentityName = identityNameAsync.hasValue && identityNameAsync.value != null;
+
+    // If no identity name, try CesiumPlus name from profile title
+    final csNameAsync = ref.watch(cesiumNameProvider(address));
+    final csName = csNameAsync.hasValue ? csNameAsync.value : null;
+    final effectiveDisplayName = displayName ?? csName;
+
+    // Check for CesiumPlus name conflicting with an on-chain identity
+    final conflictAddress = (!hasIdentityName && csName != null)
+        ? ref.watch(cesiumNameConflictProvider(address)).asData?.value
+        : null;
 
     final content = ResponsiveCenter(
       maxWidth: 600,
@@ -55,15 +70,40 @@ class CesiumProfileViewScreen extends ConsumerWidget {
                           width: scaleSize(100),
                           height: scaleSize(100),
                           child: ClipOval(
-                            child: DatapodAvatar(address: address, size: 100, name: displayName),
+                            child: DatapodAvatar(address: address, size: 100, name: effectiveDisplayName),
                           ),
                         ),
-                        if (displayName != null && displayName.isNotEmpty) ...[
+                        if (effectiveDisplayName != null && effectiveDisplayName.isNotEmpty) ...[
                           ScaledSizedBox(height: 12),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  effectiveDisplayName,
+                                  style: scaledTextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w600,
+                                    fontStyle: hasIdentityName ? FontStyle.normal : FontStyle.italic,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              ScaledSizedBox(width: 6),
+                              NameSourceBadge(source: hasIdentityName ? NameSource.identity : NameSource.cesiumPlus),
+                            ],
+                          ),
+                        ],
+                        if (!hasIdentityName && effectiveDisplayName != null) ...[
+                          ScaledSizedBox(height: 4),
                           Text(
-                            displayName,
-                            style: scaledTextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                            textAlign: TextAlign.center,
+                            'selfDeclaredNameLabel'.tr(),
+                            style: scaledTextStyle(
+                              fontSize: 12,
+                              color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                              fontStyle: FontStyle.italic,
+                            ),
                           ),
                         ],
                         ScaledSizedBox(height: 4),
@@ -75,6 +115,29 @@ class CesiumProfileViewScreen extends ConsumerWidget {
                             color: context.colorScheme.onSurfaceVariant,
                           ),
                         ),
+                        if (conflictAddress != null) ...[
+                          ScaledSizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: scaleSize(10), vertical: scaleSize(6)),
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.warning_amber_rounded, size: scaleSize(16), color: context.colorScheme.error),
+                                ScaledSizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    'nameConflictWarning'.tr(args: [csName!, getShortPubkey(conflictAddress)]),
+                                    style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onErrorContainer),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

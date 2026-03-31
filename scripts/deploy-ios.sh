@@ -485,13 +485,10 @@ fi
 
 echo "IPA built successfully at: $IPA_PATH"
 
-# Create changelog file if provided
-echo "Creating changelog file..."
-echo "SKIP_REVIEW: $SKIP_REVIEW"
-echo "APP_STORE_RELEASE_STATUS: $APP_STORE_RELEASE_STATUS"
-echo "CHANGELOG_TEXT: $CHANGELOG_TEXT"
-create_changelog_file
-echo "FASTLANE_METADATA_PATH after create_changelog_file: $FASTLANE_METADATA_PATH"
+# Create changelog/metadata files (only needed for App Store deliver, not TestFlight)
+if [ "$BETA_MODE" != "true" ]; then
+    create_changelog_file
+fi
 
 # Create API key JSON file (shared by both beta and production paths)
 TEMP_API_KEY_JSON=""
@@ -514,6 +511,10 @@ fi
 
 if [ "$BETA_MODE" = "true" ]; then
     # ── TestFlight upload (beta) ──
+    if [ -n "$VALIDATE_ONLY" ]; then
+        echo "Warning: --validate-only is not supported with TestFlight uploads, ignoring"
+        VALIDATE_ONLY=""
+    fi
     echo "Uploading to TestFlight..."
 
     FASTLANE_CMD="fastlane pilot upload \

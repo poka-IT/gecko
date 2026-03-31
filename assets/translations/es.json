@@ -165,6 +165,8 @@
     "scanDefaultAsk": "Preguntar cada vez",
     "scanDefaultQr": "Escanear código QR directamente",
     "scanDefaultNfc": "Escanear NFC directamente",
+    "scanRememberQr": "Siempre QR",
+    "scanRememberNfc": "Siempre NFC",
     "nfcEmulating": "Esperando pago...\nAcerque el teléfono del comprador",
     "nfcReading": "Leyendo datos de pago...",
     "nfcPaymentReceived": "Datos de pago recibidos",

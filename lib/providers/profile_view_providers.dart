@@ -174,17 +174,22 @@ final qrScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
     final choice = await _showScanChoiceSheet(context, nfcStatus);
     if (choice == null || !context.mounted) return;
 
-    if (choice == _ScanChoice.nfc) {
-      final scanNfc = ref.read(nfcScanProvider);
-      await scanNfc(context);
-      return;
+    switch (choice) {
+      case _ScanChoice.nfc:
+        final scanNfc = ref.read(nfcScanProvider);
+        await scanNfc(context);
+      case _ScanChoice.enableNfc:
+        await NfcHceService.openNfcSettings();
+      case _ScanChoice.rememberQr:
+        config.scanDefaultAction = 'qr';
+        await _doQrScan(ref, context);
+      case _ScanChoice.rememberNfc:
+        config.scanDefaultAction = 'nfc';
+        final scanNfc = ref.read(nfcScanProvider);
+        await scanNfc(context);
+      case _ScanChoice.qr:
+        await _doQrScan(ref, context);
     }
-    if (choice == _ScanChoice.enableNfc) {
-      await NfcHceService.openNfcSettings();
-      return;
-    }
-    // choice == _ScanChoice.qr
-    await _doQrScan(ref, context);
   };
 });
 
@@ -196,9 +201,9 @@ Future<void> _doQrScan(Ref ref, BuildContext context) async {
   _handleScanResult(ref, context, result);
 }
 
-enum _ScanChoice { qr, nfc, enableNfc }
+enum _ScanChoice { qr, nfc, enableNfc, rememberQr, rememberNfc }
 
-/// Shows a bottom sheet with QR and NFC scan options.
+/// Shows a bottom sheet with QR and NFC scan options + "remember" shortcut.
 Future<_ScanChoice?> _showScanChoiceSheet(BuildContext context, NFCAvailability nfcStatus) {
   return showModalBottomSheet<_ScanChoice>(
     context: context,
@@ -228,6 +233,32 @@ Future<_ScanChoice?> _showScanChoiceSheet(BuildContext context, NFCAvailability 
                 trailing: Icon(Icons.settings, size: scaleSize(20)),
                 onTap: () => Navigator.pop(ctx, _ScanChoice.enableNfc),
               ),
+            // "Remember my choice" shortcut
+            Padding(
+              padding: EdgeInsets.only(top: scaleSize(8)),
+              child: Divider(height: 1, indent: scaleSize(16), endIndent: scaleSize(16)),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(16), vertical: scaleSize(4)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton.icon(
+                    icon: Icon(Icons.qr_code_scanner, size: scaleSize(16)),
+                    label: Text('scanRememberQr'.tr(), style: scaledTextStyle(fontSize: 12)),
+                    onPressed: () => Navigator.pop(ctx, _ScanChoice.rememberQr),
+                  ),
+                  if (nfcStatus == NFCAvailability.available) ...[
+                    ScaledSizedBox(width: 8),
+                    TextButton.icon(
+                      icon: Icon(Icons.nfc_rounded, size: scaleSize(16)),
+                      label: Text('scanRememberNfc'.tr(), style: scaledTextStyle(fontSize: 12)),
+                      onPressed: () => Navigator.pop(ctx, _ScanChoice.rememberNfc),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),

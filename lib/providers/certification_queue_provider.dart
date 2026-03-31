@@ -54,16 +54,12 @@ class RecentCertificationsNotifier extends Notifier<Map<String, RecentCertData>>
     state = {...state, key: RecentCertData(timestamp: DateTime.now(), certState: RecentCertState.inProgress)};
   }
 
-  /// Mark that a certification transaction completed successfully
+  /// Mark that a certification transaction completed successfully.
+  /// Resets the timestamp to now so the 10-minute `wasCertifiedRecently`
+  /// window starts from completion, not from when the transaction was sent.
   void markCompleted(String issuerAddress, String targetAddress) {
     final key = '$issuerAddress:$targetAddress';
-    final existing = state[key];
-    if (existing != null) {
-      state = {...state, key: existing.copyWith(certState: RecentCertState.completed)};
-    } else {
-      // If not in state (edge case), add as completed
-      state = {...state, key: RecentCertData(timestamp: DateTime.now(), certState: RecentCertState.completed)};
-    }
+    state = {...state, key: RecentCertData(timestamp: DateTime.now(), certState: RecentCertState.completed)};
 
     // Cancel existing timer if any and start new auto-cleanup timer
     _cleanupTimers[key]?.cancel();

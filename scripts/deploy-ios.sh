@@ -23,9 +23,9 @@
 #    - BUNDLE_ID: your app bundle ID
 #
 # USAGE:
-#   ./scripts/deploy-ios.sh                         # Deploy and submit for review
+#   ./scripts/deploy-ios.sh                         # Deploy to App Store and submit for review
+#   ./scripts/deploy-ios.sh --beta                  # Deploy to TestFlight (beta testing)
 #   ./scripts/deploy-ios.sh --validate-only         # Validate only (no upload)
-#   ./scripts/deploy-ios.sh -v                      # Validate only (short form)
 #   ./scripts/deploy-ios.sh --skip-review           # Upload only (don't submit for review)
 #   ./scripts/deploy-ios.sh --changelog "Bug fixes" # With English changelog
 #   ./scripts/deploy-ios.sh --auto-release          # Auto-release after approval
@@ -253,12 +253,18 @@ parse_arguments() {
     SKIP_REVIEW=""
     AUTO_RELEASE=""
     CHANGELOG_TEXT=""
-    
+    BETA_MODE=""
+
     # Default behavior: submit for review
     SUBMIT_FOR_REVIEW="--submit_for_review"
-    
+
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --beta|-b)
+                BETA_MODE="true"
+                echo "Beta mode: will upload to TestFlight instead of App Store..."
+                shift
+                ;;
             --validate-only|-v)
                 VALIDATE_ONLY="--verify_only"
                 echo "Running in validation mode (no actual upload)..."
@@ -304,17 +310,15 @@ show_help() {
     echo "iOS App Store Deployment Script"
     echo ""
     echo "USAGE:"
-    echo "  $0                                   Deploy and submit for review"
-    echo "  $0 --validate-only                  Validate only (no upload)"
-    echo "  $0 -v                               Validate only (short form)"
-    echo "  $0 --skip-review                    Upload only (don't submit for review)"
-    echo "  $0 -s                               Skip review (short form)"
-    echo "  $0 --auto-release                   Auto-release after approval"
-    echo "  $0 -a                               Auto-release (short form)"
-    echo "  $0 --changelog \"Bug fixes\"          Deploy with changelog"
-    echo "  $0 -c \"New features added\"          Deploy with changelog (short form)"
-    echo "  $0 --changelog \"Fix\" --auto-release  Submit with changelog and auto-release"
-    echo "  $0 --help                           Show this help"
+    echo "  $0                                   Deploy to App Store and submit for review"
+    echo "  $0 --beta                            Deploy to TestFlight (beta testing)"
+    echo "  $0 -b                                Deploy to TestFlight (short form)"
+    echo "  $0 --validate-only                   Validate only (no upload)"
+    echo "  $0 --skip-review                     Upload only (don't submit for review)"
+    echo "  $0 --auto-release                    Auto-release after approval"
+    echo "  $0 --changelog \"Bug fixes\"           Deploy with changelog"
+    echo "  $0 --beta --changelog \"Fix\"          TestFlight with changelog"
+    echo "  $0 --help                            Show this help"
     echo ""
     echo "IMPORTANT NOTES:"
     echo "  • App Store Connect requires a 'What's New' description for review submissions"
@@ -437,11 +441,16 @@ BUILD=$(awk -F '+' '{ print $2 }' <<<$fVersion)
 
 echo "Building Gecko iOS IPA v${VERSION}+${BUILD}"
 echo "App identifier: ${APP_IDENTIFIER}"
-echo "Release behavior: ${APP_STORE_RELEASE_STATUS}"
-if [ "$SKIP_REVIEW" = "true" ]; then
-    echo "Submission mode: Upload only (skip review)"
+if [ "$BETA_MODE" = "true" ]; then
+    echo "Target: TestFlight (beta)"
 else
-    echo "Submission mode: Submit for review after upload"
+    echo "Target: App Store (production)"
+    echo "Release behavior: ${APP_STORE_RELEASE_STATUS}"
+    if [ "$SKIP_REVIEW" = "true" ]; then
+        echo "Submission mode: Upload only (skip review)"
+    else
+        echo "Submission mode: Submit for review after upload"
+    fi
 fi
 if [ -n "$CHANGELOG_TEXT" ]; then
     echo "Changelog: \"$CHANGELOG_TEXT\""
@@ -484,97 +493,105 @@ echo "CHANGELOG_TEXT: $CHANGELOG_TEXT"
 create_changelog_file
 echo "FASTLANE_METADATA_PATH after create_changelog_file: $FASTLANE_METADATA_PATH"
 
-# Upload to App Store Connect using fastlane deliver
-echo "Uploading to App Store Connect..."
-
-# Prepare fastlane command with authentication
+# Create API key JSON file (shared by both beta and production paths)
+TEMP_API_KEY_JSON=""
 if [ "$AUTH_METHOD" = "api_key" ]; then
-    # Create a temporary JSON file for the API key using Python for proper JSON encoding
     TEMP_API_KEY_JSON="/tmp/api_key_$$.json"
-    
-    # Use Python to create proper JSON (handles escaping automatically)
     python3 -c "
 import json
-import sys
-
-# Read the private key content
 with open('$APP_STORE_CONNECT_API_KEY_PATH', 'r') as f:
     key_content = f.read()
-
-# Create the JSON structure
 api_key_data = {
     'key_id': '$APP_STORE_CONNECT_API_KEY_ID',
     'issuer_id': '$APP_STORE_CONNECT_API_ISSUER_ID',
     'key': key_content
 }
-
-# Write the JSON file
 with open('$TEMP_API_KEY_JSON', 'w') as f:
     json.dump(api_key_data, f, indent=2)
 "
-    
-    FASTLANE_CMD="fastlane deliver \
-        --api_key_path \"$TEMP_API_KEY_JSON\" \
-        --app_identifier \"$APP_IDENTIFIER\""
-    
-    echo "Using App Store Connect API key authentication via temporary JSON file"
+    echo "Using App Store Connect API key authentication"
+fi
+
+if [ "$BETA_MODE" = "true" ]; then
+    # ── TestFlight upload (beta) ──
+    echo "Uploading to TestFlight..."
+
+    FASTLANE_CMD="fastlane pilot upload \
+        --ipa \"$IPA_PATH\" \
+        --app_identifier \"$APP_IDENTIFIER\" \
+        --skip_submission \
+        --skip_waiting_for_build_processing"
+
+    if [ -n "$TEMP_API_KEY_JSON" ]; then
+        FASTLANE_CMD="$FASTLANE_CMD --api_key_path \"$TEMP_API_KEY_JSON\""
+    else
+        FASTLANE_CMD="$FASTLANE_CMD --username \"$APPLE_ID\""
+        export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD="$APP_SPECIFIC_PASSWORD"
+    fi
+
+    if [ -n "$CHANGELOG_TEXT" ]; then
+        FASTLANE_CMD="$FASTLANE_CMD --changelog \"$CHANGELOG_TEXT\""
+    fi
+
 else
-    FASTLANE_CMD="fastlane deliver \
-        --username \"$APPLE_ID\" \
-        --app_identifier \"$APP_IDENTIFIER\""
-    # Set app-specific password environment variable
-    export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD="$APP_SPECIFIC_PASSWORD"
-fi
+    # ── App Store upload (production) ──
+    echo "Uploading to App Store Connect..."
 
-# Add common parameters
-FASTLANE_CMD="$FASTLANE_CMD \
-    --ipa \"$IPA_PATH\" \
-    --skip_screenshots \
-    --precheck_include_in_app_purchases false \
-    --reject_if_possible true"
+    if [ "$AUTH_METHOD" = "api_key" ]; then
+        FASTLANE_CMD="fastlane deliver \
+            --api_key_path \"$TEMP_API_KEY_JSON\" \
+            --app_identifier \"$APP_IDENTIFIER\""
+    else
+        FASTLANE_CMD="fastlane deliver \
+            --username \"$APPLE_ID\" \
+            --app_identifier \"$APP_IDENTIFIER\""
+        export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD="$APP_SPECIFIC_PASSWORD"
+    fi
 
-# Add changelog-related parameters
-if [ -n "$FASTLANE_METADATA_PATH" ]; then
-    echo "Including changelog and metadata in upload..."
-    FASTLANE_CMD="$FASTLANE_CMD --metadata_path \"$FASTLANE_METADATA_PATH\""
-else
-    # Only skip metadata if we're not submitting for review or no metadata is needed
-    FASTLANE_CMD="$FASTLANE_CMD --skip_metadata"
-fi
+    # Add common parameters
+    FASTLANE_CMD="$FASTLANE_CMD \
+        --ipa \"$IPA_PATH\" \
+        --skip_screenshots \
+        --precheck_include_in_app_purchases false \
+        --reject_if_possible true"
 
-# Add release behavior parameters
-if [ "$SKIP_REVIEW" = "true" ]; then
-    echo "Skipping review submission - upload only"
-elif [ "$APP_STORE_RELEASE_STATUS" = "hold" ]; then
-    echo "Configured to hold release - uploading only, not submitting for review"
-    SUBMIT_FOR_REVIEW=""
-else
-    # Default behavior or explicit submission
-    case "$APP_STORE_RELEASE_STATUS" in
-        auto)
-            if [ -n "$AUTO_RELEASE" ]; then
+    # Add changelog-related parameters
+    if [ -n "$FASTLANE_METADATA_PATH" ]; then
+        echo "Including changelog and metadata in upload..."
+        FASTLANE_CMD="$FASTLANE_CMD --metadata_path \"$FASTLANE_METADATA_PATH\""
+    else
+        FASTLANE_CMD="$FASTLANE_CMD --skip_metadata"
+    fi
+
+    # Add release behavior parameters
+    if [ "$SKIP_REVIEW" = "true" ]; then
+        echo "Skipping review submission - upload only"
+    elif [ "$APP_STORE_RELEASE_STATUS" = "hold" ]; then
+        echo "Configured to hold release - uploading only, not submitting for review"
+        SUBMIT_FOR_REVIEW=""
+    else
+        case "$APP_STORE_RELEASE_STATUS" in
+            auto)
                 FASTLANE_CMD="$FASTLANE_CMD $SUBMIT_FOR_REVIEW --automatic_release"
-            else
-                FASTLANE_CMD="$FASTLANE_CMD $SUBMIT_FOR_REVIEW --automatic_release"
-            fi
-            ;;
-        manual|*)
-            if [ -n "$AUTO_RELEASE" ]; then
-                FASTLANE_CMD="$FASTLANE_CMD $SUBMIT_FOR_REVIEW --automatic_release"
-            else
-                FASTLANE_CMD="$FASTLANE_CMD $SUBMIT_FOR_REVIEW --automatic_release false"
-            fi
-            ;;
-    esac
-fi
+                ;;
+            manual|*)
+                if [ -n "$AUTO_RELEASE" ]; then
+                    FASTLANE_CMD="$FASTLANE_CMD $SUBMIT_FOR_REVIEW --automatic_release"
+                else
+                    FASTLANE_CMD="$FASTLANE_CMD $SUBMIT_FOR_REVIEW --automatic_release false"
+                fi
+                ;;
+        esac
+    fi
 
-# Add validate_only flag if set
-if [ -n "$VALIDATE_ONLY" ]; then
-    FASTLANE_CMD="$FASTLANE_CMD $VALIDATE_ONLY"
-fi
+    # Add validate_only flag if set
+    if [ -n "$VALIDATE_ONLY" ]; then
+        FASTLANE_CMD="$FASTLANE_CMD $VALIDATE_ONLY"
+    fi
 
-# Add force flag to skip HTML preview
-FASTLANE_CMD="$FASTLANE_CMD --force"
+    # Add force flag to skip HTML preview
+    FASTLANE_CMD="$FASTLANE_CMD --force"
+fi
 
 # Execute fastlane command
 eval $FASTLANE_CMD
@@ -582,30 +599,23 @@ eval $FASTLANE_CMD
 if [ $? -eq 0 ]; then
     if [ -n "$VALIDATE_ONLY" ]; then
         echo "Validation completed successfully!"
-        echo "IPA is ready for upload to App Store Connect"
+        echo "IPA is ready for upload"
+    elif [ "$BETA_MODE" = "true" ]; then
+        echo "Successfully uploaded to TestFlight!"
+        echo "   Testeurs internes : disponible immédiatement"
+        echo "   Testeurs externes : nécessite une review Apple (~24-48h)"
     else
         echo "Successfully uploaded IPA to App Store Connect"
         echo ""
-        
-                 # Determine what happened based on configuration
-         if [ "$SKIP_REVIEW" = "true" ] || [ "$APP_STORE_RELEASE_STATUS" = "hold" ]; then
-             echo "📦 Build uploaded successfully!"
-             echo "   ⚠️  Build NOT submitted for review - you need to manually submit it:"
-             echo "   1. Go to App Store Connect"
-             echo "   2. Select your app"
-             echo "   3. Go to App Store > Prepare for Submission"
-             echo "   4. Review and submit for review"
-         else
-             # Check if auto-release is enabled
-             if [[ "$FASTLANE_CMD" == *"--automatic_release true"* ]] || [ "$APP_STORE_RELEASE_STATUS" = "auto" ]; then
-                 echo "🚀 Build submitted for review and will auto-release after approval!"
-                 echo "   Your app update will go live automatically once approved by Apple."
-             else
-                 echo "📋 Build submitted for review!"
-                 echo "   You'll need to manually release it after Apple approval."
-                 echo "   Go to App Store Connect > Your App > App Store > Prepare for Submission"
-             fi
-         fi
+        if [ "$SKIP_REVIEW" = "true" ] || [ "$APP_STORE_RELEASE_STATUS" = "hold" ]; then
+            echo "📦 Build uploaded successfully!"
+            echo "   Build NOT submitted for review - you need to manually submit it"
+        elif [[ "$FASTLANE_CMD" == *"--automatic_release"* ]] && [[ "$FASTLANE_CMD" != *"--automatic_release false"* ]]; then
+            echo "🚀 Build submitted for review and will auto-release after approval!"
+        else
+            echo "📋 Build submitted for review!"
+            echo "   You'll need to manually release it after Apple approval."
+        fi
     fi
     echo ""
     echo "Version: ${VERSION}+${BUILD}"
@@ -617,17 +627,8 @@ else
     if [ -n "$VALIDATE_ONLY" ]; then
         echo "Validation failed - please check your configuration"
     else
-        echo "❌ Failed to upload or submit IPA to App Store Connect"
-        echo ""
-        echo "Common solutions:"
-        echo "  • If missing 'whatsNew' error: The script now automatically creates required metadata"
-        echo "    → This should be fixed with the updated script version"
-        echo "    → If still failing, try: $0 --changelog \"Your update description\""
-        echo "  • If authentication error: Check your .env file credentials"
-        echo "  • If build processing error: Wait a few minutes and try again"
-        echo "  • If copyright date warning: Update your app metadata in App Store Connect"
-        echo ""
-        echo "🔍 Check the error messages above for specific details"
+        echo "❌ Failed to upload IPA"
+        echo "   Check the error messages above for details"
     fi
     exit 1
 fi

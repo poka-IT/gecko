@@ -1,180 +1,307 @@
 # Technology Stack
 
-**Project:** Gecko v0.2 -- Certification Alerts + Market Analysis
-**Researched:** 2026-03-25
+**Project:** Gecko v0.3 -- CesiumPlus Names & Federated Search
+**Researched:** 2026-03-31
+
+## Executive Summary
+
+No new Flutter packages are needed. The existing durt2 `CesiumPlusService` already has profile read/write/search capabilities via REST API, and the Squid indexer already provides ranked identity search. The work is composing these two existing data sources into a federated search provider with scoring, adding a search method to `CesiumPlusService` in durt2, and building anti-usurpation UX using standard Flutter widgets.
 
 ## Recommended Stack
 
-### No New Core Frameworks Needed
+### No New Packages Required
 
-The existing Gecko stack already contains everything required for both features. The key insight from analyzing both Gecko's codebase and Ginkgo's reference implementation is that the infrastructure (durt2 Squid GraphQL queries, Riverpod providers, certification data with `expireOn`, server-side filtered history) is already in place. The work is assembling existing primitives into new UI and provider compositions.
-
-### Core Framework (Already Present -- No Changes)
+After analyzing both Gecko's codebase and Ginkgo's reference implementation, all building blocks already exist:
 
 | Technology | Version | Purpose | Status |
 |------------|---------|---------|--------|
-| `flutter_riverpod` | ^3.2.1 | State management for new providers | Already installed |
-| `durt2` | ^1.1.1 (local override) | Blockchain SDK: cert data, filtered history, Squid GraphQL | Already installed |
-| `easy_localization` | ^3.0.8 | i18n for new UI strings | Already installed |
-| `intl` | ^0.20.0 (override) | Date formatting (DateFormat.yMMMd, etc.) | Already installed |
-| `timeago` | ^3.7.1 | Human-readable expiration countdowns | Already installed |
+| `durt2` | local override (`../durt2`) | CesiumPlus REST API (read, write, **search to add**), Squid identity search | Already installed |
+| `flutter_riverpod` | ^3.2.1 | Federated search providers, name cache providers | Already installed |
+| `easy_localization` | ^3.0.8 | Anti-usurpation tooltip strings, search UI labels | Already installed |
+| `http` | ^1.6.0 | HTTP client for CesiumPlus REST calls (used inside durt2) | Already installed |
+| `crypto` | ^3.0.7 | SHA256 hashing for CesiumPlus profile signing | Already installed |
+| `truncate` | ^3.0.1 | Display truncation for search results | Already installed |
 
-### New Package: Date Range Picker for Market Analysis
+## CesiumPlus API Endpoints (from Ginkgo Reference)
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **None -- use Flutter's built-in `showDateRangePicker`** | Flutter SDK | Date range selection for market analysis period | See rationale below |
+### REST API Structure (Elasticsearch-based)
 
-**Rationale: Use `showDateRangePicker` instead of `calendar_date_picker2`.**
+The Cesium+ pods run an Elasticsearch-backed REST API. The durt2 `CesiumPlusService` already uses this for profile CRUD. From Ginkgo's `searchProfilesV1()`:
 
-Ginkgo uses `calendar_date_picker2: ^2.0.1` for its market analysis date picker. Gecko should NOT follow this choice because:
+| Endpoint | Method | Purpose | Currently in durt2? |
+|----------|--------|---------|---------------------|
+| `GET /user/profile/{pubkey}` | GET | Fetch single profile | YES -- `getProfileByAddress()` |
+| `POST /user/profile` | POST | Create new profile | YES -- `uploadProfile()` |
+| `POST /user/profile/{pubkey}/_update` | POST | Update existing profile | YES -- `uploadProfile()` |
+| `POST /history/delete` | POST | Delete profile | YES -- `deleteProfile()` |
+| `GET /user/profile/_search?q=...` | GET | **Search profiles by title/issuer** | **NO -- needs to be added** |
+| `GET /node/summary` | GET | Test endpoint connectivity | YES -- `testEndpoint()` |
 
-1. **Gecko already uses `showDatePicker` in its transaction filters** (`lib/widgets/transaction_filters.dart`). Using the built-in Material `showDateRangePicker` maintains UI consistency with the existing filter system.
-2. **Zero new dependencies.** `showDateRangePicker` is part of Flutter's Material library. Adding `calendar_date_picker2` would add an unnecessary third-party dependency for a widget that Flutter already provides natively.
-3. **Material 3 compliance.** Flutter's built-in date range picker follows Material 3 design guidelines, which Gecko uses throughout.
-4. **Gecko's transaction filters already have `DateRangeFilter` with `startDate`/`endDate` in `TransactionFilterCriteria`.** The infrastructure for passing date ranges to `durt2`'s `TransactionFilters` is already wired up via `ServerFilteredHistoryNotifier._convertToServerFilters()`.
+### Search Endpoint Details
 
-**Confidence:** HIGH -- verified by reading both codebases.
+From Ginkgo `lib/g1/api.dart` line 1559-1560:
 
-### New Package: Share/Export for Market Analysis Results
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **None -- use Flutter's built-in `Clipboard`** | Flutter SDK | Copy markdown summary to clipboard | Already used throughout Gecko for address copying |
-
-**Rationale: Clipboard copy instead of `share_plus`.**
-
-The PROJECT.md requirement says "export/resume markdown des resultats". The simplest approach that matches Gecko's existing patterns:
-
-1. **Clipboard copy** -- Gecko already uses `Clipboard.setData()` in 5+ places (wallet headers, drawer, QR screens). Generate a markdown string and copy to clipboard with a snackbar confirmation. No new dependency.
-2. **`share_plus` is overkill** for this use case. The markdown output is text, not a file. Clipboard is the lightest path.
-3. If true native sharing is needed later, `share_plus` (^10.x) can be added in a future iteration. But for MVP, clipboard suffices.
-
-**Confidence:** MEDIUM -- the exact UX for "export" is not fully specified. Clipboard is the minimal viable approach. If platform share sheet is explicitly requested, `share_plus` would be added.
-
-### Supporting Libraries (Already Present -- No Changes)
-
-| Library | Version | Purpose | Used For |
-|---------|---------|---------|----------|
-| `markdown` | ^7.3.0 | Markdown string generation | Market analysis summary export |
-| `flutter_markdown` | ^0.7.7+1 | Markdown rendering in UI | Displaying analysis results |
-| `responsive_framework` | ^1.5.1 | Layout breakpoints | Market analysis responsive layout |
-| `riverpod_sqflite` | ^0.4.2 | Riverpod persistence | Caching cert expiration state |
-
-## durt2 APIs Already Available
-
-These durt2 APIs are the foundation. No changes to durt2 are needed.
-
-### For Certification Alerts
-
-| API | Location | What It Provides |
-|-----|----------|-----------------|
-| `SquidService.client.getCertsReceived(address)` | squid_account_queries.dart | List of received certs with `expireOn` block height and `isActive` flag |
-| `SquidService.client.getCertsSent(address)` | squid_account_queries.dart | List of sent certs with `expireOn` block height and `isActive` flag |
-| `SquidService.client.subscribeCertActivity(address)` | squid subscriptions | Real-time cert change notifications |
-| `Durt.i.storage.blocNumberToDate(expireOn, genesisTime)` | duniter_storage_service.dart | Convert block number to DateTime for expiration display |
-| `storageService.blockHeightNotifier` | duniter_storage_service.dart | Current block height for expiration calculations |
-
-### For Market Analysis
-
-| API | Location | What It Provides |
-|-----|----------|-----------------|
-| `SquidService.client.getAccountHistoryFiltered(address, filters: TransactionFilters(...))` | squid_account_queries.dart | Server-side filtered transactions with date range, amount, direction |
-| `TransactionFilters(startDate, endDate, fromAddress, toAddress, ...)` | transaction_filters.dart | Filter criteria model with full date range support |
-| `SquidFilterBuilder.buildFilterFromCriteria(address, filters)` | squid_filter_builder.dart | Converts TransactionFilters to GraphQL Input$TransferFilter |
-
-## Gecko Providers Already Available
-
-### For Certification Alerts
-
-| Provider | File | What It Does |
-|----------|------|-------------|
-| `certificationListProvider` | certification_list_providers.dart | Fetches cert list with `expireDate` (DateTime) via `blocNumberToDate()`. Already uses Squid GraphQL + real-time subscriptions. |
-| `blockHeightProvider` | block_height_provider.dart | Current block height for expiration math |
-| `genesisTimeProvider` | providers.dart | Genesis time for block-to-date conversion |
-| `hybridCertificationProvider` | stream_providers.dart | Cert count (received/sent) with real-time updates |
-
-### For Market Analysis
-
-| Provider | File | What It Does |
-|----------|------|-------------|
-| `serverFilteredHistoryProvider` | server_filtered_history_provider.dart | Server-side filtered transaction history with pagination |
-| `transactionFiltersProvider` | transaction_filters_provider.dart | Filter state management with date range, amount, address, comment |
-| `transactionHistoryProvider` | transaction_history_providers.dart | Base transaction history with pagination |
-
-## What Needs to Be Built (Providers, Not Packages)
-
-### Certification Alert Providers (New)
-
-```dart
-// 1. Cert expiration status provider -- derives alert state from existing cert list
-final certExpirationAlertProvider = Provider.family<CertExpirationAlert, ({String address, CertDirection direction})>((ref, params) {
-  final certState = ref.watch(certificationListProvider(params));
-  // Compute: how many expired, how many expiring soon (< 30 days)
-  // Return: alert level (none/warning/critical) + counts
-});
-
-// 2. Aggregate alert for home screen badge -- watches all owned wallet certs
-final homeCertAlertProvider = Provider<HomeCertAlert>((ref) {
-  // For each owned wallet address, watch certExpirationAlertProvider
-  // Return: worst alert level across all wallets + summary
-});
+```
+GET /user/profile/_search?q=title:{term_lower} OR issuer:{term} OR title:{term_capitalized} OR title:{term}
 ```
 
-### Market Analysis Providers (New)
+**Response format** (Elasticsearch hits):
+```json
+{
+  "hits": {
+    "hits": [
+      {
+        "_id": "BASE58_PUBKEY",
+        "_source": {
+          "title": "User Name",
+          "description": "...",
+          "city": "...",
+          "avatar": { "_content_type": "image/png", "_content": "base64..." },
+          "issuer": "BASE58_PUBKEY",
+          "time": 1698012284,
+          "version": 2,
+          "socials": [{"type": "twitter", "url": "..."}],
+          "geoPoint": {"lat": "48.8566", "lon": "2.3522"},
+          "tags": ["tag1"]
+        }
+      }
+    ]
+  }
+}
+```
+
+**Key observation:** The `_id` field is the **base58 pubkey** (Cesium v1 format), NOT the SS58 address. The durt2 service already handles SS58-to-base58 conversion via `_addressToPubkeyBase58()`.
+
+### Authentication for Profile Writes
+
+From durt2 `CesiumPlusService.uploadProfile()` (verified in source):
+
+1. Build JSON document with `version: 2`, `issuer: base58_pubkey`, `title`, optional fields
+2. Calculate SHA256 hash of the JSON string
+3. Sign the hash with the wallet's Ed25519 keypair (via `signFunction`)
+4. Prepend `hash` and `signature` as first JSON fields
+5. POST to `/user/profile` (create) or `/user/profile/{pubkey}/_update` (update)
+
+This mechanism is already fully implemented. For name registration when renaming a wallet, the same `uploadProfile()` method is used -- the `title` field IS the CesiumPlus name.
+
+**Confidence:** HIGH -- verified by reading durt2 source code at `lib/src/services/cesium_plus_service.dart`.
+
+## What Needs to Be Added to durt2
+
+### 1. Search Method on CesiumPlusService
+
+**Location:** `durt2/lib/src/services/cesium_plus_service.dart`
+
+The service currently lacks a search method. Add:
 
 ```dart
-// 1. Market analysis state -- manages selected contacts, date range, results
-class MarketAnalysisNotifier extends Notifier<MarketAnalysisState> {
-  // Uses existing durt2 TransactionFilters + getAccountHistoryFiltered
-  // Per-contact: fetch filtered history, compute totals
-  // Aggregate: sum across contacts, collect "other contacts"
+/// Search CesiumPlus profiles by name (title field)
+/// Returns a list of search results with pubkey, title, and metadata
+/// Uses the Elasticsearch _search endpoint
+Future<List<CesiumPlusSearchResult>> searchByName(String searchTerm) async {
+  // Build query: /user/profile/_search?q=title:{lower} OR title:{capitalized} OR title:{term}
+  // Parse Elasticsearch hits response
+  // Convert base58 pubkeys to SS58 addresses for caller
+}
+```
+
+**Data model needed:**
+
+```dart
+class CesiumPlusSearchResult {
+  final String address;      // SS58 address (converted from base58)
+  final String title;        // The CesiumPlus name
+  final String? description;
+  final String? city;
+  final int? time;           // Unix timestamp of last profile update
+}
+```
+
+**Confidence:** HIGH -- the REST endpoint is confirmed working in Ginkgo's production code.
+
+### 2. No Changes to Squid Identity Search
+
+The existing `SquidService.client.searchAddressByName()` already implements a three-tier ranked search (exact > startsWith > contains) for on-chain identity names. This is already used by `searchIdentityProvider` in Gecko. No changes needed.
+
+## Federated Search Scoring Algorithm
+
+### Architecture: No External Package Needed
+
+The search scoring is a simple weighted merge of two result sets, not a graph-based PageRank. Pure Dart computation in a Riverpod provider.
+
+### Proposed Scoring Model
+
+```dart
+enum SearchResultSource {
+  identity,     // On-chain identity (Squid indexer)
+  cesiumPlus,   // Self-declared CesiumPlus name
+  local,        // Local contacts/wallet names
 }
 
-// 2. Market analysis results -- per contact transaction summary
-// Reuses TransactionDisplayItem.fromFilteredGraphQLNode() already in Gecko
+class ScoredSearchResult {
+  final String address;
+  final String displayName;
+  final SearchResultSource source;
+  final double score;         // 0.0 to 1.0
+  final bool isVerified;      // true for on-chain identities
+}
 ```
+
+### Scoring Rules (from PROJECT.md: "identities priorisees, CesiumPlus differencies")
+
+| Source | Base Score | Match Type Bonus | Rationale |
+|--------|-----------|------------------|-----------|
+| On-chain identity | 0.8 | +0.2 exact, +0.1 startsWith, +0.0 contains | Verified on blockchain, highest trust |
+| CesiumPlus name | 0.3 | +0.2 exact, +0.1 startsWith, +0.0 contains | Self-declared, lower trust |
+| Local contact | 0.6 | +0.2 exact, +0.1 startsWith, +0.0 contains | User's own data, medium trust |
+
+**Merge logic:**
+1. Run identity search (Squid) and CesiumPlus search in parallel
+2. Score each result
+3. Deduplicate by address (keep highest-scoring source)
+4. Sort descending by score
+5. Tag each result with its source for UI differentiation
+
+**Why not a real PageRank/graph algorithm:** The search space is two flat lists (identities + CesiumPlus profiles), not a graph. A weighted scoring merge is the correct tool. PageRank would be appropriate if we were scoring based on certification graph connectivity, which is not the current requirement.
+
+**Confidence:** HIGH -- this is a straightforward weighted merge pattern.
+
+## Anti-Usurpation UX: No New Packages
+
+### Visual Differentiation Strategy
+
+Standard Flutter widgets are sufficient for the anti-usurpation UX:
+
+| UI Element | Flutter Widget | Purpose |
+|------------|---------------|---------|
+| Verified badge (checkmark) | `Icon(Icons.verified, color: Colors.blue)` | Next to on-chain identity names |
+| Self-declared indicator | `Icon(Icons.person_outline, color: Colors.grey)` | Next to CesiumPlus-only names |
+| Tooltip explanation | `Tooltip` + translation string | Explains what "verified" vs "self-declared" means |
+| Color coding | `Theme.of(context).colorScheme` variants | Different text colors for identity vs CesiumPlus names |
+| Chip/Badge | `Chip` or `Container` with label | "Identity" vs "CesiumPlus" label in search results |
+
+**Ginkgo reference:** Ginkgo does NOT currently implement anti-usurpation UX. This is a Gecko-original feature. The visual language should be:
+- **Green checkmark + bold name** for on-chain identities (verified by blockchain consensus)
+- **Grey person icon + regular weight name** for CesiumPlus names (self-declared, anyone can claim any name)
+- **Warning icon** if a CesiumPlus name matches an existing on-chain identity name (potential usurpation)
+
+**Confidence:** HIGH -- standard Flutter Material widgets, no packages needed.
+
+## Integration Points with Existing Gecko Code
+
+### Existing Providers to Modify
+
+| Provider | File | Change Needed |
+|----------|------|--------------|
+| `searchIdentityProvider` | `identity_providers.dart` | Expand to federated search: run Squid + CesiumPlus in parallel |
+| `hybridIdentityNameProvider` | `identity_providers.dart` | Fallback to CesiumPlus name when no on-chain identity found |
+| `NameByAddress` widget | `name_by_address.dart` | Show CesiumPlus name as fallback with visual differentiation |
+
+### Existing Providers Used As-Is
+
+| Provider | File | Role |
+|----------|------|------|
+| `cesiumPlusServiceProvider` | `providers.dart` | Access to CesiumPlusService for search + name write |
+| `cesiumProfileProvider` | `cesium_profile_provider.dart` | Fetch full profile (already cached by Riverpod) |
+| `avatarProvider` | `avatar_providers.dart` | Avatar fetching from CesiumPlus (already works) |
+| `walletServiceProvider` | `providers.dart` | Key pair access for signing profile updates |
+
+### New Providers Needed
+
+```dart
+// 1. CesiumPlus name search provider
+final cesiumPlusSearchProvider = FutureProvider.family<List<CesiumPlusSearchResult>, String>(
+  (ref, searchTerm) async {
+    final cesiumPlus = ref.read(cesiumPlusServiceProvider);
+    return await cesiumPlus.searchByName(searchTerm);
+  },
+);
+
+// 2. Federated search provider (merges Squid + CesiumPlus + local)
+final federatedSearchProvider = FutureProvider.family<List<ScoredSearchResult>, String>(
+  (ref, searchTerm) async {
+    // Run all three searches in parallel
+    // Score, deduplicate, sort
+  },
+);
+
+// 3. CesiumPlus name cache (persisted)
+// Uses existing cesiumProfileProvider but adds name-only caching
+final cesiumPlusNameProvider = FutureProvider.family<String?, String>(
+  (ref, address) async {
+    final profile = await ref.watch(cesiumProfileProvider(address).future);
+    return profile?['title'] as String?;
+  },
+);
+
+// 4. Name registration provider (upload name to CesiumPlus on wallet rename)
+final registerCesiumPlusNameProvider = FutureProvider.family<bool, ({String address, String name})>(
+  (ref, params) async {
+    // Use cesiumPlusService.uploadProfile() with title = name
+    // Requires PIN for key pair access
+  },
+);
+```
+
+### Wallet Rename Integration
+
+Current flow in `WalletManagementService.renameWallet()`:
+1. User renames wallet
+2. Name saved to local ObjectBox only
+
+New flow:
+1. User renames wallet
+2. Name saved to local ObjectBox
+3. **If name is NOT a default name (no `#` prefix)**: upload to CesiumPlus as profile title
+4. **If name IS a default name**: do NOT upload (don't pollute CesiumPlus with "Portefeuille principal")
+
+This matches the PROJECT.md requirement: "Enregistrement CesiumPlus quand l'utilisateur renomme un portefeuille (pas le nom par defaut)".
+
+The `WalletNameService.isDefault(name)` method already distinguishes default from custom names.
 
 ## Alternatives Considered
 
 | Category | Recommended | Alternative | Why Not |
 |----------|-------------|-------------|---------|
-| Date range picker | Flutter `showDateRangePicker` | `calendar_date_picker2` ^2.0.1 | Unnecessary dependency; Gecko already uses Material pickers; Ginkgo uses it but Gecko has different UI patterns |
-| Sharing/export | `Clipboard.setData()` | `share_plus` ^10.x | Overkill for text-only markdown export; can add later if needed |
-| Cert expiration time display | `timeago` ^3.7.1 (already installed) | Manual date diff formatting | `timeago` already used by Ginkgo for cert expiry, and already in Gecko's pubspec |
-| Transaction aggregation | In-provider Dart computation | External analytics package | Aggregation is simple (sum amounts, count transactions); no library needed |
-| Local notifications for cert expiry | Not recommended for MVP | `flutter_local_notifications` | Adds platform complexity; visual in-app alerts are sufficient first; can add later |
+| Search scoring | Weighted merge (pure Dart) | `graphs` package PageRank | Not a graph problem; two flat lists need weighted merge, not graph traversal |
+| CesiumPlus search | Add method to durt2 `CesiumPlusService` | Direct HTTP calls from Gecko | Keep all CesiumPlus API calls centralized in durt2 for consistency |
+| Anti-usurpation badges | Flutter `Icon` + `Chip` widgets | `badges` package | Overkill; standard Material icons (verified, person_outline) are sufficient |
+| Profile name cache | `FutureProvider.family` with Riverpod auto-cache | `riverpod_sqflite` persisted provider | CesiumPlus name can change; Riverpod's built-in cache with TTL is enough; persistent cache adds stale data risk |
+| Search debouncing | `Timer` in provider (already used in search) | `easy_debounce` package | Already in Flutter SDK; Ginkgo uses `easy_debounce` but Gecko's existing search uses standard Timer |
+| CesiumPlus datapod (GraphQL) | **NOT recommended** -- use REST API | Ginkgo's `duniter_datapod` package (Ferry GraphQL) | Datapod endpoints are deprecated in Ginkgo (marked `@Deprecated`); REST API is the current standard for CesiumPlus |
 
 ## Installation
 
 ```bash
 # No new packages required.
 # All dependencies are already in pubspec.yaml.
-flutter pub get
+# durt2 needs a minor addition (searchByName method) but no version bump.
 ```
 
-If native sharing is later requested:
-```bash
-# Only if clipboard export proves insufficient
-flutter pub add share_plus
-```
+## durt2 Changes Summary
+
+| Change | File | Scope |
+|--------|------|-------|
+| Add `searchByName(String)` method | `cesium_plus_service.dart` | ~50 lines: HTTP GET + response parsing |
+| Add `CesiumPlusSearchResult` model | `cesium_plus_service.dart` or new file | ~20 lines: simple data class |
+| No changes to Squid queries | -- | Identity search already works |
+| No changes to profile write methods | -- | `uploadProfile()` already handles name via `title` field |
 
 ## Confidence Assessment
 
 | Decision | Confidence | Rationale |
 |----------|------------|-----------|
-| No new packages needed | HIGH | Verified by reading both codebases: all APIs exist in durt2, all UI primitives exist in Flutter SDK + Gecko's existing dependencies |
-| `showDateRangePicker` over `calendar_date_picker2` | HIGH | Gecko already uses Material date pickers in transaction filters; consistency matters |
-| Clipboard over `share_plus` | MEDIUM | "Export/resume markdown" could mean share sheet; clipboard is MVP; share_plus can be added later |
-| `timeago` for cert expiry display | HIGH | Already in Gecko pubspec; Ginkgo uses it for same purpose; verified in code |
-| No local notifications for cert alerts | MEDIUM | Visual alerts are the stated requirement; push notifications are a natural follow-up but not in scope |
+| No new Flutter packages needed | HIGH | Verified: all capabilities exist in durt2 + Flutter SDK |
+| CesiumPlus REST search endpoint works | HIGH | Verified in Ginkgo production code (searchProfilesV1) |
+| durt2 needs search method addition | HIGH | Verified: `cesium_plus_service.dart` has no search, endpoint confirmed working |
+| Weighted merge for scoring | HIGH | Two flat result sets, not a graph; weighted merge is the correct pattern |
+| Material icons for anti-usurpation | HIGH | Standard Flutter widgets; Ginkgo has no reference for this (Gecko-original feature) |
+| Upload on rename (not on default names) | HIGH | `WalletNameService.isDefault()` already exists; `uploadProfile()` already works |
+| Datapod GraphQL NOT recommended | HIGH | Ginkgo marks datapod methods as `@Deprecated`; REST API is current |
 
 ## Sources
 
-- Gecko codebase: `lib/providers/certification_list_providers.dart`, `lib/widgets/cert_tile.dart`, `lib/providers/server_filtered_history_provider.dart`, `lib/widgets/transaction_filters.dart`
-- Ginkgo codebase: `lib/ui/widgets/certifications_page.dart`, `lib/ui/widgets/market_analysis/market_analysis_page.dart`, `lib/ui/widgets/market_analysis/simple_txs_panel.dart`, `lib/ui/ui_helpers.dart`
-- durt2 codebase: `lib/src/models/transaction_filters.dart`, `lib/src/services/squid/squid_account_queries.dart`
-- [Flutter showDateRangePicker API](https://api.flutter.dev/flutter/material/showDateRangePicker.html)
-- [calendar_date_picker2 on pub.dev](https://pub.dev/packages/calendar_date_picker2)
-- [share_plus on pub.dev](https://pub.dev/packages/share_plus)
-- [Riverpod 3.0 what's new](https://riverpod.dev/docs/whats_new)
+- **Gecko codebase:** `lib/providers/identity_providers.dart` (searchIdentityProvider, hybridIdentityNameProvider), `lib/providers/cesium_profile_provider.dart`, `lib/providers/providers.dart` (cesiumPlusServiceProvider), `lib/services/wallet_name_service.dart`, `lib/services/wallet_management_service.dart`, `lib/widgets/name_by_address.dart`, `lib/widgets/search_identity_query.dart`, `lib/widgets/search_result_list.dart`
+- **durt2 codebase:** `lib/src/services/cesium_plus_service.dart` (full REST API implementation), `lib/src/services/squid/squid_account_queries.dart` (searchAddressByName with ranked results)
+- **Ginkgo codebase:** `lib/g1/api.dart` lines 1554-1581 (searchProfilesV1 with Elasticsearch query), `lib/g1/duniter_datapod_helper.dart` (datapod marked @Deprecated), `lib/ui/ui_helpers.dart` lines 150-173 (contactFromResultSearch response parsing), `lib/ui/widgets/first_screen/contact_search_page.dart` (parallel search with WoT + CesiumPlus)
+- **Ginkgo datapod package:** `packages/duniter_datapod/lib/graphql/schema/duniter-datapod-queries.graphql` (GraphQL schema for reference, but deprecated)

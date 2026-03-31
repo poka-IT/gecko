@@ -30,11 +30,11 @@ class UniversalDividendsToggleNotifier extends Notifier<bool> {
   bool _loadFromStorage() {
     try {
       final configBox = ref.read(configBoxProvider);
-      final storedValue = configBox.getValue(_storageKey, defaultValue: 'false');
+      final storedValue = configBox.getValue(_storageKey, defaultValue: 'true');
       return storedValue == 'true';
     } catch (e) {
       log.e('Error loading UD toggle state: $e');
-      return false;
+      return true;
     }
   }
 

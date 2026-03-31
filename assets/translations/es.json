@@ -774,6 +774,7 @@
     "showBackgroundImage": "Imagen de fondo del inicio",
     "showBackgroundImageDescription": "Mostrar la imagen de fondo en la pantalla de inicio",
     "showExpiredCerts": "Expiradas",
+    "loadingCertifications": "Cargando certificaciones…",
     "revokeAdhesion": "Revocación de adhesión",
     "revokeMyIdentity": "Revocar mi identidad",
     "revoked": "Revocada",

@@ -769,6 +769,7 @@
     "showBackgroundImage": "Home background image",
     "showBackgroundImageDescription": "Display the background image on the home screen",
     "showExpiredCerts": "Expired",
+    "loadingCertifications": "Loading certifications…",
     "revokeAdhesion": "Adhesion revocation",
     "revokeMyIdentity": "Revoke my identity",
     "revoked": "Revoked",

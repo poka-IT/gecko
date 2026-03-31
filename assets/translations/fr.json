@@ -588,6 +588,7 @@
     "showBackgroundImage": "Image de fond sur l'accueil",
     "showBackgroundImageDescription": "Afficher l'image de fond sur l'écran d'accueil",
     "showExpiredCerts": "Expirées",
+    "loadingCertifications": "Chargement des certifications…",
     "advancedFilters": "Filtres avancés",
     "searchAddressOrName": "Rechercher par adresse ou identité",
     "enterAddressOrName": "Saisir adresse ou nom d'identité",

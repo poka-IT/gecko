@@ -11,10 +11,12 @@ import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
+import 'package:gecko/providers/cesium_name_provider.dart';
 import 'package:gecko/screens/certifications.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/desktop/modals/certifications_modal.dart';
 import 'package:gecko/widgets/desktop/modals/cesium_profile_modal.dart';
+import 'package:gecko/widgets/name_source_badge.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/utils/identity_utils.dart';
@@ -81,7 +83,7 @@ class WalletHeader extends ConsumerWidget {
   }
 }
 
-class WalletHeaderContent extends StatelessWidget {
+class WalletHeaderContent extends ConsumerWidget {
   const WalletHeaderContent({
     super.key,
     required this.address,
@@ -102,12 +104,17 @@ class WalletHeaderContent extends StatelessWidget {
   final String? defaultImagePath;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final balance = walletBalance?.transferableBalance;
     final isEmptyWallet = balance == null || balance == BigInt.zero;
 
     // Compute displayName: substitute with "Infinite Name" when status is created
     final displayName = IdentityUtils.getDisplayName(identityName, idtyStatus);
+
+    // For non-identity wallets, try CesiumPlus name
+    final csName = (idtyStatus == IdtyStatus.none)
+        ? ref.watch(cesiumNameProvider(address)).asData?.value
+        : null;
 
     return Hero(
       tag: 'wallet_header_$address', // Same tag as CompactWalletHeader for transition
@@ -154,11 +161,31 @@ class WalletHeaderContent extends StatelessWidget {
                           ),
                         ScaledSizedBox(height: 6),
                         Flexible(
-                          child: WalletHeaderIdentitySection(
-                            address: address,
-                            idtyStatus: idtyStatus,
-                            identityName: displayName ?? ' ',
-                          ),
+                          child: idtyStatus != IdtyStatus.none
+                              ? WalletHeaderIdentitySection(
+                                  address: address,
+                                  idtyStatus: idtyStatus,
+                                  identityName: displayName ?? ' ',
+                                )
+                              : (csName != null
+                                  ? Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            csName.length > 22 ? '${csName.substring(0, 22)}...' : csName,
+                                            style: scaledTextStyle(
+                                              fontSize: 16,
+                                              color: context.colorScheme.onSurfaceVariant,
+                                              fontWeight: FontWeight.w400,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: scaleSize(4)),
+                                        NameSourceBadge(source: NameSource.cesiumPlus),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink()),
                         ),
                       ],
                     ),
@@ -252,21 +279,32 @@ class _IdentityStatusDisplay extends StatelessWidget {
     final isCreated = IdentityUtils.isCreatedStatus(currentStatus);
 
     final nameWidget = hasIdentityName
-        ? Text(
-            identityName.length > 22 ? '${identityName.substring(0, 22)}...' : identityName,
-            style: currentStatus == IdtyStatus.validated
-                ? scaledTextStyle(
-                    fontSize: 18,
-                    color: context.colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                    fontStyle: FontStyle.normal,
-                  )
-                : scaledTextStyle(
-                    fontSize: isCreated ? 17 : 16,
-                    color: context.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                    fontStyle: FontStyle.italic,
-                  ),
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  identityName.length > 22 ? '${identityName.substring(0, 22)}...' : identityName,
+                  style: currentStatus == IdtyStatus.validated
+                      ? scaledTextStyle(
+                          fontSize: 18,
+                          color: context.colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FontStyle.normal,
+                        )
+                      : scaledTextStyle(
+                          fontSize: isCreated ? 17 : 16,
+                          color: context.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FontStyle.italic,
+                        ),
+                ),
+              ),
+              if (currentStatus == IdtyStatus.validated) ...[
+                SizedBox(width: scaleSize(4)),
+                NameSourceBadge(source: NameSource.identity),
+              ],
+            ],
           )
         : const SizedBox.shrink();
 

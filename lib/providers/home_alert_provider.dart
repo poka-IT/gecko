@@ -187,7 +187,7 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
       );
     }
 
-    if (_shouldShowMembershipAlert(info)) {
+    if (info.shouldAlertExpiringSoon) {
       final daysLeft = info.expireDate != null ? info.expireDate!.difference(DateTime.now()).inDays : 0;
       return HomeAlertState(
         priority: HomeAlertPriority.membershipExpiringSoon,
@@ -250,22 +250,6 @@ class HomeAlertNotifier extends Notifier<HomeAlertState> {
         action: HomeAlertAction.openCertList,
       );
     }
-  }
-
-  /// Returns true when membership is in the last half of the renewal window.
-  bool _shouldShowMembershipAlert(RenewalInfo info) {
-    if (info.isExpired && info.canRenew) return true;
-    if (info.expireDate == null) return false;
-
-    if (info.canRenew && info.renewalStartDate != null) {
-      final renewalWindow = info.expireDate!.difference(info.renewalStartDate!);
-      final threshold = renewalWindow ~/ 2;
-      final timeLeft = info.expireDate!.difference(DateTime.now());
-      return timeLeft <= threshold;
-    }
-
-    final daysLeft = info.expireDate!.difference(DateTime.now()).inDays;
-    return daysLeft <= 30;
   }
 }
 

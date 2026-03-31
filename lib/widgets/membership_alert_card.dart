@@ -39,12 +39,12 @@ class MembershipAlertCard extends ConsumerWidget {
             }
 
             // Expired membership (red)
-            if (info.isExpired && idtyStatus == IdtyStatus.expired) {
+            if (info.isExpired) {
               return _buildExpiredCard(context, ref, info);
             }
 
-            // Show renewal banner only in the last third of membership period
-            if (_shouldShowRenewalBanner(info)) {
+            // Expiring soon / renewal available
+            if (info.shouldAlertExpiringSoon) {
               return _buildExpiringSoonCard(context, ref, info);
             }
 
@@ -57,29 +57,6 @@ class MembershipAlertCard extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const SizedBox.shrink(),
     );
-  }
-
-  bool _isExpiringSoon(RenewalInfo info) {
-    if (info.expireDate == null || info.isExpired) return false;
-    final daysUntilExpire = info.expireDate!.difference(DateTime.now()).inDays;
-    return daysUntilExpire <= 30;
-  }
-
-  /// Show renewal banner only when in the last third of the membership period.
-  /// renewalStartDate marks 2/3 of the period, so the last third is
-  /// the second half of the [renewalStartDate, expireDate] window.
-  bool _shouldShowRenewalBanner(RenewalInfo info) {
-    if (info.isExpired && info.canRenew) return true;
-    if (info.expireDate == null) return false;
-
-    if (info.canRenew && info.renewalStartDate != null) {
-      final renewalWindow = info.expireDate!.difference(info.renewalStartDate!);
-      final bannerThreshold = renewalWindow ~/ 2;
-      final timeUntilExpire = info.expireDate!.difference(DateTime.now());
-      return timeUntilExpire <= bannerThreshold;
-    }
-
-    return _isExpiringSoon(info);
   }
 
   Widget _buildEvalPendingCard(BuildContext context, WidgetRef ref, RenewalInfo info) {
@@ -116,7 +93,9 @@ class MembershipAlertCard extends ConsumerWidget {
     final Color color;
     final IconData icon;
 
-    if (info.canRenew && !_isExpiringSoon(info)) {
+    final isExpiringSoon =
+        info.expireDate != null && !info.isExpired && info.expireDate!.difference(DateTime.now()).inDays <= 30;
+    if (info.canRenew && !isExpiringSoon) {
       // Renewal available but not yet expiring soon
       title = 'membershipRenewalAvailable'.tr();
       message = 'membershipRenewalAvailableMessage'.tr();

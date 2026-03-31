@@ -155,4 +155,22 @@ class RenewalInfo {
     this.pendingEvalEstimate,
     this.disableReason,
   });
+
+  /// Whether the membership state warrants a visible alert.
+  /// True when expired+renewable, or in the last half of the renewal window,
+  /// or within 30 days of expiration.
+  bool get shouldAlertExpiringSoon {
+    if (isExpired && canRenew) return true;
+    if (expireDate == null) return false;
+
+    if (canRenew && renewalStartDate != null) {
+      final renewalWindow = expireDate!.difference(renewalStartDate!);
+      final threshold = renewalWindow ~/ 2;
+      final timeLeft = expireDate!.difference(DateTime.now());
+      return timeLeft <= threshold;
+    }
+
+    if (isExpired) return false;
+    return expireDate!.difference(DateTime.now()).inDays <= 30;
+  }
 }

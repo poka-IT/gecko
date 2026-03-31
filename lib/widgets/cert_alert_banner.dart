@@ -13,9 +13,9 @@ import 'package:gecko/widgets/desktop/modals/certifications_modal.dart';
 
 /// A discrete, tappable banner showing the most urgent certification alert.
 ///
-/// Displays the specific person name and days left:
-/// - Red: "Certification received from {name} has expired"
-/// - Orange: "Certification received from {name} expires in {days} days"
+/// Monitors both sent and received certifications and displays the worst:
+/// - Red: expired certification
+/// - Orange: certification expiring soon
 /// - Nothing when all certs are healthy
 ///
 /// Tapping opens the certifications list.
@@ -34,7 +34,14 @@ class CertAlertBanner extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final detail = ref.watch(certAlertDetailProvider((address: address, direction: CertDirection.received)));
+    final sentDetail = ref.watch(certAlertDetailProvider((address: address, direction: CertDirection.sent)));
+    final receivedDetail = ref.watch(certAlertDetailProvider((address: address, direction: CertDirection.received)));
+
+    // Pick the worst alert: expired > expiringSoon > none
+    final detail = sentDetail.status.index >= receivedDetail.status.index ? sentDetail : receivedDetail;
+    final direction = sentDetail.status.index >= receivedDetail.status.index
+        ? CertDirection.sent
+        : CertDirection.received;
 
     if (detail.status == CertAlertStatus.none) {
       return const SizedBox.shrink();
@@ -52,13 +59,7 @@ class CertAlertBanner extends ConsumerWidget {
       CertAlertStatus.none => Icons.check,
     };
 
-    final message = switch (detail.status) {
-      CertAlertStatus.expired => 'homeAlertReceivedCertExpired'.tr(args: [detail.contactName ?? '?']),
-      CertAlertStatus.expiringSoon => 'homeAlertReceivedCertExpiringSoon'.tr(
-        args: [detail.contactName ?? '?', '${detail.daysLeft ?? '?'}'],
-      ),
-      CertAlertStatus.none => '',
-    };
+    final message = _buildMessage(detail, direction);
 
     return GestureDetector(
       onTap: () {
@@ -96,5 +97,18 @@ class CertAlertBanner extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _buildMessage(CertAlertDetail detail, CertDirection direction) {
+    final name = detail.contactName ?? '?';
+    final days = '${detail.daysLeft ?? '?'}';
+    if (direction == CertDirection.sent) {
+      return detail.status == CertAlertStatus.expired
+          ? 'homeAlertSentCertExpired'.tr(args: [name])
+          : 'homeAlertSentCertExpiringSoon'.tr(args: [name, days]);
+    }
+    return detail.status == CertAlertStatus.expired
+        ? 'homeAlertReceivedCertExpired'.tr(args: [name])
+        : 'homeAlertReceivedCertExpiringSoon'.tr(args: [name, days]);
   }
 }

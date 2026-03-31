@@ -3,7 +3,6 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/bottom_app_bar_provider.dart';
-import 'package:gecko/providers/nfc_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
@@ -177,29 +176,6 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                     await scanQr(navCtx);
                   },
                 ),
-                // NFC scan button — only shown when NFC is available
-                ...ref
-                    .watch(nfcAvailabilityProvider)
-                    .when(
-                      data: (available) => available
-                          ? [
-                              _buildNavItem(
-                                key: keyAppBarNfc,
-                                icon: Icons.nfc_rounded,
-                                isSelected: false,
-                                semanticLabel: 'Scan NFC',
-                                onTap: () async {
-                                  final navCtx = Gecko.navigatorContext;
-                                  if (navCtx == null) return;
-                                  final scanNfc = ref.read(nfcScanProvider);
-                                  await scanNfc(navCtx);
-                                },
-                              ),
-                            ]
-                          : <Widget>[],
-                      loading: () => <Widget>[],
-                      error: (_, _) => <Widget>[],
-                    ),
                 _buildNavItem(
                   key: keyAppBarSafe,
                   imagePath: 'assets/wallet.png',

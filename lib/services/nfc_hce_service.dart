@@ -110,5 +110,15 @@ class NfcHceService {
     }
   }
 
+  /// Opens the Android NFC settings page so the user can enable NFC.
+  static Future<void> openNfcSettings() async {
+    if (!_isAndroid()) return;
+    try {
+      await _channel.invokeMethod('openNfcSettings');
+    } catch (e) {
+      log.w('openNfcSettings failed: $e');
+    }
+  }
+
   static bool _isAndroid() => !kIsWeb && Platform.isAndroid;
 }

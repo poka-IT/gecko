@@ -154,6 +154,8 @@
     "nfcWriteError": "Failed to write NFC tag",
     "nfcNoTagFound": "No NFC tag found",
     "nfcReadyToScan": "Hold your device near the NFC tag or payment terminal",
+    "nfcDisabled": "NFC is turned off",
+    "nfcEnableHint": "Enable NFC to pay by tapping phones together",
     "nfcEmulating": "Waiting for payment...\nHold the buyer's phone near yours",
     "nfcReading": "Reading payment data...",
     "nfcPaymentReceived": "Payment data received",

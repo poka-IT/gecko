@@ -2,16 +2,19 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/services/nfc_hce_service.dart';
 import 'package:gecko/services/nfc_service.dart';
 
-/// Whether NFC is available on this device.
+/// NFC hardware status on this device.
 ///
-/// Returns false on desktop, web, or devices without NFC hardware.
-final nfcAvailabilityProvider = FutureProvider<bool>((ref) async {
-  return NfcService.isAvailable();
+/// Returns [NFCAvailability.not_supported] on desktop/web,
+/// [NFCAvailability.disabled] if turned off in settings,
+/// [NFCAvailability.available] if ready.
+final nfcAvailabilityProvider = FutureProvider<NFCAvailability>((ref) async {
+  return NfcService.checkAvailability();
 });
 
 /// Whether HCE (Host Card Emulation) is supported (Android only).
@@ -45,7 +48,6 @@ class NfcSessionNotifier extends Notifier<NfcSessionData> {
 
   @override
   NfcSessionData build() {
-    // Listen to HCE events from native side (Android only)
     if (!kIsWeb && Platform.isAndroid) {
       _eventSub = NfcHceService.eventStream.listen(_onHceEvent);
       ref.onDispose(() {
@@ -80,7 +82,6 @@ class NfcSessionNotifier extends Notifier<NfcSessionData> {
     state = state.copyWith(state: NfcSessionState.polling);
     final success = await NfcHceService.startReaderMode(timeoutMs: timeoutMs);
     if (!success) {
-      // Fallback to flutter_nfc_kit poll for iOS
       state = state.copyWith(state: NfcSessionState.reading);
       final result = await NfcService.readFromHceDevice();
       if (result != null) {
@@ -97,7 +98,6 @@ class NfcSessionNotifier extends Notifier<NfcSessionData> {
     state = const NfcSessionData();
   }
 
-  /// Reset to idle state.
   void reset() {
     state = const NfcSessionData();
   }

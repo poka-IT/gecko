@@ -124,6 +124,8 @@
     "nfcWriteError": "Malsukcesis skribi NFC-etikedon",
     "nfcNoTagFound": "Neniu NFC-etikedo trovita",
     "nfcReadyToScan": "Proksimigu vian aparaton al la NFC-etikedo aŭ pagterminalo",
+    "nfcDisabled": "NFC estas malŝaltita",
+    "nfcEnableHint": "Aktivigu NFC por pagi tuŝante telefonojn",
     "nfcEmulating": "Atendante pagon...\nProksimumu la telefonon de la aĉetanto",
     "nfcReading": "Legante pagdatenojn...",
     "nfcPaymentReceived": "Pagdatenoj ricevitaj",

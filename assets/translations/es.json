@@ -159,6 +159,8 @@
     "nfcWriteError": "Error al escribir la etiqueta NFC",
     "nfcNoTagFound": "No se encontró ninguna etiqueta NFC",
     "nfcReadyToScan": "Acerque su dispositivo a la etiqueta NFC o al terminal de pago",
+    "nfcDisabled": "NFC está desactivado",
+    "nfcEnableHint": "Active NFC para pagar acercando los teléfonos",
     "nfcEmulating": "Esperando pago...\nAcerque el teléfono del comprador",
     "nfcReading": "Leyendo datos de pago...",
     "nfcPaymentReceived": "Datos de pago recibidos",

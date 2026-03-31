@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
+import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -215,9 +216,9 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
                       ),
                     ),
                     const Spacer(flex: 2),
-                    // NFC buttons — only shown when NFC is available
+                    // NFC buttons — only shown when NFC hardware is available and enabled
                     nfcAvailable.when(
-                      data: (available) => available
+                      data: (availability) => availability == NFCAvailability.available
                           ? Column(
                               children: [
                                 // HCE receive button (Android only — phone acts as NFC card)

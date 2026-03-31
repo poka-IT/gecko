@@ -7,8 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/main.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/nfc_providers.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/nfc_hce_service.dart';
 import 'package:gecko/services/contact_service.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/identicon_service.dart';
@@ -130,15 +133,78 @@ final paymentPrefillProvider = NotifierProvider<PaymentPrefillNotifier, ({double
   PaymentPrefillNotifier.new,
 );
 
-/// Provider for QR code scanning functionality
+/// Provider for scan functionality (QR code + NFC).
+///
+/// If NFC is available, shows a bottom sheet letting the user choose
+/// between QR scan and NFC scan. If NFC is disabled, offers to open settings.
+/// If NFC is not supported, goes directly to QR scan.
 final qrScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
   return (BuildContext context) async {
-    final qrScannerService = ref.read(qrScannerServiceProvider);
+    final nfcAsync = ref.read(nfcAvailabilityProvider);
+    final nfcStatus = nfcAsync.whenOrNull(data: (v) => v) ?? NFCAvailability.not_supported;
 
+    // If NFC is available or disabled, show choice bottom sheet
+    if (nfcStatus != NFCAvailability.not_supported) {
+      final choice = await _showScanChoiceSheet(context, nfcStatus);
+      if (choice == null || !context.mounted) return;
+
+      if (choice == _ScanChoice.nfc) {
+        final scanNfc = ref.read(nfcScanProvider);
+        await scanNfc(context);
+        return;
+      }
+      if (choice == _ScanChoice.enableNfc) {
+        await NfcHceService.openNfcSettings();
+        return;
+      }
+      // choice == _ScanChoice.qr → fall through to QR scan
+    }
+
+    final qrScannerService = ref.read(qrScannerServiceProvider);
     final result = await qrScannerService.scanQrCode(context);
+    if (!context.mounted) return;
     _handleScanResult(ref, context, result);
   };
 });
+
+enum _ScanChoice { qr, nfc, enableNfc }
+
+/// Shows a bottom sheet with QR and NFC scan options.
+Future<_ScanChoice?> _showScanChoiceSheet(BuildContext context, NFCAvailability nfcStatus) {
+  return showModalBottomSheet<_ScanChoice>(
+    context: context,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: scaleSize(12)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.qr_code_scanner, size: scaleSize(28)),
+              title: Text('scanQRCode'.tr().replaceAll('\n', ' '), style: scaledTextStyle(fontSize: 16)),
+              onTap: () => Navigator.pop(ctx, _ScanChoice.qr),
+            ),
+            if (nfcStatus == NFCAvailability.available)
+              ListTile(
+                leading: Icon(Icons.nfc_rounded, size: scaleSize(28)),
+                title: Text('nfcScan'.tr().replaceAll('\n', ' '), style: scaledTextStyle(fontSize: 16)),
+                onTap: () => Navigator.pop(ctx, _ScanChoice.nfc),
+              ),
+            if (nfcStatus == NFCAvailability.disabled)
+              ListTile(
+                leading: Icon(Icons.nfc_rounded, size: scaleSize(28), color: Theme.of(ctx).colorScheme.outline),
+                title: Text('nfcDisabled'.tr(), style: scaledTextStyle(fontSize: 16)),
+                subtitle: Text('nfcEnableHint'.tr(), style: scaledTextStyle(fontSize: 13)),
+                trailing: Icon(Icons.settings, size: scaleSize(20)),
+                onTap: () => Navigator.pop(ctx, _ScanChoice.enableNfc),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
 /// Provider for NFC scanning functionality.
 ///

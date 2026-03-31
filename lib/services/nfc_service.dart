@@ -17,15 +17,18 @@ class NfcService {
   static const _g1nkgoAid = 'F047314E4B474F';
   static final _selectApdu = '00A404000707${_g1nkgoAid}00';
 
-  /// Returns true if NFC is available on this device.
-  static Future<bool> isAvailable() async {
-    if (!_isMobilePlatform()) return false;
+  /// Checks NFC hardware status on this device.
+  ///
+  /// Returns [NFCAvailability.not_supported] on desktop/web or no hardware,
+  /// [NFCAvailability.disabled] if hardware exists but is turned off,
+  /// [NFCAvailability.available] if ready to use.
+  static Future<NFCAvailability> checkAvailability() async {
+    if (!_isMobilePlatform()) return NFCAvailability.not_supported;
     try {
-      final availability = await FlutterNfcKit.nfcAvailability;
-      return availability == NFCAvailability.available;
+      return await FlutterNfcKit.nfcAvailability;
     } catch (e) {
       log.w('NFC availability check failed: $e');
-      return false;
+      return NFCAvailability.not_supported;
     }
   }
 

@@ -148,6 +148,8 @@
     "nfcWriteError": "NFC-Tag konnte nicht beschrieben werden",
     "nfcNoTagFound": "Kein NFC-Tag gefunden",
     "nfcReadyToScan": "Halten Sie Ihr Gerät an den NFC-Tag oder das Zahlungsterminal",
+    "nfcDisabled": "NFC ist deaktiviert",
+    "nfcEnableHint": "Aktivieren Sie NFC, um per Berührung zu bezahlen",
     "nfcEmulating": "Warte auf Zahlung...\nHalten Sie das Telefon des Käufers in die Nähe",
     "nfcReading": "Zahlungsdaten werden gelesen...",
     "nfcPaymentReceived": "Zahlungsdaten empfangen",

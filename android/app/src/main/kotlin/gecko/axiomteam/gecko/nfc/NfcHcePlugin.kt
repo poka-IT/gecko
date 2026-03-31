@@ -1,8 +1,10 @@
 package gecko.axiomteam.gecko.nfc
 
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.nfc.NfcAdapter
+import android.provider.Settings
 import android.nfc.Tag
 import android.nfc.cardemulation.CardEmulation
 import android.nfc.tech.IsoDep
@@ -114,6 +116,10 @@ class NfcHcePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAwa
                 startReaderMode(timeoutMs, result)
             }
             "stopReaderMode" -> { stopReaderMode(); result.success(true) }
+            "openNfcSettings" -> {
+                activity?.startActivity(Intent(Settings.ACTION_NFC_SETTINGS))
+                result.success(true)
+            }
             "setKeepScreenOn" -> {
                 val keepOn = call.argument<Boolean>("keepOn") ?: false
                 setKeepScreenOn(keepOn)

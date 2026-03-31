@@ -11,6 +11,7 @@ import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/nfc_providers.dart';
 import 'package:gecko/routes.dart';
+import 'package:gecko/services/config_service.dart';
 import 'package:gecko/services/nfc_hce_service.dart';
 import 'package:gecko/services/contact_service.dart';
 import 'package:gecko/services/navigation_service.dart';
@@ -135,37 +136,65 @@ final paymentPrefillProvider = NotifierProvider<PaymentPrefillNotifier, ({double
 
 /// Provider for scan functionality (QR code + NFC).
 ///
-/// If NFC is available, shows a bottom sheet letting the user choose
-/// between QR scan and NFC scan. If NFC is disabled, offers to open settings.
-/// If NFC is not supported, goes directly to QR scan.
+/// Respects the user's scan preference from settings:
+/// - 'qr': directly opens QR scanner
+/// - 'nfc': directly opens NFC scanner
+/// - 'ask' (default): shows a choice bottom sheet
+///
+/// If NFC is not supported on the device, always goes to QR.
 final qrScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
   return (BuildContext context) async {
     final nfcAsync = ref.read(nfcAvailabilityProvider);
     final nfcStatus = nfcAsync.whenOrNull(data: (v) => v) ?? NFCAvailability.not_supported;
+    final config = ConfigService(configBox);
+    final defaultAction = config.scanDefaultAction;
 
-    // If NFC is available or disabled, show choice bottom sheet
-    if (nfcStatus != NFCAvailability.not_supported) {
-      final choice = await _showScanChoiceSheet(context, nfcStatus);
-      if (choice == null || !context.mounted) return;
+    // If NFC is not supported at all, always QR
+    if (nfcStatus == NFCAvailability.not_supported) {
+      await _doQrScan(ref, context);
+      return;
+    }
 
-      if (choice == _ScanChoice.nfc) {
-        final scanNfc = ref.read(nfcScanProvider);
-        await scanNfc(context);
-        return;
-      }
-      if (choice == _ScanChoice.enableNfc) {
+    // Respect user preference
+    if (defaultAction == 'qr') {
+      await _doQrScan(ref, context);
+      return;
+    }
+    if (defaultAction == 'nfc') {
+      if (nfcStatus == NFCAvailability.disabled) {
         await NfcHceService.openNfcSettings();
         return;
       }
-      // choice == _ScanChoice.qr → fall through to QR scan
+      final scanNfc = ref.read(nfcScanProvider);
+      await scanNfc(context);
+      return;
     }
 
-    final qrScannerService = ref.read(qrScannerServiceProvider);
-    final result = await qrScannerService.scanQrCode(context);
-    if (!context.mounted) return;
-    _handleScanResult(ref, context, result);
+    // defaultAction == 'ask': show choice bottom sheet
+    final choice = await _showScanChoiceSheet(context, nfcStatus);
+    if (choice == null || !context.mounted) return;
+
+    if (choice == _ScanChoice.nfc) {
+      final scanNfc = ref.read(nfcScanProvider);
+      await scanNfc(context);
+      return;
+    }
+    if (choice == _ScanChoice.enableNfc) {
+      await NfcHceService.openNfcSettings();
+      return;
+    }
+    // choice == _ScanChoice.qr
+    await _doQrScan(ref, context);
   };
 });
+
+/// Performs a QR scan and handles the result.
+Future<void> _doQrScan(Ref ref, BuildContext context) async {
+  final qrScannerService = ref.read(qrScannerServiceProvider);
+  final result = await qrScannerService.scanQrCode(context);
+  if (!context.mounted) return;
+  _handleScanResult(ref, context, result);
+}
 
 enum _ScanChoice { qr, nfc, enableNfc }
 

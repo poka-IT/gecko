@@ -160,6 +160,10 @@ class ConfigService {
   bool get expertMode => (_box.get('expertMode') as bool?) ?? false;
   set expertMode(bool value) => _box.put('expertMode', value);
 
+  /// Scan button default action: 'ask' (show choice), 'qr' (direct QR), 'nfc' (direct NFC).
+  String get scanDefaultAction => (_box.get('scanDefaultAction') as String?) ?? 'ask';
+  set scanDefaultAction(String value) => _box.put('scanDefaultAction', value);
+
   /// Sentry error-reporting toggle (defaults to true).
   bool get sentryEnabled => (_box.get('sentryEnabled') as bool?) ?? true;
   set sentryEnabled(bool value) => _box.put('sentryEnabled', value);

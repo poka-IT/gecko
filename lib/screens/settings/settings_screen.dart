@@ -13,6 +13,7 @@ import 'package:gecko/screens/settings/widgets/expert_mode_setting.dart';
 import 'package:gecko/screens/settings/widgets/language_setting.dart';
 import 'package:gecko/screens/settings/widgets/mnemonic_language_setting.dart';
 import 'package:gecko/screens/settings/widgets/network_section.dart';
+import 'package:gecko/screens/settings/widgets/scan_default_action_setting.dart';
 import 'package:gecko/screens/settings/widgets/sentry_setting.dart';
 import 'package:gecko/screens/settings/widgets/text_size_setting.dart';
 import 'package:gecko/screens/settings/widgets/theme_setting.dart';
@@ -125,6 +126,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
                     child: const SentrySetting(),
+                  ),
+                ),
+                ScaledSizedBox(height: isSmallScreen ? 12 : 16),
+
+                // Carte action par défaut du bouton scan (QR / NFC / Demander)
+                SettingsCard(
+                  child: Padding(
+                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+                    child: const ScanDefaultActionSetting(),
                   ),
                 ),
                 ScaledSizedBox(height: isSmallScreen ? 12 : 16),

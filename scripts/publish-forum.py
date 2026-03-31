@@ -21,7 +21,9 @@ linux_arm64_job_id = os.getenv('LINUX_ARM64_JOB_ID', '')
 windows_x64_job_id = os.getenv('WINDOWS_X64_JOB_ID', '')
 macos_job_id = os.getenv('MACOS_JOB_ID', '')
 ci_project_url = os.getenv('CI_PROJECT_URL', '')
+ci_commit_tag = os.getenv('CI_COMMIT_TAG', '')
 forum_mode = os.getenv('FORUM_MODE', 'complete')
+is_beta = '-beta' in ci_commit_tag
 
 # Read base message from file
 with open('/tmp/message.txt', 'r') as f:
@@ -95,10 +97,19 @@ else:
         optional_desktop_lines += f"\n\n• **[Windows Desktop - Installeur]({windows_x64_base_url}/gecko-{version}-windows-x64-setup.exe)** (x64, recommandé)"
         optional_desktop_lines += f"\n\n• **[Windows Desktop - Portable (zip)]({windows_x64_base_url}/gecko-{version}-windows-x64.zip)** (x64)"
 
+    if is_beta:
+        beta_header = f"""⚠️ **Version BETA {version_only}** — Cette version est en cours de test.
+
+Merci à ceux qui prennent le temps de la tester et de remonter les éventuels problèmes !
+Pour rejoindre le programme beta sur le Play Store : [s'inscrire ici](https://play.google.com/apps/testing/fr.axiomteam.gecko)"""
+        play_store_note = "disponible pour les beta-testeurs"
+    else:
+        beta_header = ""
+        play_store_note = "disponible sous 24-48h"
+
+    beta_section = f"\n{beta_header}\n" if is_beta else ""
     complete_message = f"""{base_message}
-
-This is a **BETA** release for ĞTest network.
-
+{beta_section}
 **Downloads:**
 
 <div style="display: flex; align-items: center; gap: 8px;">
@@ -112,7 +123,7 @@ This is a **BETA** release for ĞTest network.
 
 • **[Download x86_64 APK]({apk_base_url}/gecko-{version}-x86_64.apk)** (émulateurs)
 
-• **[Google Play Store](https://play.google.com/store/apps/details?id=fr.axiomteam.gecko)** (disponible sous 24-48h)
+• **[Google Play Store](https://play.google.com/store/apps/details?id=fr.axiomteam.gecko)** ({play_store_note})
 
 🍎 **iOS:**
 

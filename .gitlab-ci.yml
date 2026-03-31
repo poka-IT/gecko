@@ -131,7 +131,9 @@ publish:forum:complete:
     - job: deploy:android:playstore
     # - job: deploy:ios:appstore
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ # Production tags only (not beta)
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ # Production release
+      when: on_success
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-beta/ # Beta release
       when: on_success
   script:
     - export VERSION=$(cat artifacts/version.txt)
@@ -142,7 +144,12 @@ publish:forum:complete:
     # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
     # Fetch all tags for changelog generation
     - git fetch --tags --unshallow || git fetch --tags
-    - echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
+    - |
+      if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-beta'; then
+        echo "🧪 Nouvelle version BETA ${VERSION} de Gecko" > /tmp/message.txt
+      else
+        echo "New version ${VERSION} of Gecko mobile" > /tmp/message.txt
+      fi
     - python3 scripts/publish-forum.py
   tags:
     - docker

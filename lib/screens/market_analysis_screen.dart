@@ -10,6 +10,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/services/market_analysis_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
+import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/widgets/market_analysis/analysis_results.dart';
 import 'package:gecko/widgets/market_analysis/contact_selector.dart';
 import 'package:gecko/widgets/market_analysis/date_range_selector.dart';
@@ -66,6 +67,10 @@ class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Collapsible info banner
+              const _MarketAnalysisInfoBanner(),
+              ScaledSizedBox(height: 12),
+
               // Step 1: Date range selection
               DateRangeSelector(
                 onDateRangeSelected: (start, end) {
@@ -125,6 +130,78 @@ class _MarketAnalysisScreenState extends ConsumerState<MarketAnalysisScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('marketAnalysis'.tr())),
       body: body,
+    );
+  }
+}
+
+/// Collapsible info banner explaining what market analysis does.
+class _MarketAnalysisInfoBanner extends StatefulWidget {
+  const _MarketAnalysisInfoBanner();
+
+  @override
+  State<_MarketAnalysisInfoBanner> createState() => _MarketAnalysisInfoBannerState();
+}
+
+class _MarketAnalysisInfoBannerState extends State<_MarketAnalysisInfoBanner> with SingleTickerProviderStateMixin {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final borderColor = colorScheme.primary.withValues(alpha: 0.25);
+    final bgColor = colorScheme.primary.withValues(alpha: 0.06);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          // Header — always visible, tappable
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: scaleSize(14), vertical: scaleSize(12)),
+              child: Row(
+                children: [
+                  Icon(Icons.lightbulb_outline, size: scaleSize(20), color: colorScheme.primary),
+                  ScaledSizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'marketAnalysisInfoTitle'.tr(),
+                      style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: colorScheme.primary),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _isExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(Icons.expand_more, size: scaleSize(20), color: colorScheme.primary),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Body — collapsible
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: EdgeInsets.fromLTRB(scaleSize(14), 0, scaleSize(14), scaleSize(14)),
+              child: TextMarkDown(
+                'marketAnalysisInfoBody'.tr(),
+                style: scaledTextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.8)),
+              ),
+            ),
+            crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+          ),
+        ],
+      ),
     );
   }
 }

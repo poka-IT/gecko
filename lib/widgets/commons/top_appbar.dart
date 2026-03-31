@@ -3,9 +3,10 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 
 class GeckoAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const GeckoAppBar(this.text, {super.key});
+  const GeckoAppBar(this.text, {super.key, this.bottom});
 
   final String text;
+  final PreferredSizeWidget? bottom;
 
   @override
   AppBar build(BuildContext context) {
@@ -21,9 +22,10 @@ class GeckoAppBar extends StatelessWidget implements PreferredSizeWidget {
           color: context.colorScheme.onSecondaryContainer,
         ),
       ),
+      bottom: bottom,
     );
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(scaleSize(57));
+  Size get preferredSize => Size.fromHeight(scaleSize(57) + (bottom?.preferredSize.height ?? 0));
 }

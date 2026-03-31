@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/main.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
+import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/contact_service.dart';
 import 'package:gecko/services/navigation_service.dart';
@@ -138,17 +142,65 @@ final qrScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
 
 /// Provider for NFC scanning functionality.
 ///
-/// Uses flutter_nfc_kit which auto-detects both NDEF tags and HCE devices.
-/// When an ISO-DEP tag without NDEF is found, sends SELECT APDU with G1NKGO
-/// AID for cross-app compatibility with Ginkgo.
+/// Shows a dialog on Android during polling (iOS has its own system dialog).
+/// Auto-detects both NDEF tags and HCE devices.
 final nfcScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
   return (BuildContext context) async {
     final qrScannerService = ref.read(qrScannerServiceProvider);
+
+    // On Android, show a scanning dialog (iOS has a native system dialog)
+    final isAndroid = !kIsWeb && Platform.isAndroid;
+    if (isAndroid && context.mounted) {
+      _showNfcScanDialog(context);
+    }
+
     final result = await qrScannerService.readNfc();
+
+    // Dismiss the Android dialog
+    if (isAndroid) {
+      final navCtx = Gecko.navigatorContext;
+      if (navCtx != null && Navigator.canPop(navCtx)) {
+        Navigator.pop(navCtx);
+      }
+    }
+
     if (!context.mounted) return;
+
+    if (result.isCancelled) {
+      SnackbarService.showMessage(context, message: 'nfcNoTagFound'.tr(), duration: 2);
+      return;
+    }
+
     _handleScanResult(ref, context, result);
   };
 });
+
+/// Shows a modal dialog during NFC polling on Android.
+void _showNfcScanDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ScaledSizedBox(height: 16),
+          Icon(Icons.nfc_rounded, size: scaleSize(48), color: Theme.of(ctx).colorScheme.primary),
+          ScaledSizedBox(height: 16),
+          Text(
+            'nfcReadyToScan'.tr(),
+            textAlign: TextAlign.center,
+            style: scaledTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          ScaledSizedBox(height: 8),
+          SizedBox(width: scaleSize(32), height: scaleSize(32), child: const CircularProgressIndicator(strokeWidth: 2)),
+          ScaledSizedBox(height: 16),
+        ],
+      ),
+    ),
+  );
+}
 
 /// Shared handler for QR and NFC scan results.
 void _handleScanResult(Ref ref, BuildContext context, QrScanResult result) {

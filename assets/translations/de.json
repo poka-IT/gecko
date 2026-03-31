@@ -147,6 +147,7 @@
     "nfcWriteSuccess": "Adresse auf NFC-Tag geschrieben",
     "nfcWriteError": "NFC-Tag konnte nicht beschrieben werden",
     "nfcNoTagFound": "Kein NFC-Tag gefunden",
+    "nfcReadyToScan": "Halten Sie Ihr Gerät an den NFC-Tag oder das Zahlungsterminal",
     "nfcEmulating": "Warte auf Zahlung...\nHalten Sie das Telefon des Käufers in die Nähe",
     "nfcReading": "Zahlungsdaten werden gelesen...",
     "nfcPaymentReceived": "Zahlungsdaten empfangen",

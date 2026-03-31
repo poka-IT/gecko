@@ -131,8 +131,8 @@ publish:forum:complete:
     - job: deploy:android:playstore
     # - job: deploy:ios:appstore
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v/
-      when: on_success # Automatique si tous les jobs précédents réussissent
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ # Production tags only (not beta)
+      when: on_success
   script:
     - export VERSION=$(cat artifacts/version.txt)
     - export APK_JOB_ID=$(cat artifacts/apk_job_id.txt)
@@ -431,6 +431,22 @@ deploy:android:playstore:
     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
 
+    # Determine Play Store track from tag name:
+    #   v1.2.3-beta or v1.2.3-beta.1 → beta track
+    #   v1.2.3                        → production track
+    # Can be overridden with GOOGLE_PLAY_TRACK CI variable
+    - |
+      if [ -z "$GOOGLE_PLAY_TRACK" ]; then
+        if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-beta'; then
+          export PLAY_TRACK="beta"
+        else
+          export PLAY_TRACK="production"
+        fi
+      else
+        export PLAY_TRACK="$GOOGLE_PLAY_TRACK"
+      fi
+    - echo "Deploying to Play Store track: $PLAY_TRACK"
+
     # Create Google Play API key file from base64 encoded CI variable
     - echo "$GOOGLE_PLAY_JSON_KEY_BASE64" | base64 -d > google-play-key.json
 
@@ -438,7 +454,7 @@ deploy:android:playstore:
     - |
       fastlane supply \
         --aab "artifacts/android/gecko-${VERSION}+${BUILD}.aab" \
-        --track "${GOOGLE_PLAY_TRACK:-internal}" \
+        --track "$PLAY_TRACK" \
         --package_name "$ANDROID_PACKAGE_NAME" \
         --json_key "google-play-key.json" \
         --release_status "${GOOGLE_PLAY_RELEASE_STATUS:-completed}" \
@@ -522,8 +538,10 @@ release:gitlab:
       optional: true
     # - job: build:macos
     - job: publish:forum:complete
+      optional: true # Not triggered for beta releases
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v/
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/ # Production tags only
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+-beta/ # Beta tags (pre-release)
     - when: never
   script:
     - apk update && apk add git

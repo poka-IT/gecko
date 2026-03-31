@@ -128,9 +128,15 @@ create_changelog_file() {
 parse_arguments() {
     VALIDATE_ONLY=""
     CHANGELOG_TEXT=""
-    
+    BETA_MODE=""
+
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --beta|-b)
+                BETA_MODE="true"
+                echo "Beta mode: will deploy to beta track..."
+                shift
+                ;;
             --validate-only|-v)
                 VALIDATE_ONLY="--validate_only"
                 echo "Running in validation mode (no actual upload)..."
@@ -165,13 +171,15 @@ show_help() {
     echo "Android Google Play Store Deployment Script"
     echo ""
     echo "USAGE:"
-    echo "  $0                                    Deploy to Google Play Store"
-    echo "  $0 --validate-only                   Validate only (no upload)"
-    echo "  $0 -v                                Validate only (short form)"
-    echo "  $0 --changelog \"Bug fixes\"           Deploy with changelog"
-    echo "  $0 -c \"New features added\"           Deploy with changelog (short form)"
-    echo "  $0 --changelog \"Fix\" --validate-only  Validate with changelog"
-    echo "  $0 --help                            Show this help"
+    echo "  $0                                    Deploy to production track"
+    echo "  $0 --beta                             Deploy to beta track"
+    echo "  $0 -b                                 Deploy to beta track (short form)"
+    echo "  $0 --validate-only                    Validate only (no upload)"
+    echo "  $0 -v                                 Validate only (short form)"
+    echo "  $0 --changelog \"Bug fixes\"            Deploy with changelog"
+    echo "  $0 -c \"New features added\"            Deploy with changelog (short form)"
+    echo "  $0 --beta --changelog \"Fix\"           Beta deploy with changelog"
+    echo "  $0 --help                             Show this help"
     echo ""
     echo "ENVIRONMENT VARIABLES:"
     echo "  GOOGLE_PLAY_JSON_KEY_PATH   Path to Google Play service account JSON key"
@@ -232,9 +240,11 @@ if [ ! -f "$GOOGLE_PLAY_JSON_KEY_PATH" ]; then
     exit 1
 fi
 
-# Set default track if not specified
-if [ -z "$GOOGLE_PLAY_TRACK" ]; then
-    GOOGLE_PLAY_TRACK="internal"
+# Set track: --beta flag overrides .env, .env overrides default
+if [ -n "$BETA_MODE" ]; then
+    GOOGLE_PLAY_TRACK="beta"
+elif [ -z "$GOOGLE_PLAY_TRACK" ]; then
+    GOOGLE_PLAY_TRACK="production"
 fi
 
 # Set default release status if not specified

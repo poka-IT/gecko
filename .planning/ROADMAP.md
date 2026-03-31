@@ -35,7 +35,13 @@
   3. Profile view for a CesiumPlus-only wallet shows an explicit "self-declared name" label
   4. CesiumPlus names remain visible when the app is offline (persisted in Hive)
   5. A CesiumPlus name that exactly matches an existing on-chain identity name triggers a visible warning
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Foundation: cesiumNameProvider, NameSourceBadge widget, conflict detection provider, translation keys
+- [ ] 03-02-PLAN.md — NameByAddress CesiumPlus fallback with Hive persistence + call site opt-in
+- [ ] 03-03-PLAN.md — Profile view trust labels, WalletHeader CesiumPlus display, conflict warning, visual verification
+
 **UI hint**: yes
 
 ### Phase 4: Hybrid Search
@@ -70,6 +76,6 @@ Phases execute in numeric order: 3 → 4 → 5
 |-------|-----------|----------------|--------|-----------|
 | 1. Certification Alerts | v0.2 | 2/2 | Complete | 2026-03-25 |
 | 2. Market Analysis | v0.2 | 2/2 | Complete | 2026-03-25 |
-| 3. Trust Visual System & Name Display | v0.3 | 0/? | Not started | - |
+| 3. Trust Visual System & Name Display | v0.3 | 0/3 | Not started | - |
 | 4. Hybrid Search | v0.3 | 0/? | Not started | - |
 | 5. CesiumPlus Name Registration | v0.3 | 0/? | Not started | - |

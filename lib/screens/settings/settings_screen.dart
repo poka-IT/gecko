@@ -202,3 +202,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 }
+
+/// Wraps the NFC scan settings card so the entire card is hidden when NFC is not supported.
+class _NfcSettingsCardWrapper extends ConsumerWidget {
+  const _NfcSettingsCardWrapper();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nfcStatus = ref.watch(nfcAvailabilityProvider);
+    return nfcStatus.when(
+      data: (availability) {
+        if (availability == NFCAvailability.not_supported) return const SizedBox.shrink();
+        final isSmallScreen = MediaQuery.of(context).size.height < 700;
+        return SettingsCard(
+          child: Padding(
+            padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
+            child: const ScanDefaultActionSetting(),
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+}

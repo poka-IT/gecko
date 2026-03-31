@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:durt2/durt2.dart' show IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
@@ -10,11 +11,13 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/nfc_providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/services/nfc_service.dart';
 import 'package:gecko/services/payment_uri_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
+import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
@@ -87,39 +90,107 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
     }
   }
 
+  /// Whether the wallet at this address has an identity (created, confirmed, or member).
+  bool get _hasIdentity {
+    final idtyAsync = ref.watch(hybridIdtyStatusProvider(widget.address));
+    final status = idtyAsync.hasValue ? idtyAsync.value : IdtyStatus.none;
+    return status != IdtyStatus.none && status != IdtyStatus.unknown;
+  }
+
+  void _showNfcInfoDialog(BuildContext context) {
+    final infoKey = _hasIdentity ? 'nfcTagInfoIdentity' : 'nfcTagInfoAnonymous';
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.nfc_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
+            ScaledSizedBox(width: 10),
+            Expanded(
+              child: Text('nfcTagInfoTitle'.tr(), style: scaledTextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: TextMarkDown(
+            infoKey.tr(),
+            style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+            textAlign: WrapAlignment.start,
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text('close'.tr()))],
+      ),
+    );
+  }
+
+  Widget _buildNfcButtonRow({
+    required Key key,
+    required IconData icon,
+    required String label,
+    required VoidCallback? onPressed,
+    required bool isLoading,
+    required Color backgroundColor,
+    required Color foregroundColor,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: scaleSize(12)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ScaledSizedBox(
+            width: 220,
+            height: 50,
+            child: ElevatedButton.icon(
+              key: key,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: backgroundColor,
+                foregroundColor: foregroundColor,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              onPressed: onPressed,
+              icon: isLoading
+                  ? SizedBox(
+                      width: scaleSize(18),
+                      height: scaleSize(18),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: foregroundColor),
+                    )
+                  : Icon(icon, size: scaleSize(20)),
+              label: Text(
+                label,
+                style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          ScaledSizedBox(width: 6),
+          InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => _showNfcInfoDialog(context),
+            child: Padding(
+              padding: EdgeInsets.all(scaleSize(4)),
+              child: Icon(Icons.info_outline_rounded, size: scaleSize(20), color: context.colorScheme.outline),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHceReceiveButton(BuildContext context) {
     final session = ref.watch(nfcSessionProvider);
     final isEmulating = session.state == NfcSessionState.emulating;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: scaleSize(16)),
-      child: ScaledSizedBox(
-        width: 240,
-        height: 55,
-        child: ElevatedButton.icon(
-          key: keyNfcReceive,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isEmulating ? context.geckoColors.success : context.colorScheme.secondary,
-            foregroundColor: isEmulating ? Colors.white : context.colorScheme.onSecondary,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-          onPressed: _toggleHceEmulation,
-          icon: isEmulating
-              ? SizedBox(
-                  width: scaleSize(20),
-                  height: scaleSize(20),
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : Icon(Icons.contactless_rounded, size: scaleSize(22)),
-          label: Text(
-            isEmulating ? 'nfcEmulating'.tr().replaceAll('\n', ' ') : 'nfcReceivePayment'.tr().replaceAll('\n', ' '),
-            style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
+    return _buildNfcButtonRow(
+      key: keyNfcReceive,
+      icon: Icons.contactless_rounded,
+      label: isEmulating ? 'nfcEmulating'.tr().replaceAll('\n', ' ') : 'nfcReceivePayment'.tr().replaceAll('\n', ' '),
+      onPressed: _toggleHceEmulation,
+      isLoading: isEmulating,
+      backgroundColor: isEmulating ? context.geckoColors.success : context.colorScheme.secondary,
+      foregroundColor: isEmulating ? Colors.white : context.colorScheme.onSecondary,
     );
   }
 
@@ -136,7 +207,6 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
     return PopScope(
       onPopInvokedWithResult: (_, _) {
         resetBrightness();
-        // Stop HCE emulation when leaving the screen
         final session = ref.read(nfcSessionProvider);
         if (session.state == NfcSessionState.emulating) {
           ref.read(nfcSessionProvider.notifier).stopEmulation();
@@ -149,9 +219,7 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
           toolbarHeight: scaleSize(57),
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: context.colorScheme.primary),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
           ),
           title: Text(
             'QR Code de ${getShortPubkey(widget.address)}',
@@ -221,39 +289,15 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
                       data: (availability) => availability == NFCAvailability.available
                           ? Column(
                               children: [
-                                // HCE receive button (Android only — phone acts as NFC card)
                                 if (!kIsWeb && Platform.isAndroid) _buildHceReceiveButton(context),
-                                // Write to physical NFC tag
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: scaleSize(16)),
-                                  child: ScaledSizedBox(
-                                    width: 240,
-                                    height: 55,
-                                    child: ElevatedButton.icon(
-                                      key: keyNfcWrite,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: context.colorScheme.primary,
-                                        foregroundColor: context.colorScheme.onPrimary,
-                                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                      ),
-                                      onPressed: _isWritingNfc ? null : _writeToNfc,
-                                      icon: _isWritingNfc
-                                          ? SizedBox(
-                                              width: scaleSize(20),
-                                              height: scaleSize(20),
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: context.colorScheme.onPrimary,
-                                              ),
-                                            )
-                                          : Icon(Icons.nfc_rounded, size: scaleSize(22)),
-                                      label: Text(
-                                        'nfcWrite'.tr(),
-                                        style: scaledTextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                  ),
+                                _buildNfcButtonRow(
+                                  key: keyNfcWrite,
+                                  icon: Icons.nfc_rounded,
+                                  label: 'nfcWrite'.tr(),
+                                  onPressed: _isWritingNfc ? null : _writeToNfc,
+                                  isLoading: _isWritingNfc,
+                                  backgroundColor: context.colorScheme.primary,
+                                  foregroundColor: context.colorScheme.onPrimary,
                                 ),
                               ],
                             )
@@ -271,9 +315,7 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
+                        onPressed: () => Navigator.pop(context),
                         child: Text(
                           'close'.tr(),
                           style: scaledTextStyle(

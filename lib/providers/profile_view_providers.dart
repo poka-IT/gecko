@@ -154,13 +154,18 @@ final nfcScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
       _showNfcScanDialog(context);
     }
 
-    final result = await qrScannerService.readNfc();
-
-    // Dismiss the Android dialog
-    if (isAndroid) {
-      final navCtx = Gecko.navigatorContext;
-      if (navCtx != null && Navigator.canPop(navCtx)) {
-        Navigator.pop(navCtx);
+    QrScanResult result;
+    try {
+      result = await qrScannerService.readNfc();
+    } catch (e) {
+      result = QrScanResult.cancelled();
+    } finally {
+      // Always dismiss the Android dialog, even on unexpected exceptions
+      if (isAndroid) {
+        final navCtx = Gecko.navigatorContext;
+        if (navCtx != null && Navigator.canPop(navCtx)) {
+          Navigator.pop(navCtx);
+        }
       }
     }
 

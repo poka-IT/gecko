@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
@@ -36,7 +37,11 @@ Future<void> showDesktopProfileModal(
     showCloseButton: true,
     title: username != null ? 'memberAccountOf'.tr(args: [username]) : 'seeAWallet'.tr(),
     onBack: onBack,
-    builder: (context) => _DesktopProfileContent(address: address, username: username, onBack: onBack),
+    builder: (modalContext) => DesktopModalScope(
+      reopenCurrentModal: () =>
+          showDesktopProfileModal(Gecko.navigatorContext!, address: address, username: username, onBack: onBack),
+      child: _DesktopProfileContent(address: address, username: username, onBack: onBack),
+    ),
   );
 }
 
@@ -100,11 +105,11 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
                 onTap: () {
                   Navigator.of(context).pop();
                   showDesktopActivityModal(
-                    context,
+                    Gecko.navigatorContext!,
                     address: widget.address,
                     username: widget.username,
                     onBack: () => showDesktopProfileModal(
-                      context,
+                      Gecko.navigatorContext!,
                       address: widget.address,
                       username: widget.username,
                       onBack: widget.onBack,

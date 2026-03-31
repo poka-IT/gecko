@@ -451,7 +451,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             if (isAlone)
               isLegacyWallet
                   ? _buildLegacyWalletOptions()
-                  : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+                  : aloneWalletOptions(
+                      context,
+                      ref,
+                      wallet: widget.wallet,
+                      onDerivationCreated: widget.onDerivationCreated,
+                    ),
             ScaledSizedBox(height: 32), // Add bottom padding for better scrolling
           ],
         );
@@ -466,7 +471,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           if (isAlone)
             isLegacyWallet
                 ? _buildLegacyWalletOptions()
-                : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+                : aloneWalletOptions(
+                    context,
+                    ref,
+                    wallet: widget.wallet,
+                    onDerivationCreated: widget.onDerivationCreated,
+                  ),
           ScaledSizedBox(height: 32),
         ],
       ),
@@ -480,7 +490,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           if (isAlone)
             isLegacyWallet
                 ? _buildLegacyWalletOptions()
-                : aloneWalletOptions(context, ref, onDerivationCreated: widget.onDerivationCreated),
+                : aloneWalletOptions(
+                    context,
+                    ref,
+                    wallet: widget.wallet,
+                    onDerivationCreated: widget.onDerivationCreated,
+                  ),
           ScaledSizedBox(height: 32),
         ],
       ),
@@ -912,7 +927,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
   }
 }
 
-Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? onDerivationCreated}) {
+Widget aloneWalletOptions(
+  BuildContext context,
+  WidgetRef ref, {
+  required WalletEntity wallet,
+  VoidCallback? onDerivationCreated,
+}) {
   final walletsState = ref.watch(walletsListProvider);
   final derivationState = ref.watch(derivationStateProvider);
   return Column(
@@ -927,7 +947,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
             showDesktopSafeOptionsModal(
               Gecko.navigatorContext!,
               ref,
-              onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+              onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: wallet),
             );
           } else {
             if (!context.mounted) return;
@@ -1027,7 +1047,7 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
             Navigator.of(context).pop();
             showDesktopLegacyMigrationModal(
               Gecko.navigatorContext!,
-              onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+              onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: wallet),
             );
           } else {
             Navigator.push(Gecko.navigatorContext!, MaterialPageRoute(builder: (context) => const G1v1MigrationFlow()));

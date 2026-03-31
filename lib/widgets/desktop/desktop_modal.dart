@@ -124,7 +124,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (title != null || showCloseButton) _buildHeader(context),
+                          if (title != null || showCloseButton || onBack != null) _buildHeader(context),
                           Flexible(
                             child: Padding(padding: effectivePadding, child: builder(context)),
                           ),
@@ -201,5 +201,5 @@ class DesktopModalScope extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(DesktopModalScope oldWidget) => reopenCurrentModal != oldWidget.reopenCurrentModal;
+  bool updateShouldNotify(DesktopModalScope oldWidget) => false;
 }

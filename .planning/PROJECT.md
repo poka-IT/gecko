@@ -8,6 +8,17 @@
 
 Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé de leur réseau de certifications et analyser leur activité transactionnelle sans quitter l'app.
 
+## Current Milestone: v0.3 Noms CesiumPlus & Recherche
+
+**Goal:** Intégrer les noms de portefeuilles CesiumPlus dans la recherche et l'affichage, avec une UX anti-usurpation qui distingue clairement les identités on-chain des noms CesiumPlus auto-déclarés.
+
+**Target features:**
+- Recherche hybride avec scoring multi-source (identités priorisées, CesiumPlus différenciés)
+- Affichage des noms CesiumPlus pour les portefeuilles sans identité on-chain
+- Enregistrement CesiumPlus quand l'utilisateur renomme un portefeuille (pas le nom par défaut)
+- UX anti-usurpation : distinction visuelle claire entre noms vérifiés et auto-déclarés
+- Cache Riverpod persisté avec invalidation robuste
+
 ## Current State
 
 **v0.2 shipped** (2026-03-25) — 2 phases, 4 plans, +1314 LOC
@@ -38,11 +49,15 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 
 ### Active
 
-(No active requirements — start next milestone with `/gsd:new-milestone`)
+- [ ] Recherche hybride identités + noms CesiumPlus avec scoring multi-source
+- [ ] Affichage noms CesiumPlus pour portefeuilles sans identité
+- [ ] Enregistrement noms de portefeuilles via API CesiumPlus
+- [ ] UX anti-usurpation (distinction visuelle identités vs noms auto-déclarés)
+- [ ] Cache Riverpod persisté pour noms CesiumPlus
 
 ### Out of Scope
 
-- Recherche par nom de portefeuille simple — attend solution Duniter off-chain data indexation
+- ~~Recherche par nom de portefeuille simple~~ — Levé en v0.3 via CesiumPlus avec mécanismes anti-usurpation
 - Affichage clé publique v1 — Gecko cible les futurs junistes, pas de rétro-compatibilité v1
 - Mode web app (PWA) — risques de sécurité pour un wallet crypto
 - Import EWIF/trousseau Cesium — le scan de phrase mnémonique est l'approche Gecko
@@ -69,11 +84,11 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 | Analyse de marché complète | Besoin épiceries participatives + vérification d'activité | ✓ Delivered (v0.2) |
 | Dot indicator (pas de compteur) | Simplicité visuelle, indicateur worst-status | ✓ Good |
 | calendar_date_picker2 pour range picker | Validé par Ginkgo, meilleur UX que 2x showDatePicker | ✓ Good |
-| Pas de recherche par nom simple | Risque usurpation, attend solution Duniter | — Pending |
+| Pas de recherche par nom simple | Risque usurpation, attend solution Duniter | ⚠️ Revisit — v0.3 adresse via CesiumPlus + anti-usurpation |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-03-25 after v0.2 milestone completion*
+*Last updated: 2026-03-31 after v0.3 milestone start*

@@ -6,10 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/widgets/certs_list.dart';
 import 'package:gecko/services/certification_queue_service.dart';
 import 'package:gecko/services/contact_service.dart';
 import 'package:gecko/services/navigation_service.dart';
@@ -144,6 +146,12 @@ class CertificationTransactionHelper {
           container.invalidate(idtyStatusStreamProvider(targetAddress));
           container.invalidate(certificationExistsProvider(targetAddress));
           container.invalidate(certStateProvider(targetAddress));
+
+          // Refresh the issuer's sent cert list so cert expiration alerts
+          // disappear immediately without waiting for the Squid WebSocket push.
+          container
+              .read(certificationListProvider((address: issuerAddress, direction: CertDirection.sent)).notifier)
+              .refresh();
           subscription.cancel();
         } else if (status.state == TransactionState.error) {
           hasHandled = true;

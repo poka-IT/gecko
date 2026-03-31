@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/certification_list_providers.dart';
+import 'package:gecko/providers/certification_queue_provider.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certs_list.dart';
@@ -18,6 +19,10 @@ class CertAlertDetail {
 /// Returns the most urgent expiring cert for a wallet, with contact name and days.
 /// Single source of truth for cert alert scanning — used by the banner,
 /// home alert, status dot (via [certAlertStatusProvider]), and contact alert.
+///
+/// For sent certs, also suppresses alerts for contacts that are:
+/// - currently being certified (in progress or recently completed)
+/// - already in the certification queue
 final certAlertDetailProvider = Provider.family<CertAlertDetail, ({String address, CertDirection direction})>((
   ref,
   params,
@@ -26,6 +31,27 @@ final certAlertDetailProvider = Provider.family<CertAlertDetail, ({String addres
 
   if (certState.isLoading || certState.certifications.isEmpty) {
     return const CertAlertDetail();
+  }
+
+  // For sent certs, build a set of addresses to suppress (queued or recently certified)
+  final suppressedAddresses = <String>{};
+  if (params.direction == CertDirection.sent) {
+    // Watch recent certifications (in-progress or completed within 10 min)
+    final recentCerts = ref.watch(recentCertificationsProvider);
+    for (final entry in recentCerts.entries) {
+      if (entry.key.startsWith('${params.address}:')) {
+        suppressedAddresses.add(entry.key.split(':').last);
+      }
+    }
+
+    // Watch the certification queue
+    final queueAsync = ref.watch(certificationQueueProvider(params.address));
+    final queue = queueAsync.asData?.value;
+    if (queue != null) {
+      for (final pending in queue.pendingCertifications) {
+        suppressedAddresses.add(pending.receiverAddress);
+      }
+    }
   }
 
   final now = DateTime.now();
@@ -37,6 +63,7 @@ final certAlertDetailProvider = Provider.family<CertAlertDetail, ({String addres
     if (cert.expireDate == null) continue;
     if (!cert.isActive) continue;
     if (cert.isContactRevoked) continue;
+    if (suppressedAddresses.contains(cert.address)) continue;
 
     if (now.isAfter(cert.expireDate!)) {
       worstCert = cert;

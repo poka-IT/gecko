@@ -7,9 +7,5 @@
 		<string>NDEF</string>
 		<string>TAG</string>
 	</array>
-	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
-	<array>
-		<string>F047314E4B474F</string>
-	</array>
 </dict>
 </plist>

@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.3
 milestone_name: Noms CesiumPlus & Recherche
-status: Ready to execute
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-31T22:29:42.564Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-31T22:40:35.413Z"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 1
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 ## Current Position
 
 Phase: 03 (Trust Visual System & Name Display) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -48,6 +48,8 @@ Plan: 2 of 3
 
 *Updated after each plan completion*
 | Phase 03-trust-visual-system-name-display P01 | 5min | 2 tasks | 6 files |
+| Phase 03-trust-visual-system-name-display P03 | 4min | 2 tasks | 2 files |
+| Phase 03-trust-visual-system-name-display P02 | 6min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -61,6 +63,10 @@ Recent decisions affecting current work:
 - [v0.3 Roadmap]: TRUST-02 (no autocomplete in payment fields) mapped to Phase 4 (search) since it governs where CesiumPlus names do NOT appear in search/input contexts
 - [Phase 03]: cesiumNameProvider watches cesiumProfileProvider to reuse cached fetch, no extra HTTP call
 - [Phase 03]: NameSourceBadge uses StatelessWidget since it receives NameSource enum, no provider access needed
+- [Phase 03-trust-visual-system-name-display]: Used asData?.value for AsyncValue extraction (consistent with codebase pattern, not valueOrNull)
+- [Phase 03-trust-visual-system-name-display]: Verified badge only shown for IdtyStatus.validated in wallet header
+- [Phase 03-trust-visual-system-name-display]: CesiumPlus names use italic + alpha 0.8 for visual distinction from identity names
+- [Phase 03-trust-visual-system-name-display]: Payment popup and idty_status excluded from CesiumPlus display for anti-usurpation
 
 ### Pending Todos
 
@@ -72,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T22:29:42.562Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-31T22:40:35.411Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

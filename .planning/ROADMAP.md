@@ -38,7 +38,7 @@
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Foundation: cesiumNameProvider, NameSourceBadge widget, conflict detection provider, translation keys
+- [x] 03-01-PLAN.md — Foundation: cesiumNameProvider, NameSourceBadge widget, conflict detection provider, translation keys
 - [ ] 03-02-PLAN.md — NameByAddress CesiumPlus fallback with Hive persistence + call site opt-in
 - [ ] 03-03-PLAN.md — Profile view trust labels, WalletHeader CesiumPlus display, conflict warning, visual verification
 

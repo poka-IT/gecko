@@ -54,25 +54,25 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRCH-01 | — | Pending |
-| SRCH-02 | — | Pending |
-| SRCH-03 | — | Pending |
-| SRCH-04 | — | Pending |
-| DISP-01 | — | Pending |
-| DISP-02 | — | Pending |
-| DISP-03 | — | Pending |
-| DISP-04 | — | Pending |
-| REG-01 | — | Pending |
-| REG-02 | — | Pending |
-| TRUST-01 | — | Pending |
-| TRUST-02 | — | Pending |
-| TRUST-03 | — | Pending |
+| SRCH-01 | Phase 4 | Pending |
+| SRCH-02 | Phase 4 | Pending |
+| SRCH-03 | Phase 4 | Pending |
+| SRCH-04 | Phase 4 | Pending |
+| DISP-01 | Phase 3 | Pending |
+| DISP-02 | Phase 3 | Pending |
+| DISP-03 | Phase 3 | Pending |
+| DISP-04 | Phase 3 | Pending |
+| REG-01 | Phase 5 | Pending |
+| REG-02 | Phase 5 | Pending |
+| TRUST-01 | Phase 3 | Pending |
+| TRUST-02 | Phase 4 | Pending |
+| TRUST-03 | Phase 3 | Pending |
 
 **Coverage:**
 - v0.3 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13 ⚠️
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-31*
-*Last updated: 2026-03-31 after initial definition*
+*Last updated: 2026-03-31 after roadmap creation*

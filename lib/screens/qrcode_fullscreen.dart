@@ -92,7 +92,7 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
 
   /// Whether the wallet at this address has an identity (created, confirmed, or member).
   bool get _hasIdentity {
-    final idtyAsync = ref.watch(hybridIdtyStatusProvider(widget.address));
+    final idtyAsync = ref.read(hybridIdtyStatusProvider(widget.address));
     final status = idtyAsync.hasValue ? idtyAsync.value : IdtyStatus.none;
     return status != IdtyStatus.none && status != IdtyStatus.unknown;
   }

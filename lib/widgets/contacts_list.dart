@@ -185,6 +185,7 @@ class ContactsList extends ConsumerWidget {
                                     name: g1Wallet.username,
                                     keyPairType: Durt.defaultKeyPairType,
                                   ),
+                                  showCesiumPlusName: true,
                                 ),
                               ],
                             ),

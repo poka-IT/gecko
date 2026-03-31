@@ -128,6 +128,7 @@ class WalletTileMembre extends ConsumerWidget {
                                 size: 16,
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
+                                showCesiumPlusName: true,
                               ),
                               ScaledSizedBox(height: 4),
                               Balance(address: freshWallet.address, size: 14, color: Colors.white),

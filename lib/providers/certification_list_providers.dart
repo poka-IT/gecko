@@ -134,14 +134,9 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
     }
   }
 
-  /// Load certifications from the server
+  /// Load certifications from the server.
+  /// Attempts the HTTP query directly — the try/catch handles unreachable endpoints.
   Future<void> loadCertifications() async {
-    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
-    if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      state = state.copyWith(isLoading: false, hasError: true, error: 'No network connection');
-      return;
-    }
-
     state = state.copyWith(isLoading: true, hasError: false, error: null);
 
     try {
@@ -156,12 +151,6 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
   /// Refresh certifications (used for activity-triggered updates)
   Future<void> _refreshCertifications() async {
-    final squidConnectionStatus = ref.read(squidConnectionStatusProvider);
-    if (squidConnectionStatus != d.ConnectionStatus.connected) {
-      log.w('Cannot refresh: Squid not connected');
-      return;
-    }
-
     try {
       final newCerts = await _fetchCertifications();
 

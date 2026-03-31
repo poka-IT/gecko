@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/nfc_providers.dart';
 import 'package:gecko/services/config_service.dart';
 import 'package:gecko/screens/settings/settings_card.dart';
 import 'package:gecko/screens/settings/widgets/background_image_setting.dart';
@@ -131,12 +133,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
                 // Carte action par défaut du bouton scan (QR / NFC / Demander)
-                SettingsCard(
-                  child: Padding(
-                    padding: EdgeInsets.all(scaleSize(isSmallScreen ? 10 : 14)),
-                    child: const ScanDefaultActionSetting(),
-                  ),
-                ),
+                // The widget itself returns SizedBox.shrink when NFC is not supported,
+                // so we wrap the card to avoid an empty card on desktop.
+                const _NfcSettingsCardWrapper(),
                 ScaledSizedBox(height: isSmallScreen ? 12 : 16),
 
                 // Carte Image de fond

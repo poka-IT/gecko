@@ -144,11 +144,13 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    // Check if we have network connection
+    final certState = ref.watch(certificationListProvider((address: widget.address, direction: widget.direction)));
+
+    // Show "indexer unavailable" only when offline AND we have no cached data to display
     final connectionStatus = ref.watch(squidConnectionStatusProvider);
     final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
 
-    if (!isNetworkAvailable) {
+    if (!isNetworkAvailable && certState.certifications.isEmpty && !certState.isLoading) {
       return Container(
         padding: EdgeInsets.symmetric(vertical: scaleSize(20)),
         child: Center(
@@ -167,8 +169,6 @@ class _CertsListState extends ConsumerState<CertsList> with TickerProviderStateM
         ),
       );
     }
-
-    final certState = ref.watch(certificationListProvider((address: widget.address, direction: widget.direction)));
 
     // Check for new certifications using timestamp comparison
     if (!_isInitialLoad && !certState.isLoading && certState.certifications.isNotEmpty) {

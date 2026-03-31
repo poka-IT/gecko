@@ -44,6 +44,7 @@ import 'package:gecko/widgets/desktop/modals/confirm_identity_modal.dart';
 import 'package:gecko/widgets/desktop/modals/legacy_migration_modal.dart';
 import 'package:gecko/widgets/desktop/modals/market_analysis_modal.dart';
 import 'package:gecko/widgets/desktop/modals/safe_options_modal.dart';
+import 'package:gecko/widgets/desktop/modals/wallet_options_modal.dart';
 
 class WalletOptions extends ConsumerStatefulWidget {
   const WalletOptions({Key? keyMyWallets, required this.wallet, this.onDerivationCreated, this.embeddedMode = false})
@@ -229,7 +230,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       onTap: () async {
         if (widget.embeddedMode && isDesktopLayout(context)) {
           Navigator.of(context).pop();
-          showDesktopActivityModal(Gecko.navigatorContext!, address: widget.wallet.address);
+          showDesktopActivityModal(
+            Gecko.navigatorContext!,
+            address: widget.wallet.address,
+            onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+          );
         } else {
           Navigator.push(
             context,
@@ -402,7 +407,13 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
               onTap: () {
                 if (isDesktopLayout(context)) {
                   if (widget.embeddedMode) Navigator.of(context).pop();
-                  showDesktopMarketAnalysisModal(context, walletAddress: widget.wallet.address);
+                  showDesktopMarketAnalysisModal(
+                    Gecko.navigatorContext!,
+                    walletAddress: widget.wallet.address,
+                    onBack: widget.embeddedMode
+                        ? () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet)
+                        : null,
+                  );
                 } else {
                   Navigator.pushNamed(
                     context,
@@ -482,7 +493,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       onTap: () {
         if (widget.embeddedMode && isDesktopLayout(context)) {
           Navigator.of(context).pop();
-          showDesktopCesiumProfileModal(Gecko.navigatorContext!, address: widget.wallet.address);
+          showDesktopCesiumProfileModal(
+            Gecko.navigatorContext!,
+            address: widget.wallet.address,
+            onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+          );
         } else {
           Navigator.pushNamed(context, RouteNames.cesiumProfile, arguments: widget.wallet.address);
         }
@@ -531,7 +546,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                 onPressed: () {
                   if (widget.embeddedMode && isDesktopLayout(context)) {
                     Navigator.of(context).pop();
-                    showDesktopConfirmIdentityModal(Gecko.navigatorContext!, address: widget.wallet.address);
+                    showDesktopConfirmIdentityModal(
+                      Gecko.navigatorContext!,
+                      address: widget.wallet.address,
+                      onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+                    );
                   } else {
                     Navigator.push(
                       context,
@@ -701,7 +720,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
       onTap: () {
         if (widget.embeddedMode && isDesktopLayout(context)) {
           Navigator.of(context).pop();
-          showDesktopCertificationQueueModal(Gecko.navigatorContext!, issuerAddress: issuerAddress);
+          showDesktopCertificationQueueModal(
+            Gecko.navigatorContext!,
+            issuerAddress: issuerAddress,
+            onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+          );
         } else {
           Navigator.push(
             context,
@@ -901,7 +924,11 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
           if (isDesktopLayout(context)) {
             if (!context.mounted) return;
             Navigator.of(context).pop();
-            showDesktopSafeOptionsModal(Gecko.navigatorContext!, ref);
+            showDesktopSafeOptionsModal(
+              Gecko.navigatorContext!,
+              ref,
+              onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+            );
           } else {
             if (!context.mounted) return;
             Navigator.push(context, MaterialPageRoute(builder: (context) => const SafeOptions()));
@@ -998,7 +1025,10 @@ Widget aloneWalletOptions(BuildContext context, WidgetRef ref, {VoidCallback? on
         onTap: () async {
           if (isDesktopLayout(context)) {
             Navigator.of(context).pop();
-            showDesktopLegacyMigrationModal(Gecko.navigatorContext!);
+            showDesktopLegacyMigrationModal(
+              Gecko.navigatorContext!,
+              onBack: () => showDesktopWalletOptionsModal(Gecko.navigatorContext!, wallet: widget.wallet),
+            );
           } else {
             Navigator.push(Gecko.navigatorContext!, MaterialPageRoute(builder: (context) => const G1v1MigrationFlow()));
           }

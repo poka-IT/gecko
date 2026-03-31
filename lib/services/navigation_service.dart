@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/screens/profile_view.dart';
+import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/desktop/modals/profile_modal.dart';
 import 'package:gecko/widgets/page_route_no_transition.dart';
@@ -14,6 +16,10 @@ class NavigationService {
   ///
   /// If [autoOpenPayment] is true, the payment popup will be opened automatically
   /// (e.g. when a `june://` URI with an amount was scanned via NFC/QR).
+  ///
+  /// On desktop, if the current widget is inside a [DesktopModalScope], the
+  /// current modal is automatically closed and the profile modal gets a back
+  /// button that reopens the previous modal.
   static void openProfile(
     BuildContext context, {
     required String address,
@@ -22,7 +28,19 @@ class NavigationService {
     bool autoOpenPayment = false,
   }) {
     if (isDesktopLayout(context)) {
-      showDesktopProfileModal(context, address: address, username: username);
+      final scope = DesktopModalScope.of(context);
+      if (scope != null) {
+        // We're inside a modal — close it and open profile with back button
+        Navigator.of(context).pop();
+        showDesktopProfileModal(
+          Gecko.navigatorContext!,
+          address: address,
+          username: username,
+          onBack: scope.reopenCurrentModal,
+        );
+      } else {
+        showDesktopProfileModal(Gecko.navigatorContext!, address: address, username: username);
+      }
     } else {
       Navigator.push(
         context,
@@ -41,7 +59,18 @@ class NavigationService {
   /// Opens a profile view, replacing the current route (mobile) or showing modal (desktop).
   static void openProfileReplacement(BuildContext context, {required String address, String? username}) {
     if (isDesktopLayout(context)) {
-      showDesktopProfileModal(context, address: address, username: username);
+      final scope = DesktopModalScope.of(context);
+      if (scope != null) {
+        Navigator.of(context).pop();
+        showDesktopProfileModal(
+          Gecko.navigatorContext!,
+          address: address,
+          username: username,
+          onBack: scope.reopenCurrentModal,
+        );
+      } else {
+        showDesktopProfileModal(Gecko.navigatorContext!, address: address, username: username);
+      }
     } else {
       Navigator.pushReplacement(
         context,

@@ -9,7 +9,7 @@ import 'package:gecko/screens/myWallets/safe_options.dart';
 ///
 /// If [safeNumber] is provided, shows options for that specific safe.
 /// Otherwise, shows options for the default (current) safe.
-Future<void> showDesktopSafeOptionsModal(BuildContext context, WidgetRef ref, {int? safeNumber}) {
+Future<void> showDesktopSafeOptionsModal(BuildContext context, WidgetRef ref, {int? safeNumber, VoidCallback? onBack}) {
   final walletService = ref.read(walletServiceProvider);
   if (walletService.safeBox.isEmpty()) return Future.value();
 
@@ -28,6 +28,7 @@ Future<void> showDesktopSafeOptionsModal(BuildContext context, WidgetRef ref, {i
     title: safeName,
     size: DesktopModalSize.small,
     contentPadding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+    onBack: onBack,
     builder: (context) => SingleChildScrollView(child: SafeOptionsContent(safeNumber: safeNumber)),
   );
 }

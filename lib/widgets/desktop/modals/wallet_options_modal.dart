@@ -5,7 +5,7 @@ import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 
 /// Shows wallet options inside a desktop modal.
-Future<void> showDesktopWalletOptionsModal(BuildContext context, {required WalletEntity wallet}) {
+Future<void> showDesktopWalletOptionsModal(BuildContext context, {required WalletEntity wallet, VoidCallback? onBack}) {
   final displayName = WalletNameService.displayName(wallet.name);
 
   return showDesktopModal(
@@ -13,6 +13,7 @@ Future<void> showDesktopWalletOptionsModal(BuildContext context, {required Walle
     title: displayName,
     size: DesktopModalSize.medium,
     contentPadding: EdgeInsets.zero,
+    onBack: onBack,
     builder: (context) => WalletOptions(wallet: wallet, embeddedMode: true),
   );
 }

@@ -4,17 +4,28 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/widgets/certs_counter.dart';
 import 'package:gecko/widgets/certs_list.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/distance_quality_section.dart';
 
 /// Shows certifications (received/sent) inside a desktop modal with two-column layout.
-Future<void> showDesktopCertificationsModal(BuildContext context, {required String address, required String username}) {
+Future<void> showDesktopCertificationsModal(
+  BuildContext context, {
+  required String address,
+  required String username,
+  VoidCallback? onBack,
+}) {
   return showDesktopModal(
     context: context,
     title: 'certificationsOf'.tr(args: [username]),
     size: DesktopModalSize.extraLarge,
     contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-    builder: (context) => _DesktopCertificationsContent(address: address, username: username),
+    onBack: onBack,
+    builder: (modalContext) => DesktopModalScope(
+      reopenCurrentModal: () =>
+          showDesktopCertificationsModal(Gecko.navigatorContext!, address: address, username: username, onBack: onBack),
+      child: _DesktopCertificationsContent(address: address, username: username),
+    ),
   );
 }
 

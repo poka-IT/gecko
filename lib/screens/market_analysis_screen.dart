@@ -142,7 +142,7 @@ class _MarketAnalysisInfoBanner extends StatefulWidget {
   State<_MarketAnalysisInfoBanner> createState() => _MarketAnalysisInfoBannerState();
 }
 
-class _MarketAnalysisInfoBannerState extends State<_MarketAnalysisInfoBanner> with SingleTickerProviderStateMixin {
+class _MarketAnalysisInfoBannerState extends State<_MarketAnalysisInfoBanner> {
   bool _isExpanded = false;
 
   @override

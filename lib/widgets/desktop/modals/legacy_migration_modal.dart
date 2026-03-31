@@ -27,13 +27,14 @@ import 'package:gecko/widgets/idty_status.dart';
 /// Opens the desktop legacy migration modal (Cesium v1 → v2 migration).
 ///
 /// 3 steps: Credentials → Destination → Confirmation + Execute
-Future<void> showDesktopLegacyMigrationModal(BuildContext context) {
+Future<void> showDesktopLegacyMigrationModal(BuildContext context, {VoidCallback? onBack}) {
   return showDesktopModal(
     context: context,
     size: DesktopModalSize.medium,
     barrierDismissible: false,
     showCloseButton: false,
     contentPadding: EdgeInsets.zero,
+    onBack: onBack,
     builder: (context) => const _LegacyMigrationContent(),
   );
 }

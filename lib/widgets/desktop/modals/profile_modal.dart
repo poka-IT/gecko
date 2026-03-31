@@ -23,22 +23,29 @@ import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
 
 /// Shows a profile view inside a desktop modal.
-Future<void> showDesktopProfileModal(BuildContext context, {required String address, String? username}) {
+Future<void> showDesktopProfileModal(
+  BuildContext context, {
+  required String address,
+  String? username,
+  VoidCallback? onBack,
+}) {
   return showDesktopModal(
     context: context,
     size: DesktopModalSize.large,
     contentPadding: EdgeInsets.zero,
     showCloseButton: true,
     title: username != null ? 'memberAccountOf'.tr(args: [username]) : 'seeAWallet'.tr(),
-    builder: (context) => _DesktopProfileContent(address: address, username: username),
+    onBack: onBack,
+    builder: (context) => _DesktopProfileContent(address: address, username: username, onBack: onBack),
   );
 }
 
 class _DesktopProfileContent extends ConsumerStatefulWidget {
   final String address;
   final String? username;
+  final VoidCallback? onBack;
 
-  const _DesktopProfileContent({required this.address, this.username});
+  const _DesktopProfileContent({required this.address, this.username, this.onBack});
 
   @override
   ConsumerState<_DesktopProfileContent> createState() => _DesktopProfileContentState();
@@ -91,8 +98,18 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
                 icon: Icons.history_rounded,
                 label: 'displayNActivity'.tr(),
                 onTap: () {
-                  Navigator.of(context).pop(); // Close profile modal
-                  showDesktopActivityModal(context, address: widget.address, username: widget.username);
+                  Navigator.of(context).pop();
+                  showDesktopActivityModal(
+                    context,
+                    address: widget.address,
+                    username: widget.username,
+                    onBack: () => showDesktopProfileModal(
+                      context,
+                      address: widget.address,
+                      username: widget.username,
+                      onBack: widget.onBack,
+                    ),
+                  );
                 },
               ),
             ),

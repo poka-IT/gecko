@@ -5,12 +5,13 @@ import 'package:gecko/screens/myWallets/cesium_profile_screen.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 
 /// Shows a Cesium+ profile editor inside a desktop modal.
-Future<void> showDesktopCesiumProfileModal(BuildContext context, {required String address}) {
+Future<void> showDesktopCesiumProfileModal(BuildContext context, {required String address, VoidCallback? onBack}) {
   return showDesktopModal(
     context: context,
     title: 'cesiumProfile'.tr(),
     size: DesktopModalSize.large,
     contentPadding: EdgeInsets.zero,
+    onBack: onBack,
     builder: (context) => CesiumProfileScreen(address: address, embeddedMode: true),
   );
 }

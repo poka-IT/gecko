@@ -26,6 +26,10 @@ enum DesktopModalSize {
 ///
 /// Returns a [Future] that completes with the value passed to [Navigator.pop],
 /// or null if dismissed.
+///
+/// When [onBack] is provided, a back arrow button is shown in the header
+/// (left of the title). Tapping it closes this modal and calls [onBack],
+/// which typically reopens the previous modal.
 Future<T?> showDesktopModal<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -34,6 +38,7 @@ Future<T?> showDesktopModal<T>({
   String? title,
   bool showCloseButton = true,
   EdgeInsets? contentPadding,
+  VoidCallback? onBack,
 }) {
   return showGeneralDialog<T>(
     context: context,
@@ -55,6 +60,7 @@ Future<T?> showDesktopModal<T>({
         showCloseButton: showCloseButton,
         contentPadding: contentPadding,
         builder: builder,
+        onBack: onBack,
       );
     },
   );
@@ -66,6 +72,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
   final bool showCloseButton;
   final EdgeInsets? contentPadding;
   final WidgetBuilder builder;
+  final VoidCallback? onBack;
 
   const _DesktopModalShell({
     required this.size,
@@ -73,6 +80,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
     required this.showCloseButton,
     required this.contentPadding,
     required this.builder,
+    this.onBack,
   });
 
   @override
@@ -135,9 +143,21 @@ class _DesktopModalShell<T> extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 12, 0),
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
       child: Row(
         children: [
+          if (onBack != null)
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onBack!();
+              },
+              icon: Icon(Icons.arrow_back_rounded, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+              splashRadius: 20,
+            )
+          else
+            const SizedBox(width: 12),
           if (title != null)
             Expanded(
               child: Text(
@@ -160,4 +180,26 @@ class _DesktopModalShell<T> extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Provides modal navigation context to descendant widgets.
+///
+/// When a widget is inside a desktop modal, it can look up [DesktopModalScope]
+/// to discover [reopenCurrentModal] — a callback that reopens this modal.
+/// This allows shared widgets (TransactionTile, CertTile, etc.) to properly
+/// close the current modal and open a new one with a back button, without
+/// needing explicit parameters threaded through the widget tree.
+class DesktopModalScope extends InheritedWidget {
+  /// Callback that reopens the current modal (used as `onBack` in the next modal).
+  final VoidCallback reopenCurrentModal;
+
+  const DesktopModalScope({super.key, required this.reopenCurrentModal, required super.child});
+
+  /// Returns the nearest [DesktopModalScope] ancestor, or null if not in a modal.
+  static DesktopModalScope? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<DesktopModalScope>();
+  }
+
+  @override
+  bool updateShouldNotify(DesktopModalScope oldWidget) => reopenCurrentModal != oldWidget.reopenCurrentModal;
 }

@@ -7,18 +7,29 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/transaction_filters_provider.dart';
 import 'package:gecko/widgets/compact_wallet_header.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/history_query.dart';
 
 /// Shows the activity/transaction history in a desktop modal.
-Future<void> showDesktopActivityModal(BuildContext context, {required String address, String? username}) {
+Future<void> showDesktopActivityModal(
+  BuildContext context, {
+  required String address,
+  String? username,
+  VoidCallback? onBack,
+}) {
   return showDesktopModal(
     context: context,
     size: DesktopModalSize.large,
     contentPadding: EdgeInsets.zero,
     showCloseButton: true,
     title: 'displayNActivity'.tr(),
-    builder: (context) => _DesktopActivityContent(address: address, username: username),
+    onBack: onBack,
+    builder: (modalContext) => DesktopModalScope(
+      reopenCurrentModal: () =>
+          showDesktopActivityModal(Gecko.navigatorContext!, address: address, username: username, onBack: onBack),
+      child: _DesktopActivityContent(address: address, username: username),
+    ),
   );
 }
 

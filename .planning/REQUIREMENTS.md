@@ -17,7 +17,7 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 ### Affichage des Noms
 
 - [ ] **DISP-01**: L'utilisateur voit le nom CesiumPlus d'un portefeuille qui n'a pas d'identité on-chain
-- [ ] **DISP-02**: Les noms d'identité (vérifiés) et les noms CesiumPlus (auto-déclarés) sont visuellement distincts via badge/indicateur
+- [x] **DISP-02**: Les noms d'identité (vérifiés) et les noms CesiumPlus (auto-déclarés) sont visuellement distincts via badge/indicateur
 - [ ] **DISP-03**: La vue profil affiche un label "nom auto-déclaré" pour les profils CesiumPlus sans identité
 - [ ] **DISP-04**: Les noms CesiumPlus sont persistés dans Hive (`csName`) pour affichage hors-ligne
 
@@ -28,9 +28,9 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 
 ### Anti-usurpation
 
-- [ ] **TRUST-01**: Un nom d'identité on-chain n'est jamais remplacé ou masqué par un nom CesiumPlus
+- [x] **TRUST-01**: Un nom d'identité on-chain n'est jamais remplacé ou masqué par un nom CesiumPlus
 - [ ] **TRUST-02**: Aucun autocomplete de noms CesiumPlus dans les champs de paiement/transfert
-- [ ] **TRUST-03**: Un avertissement est affiché quand un nom CesiumPlus correspond exactement à une identité on-chain existante
+- [x] **TRUST-03**: Un avertissement est affiché quand un nom CesiumPlus correspond exactement à une identité on-chain existante
 
 ## Future Requirements
 
@@ -59,14 +59,14 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 | SRCH-03 | Phase 4 | Pending |
 | SRCH-04 | Phase 4 | Pending |
 | DISP-01 | Phase 3 | Pending |
-| DISP-02 | Phase 3 | Pending |
+| DISP-02 | Phase 3 | Complete |
 | DISP-03 | Phase 3 | Pending |
 | DISP-04 | Phase 3 | Pending |
 | REG-01 | Phase 5 | Pending |
 | REG-02 | Phase 5 | Pending |
-| TRUST-01 | Phase 3 | Pending |
+| TRUST-01 | Phase 3 | Complete |
 | TRUST-02 | Phase 4 | Pending |
-| TRUST-03 | Phase 3 | Pending |
+| TRUST-03 | Phase 3 | Complete |
 
 **Coverage:**
 - v0.3 requirements: 13 total

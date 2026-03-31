@@ -163,6 +163,39 @@ else
     check_pass "Build number +${BUILD_NUMBER} (first release)"
 fi
 
+# durt2: check local version matches pubspec and is published
+DURT2_LOCAL_DIR="$PROJECT_ROOT/../durt2"
+if [ -f "$DURT2_LOCAL_DIR/pubspec.yaml" ]; then
+    DURT2_LOCAL_VERSION=$(grep "^version:" "$DURT2_LOCAL_DIR/pubspec.yaml" | cut -d' ' -f2)
+    DURT2_PUBSPEC_CONSTRAINT=$(grep "^  durt2:" "$PROJECT_ROOT/pubspec.yaml" | head -1 | sed 's/.*: *//')
+    # Extract minimum version from constraint (e.g. ^1.1.1 → 1.1.1)
+    DURT2_PUBSPEC_MIN=$(printf "%s" "$DURT2_PUBSPEC_CONSTRAINT" | tr -d '^>=~ ')
+
+    if [ -n "$DURT2_LOCAL_VERSION" ] && [ -n "$DURT2_PUBSPEC_MIN" ]; then
+        # Check if local durt2 has uncommitted changes
+        DURT2_DIRTY=$(git -C "$DURT2_LOCAL_DIR" status --porcelain 2>/dev/null || true)
+        if [ -n "$DURT2_DIRTY" ]; then
+            check_fail "durt2 has uncommitted changes (local: $DURT2_LOCAL_VERSION)"
+        fi
+
+        # Check if local durt2 has unpushed commits
+        DURT2_UNPUSHED=$(git -C "$DURT2_LOCAL_DIR" log --oneline '@{upstream}..HEAD' 2>/dev/null || true)
+        if [ -n "$DURT2_UNPUSHED" ]; then
+            check_warn "durt2 has unpushed commits (local: $DURT2_LOCAL_VERSION)"
+        fi
+
+        # Check that local version satisfies pubspec constraint
+        if printf "%s" "$DURT2_LOCAL_VERSION" | grep -q "$DURT2_PUBSPEC_MIN"; then
+            check_pass "durt2 $DURT2_LOCAL_VERSION (pubspec: $DURT2_PUBSPEC_CONSTRAINT)"
+        else
+            # Versions differ — check if local is newer (likely needs pubspec bump or pub publish)
+            check_warn "durt2 local $DURT2_LOCAL_VERSION vs pubspec $DURT2_PUBSPEC_CONSTRAINT — is it published on pub.dev?"
+        fi
+    fi
+else
+    check_warn "durt2 local directory not found at ../durt2"
+fi
+
 # Format check: dart format
 if command -v dart &>/dev/null; then
     FORMAT_CHECK=$(dart format --line-length=120 --set-exit-if-changed --output=none lib 2>&1 || true)

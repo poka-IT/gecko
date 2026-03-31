@@ -139,6 +139,7 @@ abstract class BasePaginatedNotifier<T> extends Notifier<PaginatedState<T>> {
         );
         return markLoadingOnDecode ? decoded.copyWith(isLoading: true) : decoded;
       },
+      options: const StorageOptions(destroyKey: persistCacheVersion),
     );
 
     // Optionally watch the cache buster to force refresh when Squid endpoint changes

@@ -73,6 +73,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
       key: 'certList_${_params.address}_${_params.direction.name}_$network',
       encode: (state) => jsonEncode(state.toJson()),
       decode: (json) => CertificationListState.fromJson(jsonDecode(json) as Map<String, dynamic>),
+      options: const StorageOptions(destroyKey: persistCacheVersion),
     );
 
     // Start initial load asynchronously
@@ -194,6 +195,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
           final String? personAddress = cert.issuer?.accountId;
           final String? personName = cert.issuer?.name;
+          final String? personStatus = cert.issuer?.status;
           final String? timestampString = cert.updatedIn?.block?.timestamp;
 
           if (timestampString != null && personAddress != null) {
@@ -211,6 +213,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
                   date: timestamp,
                   expireDate: expireDate,
                   isActive: cert.isActive,
+                  contactIdtyStatus: personStatus,
                 ),
               );
             }
@@ -225,6 +228,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
 
           final String? personAddress = cert.receiver?.accountId;
           final String? personName = cert.receiver?.name;
+          final String? personStatus = cert.receiver?.status;
           final String? timestampString = cert.updatedIn?.block?.timestamp;
 
           if (personAddress != null && timestampString != null) {
@@ -242,6 +246,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
                   date: timestamp,
                   expireDate: expireDate,
                   isActive: cert.isActive,
+                  contactIdtyStatus: personStatus,
                 ),
               );
             }

@@ -35,6 +35,8 @@ final certAlertDetailProvider = Provider.family<CertAlertDetail, ({String addres
 
   for (final cert in certState.certifications) {
     if (cert.expireDate == null) continue;
+    if (!cert.isActive) continue;
+    if (cert.isContactRevoked) continue;
 
     if (now.isAfter(cert.expireDate!)) {
       worstCert = cert;

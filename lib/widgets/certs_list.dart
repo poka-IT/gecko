@@ -15,6 +15,7 @@ class CertDisplayItem {
   final DateTime date;
   final DateTime? expireDate;
   final bool isActive;
+  final String? contactIdtyStatus;
 
   CertDisplayItem({
     required this.address,
@@ -22,6 +23,7 @@ class CertDisplayItem {
     required this.date,
     this.expireDate,
     this.isActive = true,
+    this.contactIdtyStatus,
   });
 
   Map<String, dynamic> toJson() => {
@@ -30,6 +32,7 @@ class CertDisplayItem {
     'date': date.toIso8601String(),
     'expireDate': expireDate?.toIso8601String(),
     'isActive': isActive,
+    'contactIdtyStatus': contactIdtyStatus,
   };
 
   factory CertDisplayItem.fromJson(Map<String, dynamic> json) => CertDisplayItem(
@@ -38,7 +41,11 @@ class CertDisplayItem {
     date: DateTime.parse(json['date'] as String),
     expireDate: json['expireDate'] != null ? DateTime.parse(json['expireDate'] as String) : null,
     isActive: json['isActive'] as bool? ?? true,
+    contactIdtyStatus: json['contactIdtyStatus'] as String?,
   );
+
+  bool get isContactRevoked =>
+      contactIdtyStatus == 'Revoked' || contactIdtyStatus == 'NotMember' || contactIdtyStatus == 'Removed';
 }
 
 class CertsList extends ConsumerStatefulWidget {

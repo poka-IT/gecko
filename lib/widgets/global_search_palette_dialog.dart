@@ -491,6 +491,7 @@ class _WalletResultTile extends ConsumerWidget {
           keyPairType: d.Durt.defaultKeyPairType,
         ),
         size: 13,
+        showCesiumPlusName: true,
       ),
       username: wallet.username,
       isHighlighted: isHighlighted,

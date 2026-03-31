@@ -89,6 +89,7 @@ class SearchResult extends ConsumerWidget {
               keyPairType: Durt.defaultKeyPairType,
             ),
             size: 14,
+            showCesiumPlusName: true,
           ),
         ],
       ),

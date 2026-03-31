@@ -531,6 +531,7 @@ class DesktopWalletOverview extends ConsumerWidget {
                                 size: isOnlyWallet ? 13 : 12.5,
                                 color: context.colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
+                                showCesiumPlusName: true,
                               ),
                             ),
                             if (isPrimary) ...[

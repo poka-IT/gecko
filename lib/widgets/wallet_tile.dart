@@ -126,6 +126,7 @@ class WalletTile extends ConsumerWidget {
                               size: 16,
                               color: isHighlighted ? Colors.white : context.colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
+                              showCesiumPlusName: true,
                             ),
                             ScaledSizedBox(height: 4),
                             Balance(

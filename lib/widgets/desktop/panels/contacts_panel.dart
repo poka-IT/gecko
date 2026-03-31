@@ -276,6 +276,7 @@ class _DesktopContactsPanelState extends ConsumerState<DesktopContactsPanel> {
                       size: 12,
                       color: context.colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
+                      showCesiumPlusName: true,
                     ),
                     const SizedBox(height: 1),
                     Text(

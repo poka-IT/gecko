@@ -144,12 +144,7 @@ publish:forum:complete:
     # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
     # Fetch all tags for changelog generation
     - git fetch --tags --unshallow || git fetch --tags
-    - |
-      if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-beta'; then
-        echo "🧪 Nouvelle version BETA ${VERSION} de Gecko" > /tmp/message.txt
-      else
-        echo "🚀 Nouvelle version ${VERSION} de Gecko" > /tmp/message.txt
-      fi
+    - if echo "$CI_COMMIT_TAG" | grep -qE -- '-beta'; then echo "Nouvelle version BETA ${VERSION} de Gecko" > /tmp/message.txt; else echo "Nouvelle version ${VERSION} de Gecko" > /tmp/message.txt; fi
     - python3 scripts/publish-forum.py
   tags:
     - docker
@@ -438,37 +433,15 @@ deploy:android:playstore:
     - export VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $1}')
     - export BUILD=$(grep "version:" pubspec.yaml | awk '{print $2}' | awk -F'+' '{print $2}')
 
-    # Determine Play Store track from tag name:
-    #   v1.2.3-beta or v1.2.3-beta.1 → beta track
-    #   v1.2.3                        → production track
-    # Can be overridden with GOOGLE_PLAY_TRACK CI variable
-    - |
-      if [ -z "$GOOGLE_PLAY_TRACK" ]; then
-        if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-beta'; then
-          export PLAY_TRACK="beta"
-        else
-          export PLAY_TRACK="production"
-        fi
-      else
-        export PLAY_TRACK="$GOOGLE_PLAY_TRACK"
-      fi
-    - echo "Deploying to Play Store track: $PLAY_TRACK"
+    # Determine Play Store track from tag name (beta tag → beta track, otherwise → production)
+    - if [ -n "$GOOGLE_PLAY_TRACK" ]; then export PLAY_TRACK="$GOOGLE_PLAY_TRACK"; elif echo "$CI_COMMIT_TAG" | grep -qE -- '-beta'; then export PLAY_TRACK="beta"; else export PLAY_TRACK="production"; fi
+    - echo "Deploying to Play Store track $PLAY_TRACK"
 
     # Create Google Play API key file from base64 encoded CI variable
     - echo "$GOOGLE_PLAY_JSON_KEY_BASE64" | base64 -d > google-play-key.json
 
     # Deploy using fastlane
-    - |
-      fastlane supply \
-        --aab "artifacts/android/gecko-${VERSION}+${BUILD}.aab" \
-        --track "$PLAY_TRACK" \
-        --package_name "$ANDROID_PACKAGE_NAME" \
-        --json_key "google-play-key.json" \
-        --release_status "${GOOGLE_PLAY_RELEASE_STATUS:-completed}" \
-        --skip_upload_metadata \
-        --skip_upload_images \
-        --skip_upload_screenshots \
-        --skip_upload_changelogs
+    - fastlane supply --aab "artifacts/android/gecko-${VERSION}+${BUILD}.aab" --track "$PLAY_TRACK" --package_name "$ANDROID_PACKAGE_NAME" --json_key "google-play-key.json" --release_status "${GOOGLE_PLAY_RELEASE_STATUS:-completed}" --skip_upload_metadata --skip_upload_images --skip_upload_screenshots --skip_upload_changelogs
   after_script:
     - rm -f google-play-key.json
   tags:
@@ -561,27 +534,21 @@ release:gitlab:
     - export WINDOWS_X64_JOB_ID=$(cat artifacts/windows_x64_job_id.txt 2>/dev/null || echo "")
     # - export MACOS_JOB_ID=$(cat artifacts/macos_job_id.txt)
 
-    # Detect beta release
-    - |
-      if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-beta'; then
-        export IS_BETA="true"
-        export RELEASE_LABEL="BETA"
-      else
-        export IS_BETA=""
-        export RELEASE_LABEL=""
-      fi
-
-    # Generate changelog (limited to 30 commits to avoid "Argument list too long" error)
-    # For production releases, find the last production tag (skip beta tags)
-    # For beta releases, find the last tag of any kind
+    # Detect beta release, generate changelog, build description, create release
+    # All in one block so variables persist across steps
     - git fetch --tags --unshallow || git fetch --tags
     - |
+      IS_BETA=""
+      if echo "$CI_COMMIT_TAG" | grep -qE -- '-beta'; then
+        IS_BETA="true"
+      fi
+
       if [ -n "$IS_BETA" ]; then
         LAST_VERSION=$(git tag --sort=-v:refname | sed -n '2p')
       else
         LAST_VERSION=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+(\+[0-9]+)?$' | sed -n '2p')
       fi
-    - |
+
       if [ -n "$LAST_VERSION" ]; then
         git log --pretty="format:- %s ([%h]($CI_PROJECT_URL/-/commit/%h))" HEAD...$LAST_VERSION --reverse | head -30 > release_description.txt
         TOTAL_COMMITS=$(git rev-list --count HEAD...$LAST_VERSION)
@@ -593,31 +560,19 @@ release:gitlab:
         echo "- Initial release" > release_description.txt
       fi
 
-    # Build description file
-    - |
       if [ -n "$IS_BETA" ]; then
-        cat > release_description_full.md << 'EOF'
-      ⚠️ **This is a BETA release** — for testing purposes only.
-
-      ## What's New
-
-      EOF
+        printf '⚠️ **This is a BETA release** — for testing purposes only.\n\n## What'\''s New\n\n' > release_description_full.md
       else
-        cat > release_description_full.md << 'EOF'
-      ## What's New
-
-      EOF
+        printf '## What'\''s New\n\n' > release_description_full.md
       fi
-    - cat release_description.txt >> release_description_full.md
-    - |
+      cat release_description.txt >> release_description_full.md
+
       DESKTOP_LINES="- **Linux (ARM64)**: tar.gz archive below"
       if [ -n "$LINUX_X64_JOB_ID" ]; then
-        DESKTOP_LINES="$DESKTOP_LINES
-      - **Linux (x64)**: tar.gz archive below"
+        DESKTOP_LINES="$DESKTOP_LINES\n- **Linux (x64)**: tar.gz archive below"
       fi
       if [ -n "$WINDOWS_X64_JOB_ID" ]; then
-        DESKTOP_LINES="$DESKTOP_LINES
-      - **Windows (x64)**: Installer (.exe) or portable (.zip) below"
+        DESKTOP_LINES="$DESKTOP_LINES\n- **Windows (x64)**: Installer (.exe) or portable (.zip) below"
       fi
 
       if [ -n "$IS_BETA" ]; then
@@ -626,22 +581,8 @@ release:gitlab:
         PLAYSTORE_LINE="- **Google Play Store**: Available through the Play Store app"
       fi
 
-      cat >> release_description_full.md << EOF
+      printf '\n## Downloads\n\n### Android\n%s\n- **Direct APK downloads**: See assets below\n\n### Desktop\n%b\n' "$PLAYSTORE_LINE" "$DESKTOP_LINES" >> release_description_full.md
 
-      ## Downloads
-
-      ### Android
-      $PLAYSTORE_LINE
-      - **Direct APK downloads**: See assets below
-
-      ### Desktop
-      $DESKTOP_LINES
-      EOF
-
-    # Create release using release-cli directly (avoids "Argument list too long" error)
-    # Use VERSION_URL (with + encoded as %2B) for artifact URLs
-    # Build argument list using set -- to avoid word-splitting issues with JSON
-    - |
       set --
       set -- "$@" --name "Gecko $CI_COMMIT_TAG"
       set -- "$@" --tag-name "$CI_COMMIT_TAG"

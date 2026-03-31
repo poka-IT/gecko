@@ -110,12 +110,6 @@ publish:forum:apk:
 publish:forum:complete:
   image: poka/gecko-ci-publish:latest
   stage: publish
-  dependencies:
-    - build:android:apk
-    - build:android:bundle
-    # - build:ios
-    - build:linux:arm64
-    # - build:macos
   needs:
     - job: build:android:apk
     - job: build:android:bundle
@@ -498,12 +492,6 @@ deploy:android:playstore:
 release:gitlab:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  dependencies:
-    - build:android:apk
-    - build:android:bundle
-    # - build:ios
-    - build:linux:arm64
-    # - build:macos
   needs:
     - job: build:android:apk
     - job: build:android:bundle

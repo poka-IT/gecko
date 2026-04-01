@@ -2,37 +2,22 @@
 
 ## What This Is
 
-Ğecko est un wallet mobile Flutter pour la blockchain Duniter v2s (Ḡ1v2). Il offre la gestion de wallets, les paiements, la certification d'identités, des alertes visuelles de certification (expiration/renouvellement), et un outil d'analyse de marché pour auditer l'activité transactionnelle sur une période.
+Ğecko est un wallet mobile Flutter pour la blockchain Duniter v2s (Ḡ1v2). Il offre la gestion de wallets, les paiements, la certification d'identités, des alertes visuelles de certification, un outil d'analyse de marché, et la recherche/affichage de noms CesiumPlus avec distinction visuelle anti-usurpation entre identités vérifiées et noms auto-déclarés.
 
 ## Core Value
 
 Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé de leur réseau de certifications et analyser leur activité transactionnelle sans quitter l'app.
 
-## Current Milestone: v0.3 Noms CesiumPlus & Recherche
-
-**Goal:** Intégrer les noms de portefeuilles CesiumPlus dans la recherche et l'affichage, avec une UX anti-usurpation qui distingue clairement les identités on-chain des noms CesiumPlus auto-déclarés.
-
-**Target features:**
-- Recherche hybride avec scoring multi-source (identités priorisées, CesiumPlus différenciés)
-- Affichage des noms CesiumPlus pour les portefeuilles sans identité on-chain
-- Enregistrement CesiumPlus quand l'utilisateur renomme un portefeuille (pas le nom par défaut)
-- UX anti-usurpation : distinction visuelle claire entre noms vérifiés et auto-déclarés
-- Cache Riverpod persisté avec invalidation robuste
-
 ## Current State
 
+**v0.3 shipped** (2026-04-01) — 3 phases, 7 plans, +803 LOC
+- Trust visual system avec distinction vérifiée/auto-déclarée, NameSourceBadge, Hive offline
+- Recherche hybride identités + CesiumPlus dans 5 entry points UI, sections étiquetées
+- Publication automatique du nom CesiumPlus au renommage avec retry
+
 **v0.2 shipped** (2026-03-25) — 2 phases, 4 plans, +1314 LOC
-- Alertes de certification visibles depuis l'accueil, les contacts et la liste des certifications
-- Analyse de marché avec sélection de période/contacts, totaux par contact, découverte d'autres contacts, export markdown
-
-**v0.3 Phase 3 complete** (2026-04-01)
-- Trust visual system : cesiumNameProvider, cesiumNameConflictProvider, NameSourceBadge, NameByAddress avec fallback CesiumPlus, persistance Hive csName
-
-**v0.3 Phase 4 complete** (2026-04-01)
-- Hybrid search : searchByName() dans durt2, cesiumPlusSearchProvider, intégration dans 5 entry points UI (mobile + desktop), sections étiquetées, déduplication, TRUST-02 vérifié
-
-**v0.3 Phase 5 complete** (2026-04-01)
-- Name registration : publication automatique du nom au renommage, fire-and-forget avec retry indicator, préservation des données de profil
+- Alertes de certification depuis l'accueil, contacts et certifications
+- Analyse de marché complète avec export markdown
 
 ## Requirements
 
@@ -63,7 +48,7 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 
 ### Active
 
-(No active requirements — milestone v0.3 complete)
+(No active requirements — start next milestone with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -94,11 +79,13 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 | Analyse de marché complète | Besoin épiceries participatives + vérification d'activité | ✓ Delivered (v0.2) |
 | Dot indicator (pas de compteur) | Simplicité visuelle, indicateur worst-status | ✓ Good |
 | calendar_date_picker2 pour range picker | Validé par Ginkgo, meilleur UX que 2x showDatePicker | ✓ Good |
-| Pas de recherche par nom simple | Risque usurpation, attend solution Duniter | ⚠️ Revisit — v0.3 adresse via CesiumPlus + anti-usurpation |
+| Pas de recherche par nom simple | Risque usurpation, attend solution Duniter | ✓ Résolu en v0.3 via CesiumPlus + anti-usurpation |
+| Séparation trust CesiumPlus vs identité | CesiumPlus est auto-déclaré, risque usurpation | ✓ Good — badges visuels, sections séparées (v0.3) |
+| Fire-and-forget pour publish CesiumPlus | Ne pas bloquer le rename local sur le réseau | ✓ Good — retry indicator sur échec (v0.3) |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-04-01 after Phase 5 completion (v0.3 milestone complete)*
+*Last updated: 2026-04-01 after v0.3 milestone*

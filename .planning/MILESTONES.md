@@ -1,5 +1,21 @@
 # Milestones
 
+## v0.3 Noms CesiumPlus & Recherche (Shipped: 2026-04-01)
+
+**Phases completed:** 3 phases, 7 plans, 14 tasks
+
+**Key accomplishments:**
+
+- cesiumNameProvider for CesiumPlus name lookup with impersonation detection, NameSourceBadge widget with verified/self-declared visual distinction, and trust translation keys in 4 languages
+- NameByAddress widget gains opt-in CesiumPlus name fallback with Hive persistence, enabled at 8 safe call sites while keeping payment/identity contexts CesiumPlus-free
+- Trust indicators in profile view (verified/self-declared badges, conflict warning) and wallet header (CesiumPlus name with self-declared label for non-identity wallets, verified badge for members)
+- Elasticsearch name search via durt2 searchByName() with Gecko FutureProvider and deduplication utility
+- CesiumPlus search results integrated into mobile and desktop search with labeled trust-tier sections, deduplication, and italic styling
+- CesiumPlus search integrated into GlobalSearchPaletteDialog and DesktopSearchSection with keyboard navigation, italic styling, and TRUST-02 compliance verified
+- Fire-and-forget CesiumPlus name publication on wallet rename with retry indicator on failure
+
+---
+
 ## v0.2 Certification Alerts & Market Analysis (Shipped: 2026-03-25)
 
 **Phases completed:** 2 phases, 4 plans, 11 tasks

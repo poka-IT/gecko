@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/avatar_providers.dart';
+import 'package:gecko/providers/cs_publish_status_provider.dart';
+import 'package:gecko/providers/cesium_profile_provider.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -215,6 +217,67 @@ class WalletManagementService {
     } catch (e) {
       log.e('Error uploading avatar to Cesium+: $e');
       return false;
+    }
+  }
+
+  /// Publish wallet name to CesiumPlus pod
+  ///
+  /// Fire-and-forget method: updates the CesiumPlus profile title to [name].
+  /// Guards against default names (starting with '#').
+  /// Preserves existing profile data (description, city, socials, tags, avatar).
+  /// Updates [csPublishStatusProvider] to reflect progress/failure.
+  /// Requires a [ref] to access providers from the widget tree.
+  static Future<void> publishNameToCesiumPlus(
+    String walletAddress,
+    String name,
+    String pinCode, {
+    required riverpod.WidgetRef ref,
+  }) async {
+    // Never publish default names
+    if (WalletNameService.isDefault(name)) return;
+
+    final statusNotifier = ref.read(csPublishStatusProvider(walletAddress).notifier);
+    statusNotifier.state = CsPublishStatus.publishing;
+
+    try {
+      final walletService = ref.read(walletServiceProvider);
+      final cesiumPlusService = ref.read(cesiumPlusServiceProvider);
+
+      // Get keypair for signing
+      final keyPair = await walletService.getKeyPairFromAddress(
+        address: walletAddress,
+        pinCode: pinCode,
+      );
+
+      // Read existing profile to preserve fields that uploadProfile would clear
+      final existing = await cesiumPlusService.getProfileByAddress(walletAddress);
+
+      final success = await cesiumPlusService.uploadProfile(
+        address: walletAddress,
+        signFunction: keyPair.sign,
+        title: name,
+        description: existing?['description'] as String?,
+        city: existing?['city'] as String?,
+        geoPointLat: existing?['geoPoint']?['lat']?.toString(),
+        geoPointLon: existing?['geoPoint']?['lon']?.toString(),
+        socials: (existing?['socials'] as List?)
+            ?.map((s) => CesiumSocial.fromJson(s as Map<String, dynamic>))
+            .toList(),
+        tags: (existing?['tags'] as List?)?.cast<String>(),
+      );
+
+      if (success) {
+        statusNotifier.state = CsPublishStatus.success;
+        // Invalidate cached profile so the new name is picked up
+        ref.invalidate(cesiumProfileProvider(walletAddress));
+        log.i('Name "$name" published to CesiumPlus for $walletAddress');
+      } else {
+        statusNotifier.state = CsPublishStatus.failed;
+        log.e('CesiumPlus uploadProfile returned false for $walletAddress');
+      }
+    } catch (e) {
+      statusNotifier.state = CsPublishStatus.failed;
+      log.e('Error publishing name to CesiumPlus: $e');
     }
   }
 

@@ -7,7 +7,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 // ─── Data classes ───
 
-enum DesktopSearchSuggestionType { address, identity }
+enum DesktopSearchSuggestionType { address, identity, cesiumPlus }
 
 class DesktopSearchSuggestion {
   const DesktopSearchSuggestion({required this.address, required this.username, required this.type});

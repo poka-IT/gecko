@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/cesium_plus_search_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/screens/home/desktop/desktop_shared.dart';
@@ -56,6 +57,7 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
   List<DesktopSearchSuggestion> _buildSearchSuggestions({
     required List<d.IdentitySuggestion> identities,
     required List<d.WalletEntity> addresses,
+    required List<CesiumPlusSearchResult> cesiumPlusResults,
   }) {
     final seen = <String>{};
     final suggestions = <DesktopSearchSuggestion>[];
@@ -79,6 +81,18 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
             address: identity.address,
             username: identity.name,
             type: DesktopSearchSuggestionType.identity,
+          ),
+        );
+      }
+    }
+
+    for (final cs in cesiumPlusResults) {
+      if (seen.add(cs.address)) {
+        suggestions.add(
+          DesktopSearchSuggestion(
+            address: cs.address,
+            username: cs.title,
+            type: DesktopSearchSuggestionType.cesiumPlus,
           ),
         );
       }
@@ -169,6 +183,13 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
     final identityResultsAsync = query.length >= 2
         ? ref.watch(searchIdentityProvider(query))
         : const AsyncValue<List<d.IdentitySuggestion>>.data([]);
+    final cesiumPlusResultsAsync = query.length >= 2
+        ? ref.watch(cesiumPlusSearchProvider(query))
+        : const AsyncValue<List<CesiumPlusSearchResult>>.data([]);
+    final cesiumPlusResults = switch (cesiumPlusResultsAsync) {
+      AsyncData(:final value) => value,
+      _ => const <CesiumPlusSearchResult>[],
+    };
 
     final addressResults = switch (addressResultsAsync) {
       AsyncData(:final value) =>
@@ -188,7 +209,7 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
       _ => const <d.IdentitySuggestion>[],
     };
     final suggestions = query.length >= 2
-        ? _buildSearchSuggestions(identities: identityResults, addresses: addressResults)
+        ? _buildSearchSuggestions(identities: identityResults, addresses: addressResults, cesiumPlusResults: cesiumPlusResults)
         : const <DesktopSearchSuggestion>[];
     final hasSuggestions = suggestions.isNotEmpty;
     final isLoading = query.length >= 2 && (addressResultsAsync.isLoading || identityResultsAsync.isLoading);
@@ -554,6 +575,9 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
                               fontSize: 13,
                               color: context.colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
+                              fontStyle: suggestion.type == DesktopSearchSuggestionType.cesiumPlus
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
                             ),
                           ),
                         ),
@@ -569,7 +593,9 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
                           child: Text(
                             suggestion.type == DesktopSearchSuggestionType.identity
                                 ? 'desktopIdentityShortLabel'.tr()
-                                : 'desktopWalletShortLabel'.tr(),
+                                : suggestion.type == DesktopSearchSuggestionType.cesiumPlus
+                                    ? 'selfDeclaredName'.tr()
+                                    : 'desktopWalletShortLabel'.tr(),
                             style: scaledTextStyle(
                               fontSize: 10,
                               color: suggestion.type == DesktopSearchSuggestionType.identity

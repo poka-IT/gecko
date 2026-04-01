@@ -19,7 +19,6 @@ import 'package:uuid/uuid.dart';
 /// This service provides static methods for wallet operations that don't require
 /// persistent state management. For validation state, use WalletNameValidationProvider.
 class WalletManagementService {
-  WalletManagementService._internal();
 
   /// Change wallet avatar by picking and cropping an image
   ///
@@ -308,8 +307,3 @@ class WalletManagementService {
     return true;
   }
 }
-
-/// Provider for WalletManagementService
-final walletManagementServiceProvider = riverpod.Provider<WalletManagementService>((ref) {
-  return WalletManagementService._internal();
-});

@@ -283,7 +283,7 @@
     "errorDetails": "Error Details:",
     "errorLoadingCurrencyData": "Error loading currency data",
     "errorLoadingLicense": "Unable to load the license",
-    "errorLoadingWalletData": "",
+    "errorLoadingWalletData": "Error loading wallet data",
     "errorRenamingSafe": "Error renaming safe: {}",
     "errorReportCopied": "Error report copied to clipboard",
     "errorRetrievingSeed": "Error retrieving seed phrase",

@@ -74,7 +74,15 @@ class NameByAddress extends ConsumerWidget {
       data: (name) {
         // Store the real name in G1 wallets list for compatibility (not the placeholder)
         if (name != null) {
-          g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, username: name));
+          final existing = g1WalletsBox.get(wallet.address);
+          if (existing != null) {
+            if (existing.username != name) {
+              existing.username = name;
+              g1WalletsBox.put(wallet.address, existing);
+            }
+          } else {
+            g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, username: name));
+          }
         }
 
         // If no identity name found, try CesiumPlus fallback

@@ -263,10 +263,7 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
     final cesiumPlusResults = query.length >= 2
         ? await ref.read(cesiumPlusSearchProvider(query).future)
         : const <CesiumPlusSearchResult>[];
-    final knownAddresses = <String>{
-      ...wallets.map((w) => w.address),
-      ...identities.map((i) => i.address),
-    };
+    final knownAddresses = <String>{...wallets.map((w) => w.address), ...identities.map((i) => i.address)};
     final dedupedCs = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
     final directEntries = _buildEntries(wallets, identities, dedupedCs);
     if (directEntries.isNotEmpty) {
@@ -597,14 +594,16 @@ class _CesiumPlusResultTile extends ConsumerWidget {
       ),
       username: result.title,
       isHighlighted: isHighlighted,
-      onTap: onTapOverride ?? () {
-        ref.read(searchTextProvider.notifier).clear();
-        Navigator.of(context, rootNavigator: true).pop();
-        final navCtx = Gecko.navigatorContext;
-        if (navCtx != null) {
-          NavigationService.openProfile(navCtx, address: result.address, username: result.title);
-        }
-      },
+      onTap:
+          onTapOverride ??
+          () {
+            ref.read(searchTextProvider.notifier).clear();
+            Navigator.of(context, rootNavigator: true).pop();
+            final navCtx = Gecko.navigatorContext;
+            if (navCtx != null) {
+              NavigationService.openProfile(navCtx, address: result.address, username: result.title);
+            }
+          },
     );
   }
 }

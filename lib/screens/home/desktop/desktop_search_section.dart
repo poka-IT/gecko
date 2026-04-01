@@ -209,7 +209,11 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
       _ => const <d.IdentitySuggestion>[],
     };
     final suggestions = query.length >= 2
-        ? _buildSearchSuggestions(identities: identityResults, addresses: addressResults, cesiumPlusResults: cesiumPlusResults)
+        ? _buildSearchSuggestions(
+            identities: identityResults,
+            addresses: addressResults,
+            cesiumPlusResults: cesiumPlusResults,
+          )
         : const <DesktopSearchSuggestion>[];
     final hasSuggestions = suggestions.isNotEmpty;
     final isLoading = query.length >= 2 && (addressResultsAsync.isLoading || identityResultsAsync.isLoading);
@@ -594,8 +598,8 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
                             suggestion.type == DesktopSearchSuggestionType.identity
                                 ? 'desktopIdentityShortLabel'.tr()
                                 : suggestion.type == DesktopSearchSuggestionType.cesiumPlus
-                                    ? 'selfDeclaredName'.tr()
-                                    : 'desktopWalletShortLabel'.tr(),
+                                ? 'selfDeclaredName'.tr()
+                                : 'desktopWalletShortLabel'.tr(),
                             style: scaledTextStyle(
                               fontSize: 10,
                               color: suggestion.type == DesktopSearchSuggestionType.identity

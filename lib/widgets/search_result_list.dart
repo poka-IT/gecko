@@ -46,10 +46,7 @@ class SearchResult extends ConsumerWidget {
           final identityResults = identityResultsAsync.asData?.value ?? [];
 
           // Deduplicate CesiumPlus results against both wallet and identity addresses
-          final knownAddresses = <String>{
-            ...results.map((w) => w.address),
-            ...identityResults.map((i) => i.address),
-          };
+          final knownAddresses = <String>{...results.map((w) => w.address), ...identityResults.map((i) => i.address)};
           final dedupedCesiumPlus = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
 
           return Expanded(
@@ -62,8 +59,7 @@ class SearchResult extends ConsumerWidget {
                     if (dedupedCesiumPlus.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       _buildSectionHeader(context, 'selfDeclaredNamesSection'.tr()),
-                      for (final result in dedupedCesiumPlus)
-                        _buildCesiumPlusTile(result, context),
+                      for (final result in dedupedCesiumPlus) _buildCesiumPlusTile(result, context),
                     ],
                   ],
                 ),

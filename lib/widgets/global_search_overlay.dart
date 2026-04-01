@@ -308,10 +308,7 @@ class _GlobalSearchResults extends ConsumerWidget {
     final cesiumPlusResults = cesiumPlusResultsAsync.asData?.value ?? const <CesiumPlusSearchResult>[];
     final isLoading = walletResultsAsync.isLoading || identityResultsAsync.isLoading;
 
-    final knownAddresses = <String>{
-      ...walletResults.map((w) => w.address),
-      ...identityResults.map((i) => i.address),
-    };
+    final knownAddresses = <String>{...walletResults.map((w) => w.address), ...identityResults.map((i) => i.address)};
     final dedupedCesiumPlus = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
 
     if (isLoading) {

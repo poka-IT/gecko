@@ -9,10 +9,10 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 
 ### Recherche Hybride
 
-- [ ] **SRCH-01**: L'utilisateur peut rechercher des portefeuilles par nom CesiumPlus en plus des identités on-chain
+- [x] **SRCH-01**: L'utilisateur peut rechercher des portefeuilles par nom CesiumPlus en plus des identités on-chain
 - [ ] **SRCH-02**: Les résultats de recherche fusionnent identités et noms CesiumPlus avec les identités toujours au-dessus
 - [ ] **SRCH-03**: Les résultats sont affichés en sections étiquetées ("Identités vérifiées" / "Noms auto-déclarés")
-- [ ] **SRCH-04**: La recherche d'identités continue normalement si le pod CesiumPlus est indisponible
+- [x] **SRCH-04**: La recherche d'identités continue normalement si le pod CesiumPlus est indisponible
 
 ### Affichage des Noms
 
@@ -54,10 +54,10 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRCH-01 | Phase 4 | Pending |
+| SRCH-01 | Phase 4 | Complete |
 | SRCH-02 | Phase 4 | Pending |
 | SRCH-03 | Phase 4 | Pending |
-| SRCH-04 | Phase 4 | Pending |
+| SRCH-04 | Phase 4 | Complete |
 | DISP-01 | Phase 3 | Complete |
 | DISP-02 | Phase 3 | Complete |
 | DISP-03 | Phase 3 | Complete |

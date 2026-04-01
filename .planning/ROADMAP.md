@@ -56,9 +56,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — durt2 searchByName() method, cesiumPlusSearchProvider, section header translations
+- [x] 04-01-PLAN.md — durt2 searchByName() method, cesiumPlusSearchProvider, section header translations
 - [ ] 04-02-PLAN.md — Mobile search + desktop overlay CesiumPlus section integration
-- [ ] 04-03-PLAN.md — Desktop palette + inline search CesiumPlus integration, TRUST-02 verification
+- [x] 04-03-PLAN.md — Desktop palette + inline search CesiumPlus integration, TRUST-02 verification
 
 **UI hint**: yes
 

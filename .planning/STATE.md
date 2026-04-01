@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.3
 milestone_name: Noms CesiumPlus & Recherche
-status: Ready to execute
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-01T10:36:43.885Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-04-01T10:44:29.803Z"
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 5
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 ## Current Position
 
 Phase: 04 (Hybrid Search) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -51,6 +51,8 @@ Plan: 2 of 3
 | Phase 03-trust-visual-system-name-display P03 | 4min | 2 tasks | 2 files |
 | Phase 03-trust-visual-system-name-display P02 | 6min | 2 tasks | 9 files |
 | Phase 04-hybrid-search P01 | 3min | 2 tasks | 6 files |
+| Phase 04-hybrid-search P02 | 3min | 2 tasks | 3 files |
+| Phase 04-hybrid-search P03 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -70,6 +72,11 @@ Recent decisions affecting current work:
 - [Phase 03-trust-visual-system-name-display]: Payment popup and idty_status excluded from CesiumPlus display for anti-usurpation
 - [Phase 04-hybrid-search]: Used Uri.replace(queryParameters:) for proper URL encoding of Elasticsearch query parameters
 - [Phase 04-hybrid-search]: Used direct Address + base58BitcoinDecode for pubkey conversion instead of Utils instance method
+- [Phase 04-hybrid-search]: CesiumPlus section renders only after identity results resolve to prevent reflow
+- [Phase 04-hybrid-search]: Desktop identity header changed to verifiedIdentitiesSection for trust-tier consistency
+- [Phase 04-hybrid-search]: Enter-key fallback tries wallet -> identity -> CesiumPlus in order
+- [Phase 04-hybrid-search]: CesiumPlus results do not block loading indicator, appear when ready (graceful degradation)
+- [Phase 04-hybrid-search]: Identity section header changed to verifiedIdentitiesSection for consistency
 
 ### Pending Todos
 
@@ -81,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T10:36:43.883Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-01T10:44:29.800Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None

@@ -10,8 +10,8 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 ### Recherche Hybride
 
 - [x] **SRCH-01**: L'utilisateur peut rechercher des portefeuilles par nom CesiumPlus en plus des identités on-chain
-- [ ] **SRCH-02**: Les résultats de recherche fusionnent identités et noms CesiumPlus avec les identités toujours au-dessus
-- [ ] **SRCH-03**: Les résultats sont affichés en sections étiquetées ("Identités vérifiées" / "Noms auto-déclarés")
+- [x] **SRCH-02**: Les résultats de recherche fusionnent identités et noms CesiumPlus avec les identités toujours au-dessus
+- [x] **SRCH-03**: Les résultats sont affichés en sections étiquetées ("Identités vérifiées" / "Noms auto-déclarés")
 - [x] **SRCH-04**: La recherche d'identités continue normalement si le pod CesiumPlus est indisponible
 
 ### Affichage des Noms
@@ -29,7 +29,7 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 ### Anti-usurpation
 
 - [x] **TRUST-01**: Un nom d'identité on-chain n'est jamais remplacé ou masqué par un nom CesiumPlus
-- [ ] **TRUST-02**: Aucun autocomplete de noms CesiumPlus dans les champs de paiement/transfert
+- [x] **TRUST-02**: Aucun autocomplete de noms CesiumPlus dans les champs de paiement/transfert
 - [x] **TRUST-03**: Un avertissement est affiché quand un nom CesiumPlus correspond exactement à une identité on-chain existante
 
 ## Future Requirements
@@ -55,8 +55,8 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SRCH-01 | Phase 4 | Complete |
-| SRCH-02 | Phase 4 | Pending |
-| SRCH-03 | Phase 4 | Pending |
+| SRCH-02 | Phase 4 | Complete |
+| SRCH-03 | Phase 4 | Complete |
 | SRCH-04 | Phase 4 | Complete |
 | DISP-01 | Phase 3 | Complete |
 | DISP-02 | Phase 3 | Complete |
@@ -65,7 +65,7 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 | REG-01 | Phase 5 | Pending |
 | REG-02 | Phase 5 | Pending |
 | TRUST-01 | Phase 3 | Complete |
-| TRUST-02 | Phase 4 | Pending |
+| TRUST-02 | Phase 4 | Complete |
 | TRUST-03 | Phase 3 | Complete |
 
 **Coverage:**

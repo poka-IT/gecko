@@ -28,11 +28,7 @@ class NameSourceBadge extends StatelessWidget {
     return switch (source) {
       NameSource.identity => Tooltip(
         message: 'verifiedIdentity'.tr(),
-        child: Icon(
-          Icons.verified,
-          size: scaleSize(16),
-          color: context.geckoColors.statusMember,
-        ),
+        child: Icon(Icons.verified, size: scaleSize(16), color: context.geckoColors.statusMember),
       ),
       NameSource.cesiumPlus => Tooltip(
         message: 'selfDeclaredNameTooltip'.tr(),

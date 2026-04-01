@@ -126,7 +126,11 @@ class CesiumProfileViewScreen extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.warning_amber_rounded, size: scaleSize(16), color: context.colorScheme.error),
+                                Icon(
+                                  Icons.warning_amber_rounded,
+                                  size: scaleSize(16),
+                                  color: context.colorScheme.error,
+                                ),
                                 ScaledSizedBox(width: 6),
                                 Flexible(
                                   child: Text(

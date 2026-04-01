@@ -112,9 +112,7 @@ class WalletHeaderContent extends ConsumerWidget {
     final displayName = IdentityUtils.getDisplayName(identityName, idtyStatus);
 
     // For non-identity wallets, try CesiumPlus name
-    final csName = (idtyStatus == IdtyStatus.none)
-        ? ref.watch(cesiumNameProvider(address)).asData?.value
-        : null;
+    final csName = (idtyStatus == IdtyStatus.none) ? ref.watch(cesiumNameProvider(address)).asData?.value : null;
 
     return Hero(
       tag: 'wallet_header_$address', // Same tag as CompactWalletHeader for transition
@@ -168,24 +166,24 @@ class WalletHeaderContent extends ConsumerWidget {
                                   identityName: displayName ?? ' ',
                                 )
                               : (csName != null
-                                  ? Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            csName.length > 22 ? '${csName.substring(0, 22)}...' : csName,
-                                            style: scaledTextStyle(
-                                              fontSize: 16,
-                                              color: context.colorScheme.onSurfaceVariant,
-                                              fontWeight: FontWeight.w400,
-                                              fontStyle: FontStyle.italic,
+                                    ? Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              csName.length > 22 ? '${csName.substring(0, 22)}...' : csName,
+                                              style: scaledTextStyle(
+                                                fontSize: 16,
+                                                color: context.colorScheme.onSurfaceVariant,
+                                                fontWeight: FontWeight.w400,
+                                                fontStyle: FontStyle.italic,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        SizedBox(width: scaleSize(4)),
-                                        NameSourceBadge(source: NameSource.cesiumPlus),
-                                      ],
-                                    )
-                                  : const SizedBox.shrink()),
+                                          SizedBox(width: scaleSize(4)),
+                                          NameSourceBadge(source: NameSource.cesiumPlus),
+                                        ],
+                                      )
+                                    : const SizedBox.shrink()),
                         ),
                       ],
                     ),

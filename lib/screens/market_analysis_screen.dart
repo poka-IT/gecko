@@ -195,6 +195,7 @@ class _MarketAnalysisInfoBannerState extends State<_MarketAnalysisInfoBanner> {
               child: TextMarkDown(
                 'marketAnalysisInfoBody'.tr(),
                 style: scaledTextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.8)),
+                textAlign: WrapAlignment.start,
               ),
             ),
             crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,

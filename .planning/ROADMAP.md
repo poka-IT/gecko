@@ -70,7 +70,11 @@ Plans:
   1. When user renames a wallet to a custom name (not the default), the name is published to CesiumPlus automatically
   2. If CesiumPlus upload fails, the local rename still succeeds and a retry indicator is visible
   3. Default wallet names are never published to CesiumPlus
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — csPublishStatusProvider, publishNameToCesiumPlus service method, wallet_options.dart rename flow integration + retry indicator
+
 **UI hint**: yes
 
 ## Progress
@@ -84,4 +88,4 @@ Phases execute in numeric order: 3 → 4 → 5
 | 2. Market Analysis | v0.2 | 2/2 | Complete | 2026-03-25 |
 | 3. Trust Visual System & Name Display | v0.3 | 0/3 | Not started | - |
 | 4. Hybrid Search | v0.3 | 0/3 | Not started | - |
-| 5. CesiumPlus Name Registration | v0.3 | 0/? | Not started | - |
+| 5. CesiumPlus Name Registration | v0.3 | 0/1 | Not started | - |

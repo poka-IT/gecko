@@ -25,6 +25,9 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 - Alertes de certification visibles depuis l'accueil, les contacts et la liste des certifications
 - Analyse de marché avec sélection de période/contacts, totaux par contact, découverte d'autres contacts, export markdown
 
+**v0.3 Phase 3 complete** (2026-04-01)
+- Trust visual system : cesiumNameProvider, cesiumNameConflictProvider, NameSourceBadge, NameByAddress avec fallback CesiumPlus, persistance Hive csName
+
 ## Requirements
 
 ### Validated
@@ -46,14 +49,14 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 - ✓ Analyse de marché : totaux envoyés/reçus par contact — v0.2
 - ✓ Analyse de marché : découverte des autres contacts — v0.2
 - ✓ Analyse de marché : export markdown — v0.2
+- ✓ Affichage noms CesiumPlus pour portefeuilles sans identité — v0.3 Phase 3
+- ✓ UX anti-usurpation (distinction visuelle identités vs noms auto-déclarés) — v0.3 Phase 3
+- ✓ Cache Riverpod persisté pour noms CesiumPlus (Hive csName) — v0.3 Phase 3
 
 ### Active
 
 - [ ] Recherche hybride identités + noms CesiumPlus avec scoring multi-source
-- [ ] Affichage noms CesiumPlus pour portefeuilles sans identité
 - [ ] Enregistrement noms de portefeuilles via API CesiumPlus
-- [ ] UX anti-usurpation (distinction visuelle identités vs noms auto-déclarés)
-- [ ] Cache Riverpod persisté pour noms CesiumPlus
 
 ### Out of Scope
 
@@ -91,4 +94,4 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-03-31 after v0.3 milestone start*
+*Last updated: 2026-04-01 after Phase 3 completion*

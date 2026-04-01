@@ -1014,6 +1014,8 @@
     "homeAlertSentCertExpiringSoon": "La tua certificazione di {} scade tra {} giorni",
     "homeAlertReceivedCertExpired": "La certificazione ricevuta da {} è scaduta",
     "homeAlertReceivedCertExpiringSoon": "La certificazione ricevuta da {} scade tra {} giorni",
+    "selfDeclaredNamesSection": "NOMI AUTODICHIARATI",
+    "verifiedIdentitiesSection": "IDENTITÀ VERIFICATE",
     "youAreCandidate": "Sei un candidato",
     "youAreMember": "Sei membro",
     "youAreNotMember": "Non sei membro",

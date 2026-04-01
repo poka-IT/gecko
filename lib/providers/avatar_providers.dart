@@ -69,7 +69,7 @@ class AvatarCacheNotifier extends Notifier<Map<String, Uint8List?>> {
 
       // 3. Download from Cesium+ (blocking, only if connected)
       if (ref.read(storageStateProvider) != StorageState.onlineMode) {
-        // Not connected yet — don't cache null, will retry when connection is ready
+        // Not connected yet - don't cache null, will retry when connection is ready
         return null;
       }
       log.d('Downloading avatar for $address from Cesium+');

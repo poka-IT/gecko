@@ -364,7 +364,7 @@ class _MnemonicScannerState extends State<MnemonicScanner> with WidgetsBindingOb
     return null;
   }
 
-  /// Spatial reading order mode — sort all valid BIP39 words by position
+  /// Spatial reading order mode - sort all valid BIP39 words by position
   /// and validate as a 12-word mnemonic.
   ///
   /// Works for grid layouts (3×4), inline phrases (1-3 lines), or any spatial

@@ -25,7 +25,7 @@ final balanceStreamProvider = StreamProvider.family.autoDispose<d.WalletBalance,
 
   controller = StreamController<d.WalletBalance>(
     onListen: () async {
-      // Skip subscription when offline — provider will be recreated when connection returns
+      // Skip subscription when offline - provider will be recreated when connection returns
       if (storageState != StorageState.onlineMode) return;
 
       // When someone starts listening, create the subscription

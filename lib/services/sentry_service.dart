@@ -117,7 +117,7 @@ class SentryService {
     _startMemoryPressureListener();
   }
 
-  // ignore: unused_field — stored to prevent GC collection
+  // ignore: unused_field - stored to prevent GC collection
   static AppLifecycleListener? _lifecycleListener;
 
   /// Record app lifecycle transitions as Sentry breadcrumbs.
@@ -164,7 +164,7 @@ class SentryService {
   /// Check if a Sentry event is a network socket error (SocketException, OSError).
   /// These occur when WebSocket/HTTP connections drop in background mode
   /// and are automatically recovered by the auto-reconnect mechanism.
-  /// They are NOT actual crashes — Flutter catches them via PlatformDispatcher
+  /// They are NOT actual crashes - Flutter catches them via PlatformDispatcher
   /// but the Sentry SDK reports them as "fatal" because they are unhandled.
   static bool _isNetworkSocketError(SentryEvent event) {
     final exceptions = event.exceptions;
@@ -190,7 +190,7 @@ class SentryService {
     try {
       // Downgrade network socket errors from fatal to warning.
       // These are expected during background mode / network changes and
-      // auto-recover via reconnection — they don't crash the app.
+      // auto-recover via reconnection - they don't crash the app.
       if (_isNetworkSocketError(event)) {
         event.level = SentryLevel.warning;
       }

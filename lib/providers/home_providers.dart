@@ -84,7 +84,7 @@ class HomeMessageNotifier extends Notifier<String> {
       final alert = ref.read(homeAlertProvider);
       if (alert.hasAlert) return alert.message;
     } catch (_) {
-      // Provider not yet initialized — fall back to default
+      // Provider not yet initialized - fall back to default
     }
     return idleKey;
   }

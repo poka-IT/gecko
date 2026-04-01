@@ -90,7 +90,7 @@ class MarketAnalysisService {
   /// Fetches all paginated transaction pages for [walletAddress] within the
   /// given date range, WITHOUT filtering by contact address.
   ///
-  /// Used to discover "other contacts" — addresses involved in transactions
+  /// Used to discover "other contacts" - addresses involved in transactions
   /// that are not in the user's initial selection.
   Future<List<TransactionDisplayItem>> fetchAllPagesUnfiltered(
     String walletAddress,

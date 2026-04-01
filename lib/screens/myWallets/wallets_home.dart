@@ -190,7 +190,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
         });
         return Center(child: CircularProgressIndicator(color: context.colorScheme.primary));
       }
-      // Reload already attempted and wallets still empty — show empty state
+      // Reload already attempted and wallets still empty - show empty state
       return Center(
         child: Text(
           'noWalletFound'.tr(),

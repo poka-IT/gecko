@@ -310,13 +310,13 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
   void _handleEnterKey() {
     if (_isProcessing) return;
     switch (_currentStep) {
-      case 0: // Intro — requires checkbox
+      case 0: // Intro - requires checkbox
         if (_hasAcceptedIntro) {
           _generateMnemonic();
           _next();
         }
         break;
-      case 1: // Mnemonic display — same as "iNotedMyMnemonic" button
+      case 1: // Mnemonic display - same as "iNotedMyMnemonic" button
         if (_mnemonicWords != null) {
           final mnemonicState = ref.read(mnemonicStateProvider);
           if (mnemonicState.mnemonicResult != null) {

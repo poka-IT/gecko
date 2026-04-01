@@ -110,7 +110,7 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
       final currentState = ref.read(mnemonicChallengeProvider);
       if (currentState.isComplete) return;
 
-      // Clear input then advance — the TextField stays in the tree so focus is preserved
+      // Clear input then advance - the TextField stays in the tree so focus is preserved
       _controller.clear();
       ref.read(mnemonicChallengeProvider.notifier).advanceToNext();
     });
@@ -197,7 +197,7 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
               ],
             ),
             SizedBox(height: scaleSize(20)),
-            // Word input area — TextField stays in tree to preserve keyboard focus
+            // Word input area - TextField stays in tree to preserve keyboard focus
             _buildWordInput(context, state),
             SizedBox(height: scaleSize(16)),
             // Confirm button
@@ -228,7 +228,7 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
       padding: EdgeInsets.symmetric(horizontal: scaleSize(20)),
       child: Column(
         children: [
-          // Only the label is animated — the TextField below never leaves the tree
+          // Only the label is animated - the TextField below never leaves the tree
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: Text(
@@ -317,7 +317,7 @@ class _MnemonicChallengeSheetState extends ConsumerState<_MnemonicChallengeSheet
                   )
                 : const SizedBox.shrink(key: ValueKey('empty')),
           ),
-          // Check button — visible when not yet validated and user has typed something
+          // Check button - visible when not yet validated and user has typed something
           if (!isCurrentValidated) ...[
             SizedBox(height: scaleSize(12)),
             SizedBox(

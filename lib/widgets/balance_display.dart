@@ -190,7 +190,7 @@ class BalanceDisplay extends ConsumerWidget {
     // If ratio is zero (DU data not yet loaded from blockchain), show placeholder
     if (ratio == BigInt.zero) {
       return Text(
-        '—',
+        '-',
         style: scaledTextStyle(fontSize: size, color: color, fontWeight: fontWeight),
       );
     }

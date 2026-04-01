@@ -31,7 +31,7 @@ class DeepLinkNotifier extends Notifier<void> {
   }
 
   void _handleUri(Uri uri) {
-    // Concurrency guard — prevents double-navigation from rapid successive links
+    // Concurrency guard - prevents double-navigation from rapid successive links
     if (_isProcessing) {
       log.d('Deep link ignored: already processing another link');
       return;
@@ -58,7 +58,7 @@ class DeepLinkNotifier extends Notifier<void> {
 
     final context = Gecko.navigatorContext;
     if (context == null) {
-      // Still not ready — retry once more after next frame
+      // Still not ready - retry once more after next frame
       _pendingUri = uri;
       WidgetsBinding.instance.addPostFrameCallback((_) => _processPendingUri());
       return;

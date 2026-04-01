@@ -284,7 +284,7 @@ class _QrCodeFullscreenState extends ConsumerState<QrCodeFullscreen> {
                       ),
                     ),
                     const Spacer(flex: 2),
-                    // NFC buttons — only shown when NFC hardware is available and enabled
+                    // NFC buttons - only shown when NFC hardware is available and enabled
                     nfcAvailable.when(
                       data: (availability) => availability == NFCAvailability.available
                           ? Column(

@@ -17,7 +17,7 @@ import 'package:gecko/widgets/commons/animated_text.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/easter_egg_detector.dart';
 
-/// Handles tap on a home alert message — navigates to the appropriate screen.
+/// Handles tap on a home alert message - navigates to the appropriate screen.
 ///
 /// Used by both mobile and desktop home widgets.
 void handleHomeAlertTap(BuildContext context, HomeAlertState alert) {

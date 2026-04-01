@@ -162,7 +162,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
         ref.read(profileViewProvider(widget.toAddress).notifier).setPayComment(prefill.comment!);
         ref.read(profileViewProvider(widget.toAddress).notifier).toggleCommentVisibility();
       }
-      // Clear prefill — it's consumed
+      // Clear prefill - it's consumed
       ref.read(paymentPrefillProvider.notifier).clear();
       setState(() => canValidate = true);
     }

@@ -178,7 +178,7 @@ class CertificationTransactionHelper {
       onDone: () {
         if (hasHandled) return;
         hasHandled = true;
-        log.w('⚠️ [CertificationHelper] Stream closed without terminal state — clearing in-progress');
+        log.w('⚠️ [CertificationHelper] Stream closed without terminal state - clearing in-progress');
         notifier.removeCertification(issuerAddress, targetAddress);
         if (removeFromPersistentQueue) {
           _removeFromPersistentQueue(container, issuerAddress, targetAddress);

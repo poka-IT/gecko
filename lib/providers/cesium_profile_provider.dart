@@ -14,7 +14,7 @@ final cesiumProfileProvider = FutureProvider.family<Map<String, dynamic>?, Strin
 
 /// Derives profile existence from [cesiumProfileProvider].
 /// Non-blocking: returns false while loading, true when data confirms a profile exists.
-/// Reuses the same cached fetch — no extra network call.
+/// Reuses the same cached fetch - no extra network call.
 final cesiumProfileExistsProvider = Provider.family<bool, String>((ref, address) {
   final profileAsync = ref.watch(cesiumProfileProvider(address));
   if (!profileAsync.hasValue) return false;

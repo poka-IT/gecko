@@ -174,7 +174,7 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
 
     setState(() => _isProcessing = true);
     try {
-      // Check if target has migrated — adding a migrated address to queue is pointless
+      // Check if target has migrated - adding a migrated address to queue is pointless
       final migrationData = await ref.read(migrationFromDataProvider(widget.address).future);
       if (migrationData != null) {
         if (!context.mounted) return;

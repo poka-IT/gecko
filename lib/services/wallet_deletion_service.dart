@@ -144,7 +144,7 @@ class WalletDeletionService {
 
     // Handle navigation
     if (walletService.safeBox.isEmpty()) {
-      // No safes left — update states before navigation to avoid rebuilds on stale providers
+      // No safes left - update states before navigation to avoid rebuilds on stale providers
       ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(-1);
       ref.read(walletsListProvider.notifier).clear();
 
@@ -154,7 +154,7 @@ class WalletDeletionService {
       await Future.delayed(const Duration(milliseconds: 300));
       ref.read(walletActionsProvider.notifier).invalidateProviders();
     } else {
-      // Safes remain — navigate first to unmount old widgets, then switch safe
+      // Safes remain - navigate first to unmount old widgets, then switch safe
       final remainingSafes = walletService.safeBox.getAll();
       if (remainingSafes.isEmpty) return;
 

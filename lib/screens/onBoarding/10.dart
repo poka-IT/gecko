@@ -96,7 +96,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       // === FAST PATH: Migration to existing safe with known target ===
       // When WalletSelectionScreen navigates here with targetWalletAddress already set,
       // we skip safe creation, wallet scanning, and wallet selection entirely.
-      // The target safe and wallet are already known — just do the migration.
+      // The target safe and wallet are already known - just do the migration.
       if (isMigrationToExistingSafe && migrationData?.targetWalletAddress != null) {
         await _handleDirectMigrationToExistingSafe(migrationData!);
         return;

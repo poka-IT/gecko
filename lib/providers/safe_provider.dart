@@ -81,7 +81,7 @@ class SafeManager {
     _ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(-1);
     _ref.read(walletsListProvider.notifier).clear();
 
-    // 2. Navigate first — pushAndRemoveUntil unmounts old widgets, which auto-disposes
+    // 2. Navigate first - pushAndRemoveUntil unmounts old widgets, which auto-disposes
     //    stream providers. Non-autoDispose providers are invalidated after the frame.
     final routeBuilder = AppRoutes.getRoutes()[RouteNames.home]!;
     navigator.pushAndRemoveUntil(

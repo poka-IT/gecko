@@ -729,6 +729,6 @@ class _ExpandableUdTileState extends State<ExpandableUdTile> with SingleTickerPr
     final oldest = udItems.last.transactionTime;
     final newest = udItems.first.transactionTime;
     final dateFormat = DateFormat.MMMd(locale);
-    return '${dateFormat.format(oldest)} — ${dateFormat.format(newest)}';
+    return '${dateFormat.format(oldest)} - ${dateFormat.format(newest)}';
   }
 }

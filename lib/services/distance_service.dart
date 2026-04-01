@@ -38,7 +38,7 @@ class WotData {
 /// Stateless service for computing WoT distance and quality metrics.
 /// Ported from cesium2s distance.service.ts + distance-computation.service.ts.
 class DistanceService {
-  // Static WoT data cache — shared across all distance computations
+  // Static WoT data cache - shared across all distance computations
   static WotData? _cachedWotData;
   static const _wotCacheTtl = Duration(hours: 3);
 
@@ -263,7 +263,7 @@ class DistanceService {
     final minAccessibleRefereesPerbill = chain.constant.distance.minAccessibleReferees;
     final xPercent = minAccessibleRefereesPerbill / 1000000000;
 
-    // Fetch WoT data (0% to 95%) — uses cache if available
+    // Fetch WoT data (0% to 95%) - uses cache if available
     final wotData = await fetchWotData(onProgress: (p) => onProgress(p * 0.95));
 
     onProgress(0.95);

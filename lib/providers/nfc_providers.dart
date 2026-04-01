@@ -54,7 +54,7 @@ class NfcSessionNotifier extends Notifier<NfcSessionData> {
     return const NfcSessionData();
   }
 
-  /// Start HCE emulation (seller mode — phone acts as NFC card).
+  /// Start HCE emulation (seller mode - phone acts as NFC card).
   Future<void> startEmulation(String uri) async {
     state = state.copyWith(state: NfcSessionState.emulating);
     await NfcHceService.setKeepScreenOn(true);

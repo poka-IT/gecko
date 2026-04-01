@@ -185,7 +185,7 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
 
   /// Returns true when the primary focus is inside any text input (TextField,
   /// TextFormField, etc.). Used to prevent single-letter shortcuts from firing
-  /// while the user is typing — regardless of which text field has focus.
+  /// while the user is typing - regardless of which text field has focus.
   bool _isTextInputFocused() {
     final primaryFocus = FocusManager.instance.primaryFocus;
     if (primaryFocus == null) return false;

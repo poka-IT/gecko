@@ -72,7 +72,7 @@ final genesisTimeProvider = FutureProvider<DateTime?>((ref) async {
   try {
     return await storageService.getGenesisBlockchainTime();
   } catch (e) {
-    return null; // Genesis time unavailable — node may be pruned or not synced
+    return null; // Genesis time unavailable - node may be pruned or not synced
   }
 });
 

@@ -8,7 +8,7 @@ import 'package:gecko/globals.dart';
 /// Flutter-side wrapper for the native NFC HCE (Host Card Emulation) plugin.
 ///
 /// Provides seller-mode (emulate NFC card) and buyer-mode (read HCE device)
-/// via platform channels. Android only — returns graceful fallbacks on other platforms.
+/// via platform channels. Android only - returns graceful fallbacks on other platforms.
 class NfcHceService {
   static const _channel = MethodChannel('gecko.axiomteam.gecko/nfc_hce');
   static const _eventChannel = EventChannel('gecko.axiomteam.gecko/nfc_hce_events');

@@ -132,7 +132,7 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
     }
 
     // Copy local avatar file from old wallet to new wallet
-    // Skip bundled asset paths (assets/avatars/*) — only copy real files on disk.
+    // Skip bundled asset paths (assets/avatars/*) - only copy real files on disk.
     try {
       final oldWallet = walletService.getWalletData(fromAddress);
       final imagePath = oldWallet.imagePath;

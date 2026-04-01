@@ -64,7 +64,7 @@ class DistanceNotifier extends Notifier<DistanceState> {
         return;
       }
 
-      log.i('[Distance] Identity index: $idtyIndex — fetching WoT data...');
+      log.i('[Distance] Identity index: $idtyIndex - fetching WoT data...');
       final result = await DistanceService.computeDistanceAndQuality(
         accountIndex: idtyIndex,
         onProgress: (progress) {
@@ -73,7 +73,7 @@ class DistanceNotifier extends Notifier<DistanceState> {
       );
 
       log.i(
-        '[Distance] Done — distance: ${(result.distanceRatio * 100).toStringAsFixed(1)}% '
+        '[Distance] Done - distance: ${(result.distanceRatio * 100).toStringAsFixed(1)}% '
         '(${result.distanceAccessible}/${result.distanceTotal}), '
         'quality: ${(result.qualityRatio * 100).toStringAsFixed(1)}% '
         '(${result.qualityAccessible}/${result.qualityTotal})',

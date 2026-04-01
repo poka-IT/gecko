@@ -27,10 +27,10 @@ enum HomeAlertPriority {
   /// Membership expires soon.
   membershipExpiringSoon(70),
 
-  /// A certification we SENT has expired — we can re-certify.
+  /// A certification we SENT has expired - we can re-certify.
   sentCertExpired(65),
 
-  /// A certification we SENT expires soon — we can re-certify.
+  /// A certification we SENT expires soon - we can re-certify.
   sentCertExpiringSoon(55),
 
   /// A certification we RECEIVED has expired.
@@ -97,10 +97,10 @@ class HomeAlertState {
 /// highest-priority alert.
 ///
 /// Watches only sources that are already loaded or throttled:
-/// - [walletsListProvider] — cached, always available
-/// - [membershipStatusProvider] — throttled (≤1 fetch per 10 blocks)
-/// - [smartIdtyStatusStreamProvider] — persistent stream for owned wallets
-/// - [certificationListProvider] — already subscribed for cert tiles/alerts
+/// - [walletsListProvider] - cached, always available
+/// - [membershipStatusProvider] - throttled (≤1 fetch per 10 blocks)
+/// - [smartIdtyStatusStreamProvider] - persistent stream for owned wallets
+/// - [certificationListProvider] - already subscribed for cert tiles/alerts
 ///
 /// Scans both RECEIVED and SENT certifications to find the specific
 /// person and expiration date for the alert message.

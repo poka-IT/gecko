@@ -8,7 +8,7 @@ import 'package:sqflite/sqflite.dart';
 /// Global provider for the shared persist storage.
 ///
 /// Uses SQLite on Android/iOS/macOS. Falls back to in-memory storage
-/// on unsupported platforms (Linux, Web) — persistence across restarts
+/// on unsupported platforms (Linux, Web) - persistence across restarts
 /// is disabled but the app works normally without errors.
 final persistStorageProvider = FutureProvider<Storage<String, String>>((ref) async {
   try {

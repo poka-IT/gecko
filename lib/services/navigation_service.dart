@@ -30,7 +30,7 @@ class NavigationService {
     if (isDesktopLayout(context)) {
       final scope = DesktopModalScope.of(context);
       if (scope != null) {
-        // We're inside a modal — close it and open profile with back button
+        // We're inside a modal - close it and open profile with back button
         Navigator.of(context).pop();
         showDesktopProfileModal(
           Gecko.navigatorContext!,

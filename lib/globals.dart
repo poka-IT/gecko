@@ -9,7 +9,7 @@ import 'package:gecko/services/log_collection_service.dart';
 const int dataVersion = 13;
 const int walletHeaderDataVersion = 2;
 
-// Persist cache schema version — bump to flush Riverpod SQLite cache on next app start.
+// Persist cache schema version - bump to flush Riverpod SQLite cache on next app start.
 // Unlike dataVersion, this does NOT wipe Hive boxes or wallets.
 const String persistCacheVersion = 'v2';
 

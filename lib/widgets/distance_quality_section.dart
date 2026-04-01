@@ -89,7 +89,7 @@ class DistanceQualitySection extends ConsumerWidget {
               ),
               ScaledSizedBox(width: 10),
               Text(
-                '$percentage% — $phaseText',
+                '$percentage% - $phaseText',
                 style: scaledTextStyle(fontSize: 12, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
             ],

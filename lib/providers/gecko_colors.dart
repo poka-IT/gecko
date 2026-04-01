@@ -189,7 +189,7 @@ class GeckoColors extends ThemeExtension<GeckoColors> {
   }
 }
 
-/// Light theme gecko colors — matches the existing hardcoded values.
+/// Light theme gecko colors - matches the existing hardcoded values.
 const lightGeckoColors = GeckoColors(
   // Semantic status
   success: Colors.green,
@@ -221,7 +221,7 @@ const lightGeckoColors = GeckoColors(
   deleteAction: Color(0xffD80000),
 );
 
-/// Dark theme gecko colors — slightly lighter / desaturated for dark backgrounds.
+/// Dark theme gecko colors - slightly lighter / desaturated for dark backgrounds.
 const darkGeckoColors = GeckoColors(
   // Semantic status
   success: Color(0xFF66BB6A), // Colors.green.shade400

@@ -17,7 +17,7 @@ class CertAlertDetail {
 }
 
 /// Returns the most urgent expiring cert for a wallet, with contact name and days.
-/// Single source of truth for cert alert scanning — used by the banner,
+/// Single source of truth for cert alert scanning - used by the banner,
 /// home alert, status dot (via [certAlertStatusProvider]), and contact alert.
 ///
 /// For sent certs, also suppresses alerts for contacts that are:

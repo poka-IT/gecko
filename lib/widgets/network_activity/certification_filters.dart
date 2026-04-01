@@ -18,7 +18,7 @@ void showCertificationFilterSheet(BuildContext context) {
   );
 }
 
-/// Mobile filter button widget — tapping it opens the filter sheet
+/// Mobile filter button widget - tapping it opens the filter sheet
 class CertificationFilters extends ConsumerWidget {
   const CertificationFilters({super.key});
 

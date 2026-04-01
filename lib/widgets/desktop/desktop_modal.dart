@@ -6,16 +6,16 @@ import 'package:gecko/extensions.dart';
 
 /// Predefined sizes for desktop modals
 enum DesktopModalSize {
-  /// 420px wide — PIN entry, simple confirmations
+  /// 420px wide - PIN entry, simple confirmations
   small(420),
 
-  /// 600px wide — forms, options, settings
+  /// 600px wide - forms, options, settings
   medium(600),
 
-  /// 800px wide — profiles, activity, complex views
+  /// 800px wide - profiles, activity, complex views
   large(800),
 
-  /// 1000px wide — multi-panel views
+  /// 1000px wide - multi-panel views
   extraLarge(1000);
 
   const DesktopModalSize(this.width);
@@ -185,7 +185,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
 /// Provides modal navigation context to descendant widgets.
 ///
 /// When a widget is inside a desktop modal, it can look up [DesktopModalScope]
-/// to discover [reopenCurrentModal] — a callback that reopens this modal.
+/// to discover [reopenCurrentModal] - a callback that reopens this modal.
 /// This allows shared widgets (TransactionTile, CertTile, etc.) to properly
 /// close the current modal and open a new one with a back button, without
 /// needing explicit parameters threaded through the widget tree.

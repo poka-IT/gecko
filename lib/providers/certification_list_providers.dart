@@ -135,7 +135,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
   }
 
   /// Load certifications from the server.
-  /// Attempts the HTTP query directly — the try/catch handles unreachable endpoints.
+  /// Attempts the HTTP query directly - the try/catch handles unreachable endpoints.
   Future<void> loadCertifications() async {
     state = state.copyWith(isLoading: true, hasError: false, error: null);
 

@@ -525,7 +525,7 @@ class _LegacyImportModalContentState extends ConsumerState<_LegacyImportModalCon
           Clipboard.setData(ClipboardData(text: value));
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('$label — ${'copied'.tr()}'), duration: const Duration(seconds: 2)));
+          ).showSnackBar(SnackBar(content: Text('$label - ${'copied'.tr()}'), duration: const Duration(seconds: 2)));
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

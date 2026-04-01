@@ -19,7 +19,6 @@ import 'package:uuid/uuid.dart';
 /// This service provides static methods for wallet operations that don't require
 /// persistent state management. For validation state, use WalletNameValidationProvider.
 class WalletManagementService {
-
   /// Change wallet avatar by picking and cropping an image
   ///
   /// Returns the new image path if successful, empty string if cancelled or failed.
@@ -243,10 +242,7 @@ class WalletManagementService {
       final cesiumPlusService = ref.read(cesiumPlusServiceProvider);
 
       // Get keypair for signing
-      final keyPair = await walletService.getKeyPairFromAddress(
-        address: walletAddress,
-        pinCode: pinCode,
-      );
+      final keyPair = await walletService.getKeyPairFromAddress(address: walletAddress, pinCode: pinCode);
 
       // Read existing profile to preserve fields that uploadProfile would clear
       final existing = await cesiumPlusService.getProfileByAddress(walletAddress);
@@ -259,9 +255,7 @@ class WalletManagementService {
         city: existing?['city'] as String?,
         geoPointLat: existing?['geoPoint']?['lat']?.toString(),
         geoPointLon: existing?['geoPoint']?['lon']?.toString(),
-        socials: (existing?['socials'] as List?)
-            ?.map((s) => CesiumSocial.fromJson(s as Map<String, dynamic>))
-            .toList(),
+        socials: (existing?['socials'] as List?)?.map((s) => CesiumSocial.fromJson(s as Map<String, dynamic>)).toList(),
         tags: (existing?['tags'] as List?)?.cast<String>(),
       );
 

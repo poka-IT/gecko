@@ -123,7 +123,7 @@ class _DesktopWelcomeWidget extends StatelessWidget {
                 ),
               ),
 
-              // Main content — centered
+              // Main content - centered
               Expanded(
                 child: Center(
                   child: SingleChildScrollView(
@@ -160,7 +160,7 @@ class _DesktopWelcomeWidget extends StatelessWidget {
                           ),
                           const SizedBox(height: 32),
 
-                          // Action cards grid — 2x2
+                          // Action cards grid - 2x2
                           _buildActionCardsGrid(context),
 
                           const TestWalletButton(),

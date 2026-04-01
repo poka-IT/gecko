@@ -18,7 +18,7 @@ void showIdentityFilterSheet(BuildContext context) {
   );
 }
 
-/// Mobile filter button widget — tapping it opens the filter sheet
+/// Mobile filter button widget - tapping it opens the filter sheet
 class IdentityFilters extends ConsumerWidget {
   const IdentityFilters({super.key});
 

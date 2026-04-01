@@ -244,7 +244,7 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
       _lastCertContent = null;
       child = const SizedBox.shrink();
     } else if (certState != null) {
-      // We have real data — build and cache the content
+      // We have real data - build and cache the content
       _certContentShown = true;
       _lastCertContent = Container(
         key: const ValueKey('cert_content'),
@@ -263,10 +263,10 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
       );
       child = _lastCertContent!;
     } else if (_certContentShown && _lastCertContent != null) {
-      // Loading but we've shown content before — keep showing cached content
+      // Loading but we've shown content before - keep showing cached content
       child = _lastCertContent!;
     } else {
-      // First load, never shown content — show placeholder
+      // First load, never shown content - show placeholder
       child = _buildCertPlaceholder(context);
     }
 

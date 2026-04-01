@@ -161,7 +161,7 @@ class _MarketAnalysisInfoBannerState extends State<_MarketAnalysisInfoBanner> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // Header — always visible, tappable
+          // Header - always visible, tappable
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
             borderRadius: BorderRadius.circular(12),
@@ -187,7 +187,7 @@ class _MarketAnalysisInfoBannerState extends State<_MarketAnalysisInfoBanner> {
             ),
           ),
 
-          // Body — collapsible
+          // Body - collapsible
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: Padding(

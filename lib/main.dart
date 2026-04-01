@@ -105,7 +105,7 @@ Future<void> main() async {
   // Configure SSL certificate handling before any network connections.
   // Duniter nodes commonly use self-signed certificates, so we must accept them.
   // This is acceptable because blockchain data integrity is verified by cryptographic
-  // signatures, not TLS — transactions and blocks are always validated locally.
+  // signatures, not TLS - transactions and blocks are always validated locally.
   // On Android, this also handles older devices with outdated CA certificate stores.
   // TODO: Implement per-endpoint certificate pinning for CesiumPlus profile API.
   SslConfigService.configureSslCertificateHandling(allowBadCertificates: !kReleaseMode);
@@ -226,7 +226,7 @@ class _DesktopWindowListener extends WindowListener {
     try {
       await Hive.close();
     } catch (e) {
-      // Best effort — don't block shutdown
+      // Best effort - don't block shutdown
     }
     await windowManager.destroy();
   }

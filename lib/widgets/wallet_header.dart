@@ -170,7 +170,9 @@ class WalletHeaderContent extends ConsumerWidget {
                                         children: [
                                           Flexible(
                                             child: Text(
-                                              csName.length > 22 ? '${csName.substring(0, 22)}...' : csName,
+                                              csName,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
                                               style: scaledTextStyle(
                                                 fontSize: 16,
                                                 color: context.colorScheme.onSurfaceVariant,

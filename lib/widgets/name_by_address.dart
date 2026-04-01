@@ -53,7 +53,9 @@ class NameByAddress extends ConsumerWidget {
         }
         if (cached?.csName != null) {
           return Text(
-            truncate(cached!.csName!, 22),
+            cached!.csName!,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             style: scaledTextStyle(
               fontSize: size,
               color: finalColor.withValues(alpha: 0.8),
@@ -105,7 +107,9 @@ class NameByAddress extends ConsumerWidget {
                   }
                   // Display CesiumPlus name with italic style (visually distinct from identity names)
                   return Text(
-                    truncate(csName, 22),
+                    csName,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: scaledTextStyle(
                       fontSize: size,
                       color: finalColor.withValues(alpha: 0.8),
@@ -118,7 +122,9 @@ class NameByAddress extends ConsumerWidget {
                 final cached = g1WalletsBox.get(wallet.address);
                 if (cached?.csName != null) {
                   return Text(
-                    truncate(cached!.csName!, 22),
+                    cached!.csName!,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: scaledTextStyle(
                       fontSize: size,
                       color: finalColor.withValues(alpha: 0.8),
@@ -135,7 +141,9 @@ class NameByAddress extends ConsumerWidget {
                 final cached = g1WalletsBox.get(wallet.address);
                 if (cached?.csName != null) {
                   return Text(
-                    truncate(cached!.csName!, 22),
+                    cached!.csName!,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: scaledTextStyle(
                       fontSize: size,
                       color: finalColor.withValues(alpha: 0.8),
@@ -152,7 +160,9 @@ class NameByAddress extends ConsumerWidget {
                 final cached = g1WalletsBox.get(wallet.address);
                 if (cached?.csName != null) {
                   return Text(
-                    truncate(cached!.csName!, 22),
+                    cached!.csName!,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: scaledTextStyle(
                       fontSize: size,
                       color: finalColor.withValues(alpha: 0.8),

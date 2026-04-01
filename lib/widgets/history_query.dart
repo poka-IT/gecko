@@ -332,9 +332,9 @@ class _HistoryQueryState extends ConsumerState<HistoryQuery> with TickerProvider
       }
     });
 
-    // Check if we have network connection
-    final connectionStatus = ref.watch(connectionStatusProvider);
-    final isNetworkAvailable = connectionStatus == d.ConnectionStatus.connected;
+    // Check if Squid indexer is connected (activity data comes from Squid only)
+    final squidStatus = ref.watch(squidConnectionStatusProvider);
+    final isNetworkAvailable = squidStatus == d.ConnectionStatus.connected;
 
     if (!isNetworkAvailable) {
       final squidEndpoint = ref.read(squidEndpointProvider);

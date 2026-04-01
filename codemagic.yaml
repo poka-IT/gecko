@@ -9,7 +9,7 @@ workflows:
       events: []
 
     environment:
-      flutter: stable
+      flutter: fvm
 
     scripts:
       - name: Remove local dependency overrides

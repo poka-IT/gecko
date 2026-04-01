@@ -1013,6 +1013,8 @@
     "homeAlertSentCertExpiringSoon": "Tu certificación de {} expira en {} días",
     "homeAlertReceivedCertExpired": "La certificación recibida de {} ha expirado",
     "homeAlertReceivedCertExpiringSoon": "La certificación recibida de {} expira en {} días",
+    "selfDeclaredNamesSection": "NOMBRES AUTODECLARADOS",
+    "verifiedIdentitiesSection": "IDENTIDADES VERIFICADAS",
     "youAreCandidate": "Eres candidato",
     "youAreMember": "Eres miembro",
     "youAreNotMember": "No eres miembro",

@@ -11,6 +11,7 @@ import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/global_search_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/search_provider.dart';
+import 'package:gecko/providers/cesium_plus_search_provider.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
@@ -246,6 +247,14 @@ class _GlobalSearchOverlayState extends ConsumerState<GlobalSearchOverlay> {
     if (identities.isNotEmpty) {
       final first = identities.first;
       _openProfile(address: first.address, username: first.name);
+      return;
+    }
+
+    final cesiumPlusResults = await ref.read(cesiumPlusSearchProvider(query).future);
+    if (cesiumPlusResults.isNotEmpty) {
+      final first = cesiumPlusResults.first;
+      _openProfile(address: first.address, username: first.title);
+      return;
     }
   }
 
@@ -290,15 +299,26 @@ class _GlobalSearchResults extends ConsumerWidget {
         ? ref.watch(searchIdentityProvider(query))
         : const AsyncValue<List<d.IdentitySuggestion>>.data([]);
 
+    final cesiumPlusResultsAsync = query.length >= 2
+        ? ref.watch(cesiumPlusSearchProvider(query))
+        : const AsyncValue<List<CesiumPlusSearchResult>>.data([]);
+
     final walletResults = walletResultsAsync.asData?.value ?? const <G1WalletsList>[];
     final identityResults = identityResultsAsync.asData?.value ?? const <d.IdentitySuggestion>[];
+    final cesiumPlusResults = cesiumPlusResultsAsync.asData?.value ?? const <CesiumPlusSearchResult>[];
     final isLoading = walletResultsAsync.isLoading || identityResultsAsync.isLoading;
+
+    final knownAddresses = <String>{
+      ...walletResults.map((w) => w.address),
+      ...identityResults.map((i) => i.address),
+    };
+    final dedupedCesiumPlus = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
 
     if (isLoading) {
       return const Center(child: Loading(stroke: 3, size: 28));
     }
 
-    if (walletResults.isEmpty && identityResults.isEmpty) {
+    if (walletResults.isEmpty && identityResults.isEmpty && dedupedCesiumPlus.isEmpty) {
       return Center(
         child: Text(
           'noResult'.tr(),
@@ -321,9 +341,15 @@ class _GlobalSearchResults extends ConsumerWidget {
         ],
         if (identityResults.isNotEmpty) ...[
           if (walletResults.isNotEmpty) const SizedBox(height: 12),
-          _ResultsSectionTitle(title: 'desktopIdentityShortLabel'.tr()),
+          _ResultsSectionTitle(title: 'verifiedIdentitiesSection'.tr()),
           const SizedBox(height: 8),
           ...identityResults.map((identity) => _IdentityResultTile(identity: identity)),
+        ],
+        if (dedupedCesiumPlus.isNotEmpty) ...[
+          if (walletResults.isNotEmpty || identityResults.isNotEmpty) const SizedBox(height: 12),
+          _ResultsSectionTitle(title: 'selfDeclaredNamesSection'.tr()),
+          const SizedBox(height: 8),
+          ...dedupedCesiumPlus.map((cs) => _CesiumPlusResultTile(result: cs)),
         ],
       ],
     );
@@ -436,6 +462,36 @@ class _IdentityResultTile extends ConsumerWidget {
         ref.read(globalSearchProvider.notifier).closeOverlay();
         ref.read(searchTextProvider.notifier).clear();
         NavigationService.openProfile(context, address: identity.address, username: identity.name);
+      },
+    );
+  }
+}
+
+class _CesiumPlusResultTile extends ConsumerWidget {
+  const _CesiumPlusResultTile({required this.result});
+
+  final CesiumPlusSearchResult result;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _SearchResultTileShell(
+      address: result.address,
+      title: getShortPubkey(result.address),
+      subtitle: Text(
+        result.title,
+        overflow: TextOverflow.ellipsis,
+        style: scaledTextStyle(
+          fontSize: 13,
+          fontStyle: FontStyle.italic,
+          color: context.colorScheme.onSurface.withValues(alpha: 0.58),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      username: result.title,
+      onTap: () {
+        ref.read(globalSearchProvider.notifier).closeOverlay();
+        ref.read(searchTextProvider.notifier).clear();
+        NavigationService.openProfile(context, address: result.address, username: result.title);
       },
     );
   }

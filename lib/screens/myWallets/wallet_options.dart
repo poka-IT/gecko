@@ -9,6 +9,7 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/main.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/cs_publish_status_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
@@ -362,7 +363,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
           children: [
             buildConfirmIdentitySection(context, ref),
             buildOptionsSection(context),
-            if (!hasIdentity)
+            if (!hasIdentity) ...[
               InkWell(
                 key: keyRenameWallet,
                 onTap: () async {
@@ -376,6 +377,19 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                       setState(() {
                         currentWalletName = updatedWallet.name!;
                       });
+                    }
+
+                    // Publish to CesiumPlus if non-default name
+                    if (!WalletNameService.isDefault(newName)) {
+                      final pinOk = await PinCodeService.askPinCode(context, wallet: widget.wallet);
+                      if (pinOk && mounted) {
+                        unawaited(WalletManagementService.publishNameToCesiumPlus(
+                          widget.wallet.address,
+                          newName,
+                          PinCodeService.pinCode,
+                          ref: ref,
+                        ));
+                      }
                     }
                   }
                 },
@@ -401,6 +415,43 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   ),
                 ),
               ),
+              // Retry indicator for failed CesiumPlus name publication
+              Consumer(builder: (context, ref, _) {
+                final publishStatus = ref.watch(csPublishStatusProvider(widget.wallet.address));
+                if (publishStatus != CsPublishStatus.failed) return const SizedBox.shrink();
+                return InkWell(
+                  onTap: () async {
+                    final currentName = widget.wallet.name;
+                    if (currentName == null || WalletNameService.isDefault(currentName)) return;
+                    final pinOk = await PinCodeService.askPinCode(context, wallet: widget.wallet);
+                    if (pinOk && mounted) {
+                      unawaited(WalletManagementService.publishNameToCesiumPlus(
+                        widget.wallet.address,
+                        currentName,
+                        PinCodeService.pinCode,
+                        ref: ref,
+                      ));
+                    }
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(17), vertical: scaleSize(8)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.cloud_off, color: context.geckoColors.warning, size: scaleSize(20)),
+                        ScaledSizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'retryPublishName'.tr(),
+                            style: scaledTextStyle(fontSize: 14, color: context.geckoColors.warning),
+                          ),
+                        ),
+                        Icon(Icons.refresh, color: context.geckoColors.warning, size: scaleSize(18)),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
             _buildCesiumProfileButton(context),
             // Market Analysis button
             InkWell(

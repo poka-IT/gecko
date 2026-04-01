@@ -237,7 +237,7 @@ class WalletManagementService {
     if (WalletNameService.isDefault(name)) return;
 
     final statusNotifier = ref.read(csPublishStatusProvider(walletAddress).notifier);
-    statusNotifier.state = CsPublishStatus.publishing;
+    statusNotifier.setStatus(CsPublishStatus.publishing);
 
     try {
       final walletService = ref.read(walletServiceProvider);
@@ -267,16 +267,16 @@ class WalletManagementService {
       );
 
       if (success) {
-        statusNotifier.state = CsPublishStatus.success;
+        statusNotifier.setStatus(CsPublishStatus.success);
         // Invalidate cached profile so the new name is picked up
         ref.invalidate(cesiumProfileProvider(walletAddress));
         log.i('Name "$name" published to CesiumPlus for $walletAddress');
       } else {
-        statusNotifier.state = CsPublishStatus.failed;
+        statusNotifier.setStatus(CsPublishStatus.failed);
         log.e('CesiumPlus uploadProfile returned false for $walletAddress');
       }
     } catch (e) {
-      statusNotifier.state = CsPublishStatus.failed;
+      statusNotifier.setStatus(CsPublishStatus.failed);
       log.e('Error publishing name to CesiumPlus: $e');
     }
   }

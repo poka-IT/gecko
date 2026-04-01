@@ -6,11 +6,12 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/nfc_providers.dart';
 import 'package:gecko/screens/settings/settings_card.dart';
 import 'package:gecko/screens/settings/widgets/clear_cache_setting.dart';
+import 'package:gecko/screens/settings/widgets/currency_setting.dart';
 import 'package:gecko/screens/settings/widgets/delete_safes_setting.dart';
 import 'package:gecko/screens/settings/widgets/scan_default_action_setting.dart';
 import 'package:gecko/screens/settings/widgets/sentry_setting.dart';
 
-/// General tab: scan action, sentry, clear cache, delete safes.
+/// General tab: currency display, scan action, sentry, clear cache, delete safes.
 class GeneralTab extends StatelessWidget {
   const GeneralTab({super.key});
 
@@ -27,6 +28,10 @@ class GeneralTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ScaledSizedBox(height: isSmallScreen ? 12 : 20),
+            SettingsCard(
+              child: Padding(padding: EdgeInsets.all(padding), child: const CurrencySetting()),
+            ),
+            spacing,
             const _NfcSettingsCardWrapper(),
             SettingsCard(
               child: Padding(padding: EdgeInsets.all(padding), child: const SentrySetting()),

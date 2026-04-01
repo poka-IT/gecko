@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/screens/settings/settings_card.dart';
 import 'package:gecko/screens/settings/widgets/background_image_setting.dart';
-import 'package:gecko/screens/settings/widgets/currency_setting.dart';
 import 'package:gecko/screens/settings/widgets/language_setting.dart';
 import 'package:gecko/screens/settings/widgets/text_size_setting.dart';
 import 'package:gecko/screens/settings/widgets/theme_setting.dart';
 
-/// Appearance tab: theme, language, text size, background image, currency display.
+/// Appearance tab: theme, language, text size, background image.
 class AppearanceTab extends StatelessWidget {
   const AppearanceTab({super.key});
 
@@ -38,10 +37,6 @@ class AppearanceTab extends StatelessWidget {
             spacing,
             SettingsCard(
               child: Padding(padding: EdgeInsets.all(padding), child: const BackgroundImageSetting()),
-            ),
-            spacing,
-            SettingsCard(
-              child: Padding(padding: EdgeInsets.all(padding), child: const CurrencySetting()),
             ),
             ScaledSizedBox(height: isSmallScreen ? 20 : 24),
           ],

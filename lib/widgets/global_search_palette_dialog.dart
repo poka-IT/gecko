@@ -17,6 +17,7 @@ import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:gecko/providers/cesium_plus_search_provider.dart';
 import 'package:gecko/widgets/name_by_address.dart';
 
 class GlobalSearchPaletteDialog extends ConsumerStatefulWidget {
@@ -62,9 +63,19 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
     final identityResultsAsync = query.length >= 2 && squidStatus == d.ConnectionStatus.connected
         ? ref.watch(searchIdentityProvider(query))
         : const AsyncValue<List<d.IdentitySuggestion>>.data([]);
+    final cesiumPlusResultsAsync = query.length >= 2
+        ? ref.watch(cesiumPlusSearchProvider(query))
+        : const AsyncValue<List<CesiumPlusSearchResult>>.data([]);
+    final cesiumPlusResults = cesiumPlusResultsAsync.asData?.value ?? const <CesiumPlusSearchResult>[];
+    final knownAddresses = <String>{
+      ...(walletResultsAsync.asData?.value ?? const <G1WalletsList>[]).map((w) => w.address),
+      ...(identityResultsAsync.asData?.value ?? const <d.IdentitySuggestion>[]).map((i) => i.address),
+    };
+    final dedupedCesiumPlus = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
     final entries = _buildEntries(
       walletResultsAsync.asData?.value ?? const <G1WalletsList>[],
       identityResultsAsync.asData?.value ?? const <d.IdentitySuggestion>[],
+      dedupedCesiumPlus,
     );
 
     return Material(
@@ -127,6 +138,7 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
                                   query: query,
                                   walletResultsAsync: walletResultsAsync,
                                   identityResultsAsync: identityResultsAsync,
+                                  dedupedCesiumPlus: dedupedCesiumPlus,
                                   entries: entries,
                                 ),
                               ),
@@ -243,34 +255,23 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
   }
 
   Future<void> _openFirstResult() async {
-    final directEntries = _buildEntries(
-      await ref.read(searchResultsProvider.future),
-      ref.read(squidConnectionStatusProvider) == d.ConnectionStatus.connected
-          ? await ref.read(searchIdentityProvider(_controller.text.trim()).future)
-          : const <d.IdentitySuggestion>[],
-    );
+    final query = _controller.text.trim();
+    final wallets = await ref.read(searchResultsProvider.future);
+    final identities = ref.read(squidConnectionStatusProvider) == d.ConnectionStatus.connected
+        ? await ref.read(searchIdentityProvider(query).future)
+        : const <d.IdentitySuggestion>[];
+    final cesiumPlusResults = query.length >= 2
+        ? await ref.read(cesiumPlusSearchProvider(query).future)
+        : const <CesiumPlusSearchResult>[];
+    final knownAddresses = <String>{
+      ...wallets.map((w) => w.address),
+      ...identities.map((i) => i.address),
+    };
+    final dedupedCs = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
+    final directEntries = _buildEntries(wallets, identities, dedupedCs);
     if (directEntries.isNotEmpty) {
       _openEntry(directEntries.first);
       return;
-    }
-
-    final query = _controller.text.trim();
-    if (query.length < 2) return;
-
-    final walletResults = await ref.read(searchResultsProvider.future);
-    if (walletResults.isNotEmpty) {
-      final first = walletResults.first;
-      _openProfile(address: first.address, username: first.username);
-      return;
-    }
-
-    final squidStatus = ref.read(squidConnectionStatusProvider);
-    if (squidStatus != d.ConnectionStatus.connected) return;
-
-    final identities = await ref.read(searchIdentityProvider(query).future);
-    if (identities.isNotEmpty) {
-      final first = identities.first;
-      _openProfile(address: first.address, username: first.name);
     }
   }
 
@@ -307,7 +308,11 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
     }
   }
 
-  List<_PaletteSearchEntry> _buildEntries(List<G1WalletsList> wallets, List<d.IdentitySuggestion> identities) {
+  List<_PaletteSearchEntry> _buildEntries(
+    List<G1WalletsList> wallets,
+    List<d.IdentitySuggestion> identities,
+    List<CesiumPlusSearchResult> cesiumPlusResults,
+  ) {
     return [
       ...wallets.map(
         (wallet) => _PaletteSearchEntry(
@@ -325,6 +330,14 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
           kind: _PaletteSearchEntryKind.identity,
         ),
       ),
+      ...cesiumPlusResults.map(
+        (cs) => _PaletteSearchEntry(
+          address: cs.address,
+          username: cs.title,
+          title: getShortPubkey(cs.address),
+          kind: _PaletteSearchEntryKind.cesiumPlus,
+        ),
+      ),
     ];
   }
 
@@ -333,6 +346,7 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
     required String query,
     required AsyncValue<List<G1WalletsList>> walletResultsAsync,
     required AsyncValue<List<d.IdentitySuggestion>> identityResultsAsync,
+    required List<CesiumPlusSearchResult> dedupedCesiumPlus,
     required List<_PaletteSearchEntry> entries,
   }) {
     if (query.length < 2) {
@@ -346,7 +360,7 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
     final walletResults = walletResultsAsync.asData?.value ?? const <G1WalletsList>[];
     final identityResults = identityResultsAsync.asData?.value ?? const <d.IdentitySuggestion>[];
 
-    if (walletResults.isEmpty && identityResults.isEmpty) {
+    if (walletResults.isEmpty && identityResults.isEmpty && dedupedCesiumPlus.isEmpty) {
       return Center(
         child: Text(
           'noResult'.tr(),
@@ -379,12 +393,25 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
         ],
         if (identityResults.isNotEmpty) ...[
           if (walletResults.isNotEmpty) const SizedBox(height: 12),
-          _ResultsSectionTitle(title: 'desktopIdentityShortLabel'.tr()),
+          _ResultsSectionTitle(title: 'verifiedIdentitiesSection'.tr()),
           const SizedBox(height: 8),
           ...identityResults.map((identity) {
             final currentIndex = runningIndex++;
             return _IdentityResultTile(
               identity: identity,
+              isHighlighted: currentIndex == _highlightedIndex,
+              onTapOverride: () => _openEntry(entries[currentIndex]),
+            );
+          }),
+        ],
+        if (dedupedCesiumPlus.isNotEmpty) ...[
+          if (walletResults.isNotEmpty || identityResults.isNotEmpty) const SizedBox(height: 12),
+          _ResultsSectionTitle(title: 'selfDeclaredNamesSection'.tr()),
+          const SizedBox(height: 8),
+          ...dedupedCesiumPlus.map((cs) {
+            final currentIndex = runningIndex++;
+            return _CesiumPlusResultTile(
+              result: cs,
               isHighlighted: currentIndex == _highlightedIndex,
               onTapOverride: () => _openEntry(entries[currentIndex]),
             );
@@ -546,6 +573,42 @@ class _IdentityResultTile extends ConsumerWidget {
   }
 }
 
+class _CesiumPlusResultTile extends ConsumerWidget {
+  const _CesiumPlusResultTile({required this.result, required this.isHighlighted, this.onTapOverride});
+
+  final CesiumPlusSearchResult result;
+  final bool isHighlighted;
+  final VoidCallback? onTapOverride;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _SearchResultTileShell(
+      address: result.address,
+      title: getShortPubkey(result.address),
+      subtitle: Text(
+        result.title,
+        overflow: TextOverflow.ellipsis,
+        style: scaledTextStyle(
+          fontSize: 13,
+          fontStyle: FontStyle.italic,
+          color: context.colorScheme.onSurface.withValues(alpha: 0.58),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      username: result.title,
+      isHighlighted: isHighlighted,
+      onTap: onTapOverride ?? () {
+        ref.read(searchTextProvider.notifier).clear();
+        Navigator.of(context, rootNavigator: true).pop();
+        final navCtx = Gecko.navigatorContext;
+        if (navCtx != null) {
+          NavigationService.openProfile(navCtx, address: result.address, username: result.title);
+        }
+      },
+    );
+  }
+}
+
 class _SearchResultTileShell extends StatelessWidget {
   const _SearchResultTileShell({
     required this.address,
@@ -619,7 +682,7 @@ class _SearchResultTileShell extends StatelessWidget {
   }
 }
 
-enum _PaletteSearchEntryKind { wallet, identity }
+enum _PaletteSearchEntryKind { wallet, identity, cesiumPlus }
 
 class _PaletteSearchEntry {
   const _PaletteSearchEntry({required this.address, required this.username, required this.title, required this.kind});

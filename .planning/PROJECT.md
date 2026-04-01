@@ -31,6 +31,9 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 **v0.3 Phase 4 complete** (2026-04-01)
 - Hybrid search : searchByName() dans durt2, cesiumPlusSearchProvider, intégration dans 5 entry points UI (mobile + desktop), sections étiquetées, déduplication, TRUST-02 vérifié
 
+**v0.3 Phase 5 complete** (2026-04-01)
+- Name registration : publication automatique du nom au renommage, fire-and-forget avec retry indicator, préservation des données de profil
+
 ## Requirements
 
 ### Validated
@@ -56,10 +59,11 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 - ✓ UX anti-usurpation (distinction visuelle identités vs noms auto-déclarés) — v0.3 Phase 3
 - ✓ Cache Riverpod persisté pour noms CesiumPlus (Hive csName) — v0.3 Phase 3
 - ✓ Recherche hybride identités + noms CesiumPlus avec sections étiquetées — v0.3 Phase 4
+- ✓ Enregistrement noms de portefeuilles via API CesiumPlus — v0.3 Phase 5
 
 ### Active
 
-- [ ] Enregistrement noms de portefeuilles via API CesiumPlus
+(No active requirements — milestone v0.3 complete)
 
 ### Out of Scope
 
@@ -97,4 +101,4 @@ Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-04-01 after Phase 4 completion*
+*Last updated: 2026-04-01 after Phase 5 completion (v0.3 milestone complete)*

@@ -69,7 +69,7 @@ class CertificationListNotifier extends Notifier<CertificationListState> {
     // Persist state to local SQLite DB for instant display on app restart
     final network = ref.read(durtProvider).network.name;
     persist(
-      ref.watch(persistStorageProvider.future),
+      ref.read(persistStorageProvider.future),
       key: 'certList_${_params.address}_${_params.direction.name}_$network',
       encode: (state) => jsonEncode(state.toJson()),
       decode: (json) => CertificationListState.fromJson(jsonDecode(json) as Map<String, dynamic>),

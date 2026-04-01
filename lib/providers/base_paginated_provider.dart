@@ -128,7 +128,7 @@ abstract class BasePaginatedNotifier<T> extends Notifier<PaginatedState<T>> {
 
     // Persist state to local SQLite DB for instant display on app restart
     persist(
-      ref.watch(persistStorageProvider.future),
+      ref.read(persistStorageProvider.future),
       key: persistKey,
       encode: (state) => jsonEncode(state.toJson(itemsJsonKey, itemToJson)),
       decode: (json) {

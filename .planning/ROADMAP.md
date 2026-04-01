@@ -88,4 +88,4 @@ Phases execute in numeric order: 3 → 4 → 5
 | 2. Market Analysis | v0.2 | 2/2 | Complete | 2026-03-25 |
 | 3. Trust Visual System & Name Display | v0.3 | 0/3 | Not started | - |
 | 4. Hybrid Search | v0.3 | 0/3 | Not started | - |
-| 5. CesiumPlus Name Registration | v0.3 | 0/1 | Not started | - |
+| 5. CesiumPlus Name Registration | v0.3 | 0/1 | Planned    |  |

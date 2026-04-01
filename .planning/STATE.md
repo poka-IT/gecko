@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v0.3
 milestone_name: Noms CesiumPlus & Recherche
-status: Ready to plan
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-04-01T10:49:15.277Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-01T11:18:50.752Z"
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 6
+  total_plans: 7
   completed_plans: 6
 ---
 
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Les utilisateurs doivent pouvoir gérer leur monnaie libre, surveiller la santé de leur réseau de certifications et analyser leur activité transactionnelle sans quitter l'app
-**Current focus:** Phase 04 — Hybrid Search
+**Current focus:** Phase 05 — CesiumPlus Name Registration
 
 ## Current Position
 
-Phase: 5
-Plan: Not started
+Phase: 05 (CesiumPlus Name Registration) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: Not started
 | Phase 04-hybrid-search P01 | 3min | 2 tasks | 6 files |
 | Phase 04-hybrid-search P02 | 3min | 2 tasks | 3 files |
 | Phase 04-hybrid-search P03 | 3min | 2 tasks | 3 files |
+| Phase 05-cesiumplus-name-registration P01 | 5min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 04-hybrid-search]: Enter-key fallback tries wallet -> identity -> CesiumPlus in order
 - [Phase 04-hybrid-search]: CesiumPlus results do not block loading indicator, appear when ready (graceful degradation)
 - [Phase 04-hybrid-search]: Identity section header changed to verifiedIdentitiesSection for consistency
+- [Phase 05-cesiumplus-name-registration]: Only invalidate cesiumProfileProvider (cesiumNameProvider cascades via watch)
+- [Phase 05-cesiumplus-name-registration]: PIN requested after rename dialog, not before; local rename never blocked by network
+- [Phase 05-cesiumplus-name-registration]: Consumer widget isolates retry indicator rebuilds from rest of wallet options screen
 
 ### Pending Todos
 
@@ -88,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T10:44:29.800Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-04-01T11:18:50.750Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None

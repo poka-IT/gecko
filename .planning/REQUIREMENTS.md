@@ -23,8 +23,8 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 
 ### Enregistrement CesiumPlus
 
-- [ ] **REG-01**: Quand l'utilisateur renomme un portefeuille (nom non-défaut), le nom est publié comme profil CesiumPlus
-- [ ] **REG-02**: En cas d'échec réseau, un indicateur de statut et un retry automatique sont disponibles
+- [x] **REG-01**: Quand l'utilisateur renomme un portefeuille (nom non-défaut), le nom est publié comme profil CesiumPlus
+- [x] **REG-02**: En cas d'échec réseau, un indicateur de statut et un retry automatique sont disponibles
 
 ### Anti-usurpation
 
@@ -62,8 +62,8 @@ Requirements pour l'intégration des noms CesiumPlus et la recherche hybride. Ch
 | DISP-02 | Phase 3 | Complete |
 | DISP-03 | Phase 3 | Complete |
 | DISP-04 | Phase 3 | Complete |
-| REG-01 | Phase 5 | Pending |
-| REG-02 | Phase 5 | Pending |
+| REG-01 | Phase 5 | Complete |
+| REG-02 | Phase 5 | Complete |
 | TRUST-01 | Phase 3 | Complete |
 | TRUST-02 | Phase 4 | Complete |
 | TRUST-03 | Phase 3 | Complete |

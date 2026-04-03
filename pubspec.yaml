@@ -2,7 +2,7 @@ name: gecko
 description: Pay with G1.
 publish_to: "none"
 
-version: 1.2.1+186
+version: 1.2.1+187
 
 environment:
   sdk: ^3.8.1

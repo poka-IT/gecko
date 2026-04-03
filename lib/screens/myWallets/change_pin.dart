@@ -1,14 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/extensions.dart';
-import 'package:gecko/globals.dart';
 import 'package:gecko/screens/myWallets/confirm_change_pin.dart';
-import 'package:gecko/screens/onBoarding/9.dart';
 import 'package:gecko/widgets/commons/fader_transition.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:gecko/widgets/gecko_pin_field.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
 
 class ChangePinScreen extends StatefulWidget {
   const ChangePinScreen({super.key, required this.walletName, required this.oldPin});
@@ -21,20 +18,8 @@ class ChangePinScreen extends StatefulWidget {
 }
 
 class _ChangePinScreenState extends State<ChangePinScreen> {
-  final formKey = GlobalKey<FormState>();
-  late final FocusNode pinFocus;
-  late final TextEditingController enterPin;
-  late final PinInputController _pinController;
-  Color? pinColor = const Color(0xFFA4B600);
+  final _pinController = GeckoPinEntryController();
   bool hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    pinFocus = FocusNode(debugLabel: 'pinFocusNodeChange');
-    enterPin = TextEditingController();
-    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
-  }
 
   @override
   void dispose() {
@@ -48,78 +33,60 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
       backgroundColor: context.colorScheme.surface,
       appBar: GeckoAppBar(widget.walletName),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: ResponsiveCenter(
-            maxWidth: 500,
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const SizedBox(height: 60),
+        child: ResponsiveCenter(
+          maxWidth: 500,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 60),
+              Text(
+                'choosePassword'.tr(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
+              ),
+              if (hasError) ...[
+                const SizedBox(height: 20),
                 Text(
-                  'choosePassword'.tr(),
+                  "passwordTooSimple".tr(),
+                  style: TextStyle(color: context.geckoColors.danger, fontSize: 15, fontWeight: FontWeight.w500),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
                 ),
-                const SizedBox(height: 30),
-                pinForm(context),
-                const SizedBox(height: 40),
               ],
-            ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: GeckoPinEntry(
+                    controller: _pinController,
+                    onCompleted: (pin) {
+                      if (isPinComplex(pin)) {
+                        Navigator.push(
+                          context,
+                          FaderTransition(
+                            page: ConfirmChangePinScreen(
+                              walletName: widget.walletName,
+                              newPinCode: pin,
+                              oldPin: widget.oldPin,
+                            ),
+                            isFast: false,
+                          ),
+                        );
+                      } else {
+                        _pinController.triggerError();
+                      }
+                    },
+                    onChanged: (_) {
+                      if (hasError) setState(() => hasError = false);
+                    },
+                    onErrorAnimationComplete: () {
+                      setState(() => hasError = true);
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget pinForm(BuildContext context) {
-    return Column(
-      children: [
-        GeckoPinField(
-          pinController: _pinController,
-          autoDismissKeyboard: false,
-          pinColor: pinColor,
-          length: pinLength,
-          onCompleted: (pin) async {
-            if (isPinComplex(pin)) {
-              Navigator.push(
-                context,
-                FaderTransition(
-                  page: ConfirmChangePinScreen(walletName: widget.walletName, newPinCode: pin, oldPin: widget.oldPin),
-                  isFast: false,
-                ),
-              );
-            } else {
-              setState(() {
-                hasError = true;
-                pinColor = context.geckoColors.danger;
-                enterPin.text = '';
-                pinFocus.requestFocus();
-              });
-            }
-          },
-          onChanged: (value) {
-            if (hasError && value.isNotEmpty) {
-              setState(() {
-                hasError = false;
-                pinColor = const Color(0xFFA4B600);
-              });
-            } else if (pinColor != const Color(0xFFA4B600)) {
-              setState(() {
-                pinColor = const Color(0xFFA4B600);
-              });
-            }
-          },
-        ),
-        if (hasError) ...[
-          const SizedBox(height: 20),
-          Text(
-            "passwordTooSimple".tr(),
-            style: TextStyle(color: context.geckoColors.danger, fontSize: 15, fontWeight: FontWeight.w500),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ],
     );
   }
 }

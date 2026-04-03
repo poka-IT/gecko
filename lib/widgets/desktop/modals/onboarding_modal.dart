@@ -2,7 +2,6 @@ import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/globals.dart';
@@ -13,7 +12,6 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
-import 'package:gecko/screens/onBoarding/9.dart' show isPinComplex;
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
@@ -22,8 +20,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/desktop/desktop_congrats_step.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
-import 'package:gecko/widgets/gecko_pin_field.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
 
 /// Opens the desktop onboarding modal for creating a new wallet.
 ///
@@ -74,26 +71,15 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
   bool _pinError = false;
   String _pinErrorMessage = '';
   bool _isProcessing = false;
-  late FocusNode _pinFocusNode;
-  late TextEditingController _pinTextController;
-  late PinInputController _pinController;
-  late FocusNode _confirmPinFocusNode;
-  late TextEditingController _confirmPinTextController;
-  late PinInputController _confirmPinController;
+  late GeckoPinEntryController _pinController;
+  late GeckoPinEntryController _confirmPinController;
 
   @override
   void initState() {
     super.initState();
     _wordFocusNode = FocusNode(debugLabel: 'desktop_onboarding_word');
-    _pinFocusNode = FocusNode(debugLabel: 'desktop_onboarding_pin');
-    _pinTextController = TextEditingController();
-    _pinController = PinInputController(textController: _pinTextController, focusNode: _pinFocusNode);
-    _confirmPinFocusNode = FocusNode(debugLabel: 'desktop_onboarding_confirm_pin');
-    _confirmPinTextController = TextEditingController();
-    _confirmPinController = PinInputController(
-      textController: _confirmPinTextController,
-      focusNode: _confirmPinFocusNode,
-    );
+    _pinController = GeckoPinEntryController();
+    _confirmPinController = GeckoPinEntryController();
   }
 
   @override
@@ -127,13 +113,6 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
       switch (_currentStep) {
         case 2: // Word verification step
           _wordFocusNode.requestFocus();
-          break;
-        case 3: // PIN step
-          if (!_pinConfirmed) {
-            _pinFocusNode.requestFocus();
-          } else {
-            _confirmPinFocusNode.requestFocus();
-          }
           break;
       }
     });
@@ -289,56 +268,14 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-      focusNode: FocusNode(skipTraversal: true),
-      onKeyEvent: (event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
-          _handleEnterKey();
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHeader(context),
-          _buildProgressBar(context),
-          Flexible(child: _isProcessing ? _buildProcessingOverlay(context) : _buildCurrentStep(context)),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildHeader(context),
+        _buildProgressBar(context),
+        Flexible(child: _isProcessing ? _buildProcessingOverlay(context) : _buildCurrentStep(context)),
+      ],
     );
-  }
-
-  void _handleEnterKey() {
-    if (_isProcessing) return;
-    switch (_currentStep) {
-      case 0: // Intro - requires checkbox
-        if (_hasAcceptedIntro) {
-          _generateMnemonic();
-          _next();
-        }
-        break;
-      case 1: // Mnemonic display - same as "iNotedMyMnemonic" button
-        if (_mnemonicWords != null) {
-          final mnemonicState = ref.read(mnemonicStateProvider);
-          if (mnemonicState.mnemonicResult != null) {
-            ref.read(derivationStateProvider.notifier).setMnemonic(mnemonicState.mnemonicResult!.displayMnemonic);
-          }
-          _setupWordChallenge();
-          _wordController.clear();
-          setState(() => _wordVerified = false);
-          _next();
-        }
-        break;
-      case 2: // Word verification
-        if (_wordVerified) {
-          ref.read(wordChallengeProvider.notifier).reset();
-          _next();
-        }
-        break;
-      // case 3: PIN is handled by onCompleted callback
-      case 4: // Congrats
-        Navigator.of(context).pop(true);
-        break;
-    }
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -755,12 +692,9 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
                       _pinConfirmed = false;
                       _pinCode = '';
                       _pinError = false;
-                      _pinTextController.clear();
-                      _confirmPinTextController.clear();
                     });
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) _pinFocusNode.requestFocus();
-                    });
+                    _pinController.clear();
+                    _confirmPinController.clear();
                   } else {
                     _back();
                   }
@@ -776,9 +710,8 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
   }
 
   Widget _buildPinEntry(BuildContext context) {
-    return GeckoPinField(
-      pinController: _pinController,
-      autoDismissKeyboard: false,
+    return GeckoPinEntry(
+      controller: _pinController,
       length: pinLength,
       onChanged: (value) {
         if (_pinError && value.isNotEmpty) {
@@ -792,26 +725,20 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
             _pinConfirmed = true;
             _pinError = false;
           });
-          // Focus the confirmation field after build
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _confirmPinFocusNode.requestFocus();
-          });
         } else {
           setState(() {
             _pinError = true;
             _pinErrorMessage = 'passwordTooSimple'.tr();
           });
-          _pinTextController.clear();
-          _pinFocusNode.requestFocus();
+          _pinController.triggerError();
         }
       },
     );
   }
 
   Widget _buildPinConfirmation(BuildContext context) {
-    return GeckoPinField(
-      pinController: _confirmPinController,
-      autoDismissKeyboard: false,
+    return GeckoPinEntry(
+      controller: _confirmPinController,
       length: _pinCode.isEmpty ? pinLength : _pinCode.length,
       onChanged: (value) {
         if (_pinError && value.isNotEmpty) {
@@ -827,8 +754,7 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
             _pinError = true;
             _pinErrorMessage = 'thisIsNotAGoodCode'.tr();
           });
-          _confirmPinTextController.clear();
-          _confirmPinFocusNode.requestFocus();
+          _confirmPinController.triggerError();
         }
       },
     );

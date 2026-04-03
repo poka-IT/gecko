@@ -11,19 +11,17 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
-import 'package:gecko/screens/onBoarding/9.dart' show isPinComplex;
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/text_markdown.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/desktop/desktop_congrats_step.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
-import 'package:gecko/widgets/gecko_pin_field.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
 
 /// Opens the desktop restore modal for restoring a wallet from mnemonic.
 ///
-/// 3 steps: Mnemonic entry → PIN creation → PIN confirmation + safe creation
+/// 3 steps: Mnemonic entry -> PIN creation -> PIN confirmation + safe creation
 Future<bool?> showDesktopRestoreModal(BuildContext context) {
   return showDesktopModal<bool>(
     context: context,
@@ -58,25 +56,14 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
   bool _isProcessing = false;
   bool _biometricSetupAttempted = false;
   int _validationGeneration = 0;
-  late FocusNode _pinFocusNode;
-  late TextEditingController _pinTextController;
-  late PinInputController _pinController;
-  late FocusNode _confirmPinFocusNode;
-  late TextEditingController _confirmPinTextController;
-  late PinInputController _confirmPinController;
+  late GeckoPinEntryController _pinController;
+  late GeckoPinEntryController _confirmPinController;
 
   @override
   void initState() {
     super.initState();
-    _pinFocusNode = FocusNode(debugLabel: 'restore_pin');
-    _pinTextController = TextEditingController();
-    _pinController = PinInputController(textController: _pinTextController, focusNode: _pinFocusNode);
-    _confirmPinFocusNode = FocusNode(debugLabel: 'restore_confirm_pin');
-    _confirmPinTextController = TextEditingController();
-    _confirmPinController = PinInputController(
-      textController: _confirmPinTextController,
-      focusNode: _confirmPinFocusNode,
-    );
+    _pinController = GeckoPinEntryController();
+    _confirmPinController = GeckoPinEntryController();
   }
 
   @override
@@ -467,9 +454,8 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
             ),
           const SizedBox(height: 24),
           if (!_pinConfirmed)
-            GeckoPinField(
-              pinController: _pinController,
-              autoDismissKeyboard: false,
+            GeckoPinEntry(
+              controller: _pinController,
               length: pinLength,
               onChanged: (value) {
                 if (_pinError && value.isNotEmpty) setState(() => _pinError = false);
@@ -481,21 +467,18 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                     _pinConfirmed = true;
                     _pinError = false;
                   });
-                  WidgetsBinding.instance.addPostFrameCallback((_) => _confirmPinFocusNode.requestFocus());
                 } else {
                   setState(() {
                     _pinError = true;
                     _pinErrorMessage = 'passwordTooSimple'.tr();
                   });
-                  _pinTextController.clear();
-                  _pinFocusNode.requestFocus();
+                  _pinController.triggerError();
                 }
               },
             )
           else
-            GeckoPinField(
-              pinController: _confirmPinController,
-              autoDismissKeyboard: false,
+            GeckoPinEntry(
+              controller: _confirmPinController,
               length: _pinCode.isEmpty ? pinLength : _pinCode.length,
               onChanged: (value) {
                 if (_pinError && value.isNotEmpty) setState(() => _pinError = false);
@@ -509,8 +492,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                     _pinError = true;
                     _pinErrorMessage = 'thisIsNotAGoodCode'.tr();
                   });
-                  _confirmPinTextController.clear();
-                  _confirmPinFocusNode.requestFocus();
+                  _confirmPinController.triggerError();
                 }
               },
             ),
@@ -524,9 +506,9 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
                       _pinConfirmed = false;
                       _pinCode = '';
                       _pinError = false;
-                      _pinTextController.clear();
-                      _confirmPinTextController.clear();
                     });
+                    _pinController.clear();
+                    _confirmPinController.clear();
                   } else {
                     setState(() => _currentStep = 0);
                   }

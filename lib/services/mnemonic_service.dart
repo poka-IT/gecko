@@ -69,21 +69,18 @@ class MnemonicService {
       final detectedLanguage = await multilangService.detectBidouilleLanguageFromWords(words);
 
       if (detectedLanguage == null) {
-        return null; // No valid language detected
+        return null;
       }
 
       String englishMnemonic;
       if (detectedLanguage == BidouilleLang.english) {
-        // Input is already English
         englishMnemonic = inputMnemonic;
       } else {
-        // Convert to English for crypto operations
         englishMnemonic = await multilangService.convertToEnglish(inputMnemonic, sourceLanguage: detectedLanguage);
       }
 
-      // Validate the English mnemonic with BIP39
       if (!Durt.i.wallets.isMnemonicValid(englishMnemonic)) {
-        return null; // Invalid mnemonic checksum
+        return null;
       }
 
       return MnemonicResult(
@@ -148,12 +145,12 @@ class MnemonicService {
 
       // Validate each word
       final validWords = <String>[];
-      for (final word in words) {
-        final cleanWord = word.trim().toLowerCase();
+      for (int i = 0; i < words.length; i++) {
+        final cleanWord = words[i].trim().toLowerCase();
         if (await isValidBip39Word(cleanWord, preferredLanguage: preferredLanguage)) {
           validWords.add(cleanWord);
         } else {
-          return []; // One invalid word makes the whole mnemonic invalid
+          return [];
         }
       }
 

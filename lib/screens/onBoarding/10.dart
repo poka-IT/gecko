@@ -22,10 +22,9 @@ import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:gecko/widgets/gecko_pin_field.dart';
+import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
 import 'package:gecko/widgets/scan_derivations_info.dart';
 import 'package:gif_view/gif_view.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OnboardingStepTen extends ConsumerStatefulWidget {
   const OnboardingStepTen({
@@ -50,12 +49,8 @@ class OnboardingStepTen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
-  final formKey = GlobalKey<FormState>();
-  Color? pinColor = const Color(0xFFA4B600);
+  final _pinController = GeckoPinEntryController();
   bool hasError = false;
-  late final FocusNode pinFocus;
-  late final TextEditingController enterPin;
-  late final PinInputController _pinController;
 
   /// Blocks back navigation while safe creation/scan is in progress.
   bool _isProcessing = false;
@@ -65,9 +60,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   @override
   void initState() {
     super.initState();
-    pinFocus = FocusNode(debugLabel: 'pinFocusNode10');
-    enterPin = TextEditingController();
-    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(resetScanProvider)();
     });
@@ -83,9 +75,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   // Core flow: safe creation, wallet import, navigation
   // ---------------------------------------------------------------------------
 
-  /// Main flow after PIN confirmation succeeds.
-  /// Creates the safe, imports wallets, and navigates to the next screen.
-  /// Wrapped in a global try-catch to guarantee cleanup on any failure.
   Future<void> _handlePinConfirmed() async {
     setState(() => _isProcessing = true);
 
@@ -93,16 +82,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       final migrationData = widget.legacyMigrationData ?? ref.read(pendingLegacyMigrationProvider);
       final isMigrationToExistingSafe = migrationData?.isToExistingSafe ?? false;
 
-      // === FAST PATH: Migration to existing safe with known target ===
-      // When WalletSelectionScreen navigates here with targetWalletAddress already set,
-      // we skip safe creation, wallet scanning, and wallet selection entirely.
-      // The target safe and wallet are already known - just do the migration.
       if (isMigrationToExistingSafe && migrationData?.targetWalletAddress != null) {
         await _handleDirectMigrationToExistingSafe(migrationData!);
         return;
       }
 
-      // === NORMAL PATH: Safe creation + optional migration ===
       await _handleSafeCreationFlow(migrationData);
     } catch (e) {
       log.e('Error during safe setup: $e');
@@ -127,8 +111,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     }
   }
 
-  /// Direct migration to an existing safe: no safe creation, no wallet scanning.
-  /// Called when WalletSelectionScreen already identified the target wallet.
   Future<void> _handleDirectMigrationToExistingSafe(LegacyMigrationData migrationData) async {
     try {
       final walletService = ref.read(walletServiceProvider);
@@ -137,15 +119,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
       log.i('Direct migration to existing safe $targetSafeNumber, target wallet: ${migrationData.targetWalletAddress}');
 
-      // Perform the on-chain migration (shows TransactionInProgressScreen)
-      // Returns the possibly reassigned safe number (e.g. 0 after legacy deletion)
       final finalSafeNumber = await _performLegacyMigrationWithProgress(context, ref, targetWallet, migrationData);
 
-      // Clear migration state
       ref.read(pendingLegacyMigrationProvider.notifier).clear();
       _clearSensitiveState();
 
-      // Ensure Riverpod state is synced with the (possibly reassigned) safe
       ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(finalSafeNumber);
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: finalSafeNumber);
       ref.read(walletActionsProvider.notifier).invalidateProviders();
@@ -153,7 +131,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       final walletCount = ref.read(walletsListProvider).wallets.length;
       log.i('Direct migration complete. Safe $finalSafeNumber loaded with $walletCount wallets');
 
-      // Navigate to congratulations
       if (context.mounted) {
         await AppNavigator.pushWithFader(
           context,
@@ -184,22 +161,18 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     }
   }
 
-  /// Normal safe creation flow: creates safe, imports wallets, handles optional migration.
   Future<void> _handleSafeCreationFlow(LegacyMigrationData? migrationData) async {
     bool safeJustCreated = false;
 
     try {
-      // --- Step 1: Create safe ---
       safeJustCreated = await _createSafe();
 
-      // Sync Riverpod provider with durt2's internal defaultSafeBoxNumber.
       ref.read(defaultSafeBoxNumberProvider.notifier).refresh();
 
       await ref.read(biometricProvider.notifier).refresh();
       final currentSafe = ref.read(walletServiceProvider).defaultSafeBoxNumber;
       PinCodeService.setAuthenticatedSafe(currentSafe);
 
-      // --- Step 2: Import wallets (scan derivations or root import) ---
       if (!_isLegacy) {
         final exitedEarly = await _scanAndImportWallets();
         if (exitedEarly) {
@@ -208,7 +181,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         }
       }
 
-      // --- Step 3: Load wallets and refresh providers ---
       final walletService = ref.read(walletServiceProvider);
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
@@ -218,20 +190,14 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
       _clearSensitiveState();
 
-      // --- Step 4: Select default wallet ---
       final defaultWallet = await _selectDefaultWallet();
       if (defaultWallet != null) {
         await ref.read(walletServiceProvider).setDefaultAddress(defaultWallet.address);
       }
 
-      // --- Step 5: Handle legacy migration (new safe flow only) ---
       if (migrationData != null) {
-        // Get the best available target wallet for migration.
-        // If defaultWallet is null (e.g. loadWallets returned empty despite import),
-        // fall back to getting the root wallet directly from the safe.
         WalletEntity? migrationTarget = defaultWallet;
         if (migrationTarget == null) {
-          // Fallback: get root wallet directly from ObjectBox if Riverpod list is empty
           try {
             final safe = walletService.getSafeBox(currentSafe);
             if (safe.rootAddress != null) {
@@ -250,7 +216,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         }
       }
 
-      // --- Step 6: Final reload and navigate to congratulations ---
       final currentSafeNumber = ref.read(walletServiceProvider).defaultSafeBoxNumber;
       ref.read(defaultSafeBoxNumberProvider.notifier).refresh();
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafeNumber);
@@ -280,8 +245,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   // Helper methods
   // ---------------------------------------------------------------------------
 
-  /// Creates the safe (mnemonic or legacy).
-  /// Returns true if a new safe was actually created (false if it already existed).
   Future<bool> _createSafe() async {
     if (_isLegacy) {
       try {
@@ -318,8 +281,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     }
   }
 
-  /// Scans derivations and imports wallets for mnemonic safes.
-  /// Returns true if the scan handler already navigated away (timeout/error).
   Future<bool> _scanAndImportWallets() async {
     final mnemonicState = ref.read(mnemonicStateProvider);
     ScanDerivationsResult scanStatus = ScanDerivationsResult.none;
@@ -334,9 +295,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         return true;
       case ScanDerivationsResult.none:
       case ScanDerivationsResult.walletNotFound:
-        // Always import root wallet in the normal path.
-        // The fast path (_handleDirectMigrationToExistingSafe) handles the case
-        // where the target safe already exists and has wallets.
         await ref.read(walletServiceProvider).importRootWallet(pinCode: widget.pinCode);
         return false;
       default:
@@ -344,8 +302,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     }
   }
 
-  /// Selects the best default wallet.
-  /// Priority: identity member > confirmed > any identity > wallet #0 > first.
   Future<WalletEntity?> _selectDefaultWallet() async {
     WalletEntity? defaultWallet;
     try {
@@ -362,8 +318,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     return defaultWallet;
   }
 
-  /// Handles legacy migration if applicable.
-  /// Returns true if the caller should return early (navigation happened).
   Future<bool> _handleLegacyMigration(LegacyMigrationData migrationData, WalletEntity defaultWallet) async {
     if (migrationData.isToExistingSafe && migrationData.targetWalletAddress == null) {
       if (context.mounted) {
@@ -386,13 +340,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     return false;
   }
 
-  /// Clears mnemonic from memory and schedules PIN cache reset.
   void _clearSensitiveState() {
     ref.read(resetMnemonicStateProvider)();
     PinCodeService.debounceResetPinCode();
   }
 
-  /// Deletes the newly created safe and restores the previous default safe number.
   Future<void> _cleanupFailedCreation() async {
     try {
       final walletService = ref.read(walletServiceProvider);
@@ -418,13 +370,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
   // Legacy migration helpers
   // ---------------------------------------------------------------------------
 
-  /// Perform legacy migration with progress screen (used during onboarding).
-  ///
-  /// Returns the (possibly reassigned) target safe number after cleanup.
-  /// The legacy safe deletion is done synchronously AFTER the TransactionInProgressScreen
-  /// returns, not via an async stream listener. This avoids race conditions where
-  /// concurrent loadWallets calls and async deletions could leave Riverpod state
-  /// out of sync with the ObjectBox database.
   Future<int> _performLegacyMigrationWithProgress(
     BuildContext context,
     WidgetRef ref,
@@ -449,7 +394,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
       final broadcastStream = transactionStream.asBroadcastStream();
 
-      // Track the last transaction state to know if cleanup is safe
       TransactionState lastTxState = TransactionState.none;
       final stateSubscription = broadcastStream.listen((status) {
         lastTxState = status.state;
@@ -467,10 +411,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         await stateSubscription.cancel();
       }
 
-      // Synchronous cleanup: delete legacy safe only if tx succeeded.
-      // Accept both inBlock (validated in a block) and finalized (block finalized by consensus).
-      // The close button is enabled at inBlock, so users typically close the screen
-      // before finalized arrives.
       if (lastTxState == TransactionState.inBlock || lastTxState == TransactionState.finalized) {
         targetSafeNumber = await _deleteLegacySafeAndSyncState(
           walletService,
@@ -486,12 +426,6 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     return targetSafeNumber;
   }
 
-  /// Delete the legacy safe after successful migration, reassign safe number
-  /// to 0 if needed, and sync Riverpod state.
-  ///
-  /// Returns the (possibly reassigned) target safe number.
-  /// This must be called synchronously (not from a stream listener) to avoid
-  /// race conditions with concurrent loadWallets calls.
   Future<int> _deleteLegacySafeAndSyncState(
     WalletService walletService,
     String legacyAddress,
@@ -508,12 +442,9 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
       await walletService.deleteSafe(legacySafe.number);
       log.i('Legacy safe ${legacySafe.number} deleted successfully after migration');
 
-      // After deleting the legacy safe, if the target safe is not number 0,
-      // reassign it so it appears as "Coffre 1" (the first safe).
       if (targetSafeNumber != 0) {
         try {
           walletService.reassignSafeNumber(targetSafeNumber, 0);
-          // Also rename to the default first safe name (without number suffix)
           await walletService.renameSafe(0, 'safeBoxName'.tr());
           targetSafeNumber = 0;
           log.i('Target safe reassigned to number 0 after legacy migration');
@@ -522,11 +453,8 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
         }
       }
 
-      // Sync Riverpod state with the database after deletion/reassignment.
       ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(targetSafeNumber);
 
-      // Reload wallets from the target safe to ensure the Riverpod state
-      // reflects the current database state (legacy wallets removed).
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: targetSafeNumber);
       log.i('Wallet list reloaded from target safe $targetSafeNumber after legacy cleanup');
     } catch (e) {
@@ -541,18 +469,11 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(pinStateProvider);
     final pinLenght = widget.pinCode.isEmpty ? pinLength : widget.pinCode.length;
     GifView.preFetchImage(AssetImage('assets/onBoarding/gecko-clin.gif'));
 
     return PopScope(
       canPop: !_isProcessing,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          ref.read(pinStateProvider.notifier).setValid(false);
-          ref.read(pinStateProvider.notifier).setLoading(true);
-        }
-      },
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
         appBar: GeckoAppBar('myPassword'.tr()),
@@ -562,74 +483,79 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
               child: ResponsiveCenter(
                 maxWidth: 500,
                 padding: EdgeInsets.zero,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      ScaledSizedBox(height: isTall ? 25 : 5),
-                      const BuildProgressBar(pagePosition: 9),
-                      ScaledSizedBox(height: isTall ? 25 : 5),
-                      BuildText(text: "geckoWillCheckPassword".tr()),
-                      ScaledSizedBox(height: isTall ? 25 : 0),
-                      const ScanDerivationsInfo(),
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final pinState = ref.watch(pinStateProvider);
-                          return Visibility(
-                            visible: !pinState.isValid && !pinState.isLoading,
-                            child: Text(
-                              "thisIsNotAGoodCode".tr(),
-                              style: scaledTextStyle(
-                                fontSize: 15,
-                                color: context.geckoColors.danger,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          );
-                        },
+                child: Column(
+                  children: <Widget>[
+                    ScaledSizedBox(height: isTall ? 25 : 5),
+                    const BuildProgressBar(pagePosition: 9),
+                    ScaledSizedBox(height: isTall ? 25 : 5),
+                    BuildText(text: "geckoWillCheckPassword".tr()),
+                    ScaledSizedBox(height: isTall ? 25 : 0),
+                    const ScanDerivationsInfo(),
+                    if (hasError)
+                      Text(
+                        "thisIsNotAGoodCode".tr(),
+                        style: scaledTextStyle(
+                          fontSize: 15,
+                          color: context.geckoColors.danger,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      ScaledSizedBox(height: isTall ? 20 : 0),
-                      pinForm(context, pinLenght, 1, 2),
-                      Consumer(
-                        builder: (context, ref, _) {
-                          return ref.read(durtProvider).isConnected
-                              ? StatefulBuilder(
-                                  builder: (context, setState) {
-                                    final pinCacheState = PinCodeService.isEnabled;
-                                    return InkWell(
-                                      key: keyCachePassword,
-                                      onTap: () {
-                                        setState(() {
-                                          PinCodeService.toggle();
-                                        });
-                                      },
-                                      child: Row(
-                                        children: [
-                                          ScaledSizedBox(height: isTall ? 30 : 0),
-                                          const Spacer(),
-                                          Icon(
-                                            pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
-                                            color: context.colorScheme.primary,
-                                            size: scaleSize(22),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        return ref.read(durtProvider).isConnected
+                            ? StatefulBuilder(
+                                builder: (context, setState) {
+                                  final pinCacheState = PinCodeService.isEnabled;
+                                  return InkWell(
+                                    key: keyCachePassword,
+                                    onTap: () {
+                                      setState(() {
+                                        PinCodeService.toggle();
+                                      });
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          pinCacheState ? Icons.check_box : Icons.check_box_outline_blank,
+                                          color: context.colorScheme.primary,
+                                          size: scaleSize(22),
+                                        ),
+                                        ScaledSizedBox(width: 8),
+                                        Text(
+                                          'rememberPassword'.tr(),
+                                          style: scaledTextStyle(
+                                            fontSize: 14,
+                                            color: context.colorScheme.onSurfaceVariant,
                                           ),
-                                          ScaledSizedBox(width: 8),
-                                          Text(
-                                            'rememberPassword'.tr(),
-                                            style: scaledTextStyle(
-                                              fontSize: 14,
-                                              color: context.colorScheme.onSurfaceVariant,
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                )
-                              : const Text('');
-                        },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              )
+                            : const SizedBox.shrink();
+                      },
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: scaleSize(16)),
+                        child: GeckoPinEntry(
+                          key: keyPinForm,
+                          controller: _pinController,
+                          length: pinLenght,
+                          enabled: !_isProcessing,
+                          onCompleted: _onPinCompleted,
+                          onChanged: (_) {
+                            if (hasError) setState(() => hasError = false);
+                          },
+                          onErrorAnimationComplete: () {
+                            setState(() => hasError = true);
+                          },
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -662,41 +588,15 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
     );
   }
 
-  Widget pinForm(BuildContext context, int pinLenght, int walletNbr, int derivation) {
-    return GeckoPinField(
-      key: keyPinForm,
-      pinController: _pinController,
-      autoDismissKeyboard: false,
-      pinColor: pinColor,
-      length: pinLenght,
-      onCompleted: (pin) async {
-        if (_isProcessing) return;
-        PinCodeService.pinCode = pin.toUpperCase();
-        ref.read(pinStateProvider.notifier).setPinLength(pinLenght);
+  Future<void> _onPinCompleted(String pin) async {
+    if (_isProcessing) return;
+    PinCodeService.pinCode = pin.toUpperCase();
 
-        if (pin.toUpperCase() == widget.pinCode) {
-          pinColor = context.geckoColors.success;
-          ref.read(pinStateProvider.notifier).setLoading(false);
-          ref.read(pinStateProvider.notifier).setValid(true);
-          await _handlePinConfirmed();
-        } else {
-          hasError = true;
-          ref.read(pinStateProvider.notifier).setLoading(false);
-          ref.read(pinStateProvider.notifier).setValid(false);
-          pinColor = context.geckoColors.danger;
-          enterPin.text = '';
-          pinFocus.requestFocus();
-        }
-      },
-      onChanged: (value) {
-        if (enterPin.text != '') {
-          ref.read(pinStateProvider.notifier).setLoading(true);
-        }
-        if (pinColor != const Color(0xFFA4B600)) {
-          pinColor = const Color(0xFFA4B600);
-        }
-        setState(() {});
-      },
-    );
+    if (pin.toUpperCase() == widget.pinCode) {
+      _pinController.triggerSuccess();
+      await _handlePinConfirmed();
+    } else {
+      _pinController.triggerError();
+    }
   }
 }

@@ -6,11 +6,9 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/providers/biometric_provider.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
-import 'package:gecko/screens/onBoarding/9.dart' show isPinComplex;
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
-import 'package:gecko/widgets/gecko_pin_field.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
 
 /// Shows a self-contained change PIN flow inside a desktop modal.
 ///
@@ -35,29 +33,20 @@ class _ChangePinContent extends ConsumerStatefulWidget {
 }
 
 class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
-  late FocusNode _pinFocusNode;
-  late TextEditingController _pinTextController;
-  late PinInputController _pinController;
-  late FocusNode _confirmFocusNode;
-  late TextEditingController _confirmTextController;
-  late PinInputController _confirmController;
+  late GeckoPinEntryController _pinController;
+  late GeckoPinEntryController _confirmController;
 
   String _newPin = '';
   bool _isConfirmStep = false;
   bool _hasError = false;
   String _errorMessage = '';
   bool _isProcessing = false;
-  Color _pinColor = const Color(0xFFA4B600);
 
   @override
   void initState() {
     super.initState();
-    _pinFocusNode = FocusNode(debugLabel: 'desktop_change_pin');
-    _pinTextController = TextEditingController();
-    _pinController = PinInputController(textController: _pinTextController, focusNode: _pinFocusNode);
-    _confirmFocusNode = FocusNode(debugLabel: 'desktop_confirm_pin');
-    _confirmTextController = TextEditingController();
-    _confirmController = PinInputController(textController: _confirmTextController, focusNode: _confirmFocusNode);
+    _pinController = GeckoPinEntryController();
+    _confirmController = GeckoPinEntryController();
   }
 
   @override
@@ -91,10 +80,8 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
         if (_isProcessing)
           const Padding(padding: EdgeInsets.symmetric(vertical: 32), child: CircularProgressIndicator())
         else if (!_isConfirmStep)
-          GeckoPinField(
-            pinController: _pinController,
-            autoDismissKeyboard: false,
-            pinColor: _pinColor,
+          GeckoPinEntry(
+            controller: _pinController,
             length: pinLength,
             onCompleted: (pin) {
               if (isPinComplex(pin)) {
@@ -102,29 +89,22 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
                   _newPin = pin.toUpperCase();
                   _isConfirmStep = true;
                   _hasError = false;
-                  _pinColor = const Color(0xFFA4B600);
                 });
-                WidgetsBinding.instance.addPostFrameCallback((_) => _confirmFocusNode.requestFocus());
               } else {
                 setState(() {
                   _hasError = true;
                   _errorMessage = 'passwordTooSimple'.tr();
-                  _pinColor = context.geckoColors.danger;
                 });
-                _pinTextController.clear();
-                _pinFocusNode.requestFocus();
+                _pinController.triggerError();
               }
             },
             onChanged: (value) {
               if (_hasError && value.isNotEmpty) setState(() => _hasError = false);
-              if (_pinColor != const Color(0xFFA4B600)) setState(() => _pinColor = const Color(0xFFA4B600));
             },
           )
         else
-          GeckoPinField(
-            pinController: _confirmController,
-            autoDismissKeyboard: false,
-            pinColor: _pinColor,
+          GeckoPinEntry(
+            controller: _confirmController,
             length: _newPin.length,
             onCompleted: (pin) async {
               if (pin.toUpperCase() == _newPin) {
@@ -133,19 +113,12 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
                 setState(() {
                   _hasError = true;
                   _errorMessage = 'thisIsNotAGoodCode'.tr();
-                  _pinColor = context.geckoColors.danger;
                 });
-                _confirmTextController.clear();
-                _confirmFocusNode.requestFocus();
+                _confirmController.triggerError();
               }
             },
             onChanged: (value) {
-              if (_hasError && value.isNotEmpty) {
-                setState(() {
-                  _hasError = false;
-                  _pinColor = const Color(0xFFA4B600);
-                });
-              }
+              if (_hasError && value.isNotEmpty) setState(() => _hasError = false);
             },
           ),
         if (_isConfirmStep && !_isProcessing) ...[
@@ -156,11 +129,9 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
                 _isConfirmStep = false;
                 _newPin = '';
                 _hasError = false;
-                _pinTextController.clear();
-                _confirmTextController.clear();
-                _pinColor = const Color(0xFFA4B600);
               });
-              WidgetsBinding.instance.addPostFrameCallback((_) => _pinFocusNode.requestFocus());
+              _pinController.clear();
+              _confirmController.clear();
             },
             icon: const Icon(Icons.arrow_back_rounded, size: 18),
             label: Text(MaterialLocalizations.of(context).backButtonTooltip),

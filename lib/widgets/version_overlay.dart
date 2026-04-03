@@ -65,23 +65,27 @@ class _VersionOverlayState extends ConsumerState<VersionOverlay> {
       children: [
         widget.child,
         Positioned(
-          bottom: 8 + bottomPadding,
-          left: 16,
+          bottom: 4 + bottomPadding,
+          left: 8,
           child: GestureDetector(
-            onTap: _copyDiagnosticReport,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: isCopied ? context.geckoColors.success.withValues(alpha: 0.2) : Colors.transparent,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'v$appVersion',
-                style: TextStyle(
-                  fontSize: 8,
-                  color: isCopied ? context.geckoColors.success : Colors.grey.withValues(alpha: 0.7),
-                  fontWeight: FontWeight.w500,
-                  decoration: TextDecoration.none,
+            behavior: HitTestBehavior.deferToChild,
+            onLongPress: _copyDiagnosticReport,
+            child: Opacity(
+              opacity: isCopied ? 0.8 : 0.3,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isCopied ? context.geckoColors.success.withValues(alpha: 0.3) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'v$appVersion',
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: isCopied ? context.geckoColors.success : Colors.grey,
+                    fontWeight: FontWeight.w500,
+                    decoration: TextDecoration.none,
+                  ),
                 ),
               ),
             ),

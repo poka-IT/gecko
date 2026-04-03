@@ -9,8 +9,7 @@ import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/commons/top_appbar.dart';
-import 'package:gecko/widgets/gecko_pin_field.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
 
 class ConfirmChangePinScreen extends ConsumerStatefulWidget {
   const ConfirmChangePinScreen({super.key, required this.walletName, required this.newPinCode, required this.oldPin});
@@ -24,21 +23,8 @@ class ConfirmChangePinScreen extends ConsumerStatefulWidget {
 }
 
 class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen> {
-  final formKey = GlobalKey<FormState>();
-  late final FocusNode pinFocus;
-  late final TextEditingController enterPin;
-  late final PinInputController _pinController;
-  Color? pinColor = const Color(0xFFA4B600);
+  final _pinController = GeckoPinEntryController();
   bool hasError = false;
-  bool isPinLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    pinFocus = FocusNode(debugLabel: 'pinFocusNodeConfirm');
-    enterPin = TextEditingController();
-    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
-  }
 
   @override
   void dispose() {
@@ -66,15 +52,28 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
                   style: TextStyle(fontSize: 16.0, color: Colors.grey[600], fontWeight: FontWeight.w400),
                 ),
               ),
-              const SizedBox(height: 30),
               if (hasError) ...[
+                const SizedBox(height: 20),
                 Text(
                   "thisIsNotAGoodCode".tr(),
                   style: TextStyle(color: context.geckoColors.danger, fontSize: 15, fontWeight: FontWeight.w500),
                 ),
-                const SizedBox(height: 20),
               ],
-              pinForm(context),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: GeckoPinEntry(
+                    controller: _pinController,
+                    onCompleted: _onPinCompleted,
+                    onChanged: (_) {
+                      if (hasError) setState(() => hasError = false);
+                    },
+                    onErrorAnimationComplete: () {
+                      setState(() => hasError = true);
+                    },
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -82,86 +81,53 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
     );
   }
 
-  Widget pinForm(BuildContext context) {
-    return GeckoPinField(
-      pinController: _pinController,
-      autoDismissKeyboard: false,
-      pinColor: pinColor,
-      length: pinLength,
-      onCompleted: (pin) async {
-        if (pin == widget.newPinCode) {
-          setState(() {
-            isPinLoading = true;
-            hasError = false;
-          });
+  Future<void> _onPinCompleted(String pin) async {
+    if (pin == widget.newPinCode) {
+      _pinController.triggerSuccess();
 
-          final firstWallet = ref.read(firstWalletProvider);
-          if (firstWallet == null) return;
+      final firstWallet = ref.read(firstWalletProvider);
+      if (firstWallet == null) return;
 
-          try {
-            await ref
-                .read(walletServiceProvider)
-                .changePin(address: firstWallet.address, oldPin: widget.oldPin, newPin: pin);
-          } catch (e) {
-            log.e('Failed to change PIN: $e');
-            if (!mounted) return;
-            setState(() {
-              isPinLoading = false;
-              hasError = true;
-              pinColor = context.geckoColors.danger;
-              enterPin.text = '';
-            });
-            if (!mounted) return;
-            // ignore: use_build_context_synchronously
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('changePinError'.tr()), backgroundColor: context.geckoColors.danger));
-            return;
-          }
+      try {
+        await ref
+            .read(walletServiceProvider)
+            .changePin(address: firstWallet.address, oldPin: widget.oldPin, newPin: pin);
+      } catch (e) {
+        log.e('Failed to change PIN: $e');
+        if (!mounted) return;
+        _pinController.triggerError();
+        setState(() => hasError = true);
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('changePinError'.tr()), backgroundColor: context.geckoColors.danger));
+        return;
+      }
 
-          // Mettre à jour le PIN dans le provider
-          PinCodeService.pinCode = pin;
-          PinCodeService.setAuthenticatedSafe(ref.read(walletServiceProvider).defaultSafeBoxNumber);
+      PinCodeService.pinCode = pin;
+      PinCodeService.setAuthenticatedSafe(ref.read(walletServiceProvider).defaultSafeBoxNumber);
 
-          // Ré-enrôler la biométrie avec le nouveau PIN si elle était activée
-          final biometricState = ref.read(biometricProvider);
-          if (biometricState.isEnrolledForCurrentSafe) {
-            try {
-              final walletService = ref.read(walletServiceProvider);
-              await walletService.disableBiometric();
-              await walletService.enableBiometric(pin: pin);
-              log.i('Biometric re-enrolled with new PIN');
-            } catch (e) {
-              log.e('Failed to re-enroll biometric after PIN change: $e');
-            }
-          }
-
-          // Recharger les wallets avec le nouveau PIN
-          final currentSafe = ref.read(currentSafeNumberProvider);
-          await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
-
-          if (!context.mounted) return;
-          Navigator.of(context)
-            ..pop() // Ferme l'écran de confirmation
-            ..pop(); // Ferme l'écran de changement de PIN
-        } else {
-          setState(() {
-            hasError = true;
-            isPinLoading = false;
-            pinColor = context.geckoColors.danger;
-            enterPin.text = '';
-          });
-          pinFocus.requestFocus();
+      final biometricState = ref.read(biometricProvider);
+      if (biometricState.isEnrolledForCurrentSafe) {
+        try {
+          final walletService = ref.read(walletServiceProvider);
+          await walletService.disableBiometric();
+          await walletService.enableBiometric(pin: pin);
+          log.i('Biometric re-enrolled with new PIN');
+        } catch (e) {
+          log.e('Failed to re-enroll biometric after PIN change: $e');
         }
-      },
-      onChanged: (value) {
-        setState(() {
-          if (enterPin.text.isNotEmpty) {
-            hasError = false;
-          }
-          pinColor = const Color(0xFFA4B600);
-        });
-      },
-    );
+      }
+
+      final currentSafe = ref.read(currentSafeNumberProvider);
+      await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
+
+      if (!context.mounted) return;
+      Navigator.of(context)
+        ..pop()
+        ..pop();
+    } else {
+      _pinController.triggerError();
+    }
   }
 }

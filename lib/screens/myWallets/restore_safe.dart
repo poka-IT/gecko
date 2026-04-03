@@ -229,7 +229,6 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                               onPressed: () async {
                                 final success = await ref.read(pasteMnemonicProvider)();
                                 if (!success) {
-                                  // Show error if paste failed
                                   // ignore: use_build_context_synchronously
                                   await badMnemonicPopup(context);
                                 }

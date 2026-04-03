@@ -16,7 +16,6 @@ import 'package:gecko/services/pin_security_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:flutter/material.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:gecko/globals.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
@@ -24,7 +23,7 @@ import 'package:gecko/widgets/biometric/biometric_auth_button.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
-import 'package:gecko/widgets/gecko_pin_field.dart';
+import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
 
 class UnlockingWallet extends ConsumerStatefulWidget {
   const UnlockingWallet({
@@ -49,9 +48,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   int currentSafeIndex = 0;
   bool canUnlock = true;
   bool _hasNonLegacySafes = false;
-  late final TextEditingController enterPin;
-  late final FocusNode pinFocus;
-  late final PinInputController _pinController;
+  final _pinController = GeckoPinEntryController();
   final CarouselSliderController carouselController = CarouselSliderController();
 
   // Biometric state tracking
@@ -61,14 +58,9 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
   Timer? _securityCountdownTimer;
   bool _wasLockedOut = false;
 
-  Color pinColor = const Color(0xffF9F9F1);
-
   @override
   void initState() {
     super.initState();
-    pinFocus = FocusNode(debugLabel: 'pinFocusNode');
-    enterPin = TextEditingController();
-    _pinController = PinInputController(textController: enterPin, focusNode: pinFocus);
     _initializeSafes();
 
     // Initialize security state and trigger automatic biometric authentication after widget build
@@ -138,10 +130,6 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       // Check if biometric authentication is available after initialization
       final biometricState = ref.read(biometricProvider);
       if (!biometricState.canAuthenticate) {
-        // Biometric not available or not enrolled, focus on PIN field
-        if (mounted) {
-          pinFocus.requestFocus();
-        }
         return;
       }
 
@@ -151,18 +139,10 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       if (result.success && result.pin != null && mounted) {
         // Success - handle PIN completion
         await _handlePinCompletion(result.pin!, fromBiometric: true);
-      } else {
-        // Failed or cancelled - focus on PIN field for manual entry
-        if (mounted) {
-          pinFocus.requestFocus();
-        }
       }
     } catch (e) {
-      // Error during biometric setup - focus on PIN field for manual entry
+      // Error during biometric setup - user can use manual PIN entry
       log.e('Error during automatic biometric authentication: $e');
-      if (mounted) {
-        pinFocus.requestFocus();
-      }
     }
   }
 
@@ -199,25 +179,21 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           }
 
           await Future.delayed(const Duration(milliseconds: 20));
-          setState(() {
-            pinColor = context.geckoColors.danger;
-          });
           pinNotifier.setLoading(false);
           pinNotifier.setValid(false);
           PinCodeService.pinCode = '';
           derivationNotifier.clearMnemonic();
           if (!fromBiometric) {
-            enterPin.text = '';
-            pinFocus.requestFocus();
+            _pinController.triggerError();
           }
         } else {
           // Reset failed attempts on successful unlock
           await ref.read(pinSecurityProvider.notifier).resetFailedAttempts(currentSafeNumber);
 
           pinNotifier.setValid(true);
-          setState(() {
-            pinColor = context.geckoColors.success;
-          });
+          if (!fromBiometric) {
+            _pinController.triggerSuccess();
+          }
 
           // Update the default safe to the currently selected one
           ref.read(defaultSafeBoxNumberProvider.notifier).setDefaultSafeBoxNumber(currentSafeNumber);
@@ -256,11 +232,8 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       PinCodeService.pinCode = '';
       derivationNotifier.clearMnemonic();
       if (!fromBiometric) {
-        enterPin.text = '';
+        _pinController.triggerError();
       }
-      setState(() {
-        pinColor = context.geckoColors.danger;
-      });
 
       String errorMessage;
       bool isInvalidPin = false;
@@ -282,16 +255,10 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       if (isInvalidPin) {
         // The existing "thisIsNotAGoodCode" message will be shown
         // by the UI when isPinValid is false
-        if (!fromBiometric) {
-          pinFocus.requestFocus();
-        }
       } else {
         // Show error snackbar for other errors (timeouts, network issues, etc.)
         if (mounted) {
           SnackbarService.showError(context, message: errorMessage, duration: 5);
-        }
-        if (!fromBiometric) {
-          pinFocus.requestFocus();
         }
       }
     }
@@ -344,26 +311,19 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     // Handle lockout state changes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_wasLockedOut && !securityState.isLockedOut && mounted) {
-        // Lockout just ended, clear PIN field and refocus
-        setState(() {
-          enterPin.clear();
-          pinColor = const Color(0xffF9F9F1);
-        });
-        Future.delayed(const Duration(milliseconds: 200), () {
-          if (mounted) {
-            pinFocus.requestFocus();
-          }
-        });
+        // Lockout just ended, clear PIN field
+        _pinController.clear();
       }
       _wasLockedOut = securityState.isLockedOut;
     });
 
-    final content = Column(
+    final topSection = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        if (!widget.embeddedMode) ...[
+        if (!widget.embeddedMode)
           Padding(
-            padding: EdgeInsets.only(left: 8, top: isTall ? 14 : 0),
+            padding: EdgeInsets.only(left: 8, top: isTall ? 8 : 0),
             child: IconButton(
               key: keyPopButton,
               icon: Icon(Icons.arrow_back, color: Colors.black, size: scaleSize(28)),
@@ -374,312 +334,284 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
               },
             ),
           ),
-          ScaledSizedBox(height: isTall ? 12 : 4),
-        ],
-        // Safe display - either slider (if canSwitch) or static (if locked)
+        // Safe display
         widget.canSwitch ? _buildSafeSlider(context) : _buildStaticSafeDisplay(context),
-        ScaledSizedBox(height: widget.embeddedMode ? 16 : (isTall ? 30 : 15)),
-
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: EdgeInsets.all(isTall ? 24 : 16),
-          decoration: BoxDecoration(
-            color: context.colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5)),
-            ],
-          ),
-          child: Column(
-            children: [
-              Text(
-                'toUnlockEnterPassword'.tr(),
-                textAlign: TextAlign.center,
-                style: scaledTextStyle(
-                  fontSize: isTall ? 16 : 14,
-                  color: context.colorScheme.onSurface,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              ScaledSizedBox(height: isTall ? 16 : 8),
-              // Remember PIN toggle card
-              if (canUnlock)
-                StatefulBuilder(
-                  builder: (context, setState) {
-                    final pinCacheState = PinCodeService.isEnabled;
-                    return GestureDetector(
-                      key: keyCachePassword,
-                      onTap: () {
-                        setState(() {
-                          PinCodeService.toggle();
-                        });
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: scaleSize(12), vertical: scaleSize(6)),
-                        decoration: BoxDecoration(
-                          color: pinCacheState
-                              ? context.geckoColors.success.withValues(alpha: 0.15)
-                              : context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: pinCacheState
-                                ? context.geckoColors.success.withValues(alpha: 0.3)
-                                : context.colorScheme.outline.withValues(alpha: 0.15),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              pinCacheState ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
-                              color: pinCacheState ? context.geckoColors.success : context.colorScheme.onSurfaceVariant,
-                              size: scaleSize(16),
-                            ),
-                            ScaledSizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                'rememberPassword'.tr(),
-                                style: scaledTextStyle(
-                                  fontSize: 11,
-                                  color: pinCacheState
-                                      ? context.geckoColors.success
-                                      : context.colorScheme.onSurfaceVariant,
-                                  fontWeight: pinCacheState ? FontWeight.w600 : FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                            ScaledSizedBox(width: 6),
-                            SizedBox(
-                              height: scaleSize(20),
-                              width: scaleSize(34),
-                              child: FittedBox(
-                                fit: BoxFit.contain,
-                                child: Switch.adaptive(
-                                  value: pinCacheState,
-                                  onChanged: (_) {
-                                    setState(() {
-                                      PinCodeService.toggle();
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ScaledSizedBox(height: isTall ? 16 : 8),
-              // Security messages and PIN error display
-              Consumer(
-                builder: (context, ref, child) {
-                  final securityState = ref.watch(pinSecurityProvider);
-
-                  // Show safe deletion warning
-                  if (securityState.shouldShowWarning) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: context.geckoColors.dangerContainer,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: context.geckoColors.danger.withValues(alpha: 0.5)),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              securityState.remainingAttempts <= 3
-                                  ? 'pinSecurityFinalWarning'.tr(args: [securityState.remainingAttempts.toString()])
-                                  : 'pinSecurityWarningTitle'.tr(),
-                              style: scaledTextStyle(
-                                color: context.geckoColors.dangerText,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'pinSecurityWarningMessage'.tr(args: [securityState.remainingAttempts.toString()]),
-                              style: scaledTextStyle(color: context.geckoColors.danger, fontSize: 12),
-                              textAlign: TextAlign.center,
-                            ),
-                            // Show countdown if locked out
-                            if (securityState.isLockedOut) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                'pinSecurityUnlocksIn'.tr(
-                                  args: [PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds)],
-                                ),
-                                style: scaledTextStyle(
-                                  color: context.geckoColors.warningText,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  // Show lockout message
-                  if (securityState.isLockedOut) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: context.geckoColors.warningContainer,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.5)),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'pinSecurityLocked'.tr(),
-                              style: scaledTextStyle(
-                                color: context.geckoColors.warningText,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'pinSecurityUnlocksIn'.tr(
-                                args: [PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds)],
-                              ),
-                              style: scaledTextStyle(color: context.geckoColors.warning, fontSize: 12),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  // Show regular PIN error
-                  final pinState = ref.watch(pinStateProvider);
-                  if (!pinState.isValid && !pinState.isLoading) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        "thisIsNotAGoodCode".tr(),
-                        style: scaledTextStyle(
-                          color: context.geckoColors.dangerText,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15,
-                        ),
-                      ),
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Consumer(
-                    builder: (context, ref, child) {
-                      // Force rebuild when security state changes
-                      ref.watch(pinSecurityProvider);
-                      return pinForm(context, pinLength);
-                    },
-                  ),
-                  if (pinState.isLoading && enterPin.text.length == pinLength)
-                    Container(
-                      width: double.infinity,
-                      height: scaleSize(80),
-                      decoration: BoxDecoration(
-                        color: context.colorScheme.surfaceContainer.withValues(alpha: 0.95),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: scaleSize(20),
-                            height: scaleSize(20),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(context.colorScheme.primary),
-                            ),
-                          ),
-                          ScaledSizedBox(height: 6),
-                          Text(
-                            'loading'.tr(),
-                            style: scaledTextStyle(
-                              color: context.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-              ScaledSizedBox(height: isTall ? 12 : 8),
-
-              // Biometric authentication button
-              if (currentSafeIndex < allSafes.length)
-                Consumer(
-                  builder: (context, ref, child) {
-                    final securityState = ref.watch(pinSecurityProvider);
-                    final biometricState = ref.watch(biometricProvider);
-
-                    // Hide button if locked out or biometric not available
-                    if (securityState.isLockedOut || !biometricState.canAuthenticate) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return BiometricAuthButton(
-                      onAuthSuccess: (String pin) {
-                        _handlePinCompletion(pin, fromBiometric: true);
-                      },
-                      onAuthFailure: (String error) {
-                        // Error is already shown by the button widget
-                      },
-                      tooltip: 'useBiometricAuthentication'.tr(),
-                      size: 50.0,
-                    );
-                  },
-                ),
-            ],
-          ),
-        ),
+        ScaledSizedBox(height: isTall ? 12 : 6),
       ],
     );
 
-    if (widget.embeddedMode) {
-      return PopScope(
-        onPopInvokedWithResult: (_, _) {
-          ref.read(pinStateProvider.notifier).setValid(false);
-          ref.read(pinStateProvider.notifier).setLoading(true);
-        },
-        child: SingleChildScrollView(
-          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 500), child: content),
-        ),
+    final bottomSafe = MediaQuery.of(context).padding.bottom;
+    final pinSection = Container(
+      padding: EdgeInsets.only(left: 20, right: 20, top: isTall ? 12 : 8, bottom: 4 + bottomSafe),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainer,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          // Instruction text — compact
+          Text(
+            'toUnlockEnterPassword'.tr(),
+            textAlign: TextAlign.center,
+            style: scaledTextStyle(fontSize: 13, color: context.colorScheme.onSurface, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 6),
+          // Remember PIN toggle — compact inline
+          if (canUnlock)
+            StatefulBuilder(
+              builder: (context, setState) {
+                final pinCacheState = PinCodeService.isEnabled;
+                return GestureDetector(
+                  key: keyCachePassword,
+                  onTap: () => setState(() => PinCodeService.toggle()),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: scaleSize(10), vertical: 3),
+                    decoration: BoxDecoration(
+                      color: pinCacheState
+                          ? context.geckoColors.success.withValues(alpha: 0.15)
+                          : context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: pinCacheState
+                            ? context.geckoColors.success.withValues(alpha: 0.3)
+                            : context.colorScheme.outline.withValues(alpha: 0.15),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          pinCacheState ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                          color: pinCacheState ? context.geckoColors.success : context.colorScheme.onSurfaceVariant,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'rememberPassword'.tr(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: scaledTextStyle(
+                              fontSize: 14,
+                              color: pinCacheState ? context.geckoColors.success : context.colorScheme.onSurfaceVariant,
+                              fontWeight: pinCacheState ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          height: 18,
+                          width: 32,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: Switch.adaptive(
+                              value: pinCacheState,
+                              onChanged: (_) => setState(() => PinCodeService.toggle()),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          const SizedBox(height: 6),
+          // Security messages and PIN error display
+          Consumer(
+            builder: (context, ref, child) {
+              final securityState = ref.watch(pinSecurityProvider);
+
+              // Show safe deletion warning
+              if (securityState.shouldShowWarning) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: context.geckoColors.dangerContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: context.geckoColors.danger.withValues(alpha: 0.5)),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          securityState.remainingAttempts <= 3
+                              ? 'pinSecurityFinalWarning'.tr(args: [securityState.remainingAttempts.toString()])
+                              : 'pinSecurityWarningTitle'.tr(),
+                          style: scaledTextStyle(
+                            color: context.geckoColors.dangerText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'pinSecurityWarningMessage'.tr(args: [securityState.remainingAttempts.toString()]),
+                          style: scaledTextStyle(color: context.geckoColors.danger, fontSize: 11),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (securityState.isLockedOut) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'pinSecurityUnlocksIn'.tr(
+                              args: [PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds)],
+                            ),
+                            style: scaledTextStyle(
+                              color: context.geckoColors.warningText,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Show lockout message
+              if (securityState.isLockedOut) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: context.geckoColors.warningContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: context.geckoColors.warning.withValues(alpha: 0.5)),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'pinSecurityLocked'.tr(),
+                          style: scaledTextStyle(
+                            color: context.geckoColors.warningText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'pinSecurityUnlocksIn'.tr(
+                            args: [PinSecurityService.formatLockoutTime(securityState.remainingLockoutSeconds)],
+                          ),
+                          style: scaledTextStyle(color: context.geckoColors.warning, fontSize: 11),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Show regular PIN error
+              final pinState = ref.watch(pinStateProvider);
+              if (!pinState.isValid && !pinState.isLoading) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    "thisIsNotAGoodCode".tr(),
+                    style: scaledTextStyle(
+                      color: context.geckoColors.dangerText,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+          // PIN entry — Expanded so it fills remaining space and adapts button sizes
+          Expanded(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Consumer(
+                  builder: (context, ref, child) {
+                    ref.watch(pinSecurityProvider);
+                    return pinForm(context, pinLength);
+                  },
+                ),
+                if (pinState.isLoading && _pinController.text.length == pinLength)
+                  Container(
+                    width: double.infinity,
+                    height: scaleSize(80),
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainer.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: scaleSize(20),
+                          height: scaleSize(20),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(context.colorScheme.primary),
+                          ),
+                        ),
+                        ScaledSizedBox(height: 6),
+                        Text(
+                          'loading'.tr(),
+                          style: scaledTextStyle(
+                            color: context.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    void popCallback(bool _, dynamic __) {
+      ref.read(pinStateProvider.notifier).setValid(false);
+      ref.read(pinStateProvider.notifier).setLoading(true);
+    }
+
+    Widget buildLayout({required bool constrained}) {
+      final screenHeight = MediaQuery.of(context).size.height;
+      final maxTopHeight = screenHeight * 0.3;
+
+      final topWidget = constrained
+          ? ConstrainedBox(constraints: const BoxConstraints(maxWidth: 500), child: topSection)
+          : topSection;
+
+      return Column(
+        children: [
+          // Top section: capped at 30% of screen, scrolls if content overflows
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxTopHeight),
+            child: SingleChildScrollView(physics: const ClampingScrollPhysics(), child: topWidget),
+          ),
+          // PIN section: takes ALL remaining space
+          Expanded(child: pinSection),
+        ],
       );
     }
 
+    if (widget.embeddedMode) {
+      return PopScope(onPopInvokedWithResult: popCallback, child: buildLayout(constrained: true));
+    }
+
     return PopScope(
-      onPopInvokedWithResult: (_, _) {
-        ref.read(pinStateProvider.notifier).setValid(false);
-        ref.read(pinStateProvider.notifier).setLoading(true);
-      },
+      onPopInvokedWithResult: popCallback,
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: ResponsiveCenter(maxWidth: 500, padding: EdgeInsets.zero, child: content),
-          ),
+          bottom: false,
+          child: ResponsiveCenter(maxWidth: 500, padding: EdgeInsets.zero, child: buildLayout(constrained: false)),
         ),
       ),
     );
@@ -696,7 +628,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       children: [
         // Always show carousel slider for safe selection + creation
         SizedBox(
-          height: scaleSize(isTall ? 140 : 120),
+          height: scaleSize(isTall ? 80 : 64),
           child: SafeCarousel(
             allSafes: allSafes,
             currentSafeIndex: currentSafeIndex,
@@ -717,8 +649,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
                   ref.invalidate(identityWalletsAsyncProvider);
 
                   // Reset PIN state when changing safes
-                  enterPin.clear();
-                  pinColor = const Color(0xffF9F9F1);
+                  _pinController.clear();
                   ref.read(biometricProvider.notifier).refreshForSafe(currentSafeNumber);
 
                   // Update security state for new safe
@@ -730,25 +661,25 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
             onSafeCreated: _simpleReloadSafes,
             onSafeImported: _simpleReloadSafes,
             showCreatePlaceholder: showPlaceholder,
-            height: scaleSize(isTall ? 140 : 120),
+            height: scaleSize(isTall ? 80 : 64),
             isCompact: true,
           ),
         ),
 
-        ScaledSizedBox(height: 8),
+        ScaledSizedBox(height: 4),
 
         // Safe name or action hint
         Text(
           isPlaceholderSelected ? 'createOrImportSafe'.tr() : WalletNameService.displayName(currentSafe.name),
           textAlign: TextAlign.center,
           style: scaledTextStyle(
-            fontSize: isTall ? 24 : 20,
+            fontSize: isTall ? 18 : 16,
             color: context.colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
 
-        ScaledSizedBox(height: 4),
+        ScaledSizedBox(height: 2),
 
         // Pagination dots for all items (including placeholder)
         Row(
@@ -795,7 +726,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       children: [
         // Safe image without carousel
         SizedBox(
-          height: scaleSize(isTall ? 140 : 120),
+          height: scaleSize(isTall ? 80 : 64),
           child: Center(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -950,25 +881,38 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     final shouldAutoFocus = (!biometricState.canAuthenticate || _biometricTriggered) && !securityState.isLockedOut;
     final isFieldEnabled = !securityState.isLockedOut;
 
-    return GeckoPinField(
+    // Build biometric button widget for the numpad bottom-left slot
+    Widget? biometricButton;
+    if (currentSafeIndex < allSafes.length) {
+      final biometricCanAuth = biometricState.canAuthenticate;
+      final isLockedOut = securityState.isLockedOut;
+      if (!isLockedOut && biometricCanAuth) {
+        biometricButton = BiometricAuthButton(
+          onAuthSuccess: (String pin) {
+            _handlePinCompletion(pin, fromBiometric: true);
+          },
+          onAuthFailure: (String error) {
+            // Error is already shown by the button widget
+          },
+          tooltip: 'useBiometricAuthentication'.tr(),
+          size: 50.0,
+        );
+      }
+    }
+
+    return GeckoPinEntry(
       key: keyPinForm,
-      pinController: _pinController,
+      controller: _pinController,
       autoFocus: shouldAutoFocus,
-      autoDismissKeyboard: false,
       enabled: isFieldEnabled,
-      pinColor: pinColor,
       length: pinLenght,
       onCompleted: (pin) => _handlePinCompletion(pin),
       onChanged: (value) {
-        if (enterPin.text != '') {
+        if (value.isNotEmpty) {
           ref.read(pinStateProvider.notifier).setLoading(true);
         }
-        if (pinColor != const Color(0xFFA4B600)) {
-          pinColor = const Color(0xFFA4B600);
-        }
-        // Force widget rebuild for PIN color change
-        setState(() {});
       },
+      bottomLeftWidget: biometricButton,
     );
   }
 }

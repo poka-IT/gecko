@@ -122,6 +122,9 @@ class MnemonicInputState {
 
 /// Notifier for managing mnemonic input validation
 class MnemonicInputNotifier extends Notifier<MnemonicInputState> {
+  /// When true, controller listeners skip updateWord to prevent race conditions.
+  bool _bulkUpdating = false;
+
   @override
   MnemonicInputState build() {
     return MnemonicInputState(words: List.filled(12, ''));
@@ -129,6 +132,7 @@ class MnemonicInputNotifier extends Notifier<MnemonicInputState> {
 
   /// Update a specific word and validate it
   Future<void> updateWord(int index, String word) async {
+    if (_bulkUpdating) return;
     if (index < 0 || index >= 12) return;
 
     final cleanWord = word.trim().toLowerCase();
@@ -174,21 +178,35 @@ class MnemonicInputNotifier extends Notifier<MnemonicInputState> {
     }
   }
 
-  /// Fill words from a list (e.g., from clipboard or OCR)
-  Future<void> fillWords(List<String> words) async {
+  /// Fill words from a list (e.g., from clipboard or OCR).
+  ///
+  /// If [updateControllers] is provided, they are updated WHILE listener
+  /// callbacks are suppressed, preventing race conditions.
+  Future<void> fillWords(List<String> words, {List<TextEditingController>? updateControllers}) async {
     if (words.length != 12) return;
 
-    final cleanWords = words.map((w) => w.trim().toLowerCase()).toList();
-    final validations = <int, bool>{};
+    _bulkUpdating = true;
+    try {
+      final cleanWords = words.map((w) => w.trim().toLowerCase()).toList();
+      final validations = <int, bool>{};
 
-    // Validate each word
-    for (int i = 0; i < cleanWords.length; i++) {
-      validations[i] = await MnemonicService.isValidBip39Word(cleanWords[i]);
+      for (int i = 0; i < cleanWords.length; i++) {
+        validations[i] = await MnemonicService.isValidBip39Word(cleanWords[i]);
+      }
+
+      state = state.copyWith(words: cleanWords, wordValidations: validations);
+
+      // Update controllers while listeners are suppressed
+      if (updateControllers != null) {
+        for (int i = 0; i < 12; i++) {
+          updateControllers[i].text = cleanWords[i];
+        }
+      }
+
+      await _validateComplete();
+    } finally {
+      _bulkUpdating = false;
     }
-
-    state = state.copyWith(words: cleanWords, wordValidations: validations);
-
-    await _validateComplete();
   }
 
   /// Clear all words
@@ -245,11 +263,8 @@ final pasteMnemonicProvider = Provider<Future<bool> Function()>((ref) {
       final words = await MnemonicService.parseClipboardMnemonic();
       if (words.length == 12) {
         final controllers = ref.read(mnemonicControllersProvider);
-        for (int i = 0; i < 12; i++) {
-          controllers[i].text = words[i];
-        }
-        await ref.read(mnemonicInputProvider.notifier).fillWords(words);
-        return true;
+        await ref.read(mnemonicInputProvider.notifier).fillWords(words, updateControllers: controllers);
+        return ref.read(mnemonicInputProvider).isValid;
       }
       return false;
     } catch (e) {

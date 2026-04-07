@@ -31,28 +31,37 @@ class _ScanDefaultActionSettingState extends ConsumerState<ScanDefaultActionSett
         final config = ConfigService(configBox);
         final current = config.scanDefaultAction;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: scaleSize(8), bottom: scaleSize(4)),
-              child: Row(
-                children: [
-                  Icon(Icons.contactless_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
-                  ScaledSizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'scanDefaultAction'.tr(),
-                      style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+        return RadioGroup<String>(
+          groupValue: current,
+          onChanged: (v) {
+            if (v != null) {
+              config.scanDefaultAction = v;
+              setState(() {});
+            }
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: scaleSize(8), bottom: scaleSize(4)),
+                child: Row(
+                  children: [
+                    Icon(Icons.contactless_rounded, color: context.colorScheme.primary, size: scaleSize(24)),
+                    ScaledSizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'scanDefaultAction'.tr(),
+                        style: scaledTextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            _buildOption(context, config, current, 'ask', 'scanDefaultAsk'.tr(), Icons.touch_app_rounded),
-            _buildOption(context, config, current, 'qr', 'scanDefaultQr'.tr(), Icons.qr_code_scanner),
-            _buildOption(context, config, current, 'nfc', 'scanDefaultNfc'.tr(), Icons.nfc_rounded),
-          ],
+              _buildOption(context, config, current, 'ask', 'scanDefaultAsk'.tr(), Icons.touch_app_rounded),
+              _buildOption(context, config, current, 'qr', 'scanDefaultQr'.tr(), Icons.qr_code_scanner),
+              _buildOption(context, config, current, 'nfc', 'scanDefaultNfc'.tr(), Icons.nfc_rounded),
+            ],
+          ),
         );
       },
       loading: () => const SizedBox.shrink(),
@@ -94,17 +103,7 @@ class _ScanDefaultActionSettingState extends ConsumerState<ScanDefaultActionSett
                 ),
               ),
             ),
-            Radio<String>(
-              value: value,
-              groupValue: current,
-              activeColor: context.colorScheme.primary,
-              onChanged: (v) {
-                if (v != null) {
-                  config.scanDefaultAction = v;
-                  setState(() {});
-                }
-              },
-            ),
+            Radio<String>(value: value, activeColor: context.colorScheme.primary),
           ],
         ),
       ),

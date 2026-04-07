@@ -8,7 +8,6 @@ import 'package:gecko/globals.dart';
 import 'package:gecko/main.dart';
 import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
-import 'package:gecko/routes.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/services/qr_scanner_service.dart';
 import 'package:gecko/services/snackbar_service.dart';

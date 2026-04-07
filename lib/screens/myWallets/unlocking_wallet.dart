@@ -575,7 +575,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       ),
     );
 
-    void popCallback(bool _, dynamic __) {
+    void popCallback(bool _, dynamic _) {
       ref.read(pinStateProvider.notifier).setValid(false);
       ref.read(pinStateProvider.notifier).setLoading(true);
     }

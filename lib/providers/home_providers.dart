@@ -365,9 +365,7 @@ class AppInitNotifier extends Notifier<AppInitState> {
   Future<void> _handleDataVersionCompatibility(BuildContext context, WidgetRef widgetRef) async {
     final config = ref.read(configServiceProvider);
     // Check if versionData non compatible, drop everything
-    if (config.dataVersion == null) {
-      config.dataVersion = dataVersion;
-    }
+    config.dataVersion ??= dataVersion;
 
     if (config.dataVersion! < dataVersion) {
       await showConfirmationDialog(

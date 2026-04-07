@@ -24,17 +24,9 @@ class MembershipRenewal {
   /// loaded — in that case the cert gate is simply skipped (graceful
   /// degradation, transaction may still fail on chain in the brief loading
   /// window, same as before this gate existed).
-  static RenewalInfo calculateRenewalInfo(
-    MembershipStatus status, {
-    int? receivedCertCount,
-    int? minCertCount,
-  }) {
+  static RenewalInfo calculateRenewalInfo(MembershipStatus status, {int? receivedCertCount, int? minCertCount}) {
     final base = _calculateBase(status);
-    return _applyCertCountGate(
-      base,
-      receivedCertCount: receivedCertCount,
-      minCertCount: minCertCount,
-    );
+    return _applyCertCountGate(base, receivedCertCount: receivedCertCount, minCertCount: minCertCount);
   }
 
   static RenewalInfo _calculateBase(MembershipStatus status) {

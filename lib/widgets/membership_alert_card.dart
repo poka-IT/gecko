@@ -94,9 +94,7 @@ class MembershipAlertCard extends ConsumerWidget {
     // pending case is handled by _buildEvalPendingCard above.)
     final isCertGated = info.disableReason == RenewalDisableReason.notEnoughCertsReceived;
     final baseMessage = isCertGated
-        ? 'membershipNotEnoughCertifications'.tr(
-            args: ['${info.receivedCertCount ?? 0}', '${info.minCertCount ?? 0}'],
-          )
+        ? 'membershipNotEnoughCertifications'.tr(args: ['${info.receivedCertCount ?? 0}', '${info.minCertCount ?? 0}'])
         : 'membershipExpiredRenewNow'.tr();
 
     return _AlertCardContainer(
@@ -105,9 +103,7 @@ class MembershipAlertCard extends ConsumerWidget {
       title: 'membershipExpiredAlert'.tr(),
       message: '$baseMessage$autoRevocText',
       actionLabel: info.canRenew ? 'renewMembership'.tr() : null,
-      onAction: info.canRenew
-          ? () => MembershipRenewal.executeRenewal(context, ref, address, isExpired: true)
-          : null,
+      onAction: info.canRenew ? () => MembershipRenewal.executeRenewal(context, ref, address, isExpired: true) : null,
     );
   }
 

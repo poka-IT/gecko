@@ -354,6 +354,8 @@
     "notAllowedToChangeIdtyAddress": "Non è consentito modificare l'indirizzo dell'identità",
     "notAllowedToRemoveIdty": "Non è consentito rimuovere l'identità",
     "idtyAlreadyConfirmed": "Identità già confermata",
+    "idtyAlreadyCreated": "Questa identità è stata appena creata, aggiorna la pagina",
+    "cantCertifyExpiredIdentity": "Questa identità è scaduta. Chiedi alla persona di rinnovare la propria adesione prima di essere certificata.",
     "idtyNotValidated": "Identità non validata",
     "membershipNotFound": "Adesione non trovata",
     "notEnoughCertsForMembership": "Certificazioni insufficienti per rinnovare l'adesione",

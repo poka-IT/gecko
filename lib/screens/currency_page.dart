@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:durt2/durt2.dart' as d;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +22,12 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
   bool showAllRulesCurrency = false;
   bool showAllRulesWot = false;
   bool useRelativeUnit = false;
+
+  /// Original Ğ1 (v1) launch date: 2017-03-08. Used to describe how long
+  /// the currency has existed, independently of the v2 runtime genesis
+  /// (which happened on 2026-03-08). Sub-day precision is irrelevant since
+  /// the description is rendered in years/months/days.
+  static final DateTime _g1v1GenesisDate = DateTime.utc(2017, 3, 8);
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +93,7 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
 
   Widget _buildCurrencyDescription(BuildContext context, CurrencyParameters params) {
     final genesisTimeAsync = ref.watch(genesisTimeProvider);
+    final network = ref.watch(networkProvider);
 
     return genesisTimeAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -94,8 +102,12 @@ class _CurrencyPageState extends ConsumerState<CurrencyPage> {
         if (genesisTime == null) {
           return const SizedBox.shrink(); // Storage not ready yet
         }
-        // Calculate time since blockchain start
-        final timeSinceStart = DateTime.now().difference(genesisTime);
+        // For Ğ1 the age is counted from the original v1 genesis (2017-03-08),
+        // not the v2 runtime genesis — otherwise the description would say
+        // "Ğ1 is 21 days old". Other networks (gdev/gtest/local) keep the
+        // current runtime genesis because they are fresh testnets.
+        final currencyStart = network == d.Networks.g1 ? _g1v1GenesisDate : genesisTime;
+        final timeSinceStart = DateTime.now().difference(currencyStart);
         final startedAgo = _formatElapsed(timeSinceStart.inMilliseconds);
 
         // Format UD period using existing duration formatting

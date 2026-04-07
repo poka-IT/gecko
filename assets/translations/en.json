@@ -348,6 +348,8 @@
     "notAllowedToChangeIdtyAddress": "Not allowed to change identity address",
     "notAllowedToRemoveIdty": "Not allowed to remove identity",
     "idtyAlreadyConfirmed": "Identity already confirmed",
+    "idtyAlreadyCreated": "This identity was just created, please refresh the page",
+    "cantCertifyExpiredIdentity": "This identity has expired. Ask the person to renew their membership before being certified.",
     "idtyNotValidated": "Identity not validated",
     "membershipNotFound": "Membership not found",
     "notEnoughCertsForMembership": "Not enough certifications to renew membership",

@@ -53,11 +53,27 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
 
     setState(() => _isProcessing = true);
     try {
+      // Warn the user up-front when the target identity has expired: durt2 still
+      // accepts certifying expired identities, but users have reported confusion
+      // when the target "disappears" after an unrelated runtime error. Showing
+      // the warning lets them decide consciously and anchors the intent.
+      if (widget.idtyStatus == IdtyStatus.expired) {
+        final proceed = await showConfirmationDialog(
+          context: context,
+          title: 'certification'.tr(),
+          message: 'cantCertifyExpiredIdentity'.tr(),
+          type: ConfirmationDialogType.warning,
+        );
+        if (!proceed) return;
+        if (!context.mounted) return;
+      }
+
       final walletName = ref.read(squidServiceProvider).walletNameIndexer[widget.address];
       final message = walletName != null
           ? '${'confirmCertification'.tr()}\n\n**$walletName**\n\n${getShortPubkey(widget.address)}'
           : '${'confirmCreateIdentity'.tr()}\n\n**${getShortPubkey(widget.address)}**';
 
+      if (!context.mounted) return;
       final result = await showConfirmationDialog(
         context: context,
         title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),

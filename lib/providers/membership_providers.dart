@@ -1,9 +1,11 @@
 import 'package:durt2/durt2.dart' show MembershipStatus;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/block_height_provider.dart';
+import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/widgets/certs_list.dart' show CertDirection;
 
 /// Reactive provider for membership status of a given address.
 ///
@@ -27,6 +29,18 @@ class MembershipStatusNotifier extends AsyncNotifier<MembershipStatus> {
 
     // Watch identity status to rebuild when it changes
     ref.watch(hybridIdtyStatusProvider(address));
+
+    // Refresh renewal eligibility whenever the number of received certifications
+    // changes — canRenew depends on the distance rule which needs ≥ 5 certs.
+    // Without this, users reported a stale "cannot renew yet" state after
+    // reaching 5 certs. We `select` on count + the latest activity id to avoid
+    // rebuilding on every loading/error state transition of the cert list.
+    ref.watch(
+      certificationListProvider((
+        address: address,
+        direction: CertDirection.received,
+      )).select((s) => (s.certifications.length, s.lastActivityId)),
+    );
 
     // Listen to block height with throttle (refresh every 10 blocks ~60s)
     ref.listen(blockHeightProvider, (previous, next) {

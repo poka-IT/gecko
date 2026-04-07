@@ -183,17 +183,29 @@ class _DesktopHomeWidgetState extends ConsumerState<DesktopHomeWidget> with Sing
     });
   }
 
-  /// Returns true when the primary focus is inside any text input (TextField,
-  /// TextFormField, etc.). Used to prevent single-letter shortcuts from firing
-  /// while the user is typing - regardless of which text field has focus.
+  /// Returns true when the primary focus belongs to a text input
+  /// ([TextField], [TextFormField], [EditableText]). Used to prevent
+  /// single-letter shortcuts from firing while the user is typing.
+  ///
+  /// A TextField installs its user-provided [FocusNode] on a [Focus]
+  /// widget rendered *inside* the TextField. So when the field is focused,
+  /// `primaryFocus.context` is that inner Focus widget and the TextField is
+  /// a strict ancestor — exactly what `visitAncestorElements` walks. The
+  /// previous implementation walked ancestors but only checked for
+  /// [EditableText], which is a *descendant* of the focus context, not an
+  /// ancestor — so it never matched and shortcuts kept firing while the
+  /// user was typing in the contacts search field.
   bool _isTextInputFocused() {
     final primaryFocus = FocusManager.instance.primaryFocus;
     if (primaryFocus == null) return false;
     final ctx = primaryFocus.context;
     if (ctx == null) return false;
+    // Edge case: focus is directly on an EditableText element.
+    if (ctx.widget is EditableText) return true;
+
     var found = false;
     ctx.visitAncestorElements((element) {
-      if (element.widget is EditableText) {
+      if (element.widget is EditableText || element.widget is TextField || element.widget is TextFormField) {
         found = true;
         return false; // stop walking
       }

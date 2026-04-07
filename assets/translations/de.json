@@ -342,6 +342,8 @@
     "notAllowedToChangeIdtyAddress": "Änderung der Identitätsadresse nicht erlaubt",
     "notAllowedToRemoveIdty": "Entfernung der Identität nicht erlaubt",
     "idtyAlreadyConfirmed": "Identität bereits bestätigt",
+    "idtyAlreadyCreated": "Diese Identität wurde gerade erstellt, bitte aktualisiere die Seite",
+    "cantCertifyExpiredIdentity": "Diese Identität ist abgelaufen. Bitte die Person, ihre Mitgliedschaft vor der Zertifizierung zu erneuern.",
     "idtyNotValidated": "Identität nicht validiert",
     "membershipNotFound": "Mitgliedschaft nicht gefunden",
     "notEnoughCertsForMembership": "Nicht genügend Zertifizierungen zur Erneuerung der Mitgliedschaft",

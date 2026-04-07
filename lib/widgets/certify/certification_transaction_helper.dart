@@ -160,6 +160,12 @@ class CertificationTransactionHelper {
           if (removeFromPersistentQueue) {
             _removeFromPersistentQueue(container, issuerAddress, targetAddress);
           }
+          // Refresh identity/cert state from chain so the user doesn't see the
+          // cert button vanish or remain stale after a runtime error such as
+          // `identity.IdtyAlreadyCreated` caused by a concurrent creation.
+          container.invalidate(idtyStatusStreamProvider(targetAddress));
+          container.invalidate(certificationExistsProvider(targetAddress));
+          container.invalidate(certStateProvider(targetAddress));
           _showErrorSnackbar(scaffoldMessenger, status.errorMessage);
           subscription.cancel();
         }

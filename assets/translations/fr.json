@@ -361,6 +361,8 @@
     "notAllowedToChangeIdtyAddress": "Changement d'adresse d'identité non autorisé",
     "notAllowedToRemoveIdty": "Suppression d'identité non autorisée",
     "idtyAlreadyConfirmed": "Identité déjà confirmée",
+    "idtyAlreadyCreated": "Cette identité vient d'être créée, rafraîchissez la page",
+    "cantCertifyExpiredIdentity": "Cette identité est expirée. Demandez à la personne de renouveler son adhésion avant d'être certifiée.",
     "idtyNotValidated": "Identité non validée",
     "membershipNotFound": "Adhésion introuvable",
     "notEnoughCertsForMembership": "Pas assez de certifications pour renouveler l'adhésion",

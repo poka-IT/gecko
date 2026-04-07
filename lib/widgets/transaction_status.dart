@@ -44,6 +44,7 @@ Map<String, String> errorTransactionMap = {
   'identity.NotAllowedToChangeIdtyAddress': 'notAllowedToChangeIdtyAddress'.tr(),
   'identity.NotAllowedToRemoveIdty': 'notAllowedToRemoveIdty'.tr(),
   'identity.IdtyAlreadyConfirmed': 'idtyAlreadyConfirmed'.tr(),
+  'identity.IdtyAlreadyCreated': 'idtyAlreadyCreated'.tr(),
   'identity.IdtyNotValidated': 'idtyNotValidated'.tr(),
   'membership.MembershipNotFound': 'membershipNotFound'.tr(),
   'wot.NotEnoughCerts': 'notEnoughCertsForMembership'.tr(),

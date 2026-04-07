@@ -128,14 +128,27 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     ))
       return;
 
+    // Capture the PIN immediately after askPinCode, before any async operation that
+    // could trigger debounceResetPinCode clearing it (1 second when the PIN cache is
+    // disabled). The mnemonic challenge typically takes several seconds — without
+    // this capture, the subsequent getKeyPairFromAddress would receive an empty PIN
+    // and surface as a misleading "incorrect PIN" snackbar to the user.
+    final capturedPin = PinCodeService.pinCode;
+    if (capturedPin.isEmpty) {
+      log.e('Confirm identity aborted: PIN was empty immediately after askPinCode');
+      return;
+    }
+
     if (!context.mounted) return;
-    if (!await showMnemonicChallenge(context: context, ref: ref, address: widget.address)) return;
+    if (!await showMnemonicChallenge(context: context, ref: ref, address: widget.address, pinCode: capturedPin)) {
+      return;
+    }
 
     final DurtKeyPair keypair;
     try {
       keypair = await ref
           .read(walletServiceProvider)
-          .getKeyPairFromAddress(address: widget.address, pinCode: PinCodeService.pinCode);
+          .getKeyPairFromAddress(address: widget.address, pinCode: capturedPin);
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(

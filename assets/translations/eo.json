@@ -355,6 +355,8 @@
     "notAllowedToChangeIdtyAddress": "Ne permesitas ŝanĝi identecan adreson",
     "notAllowedToRemoveIdty": "Ne permesitas forigi identecon",
     "idtyAlreadyConfirmed": "Identeco jam konfirmita",
+    "idtyAlreadyCreated": "Ĉi tiu identeco ĵus estis kreita, bonvolu reŝargi la paĝon",
+    "cantCertifyExpiredIdentity": "Ĉi tiu identeco eksvalidiĝis. Petu la personon renovigi sian membrecon antaŭ ol esti atestata.",
     "idtyNotValidated": "Identeco ne validigita",
     "membershipNotFound": "Membreco ne trovita",
     "notEnoughCertsForMembership": "Ne sufiĉe da atestoj por renovigi membrecon",

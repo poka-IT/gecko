@@ -353,6 +353,8 @@
     "notAllowedToChangeIdtyAddress": "No está permitido cambiar la dirección de identidad",
     "notAllowedToRemoveIdty": "No está permitido eliminar la identidad",
     "idtyAlreadyConfirmed": "Identidad ya confirmada",
+    "idtyAlreadyCreated": "Esta identidad acaba de crearse, actualiza la página",
+    "cantCertifyExpiredIdentity": "Esta identidad ha expirado. Pide a la persona que renueve su adhesión antes de ser certificada.",
     "idtyNotValidated": "Identidad no validada",
     "membershipNotFound": "Membresía no encontrada",
     "notEnoughCertsForMembership": "No hay suficientes certificaciones para renovar la membresía",

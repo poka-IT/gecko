@@ -2063,10 +2063,10 @@ packages:
     dependency: transitive
     description:
       name: sentry
-      sha256: "605ad1f6f1ae5b72018cbe8fc20f490fa3bd53e58882e5579566776030d8c8c1"
+      sha256: "682360642a7b14b36daef3b5574b7269164e7763512ac92cdafd55b695bd2183"
       url: "https://pub.dev"
     source: hosted
-    version: "9.14.0"
+    version: "9.16.1"
   sentry_dart_plugin:
     dependency: "direct dev"
     description:
@@ -2079,10 +2079,10 @@ packages:
     dependency: "direct main"
     description:
       name: sentry_flutter
-      sha256: "7fd0fb80050c1f6a77ae185bda997a76d384326d6777cf5137a6c38952c4ac7d"
+      sha256: cf4944d02daa952aeb0e1ab01ddb3db8bfc6b7e16e9811edacf05d9eed276fda
       url: "https://pub.dev"
     source: hosted
-    version: "9.14.0"
+    version: "9.16.1"
   shared_preferences:
     dependency: transitive
     description:

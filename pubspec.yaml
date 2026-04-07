@@ -29,7 +29,7 @@ dependencies:
   mobile_scanner: ^7.1.4
   qr_flutter: ^4.1.0
   responsive_framework: ^1.5.1
-  sentry_flutter: ^9.13.0
+  sentry_flutter: ^9.16.1
   truncate: ^3.0.1
   dio: ^5.9.1
   package_info_plus: ^9.0.0

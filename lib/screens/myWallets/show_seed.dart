@@ -9,7 +9,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/security_providers.dart';
 import 'package:gecko/routes.dart';
-import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/buttons/primary_button.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
@@ -22,8 +21,14 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class ShowSeed extends ConsumerWidget {
-  const ShowSeed({Key? keyMyWallets, required this.walletName}) : super(key: keyMyWallets);
+  const ShowSeed({Key? keyMyWallets, required this.walletName, required this.pinCode}) : super(key: keyMyWallets);
   final String walletName;
+
+  /// Locally-captured PIN forwarded by the caller (see
+  /// [PinCodeService.askPinCodeAndCapture]). The seed display provider is
+  /// keyed on the PIN, so it must survive navigation and modal build without
+  /// being re-read from the cache.
+  final String pinCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,7 +54,7 @@ class ShowSeed extends ConsumerWidget {
               children: <Widget>[
                 // Use combined provider to load everything at once - no more double loading
                 ref
-                    .watch(seedDisplayProvider((address: firstWallet.address, pin: PinCodeService.pinCode)))
+                    .watch(seedDisplayProvider((address: firstWallet.address, pin: pinCode)))
                     .when(
                       loading: () => Center(
                         child: Column(
@@ -91,9 +96,7 @@ class ShowSeed extends ConsumerWidget {
                                 icon: const Icon(Icons.refresh),
                                 label: Text('retry'.tr()),
                                 onPressed: () {
-                                  ref.invalidate(
-                                    seedDisplayProvider((address: firstWallet.address, pin: PinCodeService.pinCode)),
-                                  );
+                                  ref.invalidate(seedDisplayProvider((address: firstWallet.address, pin: pinCode)));
                                 },
                               ),
                               const SizedBox(height: 100),

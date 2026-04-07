@@ -181,7 +181,7 @@ class DiagnosticService {
         'is_valid': pinState.isValid,
         'is_loading': pinState.isLoading,
         'pin_length': pinState.pinLength ?? 'null',
-        'current_pin_code_empty': PinCodeService.pinCode.isEmpty,
+        'current_pin_code_empty': !PinCodeService.isUnlocked,
       };
 
       // Safe and wallet state

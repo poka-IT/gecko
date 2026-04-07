@@ -187,7 +187,7 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                       : () async {
                           final navCtx = Gecko.navigatorContext;
                           if (navCtx == null) return;
-                          if (!await PinCodeService.askPinCode(navCtx, canSwitch: true)) return;
+                          if (await PinCodeService.askPinCodeAndCapture(navCtx, canSwitch: true) == null) return;
 
                           if (!mounted) return;
                           final navContext = Gecko.navigatorContext;

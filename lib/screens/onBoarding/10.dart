@@ -590,7 +590,7 @@ class _OnboardingStepTenState extends ConsumerState<OnboardingStepTen> {
 
   Future<void> _onPinCompleted(String pin) async {
     if (_isProcessing) return;
-    PinCodeService.pinCode = pin.toUpperCase();
+    PinCodeService.cachePin(pin.toUpperCase());
 
     if (pin.toUpperCase() == widget.pinCode) {
       _pinController.triggerSuccess();

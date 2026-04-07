@@ -8,7 +8,6 @@ import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/security_providers.dart';
 import 'package:gecko/routes.dart';
-import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/build_text.dart';
 import 'package:gecko/widgets/commons/loading.dart';
@@ -16,18 +15,25 @@ import 'package:gecko/widgets/commons/mnemonic_display.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 
 /// Shows the mnemonic seed inside a desktop modal.
-Future<void> showDesktopShowSeedModal(BuildContext context, {required String walletName}) {
+///
+/// [pinCode] must be a locally-captured PIN forwarded by the caller (see
+/// `PinCodeService.askPinCodeAndCapture`). The seed provider is keyed on the
+/// PIN and is rebuilt when the modal opens, so reading the service field here
+/// would race the 1s `debounceResetPinCode` timer.
+Future<void> showDesktopShowSeedModal(BuildContext context, {required String walletName, required String pinCode}) {
   return showDesktopModal(
     context: context,
     title: 'myMnemonic'.tr(),
     size: DesktopModalSize.medium,
     contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-    builder: (context) => const _ShowSeedContent(),
+    builder: (context) => _ShowSeedContent(pinCode: pinCode),
   );
 }
 
 class _ShowSeedContent extends ConsumerWidget {
-  const _ShowSeedContent();
+  const _ShowSeedContent({required this.pinCode});
+
+  final String pinCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +45,7 @@ class _ShowSeedContent extends ConsumerWidget {
 
     return SingleChildScrollView(
       child: ref
-          .watch(seedDisplayProvider((address: firstWallet.address, pin: PinCodeService.pinCode)))
+          .watch(seedDisplayProvider((address: firstWallet.address, pin: pinCode)))
           .when(
             loading: () => Center(
               child: Padding(padding: const EdgeInsets.symmetric(vertical: 80), child: Loading(stroke: 4, size: 40)),
@@ -73,9 +79,7 @@ class _ShowSeedContent extends ConsumerWidget {
                         icon: const Icon(Icons.refresh),
                         label: Text('retry'.tr()),
                         onPressed: () {
-                          ref.invalidate(
-                            seedDisplayProvider((address: firstWallet.address, pin: PinCodeService.pinCode)),
-                          );
+                          ref.invalidate(seedDisplayProvider((address: firstWallet.address, pin: pinCode)));
                         },
                       ),
                     ],

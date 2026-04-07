@@ -72,11 +72,10 @@ class MembershipRenewal {
     if (!answer) return;
 
     // ignore: use_build_context_synchronously
-    if (!await PinCodeService.askPinCode(context)) return;
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
+    if (capturedPin == null) return;
 
-    final keypair = await ref
-        .read(walletServiceProvider)
-        .getKeyPairFromAddress(address: address, pinCode: PinCodeService.pinCode);
+    final keypair = await ref.read(walletServiceProvider).getKeyPairFromAddress(address: address, pinCode: capturedPin);
     final transactionStatus = ref.read(duniterServiceProvider).renewMembership(keypair);
 
     if (!context.mounted) return;

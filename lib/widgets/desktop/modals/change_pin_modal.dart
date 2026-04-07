@@ -150,7 +150,7 @@ class _ChangePinContentState extends ConsumerState<_ChangePinContent> {
 
       await ref.read(walletServiceProvider).changePin(address: firstWallet.address, oldPin: widget.oldPin, newPin: pin);
 
-      PinCodeService.pinCode = pin;
+      PinCodeService.cachePin(pin);
       PinCodeService.setAuthenticatedSafe(ref.read(walletServiceProvider).defaultSafeBoxNumber);
 
       // Re-enroll biometric if enabled

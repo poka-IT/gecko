@@ -11,7 +11,6 @@ import 'package:gecko/providers/wallet_generation_providers.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/routes.dart';
-import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/transaction_status.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
@@ -204,10 +203,14 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
         return;
       }
 
-      // Get source wallet keypair
+      // Get source wallet keypair using the PIN captured at migration start.
+      // This screen processes several wallets in a loop, each with its own
+      // transaction confirmation (tens of seconds) — well beyond the PIN
+      // cache's debounce window. `widget.oldSafePin` is the locally-captured
+      // copy forwarded by `MigrateSafeScreen` via `askPinCodeAndCapture`.
       final sourceKeypair = await ref
           .read(walletServiceProvider)
-          .getKeyPairFromAddress(address: task.wallet.address, pinCode: PinCodeService.pinCode);
+          .getKeyPairFromAddress(address: task.wallet.address, pinCode: widget.oldSafePin);
 
       // Migrate identity if wallet has one
       final idtyStatus = await ref.read(storageServiceProvider).getIdtyStatus(task.wallet.address);

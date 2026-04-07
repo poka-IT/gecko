@@ -953,13 +953,15 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     final flowState = ref.read(g1v1MigrationFlowProvider);
     final navigator = Navigator.of(context);
 
-    // 1. Force-ask PIN (target wallet's safe)
-    if (!await PinCodeService.askPinCode(context, force: true, wallet: flowState.selectedTargetWallet)) return;
-    final pinCode = PinCodeService.pinCode;
-    if (pinCode.isEmpty) {
-      log.e('Migration aborted: PIN was empty immediately after askPinCode');
-      return;
-    }
+    // 1. Force-ask PIN (target wallet's safe) and capture it locally —
+    //    the migration flow below involves a mnemonic challenge and
+    //    multi-step transaction, way beyond the 1s debounce window.
+    final pinCode = await PinCodeService.askPinCodeAndCapture(
+      context,
+      force: true,
+      wallet: flowState.selectedTargetWallet,
+    );
+    if (pinCode == null) return;
 
     // 2. Determine target wallet address
     String targetAddress;

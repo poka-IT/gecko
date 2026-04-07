@@ -70,7 +70,8 @@ class WalletDeletionService {
       // If wallet has balance and there's a destination, transfer funds first
       if (walletBalance.transferableBalance > BigInt.zero && destinationWallet != null) {
         // ignore: use_build_context_synchronously
-        if (!await PinCodeService.askPinCode(context, wallet: wallet)) {
+        final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: wallet);
+        if (capturedPin == null) {
           return 2; // PIN cancelled
         }
 
@@ -80,7 +81,7 @@ class WalletDeletionService {
           ref,
           wallet,
           destinationWallet,
-          PinCodeService.pinCode,
+          capturedPin,
         );
 
         if (transferResult != 0) {
@@ -140,7 +141,7 @@ class WalletDeletionService {
     await walletService.deleteSafe(safe.number);
 
     // Clear PIN
-    PinCodeService.pinCode = '';
+    PinCodeService.clearPin();
 
     // Handle navigation
     if (walletService.safeBox.isEmpty()) {

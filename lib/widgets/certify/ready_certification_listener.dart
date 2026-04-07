@@ -182,10 +182,13 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
 
     if (!confirmed || !mounted) return;
 
-    // Ask for PIN
+    // Ask for PIN and capture it locally so it survives the navigation into
+    // the target's profile (see askPinCodeAndCapture for context).
     final pinCtx = Gecko.navigatorContext;
     if (pinCtx == null) return;
-    if (!await PinCodeService.askPinCode(pinCtx)) return; // ignore: use_build_context_synchronously
+    // ignore: use_build_context_synchronously
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(pinCtx);
+    if (capturedPin == null) return;
     if (!mounted) return;
 
     try {
@@ -200,13 +203,15 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
         ref: ref,
         issuerAddress: issuerAddress,
         targetAddress: pendingCert.receiverAddress,
+        pinCode: capturedPin,
         navigateToTargetProfile: true,
         targetUsername: pendingCert.receiverName ?? pendingCert.receiverUid,
         onBeforeNavigate: () async {
           // Remove from queue with optimistic cooldown update
           await queueNotifier.removeExecutedCertification(pendingCert.id);
-          // Sync to CesiumPlus (we already have the PIN)
-          await _syncToRemote(walletService, queueNotifier, issuerAddress);
+          // Sync to CesiumPlus using the captured PIN (the service cache may
+          // have been cleared by debounceResetPinCode at this point).
+          await _syncToRemote(walletService, queueNotifier, issuerAddress, capturedPin);
         },
       );
     } catch (e) {
@@ -220,17 +225,19 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
     }
   }
 
-  /// Sync the queue to CesiumPlus
+  /// Sync the queue to CesiumPlus.
+  ///
+  /// [pinCode] must be a locally-captured PIN obtained from
+  /// [PinCodeService.askPinCodeAndCapture] to survive the user-facing delay
+  /// incurred by the certification flow.
   Future<bool> _syncToRemote(
     dynamic walletService,
     CertificationQueueNotifier queueNotifier,
     String issuerAddress,
+    String pinCode,
   ) async {
     try {
-      final keyPair = await walletService.getKeyPairFromAddress(
-        address: issuerAddress,
-        pinCode: PinCodeService.pinCode,
-      );
+      final keyPair = await walletService.getKeyPairFromAddress(address: issuerAddress, pinCode: pinCode);
 
       return await queueNotifier.pushToRemote(keyPair.sign);
     } catch (e) {

@@ -353,10 +353,13 @@ class DesktopWalletOverview extends ConsumerWidget {
                   final walletService = ref.read(walletServiceProvider);
                   final wallets = walletService.getWalletDataList(safeNumber);
                   if (wallets.isEmpty) return;
-                  if (!await PinCodeService.askPinCode(context, wallet: wallets.first)) return;
+                  final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: wallets.first);
+                  if (capturedPin == null) return;
                   final lastNum = wallets.last.number;
                   final name = WalletNameService.defaultN(lastNum + 2);
-                  await ref.read(walletActionsProvider.notifier).generateNewDerivation(name, safeNumber: safeNumber);
+                  await ref
+                      .read(walletActionsProvider.notifier)
+                      .generateNewDerivation(name, pinCode: capturedPin, safeNumber: safeNumber);
                 },
           child: derivationState.isLoading
               ? Padding(

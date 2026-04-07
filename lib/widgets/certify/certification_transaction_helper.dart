@@ -15,7 +15,6 @@ import 'package:gecko/widgets/certs_list.dart';
 import 'package:gecko/services/certification_queue_service.dart';
 import 'package:gecko/services/contact_service.dart';
 import 'package:gecko/services/navigation_service.dart';
-import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/transaction_status.dart' show lookupTransactionError;
 
 /// Helper class for executing certification transactions with proper cache management
@@ -33,12 +32,19 @@ class CertificationTransactionHelper {
   /// already the target's profile (e.g., queue screen, global modal).
   /// Leave false when already on the target's profile view.
   ///
+  /// [pinCode] must be a locally-captured PIN obtained from
+  /// [PinCodeService.askPinCodeAndCapture]. The helper may perform
+  /// navigation and user-interactive callbacks before the crypto step, so
+  /// the caller must forward the captured string explicitly — there is no
+  /// way to re-acquire the PIN from inside this helper.
+  ///
   /// Returns the broadcast stream if successful, null if cancelled or failed before sending
   static Future<Stream<TransactionStatus>?> executeCertification({
     required BuildContext context,
     required WidgetRef ref,
     required String issuerAddress,
     required String targetAddress,
+    required String pinCode,
     Future<void> Function()? onBeforeNavigate,
     bool navigateToTargetProfile = false,
     String? targetUsername,
@@ -63,10 +69,7 @@ class CertificationTransactionHelper {
     });
 
     try {
-      final keypair = await walletService.getKeyPairFromAddress(
-        address: issuerAddress,
-        pinCode: PinCodeService.pinCode,
-      );
+      final keypair = await walletService.getKeyPairFromAddress(address: issuerAddress, pinCode: pinCode);
 
       // Convert to broadcast stream so it can be listened to multiple times
       final transactionStream = duniterService

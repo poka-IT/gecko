@@ -292,16 +292,11 @@ class StepConfirmation extends ConsumerWidget {
     // Capture NavigatorState early, before any async gap
     final navigator = Navigator.of(context);
 
-    // 1. Always force-ask PIN for this irreversible operation
-    if (!await PinCodeService.askPinCode(context, force: true)) return;
-
-    // Capture PIN immediately after successful askPinCode, before any async operation
-    // that could trigger debounceResetPinCode clearing it (1 second when cache is disabled)
-    final pinCode = PinCodeService.pinCode;
-    if (pinCode.isEmpty) {
-      log.e('Migration aborted: PIN was empty immediately after askPinCode');
-      return;
-    }
+    // 1. Always force-ask PIN for this irreversible operation and capture it
+    //    locally — the migration spans many async steps well beyond the 1s
+    //    `debounceResetPinCode` window.
+    final pinCode = await PinCodeService.askPinCodeAndCapture(context, force: true);
+    if (pinCode == null) return;
 
     // 2. Determine target wallet address
     String targetAddress;

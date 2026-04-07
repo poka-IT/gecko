@@ -106,12 +106,11 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
       if (!result) return;
 
       if (!mounted) return;
-      if (!await PinCodeService.askPinCode(
+      final capturedPin = await PinCodeService.askPinCodeAndCapture(
         context,
         wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress),
-      )) {
-        return;
-      }
+      );
+      if (capturedPin == null) return;
       if (!context.mounted) return;
 
       try {
@@ -121,11 +120,13 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
           ref: ref,
           issuerAddress: widget.issuerAddress,
           targetAddress: widget.address,
+          pinCode: capturedPin,
           onBeforeNavigate: () async {
             // Remove from queue with optimistic cooldown update
             await queueNotifier.removeExecutedCertification(widget.pendingCert.id);
-            // Sync to CesiumPlus (we already have the PIN)
-            await _syncToRemote(walletService, queueNotifier);
+            // Sync to CesiumPlus using the captured PIN (the service cache may
+            // already have been cleared by debounceResetPinCode at this point).
+            await _syncToRemote(walletService, queueNotifier, capturedPin);
           },
         );
       } catch (e) {
@@ -140,13 +141,14 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
     }
   }
 
-  /// Sync the queue to CesiumPlus
-  Future<bool> _syncToRemote(dynamic walletService, CertificationQueueNotifier queueNotifier) async {
+  /// Sync the queue to CesiumPlus.
+  ///
+  /// [pinCode] must be a locally-captured PIN obtained from
+  /// [PinCodeService.askPinCodeAndCapture] to survive the user-facing delay
+  /// incurred by the certification flow.
+  Future<bool> _syncToRemote(dynamic walletService, CertificationQueueNotifier queueNotifier, String pinCode) async {
     try {
-      final keyPair = await walletService.getKeyPairFromAddress(
-        address: widget.issuerAddress,
-        pinCode: PinCodeService.pinCode,
-      );
+      final keyPair = await walletService.getKeyPairFromAddress(address: widget.issuerAddress, pinCode: pinCode);
 
       log.d('🔄 [ExecuteQueuedButton] Syncing queue to CesiumPlus...');
       return await queueNotifier.pushToRemote(keyPair.sign);

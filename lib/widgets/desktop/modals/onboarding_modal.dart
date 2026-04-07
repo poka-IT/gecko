@@ -747,7 +747,7 @@ class _OnboardingModalContentState extends ConsumerState<_OnboardingModalContent
       },
       onCompleted: (pin) async {
         if (pin.toUpperCase() == _pinCode) {
-          PinCodeService.pinCode = pin.toUpperCase();
+          PinCodeService.cachePin(pin.toUpperCase());
           await _handlePinConfirmed();
         } else {
           setState(() {

@@ -485,7 +485,7 @@ class _RestoreModalContentState extends ConsumerState<_RestoreModalContent> {
               },
               onCompleted: (pin) async {
                 if (pin.toUpperCase() == _pinCode) {
-                  PinCodeService.pinCode = pin.toUpperCase();
+                  PinCodeService.cachePin(pin.toUpperCase());
                   await _handlePinConfirmed();
                 } else {
                   setState(() {

@@ -245,6 +245,73 @@ Available labels: `bug`, `p1`, `p2`, `p3`, `need-infos`, `GoodFirstIssue`, `Refa
 - **Never use plain `Text` widget for translation strings that contain markdown** (bold `**...**`, italic `*...*`, etc.). Use `TextMarkDown` from `lib/widgets/commons/text_markdown.dart` instead, which renders markdown formatting via `flutter_markdown`.
 - This applies to all UI: screens, modals, dialogs, cards, etc.
 
+## PIN Code Authentication — Single API Rule
+
+`PinCodeService` at `lib/services/pin_cache_service.dart` caches the user's PIN in a private static field (`_pinCode`) and clears it after a debounced timeout:
+- **1 second** when the PIN cache is disabled (the default safe setting)
+- 5 minutes when enabled
+
+**The raw cached value is not exposed publicly** — there is no `PinCodeService.pinCode` getter to read from. The only way to obtain a usable PIN is the `String` returned by [`askPinCodeAndCapture`], which is a local copy captured before the debounce timer can clear the field. This design makes the "read stale PIN after an async gap" class of bug structurally impossible.
+
+### The single API
+
+There is exactly **one** public authentication method:
+
+```dart
+static Future<String?> PinCodeService.askPinCodeAndCapture(
+  BuildContext context, {
+  bool force = false,
+  bool canSwitch = false,
+  d.WalletEntity? wallet,
+});
+```
+
+It returns the PIN as a **local `String`** (or `null` on cancellation). The returned value is captured before `debounceResetPinCode` can touch the static field, so it remains valid for the caller's entire flow regardless of how long the user takes.
+
+Every authentication point — whether it needs the PIN for a crypto operation or just as an access gate — goes through the same method. This makes the codebase impossible to mis-use by construction.
+
+### The rules
+
+- **Never reach into PinCodeService for a PIN value in flow code.** The cached PIN has no public accessor. If you need a PIN, call `askPinCodeAndCapture` and forward the returned `String` explicitly through your call chain (parameters, constructors, closures).
+- **For flows that use the PIN for crypto:** capture once with `askPinCodeAndCapture`, forward the resulting `String` explicitly down to the crypto step. Helpers take `required String pinCode` parameters — the compiler enforces this.
+- **For authentication gates (no PIN use downstream):** call `askPinCodeAndCapture` and check `!= null`:
+  ```dart
+  if (await PinCodeService.askPinCodeAndCapture(context) == null) return;
+  ```
+  The captured `String` is discarded but the gate behaviour is preserved. Uniformity with crypto flows eliminates mental overhead.
+- **To detect authentication state** (not read the PIN value): use `PinCodeService.isUnlocked`. Example: `home_buttons.dart` uses `!PinCodeService.isUnlocked` to decide whether to play the unlock transition.
+- **Helper / provider / service contracts:** methods that perform crypto must take `required String pinCode` as a parameter (e.g. `CertificationTransactionHelper.executeCertification`, `walletActionsProvider.generateNewDerivation`, `paymentPopup.executeTransactionInBackground`, `showMnemonicChallenge`, `MnemonicChallengeNotifier.initialize`, `MigrateSafeProgressScreen.oldSafePin`, `ShowSeed.pinCode`, `showDesktopShowSeedModal`). **Do not weaken the contract** — if a helper needs a PIN, add a parameter.
+
+### PinCodeService API surface
+
+**Public methods** (use from your code):
+- `askPinCodeAndCapture(...)` → `Future<String?>` — the single auth entry point
+- `isUnlocked` → `bool` — whether a PIN is currently cached
+- `isEnabled` / `toggle()` — user-facing cache config
+
+**PIN entry screens only** (onboarding, unlocking, change pin, restore, legacy import) — normal flow code must NOT touch these:
+- `cachePin(String)` — store a freshly-entered PIN
+- `clearPin()` — wipe the cache
+- `setAuthenticatedSafe(int)` — mark the safe the PIN was validated against
+- `debounceResetPinCode([minutes])` — schedule automatic cache clearing
+
+### Canonical patterns in the codebase
+
+- `lib/widgets/certify/certify_button.dart` — capture + pass to helper
+- `lib/widgets/payment_popup.dart` — capture + pass to background transaction
+- `lib/screens/identity/confirm_identity.dart` — capture + pass through mnemonic challenge
+- `lib/screens/myWallets/cesium_profile_screen.dart` — capture + pass to network upload
+- `lib/screens/myWallets/migrate_safe.dart` → `migrate_safe_progress.dart` — capture once, forward via constructor through navigation
+- `lib/widgets/desktop/modals/show_seed_modal.dart` — capture + forward to provider key
+- `lib/widgets/bottom_app_bar.dart` — pure gate pattern (`== null` check)
+
+### When adding new PIN-protected flows
+
+1. Call `PinCodeService.askPinCodeAndCapture(...)` — there is no other way to authenticate.
+2. If the PIN is used downstream, store it in a local `final capturedPin` and pass it through parameters.
+3. If it's just a gate, check `== null` to bail out.
+4. Helpers that accept a PIN should declare `required String pinCode` — the compiler will enforce the contract.
+
 ## Sentry Issue Analysis
 
 The Sentry project is **axiom-team** (org: `axiom-team`, regionUrl: `https://us.sentry.io`). The project slug is `axiom-team`.

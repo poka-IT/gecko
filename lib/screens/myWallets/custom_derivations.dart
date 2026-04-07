@@ -106,16 +106,21 @@ class _CustomDerivationState extends ConsumerState<CustomDerivation> {
                     shadowColor: context.colorScheme.primary.withValues(alpha: 0.3),
                   ),
                   onPressed: () async {
-                    if (!await PinCodeService.askPinCode(context)) return;
+                    final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
+                    if (capturedPin == null) return;
                     String newDerivationName = WalletNameService.defaultN(walletsList.last.number + 2);
                     if (dropdownValue == 'root') {
                       await ref
                           .read(walletActionsProvider.notifier)
-                          .generateRootWallet(WalletNameService.defaultMain());
+                          .generateRootWallet(WalletNameService.defaultMain(), pinCode: capturedPin);
                     } else {
                       await ref
                           .read(walletActionsProvider.notifier)
-                          .generateNewDerivation(newDerivationName, customDerivation: int.parse(dropdownValue!));
+                          .generateNewDerivation(
+                            newDerivationName,
+                            pinCode: capturedPin,
+                            customDerivation: int.parse(dropdownValue!),
+                          );
                     }
                     if (!context.mounted) return;
                     Navigator.popUntil(context, ModalRoute.withName(RouteNames.myWallets));

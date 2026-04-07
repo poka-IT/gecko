@@ -422,7 +422,9 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
   }
 
   Future<void> _handleTransfer(WidgetRef ref) async {
-    if (!await PinCodeService.askPinCode(context)) return;
+    // Authentication gate before opening the payment popup. The popup
+    // re-authenticates internally when the user finally taps "send".
+    if (await PinCodeService.askPinCodeAndCapture(context) == null) return;
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
     paymentPopup(context, toAddress: widget.address, username: widget.username);

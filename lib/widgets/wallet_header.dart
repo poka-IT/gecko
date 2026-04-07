@@ -417,14 +417,17 @@ class _WalletHeaderAvatarState extends ConsumerState<WalletHeaderAvatar> {
                   ? () async {
                       setState(() => _isPickerOpen = true);
 
-                      // Ask for PIN code first if needed
-                      final pinCodeValid = await PinCodeService.askPinCode(context);
+                      // Ask for PIN and capture it locally — the ImagePicker
+                      // that runs inside `changeAvatar` blocks on user
+                      // interaction, so the captured string must be forwarded
+                      // through to the upload step.
+                      final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
                       if (!mounted) return;
 
-                      if (pinCodeValid) {
+                      if (capturedPin != null) {
                         final newPath = await WalletManagementService.changeAvatar(
                           widget.address,
-                          pinCode: PinCodeService.pinCode,
+                          pinCode: capturedPin,
                           ref: ref,
                         );
                         if (!mounted) return;

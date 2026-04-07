@@ -102,8 +102,10 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final pinCode = await PinCodeService.askPinCode(context);
-    if (!pinCode) {
+    // Capture the PIN locally so the upload (network I/O, potentially several
+    // seconds) doesn't race the 1-second `debounceResetPinCode` timer.
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
+    if (capturedPin == null) {
       if (mounted) SnackbarService.showError(context, message: 'pinNeeded'.tr());
       return;
     }
@@ -113,10 +115,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
 
     try {
       final walletService = ref.read(walletServiceProvider);
-      final keyPair = await walletService.getKeyPairFromAddress(
-        address: widget.address,
-        pinCode: PinCodeService.pinCode,
-      );
+      final keyPair = await walletService.getKeyPairFromAddress(address: widget.address, pinCode: capturedPin);
 
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
       String title = _profile?['title'] ?? 'Duniter Wallet';
@@ -187,9 +186,11 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
 
     if (confirmed != true) return;
 
+    // Capture the PIN locally so the delete (network I/O) doesn't race the
+    // 1-second `debounceResetPinCode` timer.
     // ignore: use_build_context_synchronously
-    final pinCode = await PinCodeService.askPinCode(context);
-    if (!pinCode) {
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
+    if (capturedPin == null) {
       if (mounted) SnackbarService.showError(context, message: 'pinNeeded'.tr());
       return;
     }
@@ -199,10 +200,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
 
     try {
       final walletService = ref.read(walletServiceProvider);
-      final keyPair = await walletService.getKeyPairFromAddress(
-        address: widget.address,
-        pinCode: PinCodeService.pinCode,
-      );
+      final keyPair = await walletService.getKeyPairFromAddress(address: widget.address, pinCode: capturedPin);
 
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
       final success = await cesiumPlus.deleteProfile(address: widget.address, signFunction: keyPair.sign);

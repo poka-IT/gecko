@@ -84,8 +84,11 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
 
       if (!result) return;
 
+      // Capture the PIN locally so it survives the async gap until the
+      // certification helper reaches its crypto step (see askPinCodeAndCapture).
       // ignore: use_build_context_synchronously
-      if (!await PinCodeService.askPinCode(context)) return;
+      final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
+      if (capturedPin == null) return;
       if (!mounted) return;
       final identityWallet = await ref.read(effectiveCertificationWalletProvider.future);
 
@@ -100,6 +103,7 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
           ref: ref,
           issuerAddress: identityWallet.address,
           targetAddress: widget.address,
+          pinCode: capturedPin,
         );
       } catch (e) {
         if (e is! NotMemberException && e is! CantBeCertException) log.e(e);

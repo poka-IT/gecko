@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
-import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/services/sentry_service.dart';
 
 /// Data for a single word challenge
@@ -72,14 +71,16 @@ class MnemonicChallengeNotifier extends Notifier<MnemonicChallengeState> {
   }
 
   /// Initialize the challenge by loading the mnemonic and selecting 2 random word indices.
-  /// [pinCode] can be passed explicitly to avoid reading from PinCodeService which may
-  /// have been cleared by debounceResetPinCode when PIN cache is disabled.
-  Future<void> initialize(String address, {String? pinCode}) async {
+  ///
+  /// [pinCode] must be a locally-captured PIN forwarded by the caller (see
+  /// `PinCodeService.askPinCodeAndCapture`). Reading the service field here
+  /// would race the 1s `debounceResetPinCode` timer because the caller is
+  /// typically navigating into a bottom sheet after a PIN prompt.
+  Future<void> initialize(String address, {required String pinCode}) async {
     state = const MnemonicChallengeState(isLoading: true);
 
     try {
-      final pin = pinCode ?? PinCodeService.pinCode;
-      if (pin.isEmpty) {
+      if (pinCode.isEmpty) {
         const errorDetail = 'PIN code is empty when initializing mnemonic challenge';
         log.e(errorDetail);
         SentryService.captureException(Exception(errorDetail), tag: 'mnemonic_challenge', extra: {'address': address});
@@ -90,7 +91,7 @@ class MnemonicChallengeNotifier extends Notifier<MnemonicChallengeState> {
       // Call wallet service directly instead of using autoDispose seedDisplayProvider,
       // which gets disposed before the future resolves when used with ref.read()
       final walletService = ref.read(walletServiceProvider);
-      final englishMnemonic = await walletService.getSeed(address: address, pin: pin);
+      final englishMnemonic = await walletService.getSeed(address: address, pin: pinCode);
 
       if (englishMnemonic.isEmpty) {
         final errorDetail = 'getSeed returned empty mnemonic for address $address';

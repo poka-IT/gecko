@@ -423,7 +423,9 @@ class _ProfileViewScreenState extends ConsumerState<ProfileViewScreen> {
   }
 
   Future<void> _handleTransfer(WidgetRef ref) async {
-    if (!await PinCodeService.askPinCode(context)) return;
+    // Authentication gate before opening the payment popup. The popup
+    // re-authenticates internally when the user finally taps "send".
+    if (await PinCodeService.askPinCodeAndCapture(context) == null) return;
 
     final fromWallet = widget.fromAddress != null ? ref.read(walletByAddressProvider(widget.fromAddress!)) : null;
     if (!mounted) return;

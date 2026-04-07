@@ -146,10 +146,11 @@ class _ChooseSafeState extends ConsumerState<SwitchSafe> {
                     label: 'openThisSafe'.tr(),
                     onPressed: () async {
                       await ref.read(walletActionsProvider.notifier).switchSafe(currentSafe);
-                      PinCodeService.pinCode = '';
+                      PinCodeService.clearPin();
                       await ref.read(biometricProvider.notifier).refresh();
                       if (!context.mounted) return;
-                      if (!await PinCodeService.askPinCode(context, canSwitch: true)) return;
+                      // Authentication gate to confirm the user owns the newly-switched safe.
+                      if (await PinCodeService.askPinCodeAndCapture(context, canSwitch: true) == null) return;
 
                       // Pop back to the existing WalletsHome which has already rebuilt
                       // with new safe data via switchSafe(). The fade animation in

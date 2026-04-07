@@ -495,15 +495,20 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                         onPressed: migrationChecks.canMigrate && mnemonicIsValid && toKeypair != null
                             ? () async {
                                 try {
-                                  // Demander le code PIN d'abord
+                                  // Ask for PIN and capture it locally — the migration below
+                                  // spans navigation + multi-step transaction, way beyond the
+                                  // 1s debounce window.
                                   final fromWallet = ref.read(walletServiceProvider).getWalletData(fromAddress);
-                                  if (!await PinCodeService.askPinCode(context, wallet: fromWallet)) return;
+                                  final pinCode = await PinCodeService.askPinCodeAndCapture(
+                                    context,
+                                    wallet: fromWallet,
+                                  );
+                                  if (pinCode == null) return;
 
                                   // Capture services before navigation (ref won't be valid after pop)
                                   final walletService = ref.read(walletServiceProvider);
                                   final duniterService = ref.read(duniterServiceProvider);
                                   final cesiumPlusService = ref.read(cesiumPlusServiceProvider);
-                                  final pinCode = PinCodeService.pinCode;
 
                                   // Get fromKeypair now (PIN is available) for CesiumPlus migration later
                                   final fromKeypair = await walletService.getKeyPairFromAddress(

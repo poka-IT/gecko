@@ -146,19 +146,29 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyShowSeed,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
+            // Capture the PIN locally before navigation — the seed provider is
+            // keyed on `pin` and would otherwise rebuild with an expired cache
+            // by the time the modal / screen finishes building.
+            final capturedPin = await PinCodeService.askPinCodeAndCapture(
+              context,
+              force: true,
+              wallet: safeFirstWallet,
+            );
+            if (capturedPin == null) return;
             if (!context.mounted) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
               showDesktopShowSeedModal(
                 Gecko.navigatorContext!,
                 walletName: WalletNameService.displayName(currentSafe.name),
+                pinCode: capturedPin,
               );
             } else {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ShowSeed(walletName: WalletNameService.displayName(currentSafe.name)),
+                  builder: (context) =>
+                      ShowSeed(walletName: WalletNameService.displayName(currentSafe.name), pinCode: capturedPin),
                 ),
               );
             }
@@ -219,9 +229,11 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyChangePin,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
-            final oldPin = PinCodeService.pinCode;
-            if (oldPin.isEmpty) return;
+            // Capture the old PIN locally — it is forwarded to a modal /
+            // screen that consumes it later (after user enters the new PIN),
+            // well beyond the 1s `debounceResetPinCode` window.
+            final oldPin = await PinCodeService.askPinCodeAndCapture(context, force: true, wallet: safeFirstWallet);
+            if (oldPin == null) return;
             if (!context.mounted) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
@@ -296,7 +308,10 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyRenameSafe,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
+            // Authentication gate for rename — no PIN used downstream.
+            if (await PinCodeService.askPinCodeAndCapture(context, force: true, wallet: safeFirstWallet) == null) {
+              return;
+            }
             if (!context.mounted) return;
             if (isDesktopLayout(context)) {
               Navigator.of(context).pop();
@@ -337,7 +352,10 @@ class SafeOptionsContent extends ConsumerWidget {
         InkWell(
           key: keyDeleteSafe,
           onTap: () async {
-            if (!await PinCodeService.askPinCode(context, force: true, wallet: safeFirstWallet)) return;
+            // Authentication gate for delete — no PIN used downstream.
+            if (await PinCodeService.askPinCodeAndCapture(context, force: true, wallet: safeFirstWallet) == null) {
+              return;
+            }
             if (!context.mounted) return;
 
             await safeManager.deleteSafe(context, currentSafe);

@@ -287,18 +287,22 @@ class _MigrateSafeScreenState extends ConsumerState<MigrateSafeScreen> {
                           );
 
                           if (!confirmed) return;
+                          if (!context.mounted) return;
 
-                          // ignore: use_build_context_synchronously
-                          if (!await PinCodeService.askPinCode(context, wallet: ref.read(firstWalletProvider))) return;
+                          final capturedPin = await PinCodeService.askPinCodeAndCapture(
+                            context,
+                            wallet: ref.read(firstWalletProvider),
+                          );
+                          if (capturedPin == null) return;
 
+                          if (!context.mounted) return;
                           Navigator.pushReplacement(
-                            // ignore: use_build_context_synchronously
                             context,
                             MaterialPageRoute(
                               builder: (context) => MigrateSafeProgressScreen(
                                 newMnemonic: _englishMnemonic,
                                 walletsToMigrate: _walletsToMigrate,
-                                oldSafePin: PinCodeService.pinCode,
+                                oldSafePin: capturedPin,
                               ),
                             ),
                           );

@@ -10,12 +10,16 @@ import 'package:gecko/providers/mnemonic_challenge_provider.dart';
 
 /// Shows a bottom sheet that asks the user to type 2 random words from their mnemonic.
 /// Returns `true` if both words are validated, `false` otherwise.
-/// [pinCode] can be passed explicitly to avoid race conditions with PIN cache clearing.
+///
+/// [pinCode] must be a locally-captured PIN obtained from
+/// [PinCodeService.askPinCodeAndCapture]. The sheet runs for several seconds
+/// while the user types their words — longer than the PIN cache's short
+/// debounce window — so the captured string must be forwarded explicitly.
 Future<bool> showMnemonicChallenge({
   required BuildContext context,
   required WidgetRef ref,
   required String address,
-  String? pinCode,
+  required String pinCode,
 }) async {
   // Initialize the challenge
   await ref.read(mnemonicChallengeProvider.notifier).initialize(address, pinCode: pinCode);

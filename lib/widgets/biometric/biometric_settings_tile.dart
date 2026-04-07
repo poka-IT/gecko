@@ -84,8 +84,12 @@ class BiometricSettingsTile extends ConsumerWidget {
   /// Handle toggle switch change
   Future<void> _handleToggle(BuildContext context, bool enableBiometric, BiometricNotifier notifier) async {
     if (enableBiometric) {
-      // Enable biometric - need PIN first
-      if (!await PinCodeService.askPinCode(context, force: true)) return;
+      // Enable biometric — capture the PIN locally before opening the modal.
+      // The enrolment call inside the bottom sheet happens after several
+      // seconds of user interaction, so the captured string must be
+      // forwarded through to the sheet.
+      final capturedPin = await PinCodeService.askPinCodeAndCapture(context, force: true);
+      if (capturedPin == null) return;
 
       if (context.mounted) {
         await showModalBottomSheet(
@@ -94,7 +98,7 @@ class BiometricSettingsTile extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           constraints: const BoxConstraints(maxWidth: 600),
           builder: (context) => _BiometricSetupBottomSheet(
-            pin: PinCodeService.pinCode,
+            pin: capturedPin,
             onSetupComplete: () {
               // Refresh state after setup
               notifier.refresh();

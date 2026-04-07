@@ -105,12 +105,15 @@ class ManageMembership extends ConsumerWidget {
           if (!answer) return;
 
           if (!context.mounted) return;
-          if (!await PinCodeService.askPinCode(context, wallet: ref.read(walletServiceProvider).getWalletData(address)))
-            return;
+          final capturedPin = await PinCodeService.askPinCodeAndCapture(
+            context,
+            wallet: ref.read(walletServiceProvider).getWalletData(address),
+          );
+          if (capturedPin == null) return;
 
           final keypair = await ref
               .read(walletServiceProvider)
-              .getKeyPairFromAddress(address: address, pinCode: PinCodeService.pinCode);
+              .getKeyPairFromAddress(address: address, pinCode: capturedPin);
           final transactionStatus = ref.read(duniterServiceProvider).revokeIdentity(keypair);
 
           if (!context.mounted) return;

@@ -50,14 +50,14 @@ class SafeManager {
       await walletService.deleteSafe(safe.number);
 
       // Clear the PIN for security after successful deletion
-      PinCodeService.pinCode = '';
+      PinCodeService.clearPin();
 
       // Handle navigation based on whether safes remain
       await _handlePostDeletionNavigation(navigator, walletService);
     } catch (e) {
       log.e('Failed to delete safe: $e');
       // Clear PIN on error for security
-      PinCodeService.pinCode = '';
+      PinCodeService.clearPin();
 
       // Show error message to user
       if (context.mounted) {

@@ -199,22 +199,21 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
             decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
             child: InkWell(
               onTap: () async {
-                final pinCodeValid = await PinCodeService.askPinCode(context, wallet: widget.wallet);
+                final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: widget.wallet);
                 if (!mounted) return;
+                if (capturedPin == null) return;
 
-                if (pinCodeValid) {
-                  final newPath = await WalletManagementService.changeAvatar(
-                    widget.wallet.address,
-                    pinCode: PinCodeService.pinCode,
-                    ref: ref,
-                  );
-                  if (!mounted) return;
-                  if (newPath.isNotEmpty) {
-                    setState(() {
-                      widget.wallet.imagePath = newPath;
-                    });
-                    ref.read(walletsListProvider.notifier).refresh();
-                  }
+                final newPath = await WalletManagementService.changeAvatar(
+                  widget.wallet.address,
+                  pinCode: capturedPin,
+                  ref: ref,
+                );
+                if (!mounted) return;
+                if (newPath.isNotEmpty) {
+                  setState(() {
+                    widget.wallet.imagePath = newPath;
+                  });
+                  ref.read(walletsListProvider.notifier).refresh();
                 }
               },
               child: Icon(Icons.camera_alt, size: scaleSize(20), color: Colors.black54),
@@ -381,13 +380,13 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
                     // Publish to CesiumPlus if non-default name
                     if (!WalletNameService.isDefault(newName)) {
-                      final pinOk = await PinCodeService.askPinCode(context, wallet: widget.wallet);
-                      if (pinOk && mounted) {
+                      final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: widget.wallet);
+                      if (capturedPin != null && mounted) {
                         unawaited(
                           WalletManagementService.publishNameToCesiumPlus(
                             widget.wallet.address,
                             newName,
-                            PinCodeService.pinCode,
+                            capturedPin,
                             ref: ref,
                           ),
                         );
@@ -426,13 +425,13 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                     onTap: () async {
                       final currentName = widget.wallet.name;
                       if (currentName == null || WalletNameService.isDefault(currentName)) return;
-                      final pinOk = await PinCodeService.askPinCode(context, wallet: widget.wallet);
-                      if (pinOk && mounted) {
+                      final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: widget.wallet);
+                      if (capturedPin != null && mounted) {
                         unawaited(
                           WalletManagementService.publishNameToCesiumPlus(
                             widget.wallet.address,
                             currentName,
-                            PinCodeService.pinCode,
+                            capturedPin,
                             ref: ref,
                           ),
                         );
@@ -668,14 +667,17 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
       if (confirmed != true) return;
 
-      // Ask for PIN code
+      // Ask for PIN code and capture it locally. The previous confirmation
+      // dialog was user-interactive, so the captured string is the only safe
+      // way to carry the PIN across the remaining steps.
       if (!context.mounted) return;
-      if (!await PinCodeService.askPinCode(context, wallet: widget.wallet)) return;
+      final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: widget.wallet);
+      if (capturedPin == null) return;
 
       // Get legacy wallet information for migration
       final rawSeed = await ref
           .read(walletServiceProvider)
-          .getLegacyRawSeed(address: widget.wallet.address, pinCode: PinCodeService.pinCode);
+          .getLegacyRawSeed(address: widget.wallet.address, pinCode: capturedPin);
 
       // Store migration data in provider for onboarding to pick up
       ref
@@ -713,14 +715,18 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
       if (confirmed != true) return;
 
-      // Ask for PIN code
+      // Ask for PIN code and capture it locally. The PIN will be passed to the
+      // SafeSelection route below — that screen is consumed by the user much
+      // later than the 1s `debounceResetPinCode` window, so reading the
+      // service field at navigation time would guarantee an empty PIN.
       if (!context.mounted) return;
-      if (!await PinCodeService.askPinCode(context, wallet: widget.wallet)) return;
+      final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: widget.wallet);
+      if (capturedPin == null) return;
 
       // Get legacy wallet information for migration
       final rawSeed = await ref
           .read(walletServiceProvider)
-          .getLegacyRawSeed(address: widget.wallet.address, pinCode: PinCodeService.pinCode);
+          .getLegacyRawSeed(address: widget.wallet.address, pinCode: capturedPin);
 
       // Create migration data
       final migrationData = LegacyMigrationData(
@@ -739,11 +745,12 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
 
       if (context.mounted) {
         if (existingSafes.isNotEmpty) {
-          // Navigate to safe selection screen
+          // Navigate to safe selection screen, forwarding the locally-captured
+          // PIN so the downstream screen doesn't hit an expired cache.
           Navigator.pushNamed(
             context,
             RouteNames.safeSelection,
-            arguments: SafeSelectionArguments(migrationData: migrationData, pinCode: PinCodeService.pinCode),
+            arguments: SafeSelectionArguments(migrationData: migrationData, pinCode: capturedPin),
           );
         } else {
           // No existing safes, go directly to import flow
@@ -762,13 +769,11 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     // For legacy wallets, we need to handle PIN change differently
     // because we need to re-encrypt the salt and password with the new PIN
 
-    // Ask for current PIN first
-    if (!await PinCodeService.askPinCode(context, force: true, wallet: widget.wallet)) return;
-
-    // Capture the old PIN immediately after successful askPinCode, before any async
-    // operation that could trigger debounceResetPinCode clearing it.
-    final oldPin = PinCodeService.pinCode;
-    if (oldPin.isEmpty) return;
+    // Ask for current PIN and capture it locally — it's forwarded to the
+    // ChangePinScreen which consumes it much later (after the user enters
+    // the new PIN), well beyond the 1s `debounceResetPinCode` window.
+    final oldPin = await PinCodeService.askPinCodeAndCapture(context, force: true, wallet: widget.wallet);
+    if (oldPin == null) return;
 
     // Navigate to change PIN screen
     if (!mounted) return;
@@ -996,7 +1001,10 @@ Widget aloneWalletOptions(
     children: [
       InkWell(
         onTap: () async {
-          if (!await PinCodeService.askPinCode(context, wallet: ref.read(firstWalletProvider))) return;
+          // Authentication gate for safe options screen.
+          if (await PinCodeService.askPinCodeAndCapture(context, wallet: ref.read(firstWalletProvider)) == null) {
+            return;
+          }
           if (!context.mounted) return;
           if (isDesktopLayout(context)) {
             if (!context.mounted) return;
@@ -1035,10 +1043,16 @@ Widget aloneWalletOptions(
       InkWell(
         onTap: () async {
           if (!derivationState.isLoading) {
-            if (!await PinCodeService.askPinCode(context, wallet: ref.read(firstWalletProvider))) return;
+            final capturedPin = await PinCodeService.askPinCodeAndCapture(
+              context,
+              wallet: ref.read(firstWalletProvider),
+            );
+            if (capturedPin == null) return;
             final lastWalletNumber = walletsState.wallets.isNotEmpty ? walletsState.wallets.last.number : -1;
             String newDerivationName = '${'wallet'.tr()} ${lastWalletNumber + 2}';
-            await ref.read(walletActionsProvider.notifier).generateNewDerivation(newDerivationName);
+            await ref
+                .read(walletActionsProvider.notifier)
+                .generateNewDerivation(newDerivationName, pinCode: capturedPin);
 
             // Call the callback if provided (when embedded in WalletsHome)
             onDerivationCreated?.call();

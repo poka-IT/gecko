@@ -104,7 +104,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
         return;
       }
 
-      PinCodeService.pinCode = pin;
+      PinCodeService.cachePin(pin);
       PinCodeService.setAuthenticatedSafe(ref.read(walletServiceProvider).defaultSafeBoxNumber);
 
       final biometricState = ref.read(biometricProvider);

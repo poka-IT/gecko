@@ -200,20 +200,22 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     final queueNotifier = ref.read(certificationQueueProvider(widget.issuerAddress).notifier);
     final walletService = ref.read(walletServiceProvider);
 
-    // Reorder locally first (instant feedback)
-    await queueNotifier.reorder(oldIndex, newIndex);
+    // Ask for PIN BEFORE committing the reorder locally. Previously the reorder
+    // was applied first and then the PIN was prompted — if the user cancelled,
+    // the local queue kept the new order but the remote was never synced, so
+    // the next `pullFromRemote` (on screen reopen) silently reverted the
+    // user's action. Prompting first keeps local and remote state in sync.
+    if (!mounted) return;
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: _issuerWallet);
+    if (capturedPin == null) return;
 
-    // Check if PIN is already cached
-    if (PinCodeService.pinCode.isEmpty) {
-      // Ask for PIN to sync
-      if (!mounted) return;
-      if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
-    }
+    // Reorder locally first (instant feedback) now that we know the sync will run.
+    await queueNotifier.reorder(oldIndex, newIndex);
 
     // Sync to CesiumPlus
     setState(() => _isSyncing = true);
     try {
-      await _syncToRemoteWithRefs(walletService, queueNotifier);
+      await _syncToRemoteWithRefs(walletService, queueNotifier, capturedPin);
     } finally {
       if (mounted) setState(() => _isSyncing = false);
     }
@@ -484,7 +486,8 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     if (!confirmed) return;
 
     if (!mounted) return;
-    if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: _issuerWallet);
+    if (capturedPin == null) return;
 
     final identityWallet = await identityWalletFuture;
     if (identityWallet == null) {
@@ -501,13 +504,15 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
         ref: ref,
         issuerAddress: identityWallet.address,
         targetAddress: cert.receiverAddress,
+        pinCode: capturedPin,
         navigateToTargetProfile: true,
         targetUsername: cert.receiverName ?? cert.receiverUid,
         onBeforeNavigate: () async {
           // Remove from queue with optimistic cooldown update
           await queueNotifier.removeExecutedCertification(cert.id);
-          // Sync to CesiumPlus (we already have the PIN)
-          await _syncToRemoteWithRefs(walletService, queueNotifier);
+          // Sync to CesiumPlus using the captured PIN (the service cache may
+          // have been cleared by debounceResetPinCode at this point).
+          await _syncToRemoteWithRefs(walletService, queueNotifier, capturedPin);
         },
       );
     } catch (e) {
@@ -536,12 +541,13 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     // Ask for PIN to sync after removal
     if (!mounted) return;
-    if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: _issuerWallet);
+    if (capturedPin == null) return;
 
     await queueNotifier.removeFromQueue(cert.id);
 
-    // Sync to CesiumPlus
-    await _syncToRemoteWithRefs(walletService, queueNotifier);
+    // Sync to CesiumPlus with the captured PIN
+    await _syncToRemoteWithRefs(walletService, queueNotifier, capturedPin);
 
     if (!context.mounted) return;
 
@@ -549,13 +555,19 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     SnackbarService.showWarning(context, message: 'removedFromQueue'.tr(args: [displayName]));
   }
 
-  /// Sync the queue to CesiumPlus using pre-captured references
-  Future<bool> _syncToRemoteWithRefs(dynamic walletService, CertificationQueueNotifier queueNotifier) async {
+  /// Sync the queue to CesiumPlus using pre-captured references.
+  ///
+  /// [pinCode] must be a locally-captured PIN obtained from
+  /// [PinCodeService.askPinCodeAndCapture] so that the crypto step survives
+  /// the user-facing delay of the enclosing flow (confirmation dialogs,
+  /// navigation, etc.).
+  Future<bool> _syncToRemoteWithRefs(
+    dynamic walletService,
+    CertificationQueueNotifier queueNotifier,
+    String pinCode,
+  ) async {
     try {
-      final keyPair = await walletService.getKeyPairFromAddress(
-        address: widget.issuerAddress,
-        pinCode: PinCodeService.pinCode,
-      );
+      final keyPair = await walletService.getKeyPairFromAddress(address: widget.issuerAddress, pinCode: pinCode);
 
       log.d('🔄 [CertQueueScreen] Syncing queue to CesiumPlus...');
       return await queueNotifier.pushToRemote(keyPair.sign);
@@ -581,10 +593,11 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     if (!confirmed) return;
     if (!context.mounted) return;
 
-    // Ask for PIN
-    if (!await PinCodeService.askPinCode(context, wallet: _issuerWallet)) return;
+    // Ask for PIN and capture it locally for the sync crypto step.
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: _issuerWallet);
+    if (capturedPin == null) return;
 
-    final success = await _syncToRemoteWithRefs(walletService, queueNotifier);
+    final success = await _syncToRemoteWithRefs(walletService, queueNotifier, capturedPin);
 
     if (!context.mounted) return;
 

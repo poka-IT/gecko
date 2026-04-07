@@ -278,11 +278,21 @@ class WalletActionsNotifier extends Notifier<void> {
 
   d.WalletService get _walletService => ref.read(walletServiceProvider);
 
-  /// Generate a new derivation wallet
+  /// Generate a new derivation wallet.
+  ///
+  /// [pinCode] must be a locally-captured PIN obtained via
+  /// [PinCodeService.askPinCodeAndCapture] so that the crypto step below
+  /// survives the `debounceResetPinCode` 1-second timer while the provider
+  /// notifier's async chain runs.
   ///
   /// If [customDerivation] is provided, creates a wallet with that specific derivation number.
   /// Otherwise, generates the next available derivation automatically.
-  Future<void> generateNewDerivation(String name, {int? customDerivation, int? safeNumber}) async {
+  Future<void> generateNewDerivation(
+    String name, {
+    required String pinCode,
+    int? customDerivation,
+    int? safeNumber,
+  }) async {
     ref.read(derivationStateProvider.notifier).setLoading(true);
 
     try {
@@ -296,7 +306,7 @@ class WalletActionsNotifier extends Notifier<void> {
         // Get the mnemonic from the safe
         final firstWallet = wallets.isNotEmpty ? wallets.first : null;
         if (firstWallet == null) throw Exception('No wallet available');
-        final mnemonic = await _walletService.getSeed(address: firstWallet.address, pin: PinCodeService.pinCode);
+        final mnemonic = await _walletService.getSeed(address: firstWallet.address, pin: pinCode);
 
         // Generate keypair with the custom derivation
         final keypair = await _walletService.getKeyPairFromMnemonic(
@@ -320,7 +330,7 @@ class WalletActionsNotifier extends Notifier<void> {
       } else {
         // Generate next available derivation
         final newWallet = await _walletService.generateNextDerivation(
-          pinCode: PinCodeService.pinCode,
+          pinCode: pinCode,
           safeBoxNumber: safeNumber0,
           walletName: name,
         );
@@ -339,8 +349,11 @@ class WalletActionsNotifier extends Notifier<void> {
     }
   }
 
-  /// Generate a root wallet
-  Future<void> generateRootWallet(String name) async {
+  /// Generate a root wallet.
+  ///
+  /// [pinCode] must be a locally-captured PIN obtained via
+  /// [PinCodeService.askPinCodeAndCapture].
+  Future<void> generateRootWallet(String name, {required String pinCode}) async {
     ref.read(derivationStateProvider.notifier).setLoading(true);
 
     try {
@@ -350,10 +363,7 @@ class WalletActionsNotifier extends Notifier<void> {
 
       final firstWallet = ref.read(firstWalletProvider);
       if (firstWallet == null) throw Exception('No wallet available');
-      final walletData = await _walletService.generateRootKeypair(
-        fromAddress: firstWallet.address,
-        pinCode: PinCodeService.pinCode,
-      );
+      final walletData = await _walletService.generateRootKeypair(fromAddress: firstWallet.address, pinCode: pinCode);
 
       final newWallet = d.WalletEntity.create(
         address: walletData.address,
@@ -387,7 +397,7 @@ class WalletActionsNotifier extends Notifier<void> {
         await avatarFolder.create();
       }
 
-      PinCodeService.pinCode = '';
+      PinCodeService.clearPin();
       ref.read(walletsListProvider.notifier).clear();
 
       return true;

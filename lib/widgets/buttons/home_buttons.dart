@@ -162,8 +162,13 @@ class _HomeButtonsState extends ConsumerState<HomeButtons> with TickerProviderSt
       baseColor: context.colorScheme.primary,
       offset: 0.66,
       onTap: () async {
-        final hadToUnlock = PinCodeService.pinCode.isEmpty;
-        if (!await PinCodeService.askPinCode(context, canSwitch: true)) return;
+        // `hadToUnlock` must be captured BEFORE the PIN prompt — its purpose
+        // is to detect whether the user had to enter their PIN just now (so
+        // we play the unlock transition) vs whether the cache was reused
+        // (skip the transition). Computing it after the prompt would always
+        // show an empty cache and the transition would play unconditionally.
+        final hadToUnlock = !PinCodeService.isUnlocked;
+        if (await PinCodeService.askPinCodeAndCapture(context, canSwitch: true) == null) return;
         if (hadToUnlock) {
           // ignore: use_build_context_synchronously
           await _performSmoothTransition(context);

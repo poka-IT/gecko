@@ -160,7 +160,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
 
     try {
       pinNotifier.setLoading(true);
-      PinCodeService.pinCode = pin.toUpperCase();
+      PinCodeService.cachePin(pin.toUpperCase());
 
       // Add timeout to the entire unlock operation
       final unlockFuture = Future(() async {
@@ -181,7 +181,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
           await Future.delayed(const Duration(milliseconds: 20));
           pinNotifier.setLoading(false);
           pinNotifier.setValid(false);
-          PinCodeService.pinCode = '';
+          PinCodeService.clearPin();
           derivationNotifier.clearMnemonic();
           if (!fromBiometric) {
             _pinController.triggerError();
@@ -229,7 +229,7 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       // Comprehensive error handling
       pinNotifier.setLoading(false);
       pinNotifier.setValid(false);
-      PinCodeService.pinCode = '';
+      PinCodeService.clearPin();
       derivationNotifier.clearMnemonic();
       if (!fromBiometric) {
         _pinController.triggerError();

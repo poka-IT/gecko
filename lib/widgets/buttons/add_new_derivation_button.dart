@@ -35,9 +35,12 @@ class AddNewDerivationButton extends ConsumerWidget {
                 key: keyAddDerivation,
                 onTap: () async {
                   if (!derivationState.isLoading) {
-                    if (!await PinCodeService.askPinCode(context)) return;
+                    final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
+                    if (capturedPin == null) return;
 
-                    await ref.read(walletActionsProvider.notifier).generateNewDerivation(newDerivationName);
+                    await ref
+                        .read(walletActionsProvider.notifier)
+                        .generateNewDerivation(newDerivationName, pinCode: capturedPin);
                   }
                 },
                 child: Container(

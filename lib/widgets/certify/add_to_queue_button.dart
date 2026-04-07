@@ -217,13 +217,14 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
       if (!result) return;
       if (!context.mounted) return;
 
-      // Ask for PIN to sign the sync request
-      if (!await PinCodeService.askPinCode(
+      // Ask for PIN to sign the sync request and capture it locally so the
+      // subsequent `addToQueue` + CesiumPlus sync don't race the 1-second
+      // `debounceResetPinCode` timer.
+      final capturedPin = await PinCodeService.askPinCodeAndCapture(
         context,
         wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress),
-      )) {
-        return;
-      }
+      );
+      if (capturedPin == null) return;
 
       // Add to local queue (pass certState for cert-specific timing constraints)
       final success = await queueNotifier.addToQueue(
@@ -243,10 +244,7 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
 
       // Sync with CesiumPlus
       try {
-        final keyPair = await walletService.getKeyPairFromAddress(
-          address: widget.issuerAddress,
-          pinCode: PinCodeService.pinCode,
-        );
+        final keyPair = await walletService.getKeyPairFromAddress(address: widget.issuerAddress, pinCode: capturedPin);
 
         log.d('🔄 [AddToQueue] Syncing queue to CesiumPlus...');
         final syncSuccess = await queueNotifier.pushToRemote(keyPair.sign);

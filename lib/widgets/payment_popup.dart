@@ -224,14 +224,18 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     AsyncValue trmDataAsync,
     DuniterService duniterService,
     WalletService walletService,
+    String pinCode,
   ) async {
     try {
       // Give UI a chance to update before heavy operations
       await Future.microtask(() {});
 
       // Heavy operation 1: Derive keypair (cryptographic operation)
-      // Break this into smaller chunks to avoid blocking UI
-      final keypair = await deriveKeypairWithYield(capturedFromWallet.address, PinCodeService.pinCode, walletService);
+      // Break this into smaller chunks to avoid blocking UI. We rely on the
+      // [pinCode] argument captured locally by the caller via
+      // [PinCodeService.askPinCodeAndCapture] — by the time this background
+      // task reaches its crypto step the PIN cache may already have expired.
+      final keypair = await deriveKeypairWithYield(capturedFromWallet.address, pinCode, walletService);
 
       // Give UI another chance to update
       await Future.microtask(() {});
@@ -367,10 +371,13 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
     // ignore: use_build_context_synchronously
     Navigator.pop(context);
 
-    // Get PIN code first (this is usually fast)
+    // Get PIN code first (this is usually fast). Capture it locally so the
+    // background transaction dispatcher below doesn't race against the
+    // 1-second `debounceResetPinCode` timer when the PIN cache is disabled.
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
-    if (!await PinCodeService.askPinCode(context, wallet: fromWallet)) return;
+    final capturedPin = await PinCodeService.askPinCodeAndCapture(context, wallet: fromWallet);
+    if (capturedPin == null) return;
 
     // Create a StreamController to control the transaction status
     final statusController = StreamController<TransactionStatus>();
@@ -420,6 +427,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
       trmDataAsync,
       duniterService,
       walletService,
+      capturedPin,
     );
   }
 

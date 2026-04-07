@@ -529,6 +529,7 @@
     "membershipRenewalNotYetAvailable": "Renewal will be available from {}.",
     "membershipCannotRenewRevoked": "Your identity has been revoked. Membership renewal is not possible.",
     "membershipRenewalUnavailable": "Renewal unavailable",
+    "membershipNotEnoughCertifications": "You only have {} received certification(s) out of {} required. Get more certifications to be able to renew your membership.",
     "renewMembershipExpiredConfirm": "Your membership has expired. Are you sure you want to renew it?",
     "membershipRenewalPeriodNotRespected": "You must wait for the renewal period before you can renew your membership",
     "membershipValidity": "Lifetime of a membership that has been taken into account",

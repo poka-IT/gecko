@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/membership_renewal.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/providers/currency_provider.dart';
 import 'package:gecko/providers/membership_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
@@ -28,10 +29,20 @@ class MembershipAlertCard extends ConsumerWidget {
         if (idtyStatus == IdtyStatus.none || idtyStatus == IdtyStatus.unknown) return const SizedBox.shrink();
 
         final membershipAsync = ref.watch(membershipStatusProvider(address));
+        final certAsync = ref.watch(smartCertificationStreamProvider(address));
+        final currencyAsync = ref.watch(currencyDataProvider);
 
         return membershipAsync.when(
           data: (status) {
-            final info = MembershipRenewal.calculateRenewalInfo(status);
+            // The cert-count gate must be applied here too: this card hosts a
+            // "Renew" CTA that calls executeRenewal directly, so without the
+            // gate the user could trigger a transaction that fails on chain
+            // with cert.NotEnoughCertReceived.
+            final info = MembershipRenewal.calculateRenewalInfo(
+              status,
+              receivedCertCount: certAsync.value?.receivedCount,
+              minCertCount: currencyAsync.value?.wotParams.sigQtyRule,
+            );
 
             // Pending evaluation (blue)
             if (info.hasPendingRenewal) {
@@ -77,13 +88,26 @@ class MembershipAlertCard extends ConsumerWidget {
         ? '\n${'membershipAutoRevocationWarning'.tr(args: [DateFormat('dd/MM/yyyy').format(info.autoRevocationDate!)])}'
         : '';
 
+    // When the identity is expired but cannot be renewed because of the
+    // cert-count gate, we explain WHY in the message and hide the CTA.
+    // (At this point hasPendingRenewal is necessarily false because the
+    // pending case is handled by _buildEvalPendingCard above.)
+    final isCertGated = info.disableReason == RenewalDisableReason.notEnoughCertsReceived;
+    final baseMessage = isCertGated
+        ? 'membershipNotEnoughCertifications'.tr(
+            args: ['${info.receivedCertCount ?? 0}', '${info.minCertCount ?? 0}'],
+          )
+        : 'membershipExpiredRenewNow'.tr();
+
     return _AlertCardContainer(
       color: context.geckoColors.danger,
       icon: Icons.warning_rounded,
       title: 'membershipExpiredAlert'.tr(),
-      message: '${'membershipExpiredRenewNow'.tr()}$autoRevocText',
-      actionLabel: 'renewMembership'.tr(),
-      onAction: () => MembershipRenewal.executeRenewal(context, ref, address, isExpired: true),
+      message: '$baseMessage$autoRevocText',
+      actionLabel: info.canRenew ? 'renewMembership'.tr() : null,
+      onAction: info.canRenew
+          ? () => MembershipRenewal.executeRenewal(context, ref, address, isExpired: true)
+          : null,
     );
   }
 
@@ -95,6 +119,8 @@ class MembershipAlertCard extends ConsumerWidget {
 
     final isExpiringSoon =
         info.expireDate != null && !info.isExpired && info.expireDate!.difference(DateTime.now()).inDays <= 30;
+    final isCertGated = info.disableReason == RenewalDisableReason.notEnoughCertsReceived;
+
     if (info.canRenew && !isExpiringSoon) {
       // Renewal available but not yet expiring soon
       title = 'membershipRenewalAvailable'.tr();
@@ -102,11 +128,19 @@ class MembershipAlertCard extends ConsumerWidget {
       color = context.geckoColors.warning;
       icon = Icons.autorenew;
     } else {
-      // Expiring soon
+      // Expiring soon — or cert-gated
       title = 'membershipExpiringSoon'.tr();
-      message = info.expireDate != null
-          ? 'membershipExpiringSoonMessage'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)])
-          : 'membershipRenewalAvailableMessage'.tr();
+      if (isCertGated) {
+        // Tell the user why we won't let them renew, instead of an opaque
+        // greyed-out tile.
+        message = 'membershipNotEnoughCertifications'.tr(
+          args: ['${info.receivedCertCount ?? 0}', '${info.minCertCount ?? 0}'],
+        );
+      } else {
+        message = info.expireDate != null
+            ? 'membershipExpiringSoonMessage'.tr(args: [DateFormat('dd/MM/yyyy').format(info.expireDate!)])
+            : 'membershipRenewalAvailableMessage'.tr();
+      }
       color = Colors.deepOrange;
       icon = Icons.schedule;
     }

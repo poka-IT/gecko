@@ -534,6 +534,7 @@
     "membershipRenewalNotYetAvailable": "La renovación estará disponible desde {}.",
     "membershipCannotRenewRevoked": "Tu identidad ha sido revocada. La renovación de la membresía no es posible.",
     "membershipRenewalUnavailable": "Renovación no disponible",
+    "membershipNotEnoughCertifications": "Solo tienes {} certificación(es) recibida(s) de {} requeridas. Obtén más certificaciones para poder renovar tu membresía.",
     "renewMembershipExpiredConfirm": "Tu adhesión ha expirado. ¿Estás seguro de querer renovarla?",
     "membershipRenewalPeriodNotRespected": "Debes esperar al período de renovación antes de poder renovar tu adhesión",
     "membershipValidity": "Período de vigencia de una adhesión que ha sido tomada en cuenta",

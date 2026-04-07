@@ -9,7 +9,35 @@ import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 
 class MembershipRenewal {
-  static RenewalInfo calculateRenewalInfo(MembershipStatus status) {
+  /// Computes the renewal eligibility for an identity.
+  ///
+  /// When [receivedCertCount] and [minCertCount] are both provided AND
+  /// [minCertCount] > 0, an additional gate is applied: if the identity is
+  /// otherwise eligible to renew but does not have enough received
+  /// certifications to satisfy the membership rule, the result is forced to
+  /// non-renewable with [RenewalDisableReason.notEnoughCertsReceived]. This
+  /// matches the runtime check that would otherwise reject the transaction
+  /// with `cert.NotEnoughCertReceived`.
+  ///
+  /// Both parameters are optional so the helper stays usable in contexts
+  /// where the certification stream / currency parameters are not yet
+  /// loaded — in that case the cert gate is simply skipped (graceful
+  /// degradation, transaction may still fail on chain in the brief loading
+  /// window, same as before this gate existed).
+  static RenewalInfo calculateRenewalInfo(
+    MembershipStatus status, {
+    int? receivedCertCount,
+    int? minCertCount,
+  }) {
+    final base = _calculateBase(status);
+    return _applyCertCountGate(
+      base,
+      receivedCertCount: receivedCertCount,
+      minCertCount: minCertCount,
+    );
+  }
+
+  static RenewalInfo _calculateBase(MembershipStatus status) {
     if (status.expireDate == null) {
       if (status.idtyStatus == IdtyStatus.expired) {
         return RenewalInfo(
@@ -55,6 +83,24 @@ class MembershipRenewal {
       autoRevocationDate: status.autoRevocationDate,
       pendingEvalEstimate: status.pendingEvalEstimate,
       disableReason: disableReason,
+    );
+  }
+
+  static RenewalInfo _applyCertCountGate(
+    RenewalInfo info, {
+    required int? receivedCertCount,
+    required int? minCertCount,
+  }) {
+    if (!info.canRenew) return info;
+    if (receivedCertCount == null || minCertCount == null) return info;
+    if (minCertCount <= 0) return info;
+    if (receivedCertCount >= minCertCount) return info;
+
+    return info.copyWith(
+      canRenew: false,
+      disableReason: RenewalDisableReason.notEnoughCertsReceived,
+      receivedCertCount: receivedCertCount,
+      minCertCount: minCertCount,
     );
   }
 
@@ -132,6 +178,11 @@ enum RenewalDisableReason {
   identityExpired,
   identityRevoked,
   identityNotMember,
+
+  /// Identity is otherwise eligible to renew but does not have enough
+  /// active received certifications. Mirrors the runtime error
+  /// `cert.NotEnoughCertReceived` raised by the membership pallet.
+  notEnoughCertsReceived,
 }
 
 class RenewalInfo {
@@ -143,6 +194,8 @@ class RenewalInfo {
   final DateTime? autoRevocationDate;
   final DateTime? pendingEvalEstimate;
   final RenewalDisableReason? disableReason;
+  final int? receivedCertCount;
+  final int? minCertCount;
 
   RenewalInfo({
     this.expireDate,
@@ -153,7 +206,34 @@ class RenewalInfo {
     this.autoRevocationDate,
     this.pendingEvalEstimate,
     this.disableReason,
+    this.receivedCertCount,
+    this.minCertCount,
   });
+
+  /// Partial copyWith. Only the fields that the cert-count gate needs to
+  /// override are accepted; other fields are passed through unchanged.
+  /// Intentionally not a full copyWith: extending it would invite callers
+  /// to mutate fields that are conceptually computed from MembershipStatus
+  /// and should not be edited after the fact.
+  RenewalInfo copyWith({
+    bool? canRenew,
+    RenewalDisableReason? disableReason,
+    int? receivedCertCount,
+    int? minCertCount,
+  }) {
+    return RenewalInfo(
+      expireDate: expireDate,
+      isExpired: isExpired,
+      canRenew: canRenew ?? this.canRenew,
+      hasPendingRenewal: hasPendingRenewal,
+      renewalStartDate: renewalStartDate,
+      autoRevocationDate: autoRevocationDate,
+      pendingEvalEstimate: pendingEvalEstimate,
+      disableReason: disableReason ?? this.disableReason,
+      receivedCertCount: receivedCertCount ?? this.receivedCertCount,
+      minCertCount: minCertCount ?? this.minCertCount,
+    );
+  }
 
   /// Whether the membership state warrants a visible alert.
   /// True when expired+renewable, or in the last half of the renewal window,

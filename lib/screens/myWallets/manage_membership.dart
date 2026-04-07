@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/currency_provider.dart';
 import 'package:gecko/providers/membership_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/main.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
@@ -50,9 +52,18 @@ class ManageMembership extends ConsumerWidget {
 
   Widget _buildRenewMembershipSection(BuildContext context, WidgetRef ref) {
     final membershipAsync = ref.watch(membershipStatusProvider(address));
+    final certAsync = ref.watch(smartCertificationStreamProvider(address));
+    final currencyAsync = ref.watch(currencyDataProvider);
 
     return membershipAsync.when(
-      data: (status) => renewMembership(context, ref, status),
+      data: (status) {
+        final info = MembershipRenewal.calculateRenewalInfo(
+          status,
+          receivedCertCount: certAsync.value?.receivedCount,
+          minCertCount: currencyAsync.value?.wotParams.sigQtyRule,
+        );
+        return renewMembership(context, ref, status, info);
+      },
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const SizedBox.shrink(),
     );
@@ -141,8 +152,7 @@ class ManageMembership extends ConsumerWidget {
     );
   }
 
-  Widget renewMembership(BuildContext context, WidgetRef ref, status) {
-    final info = MembershipRenewal.calculateRenewalInfo(status);
+  Widget renewMembership(BuildContext context, WidgetRef ref, status, RenewalInfo info) {
     if (info.expireDate == null && status.idtyStatus != IdtyStatus.expired) return const SizedBox.shrink();
 
     return Container(
@@ -152,7 +162,7 @@ class ManageMembership extends ConsumerWidget {
         key: keyRenewMembership,
         onTap: info.canRenew
             ? () => MembershipRenewal.executeRenewal(context, ref, address, isExpired: info.isExpired)
-            : !info.canRenew && info.disableReason != null
+            : info.disableReason != null
             ? () => _showDisableReasonPopup(context, info)
             : null,
         child: Padding(
@@ -204,6 +214,10 @@ class ManageMembership extends ConsumerWidget {
       case RenewalDisableReason.identityNotMember:
       case RenewalDisableReason.identityExpired:
         message = 'membershipExpiredRenewNow'.tr();
+      case RenewalDisableReason.notEnoughCertsReceived:
+        message = 'membershipNotEnoughCertifications'.tr(
+          args: ['${info.receivedCertCount ?? 0}', '${info.minCertCount ?? 0}'],
+        );
     }
 
     showConfirmationDialog(

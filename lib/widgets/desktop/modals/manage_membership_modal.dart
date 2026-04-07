@@ -6,8 +6,10 @@ import 'package:gecko/extensions.dart';
 import 'package:gecko/main.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/currency_provider.dart';
 import 'package:gecko/providers/membership_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/screens/myWallets/migrate_identity.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
@@ -47,10 +49,16 @@ class _ManageMembershipContent extends ConsumerWidget {
 
   Widget _buildRenewMembershipSection(BuildContext context, WidgetRef ref) {
     final membershipAsync = ref.watch(membershipStatusProvider(address));
+    final certAsync = ref.watch(smartCertificationStreamProvider(address));
+    final currencyAsync = ref.watch(currencyDataProvider);
 
     return membershipAsync.when(
       data: (status) {
-        final info = MembershipRenewal.calculateRenewalInfo(status);
+        final info = MembershipRenewal.calculateRenewalInfo(
+          status,
+          receivedCertCount: certAsync.value?.receivedCount,
+          minCertCount: currencyAsync.value?.wotParams.sigQtyRule,
+        );
         if (info.expireDate == null && status.idtyStatus != IdtyStatus.expired) return const SizedBox.shrink();
 
         return _buildActionTile(
@@ -187,6 +195,10 @@ class _ManageMembershipContent extends ConsumerWidget {
       case RenewalDisableReason.identityNotMember:
       case RenewalDisableReason.identityExpired:
         message = 'membershipExpiredRenewNow'.tr();
+      case RenewalDisableReason.notEnoughCertsReceived:
+        message = 'membershipNotEnoughCertifications'.tr(
+          args: ['${info.receivedCertCount ?? 0}', '${info.minCertCount ?? 0}'],
+        );
     }
 
     showConfirmationDialog(

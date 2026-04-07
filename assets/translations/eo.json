@@ -943,6 +943,7 @@
     "membershipRenewalNotYetAvailable": "La renoviĝo disponeblos ekde la {}.",
     "membershipCannotRenewRevoked": "Via identeco estis nuligita. La renovigo de aliĝo ne eblas.",
     "membershipRenewalUnavailable": "Renovigo nedisponebla",
+    "membershipNotEnoughCertifications": "Vi havas nur {} ricevitan/ajn atestilon/ojn el {} postulataj. Akiru pliajn atestojn por povi renovigi vian membrecon.",
     "renewMembershipExpiredConfirm": "Via aliĝo eksvalidiĝis. Ĉu vi certas, ke vi volas renovigi ĝin?",
     "keyboardShortcuts": "Klavarmallongigoj",
     "keyboardShortcutsNavigation": "NAVIGADO",

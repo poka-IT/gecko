@@ -206,6 +206,17 @@ class SentryService {
       if (value.contains('Using "ref"') && value.contains('unmounted is unsafe')) {
         return true;
       }
+      // gql_link_http race: Stream.timeout throws TimeoutException but the
+      // HttpLink internal completer is already completed, leading to
+      // "Future already completed". Upstream package bug, not actionable here.
+      if (value.contains('Future already completed')) {
+        return true;
+      }
+      // Endpoint exhaustion: all configured Duniter/Squid nodes are down. The
+      // user sees the offline banner already; reporting is redundant noise.
+      if (value.contains('No working') && value.contains('endpoints found')) {
+        return true;
+      }
     }
     return false;
   }

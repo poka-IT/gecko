@@ -1025,5 +1025,6 @@
     "selfDeclaredName": "auto-déclaré",
     "selfDeclaredNameLabel": "Nom auto-déclaré",
     "selfDeclaredNameTooltip": "Ce nom a été choisi par le propriétaire du portefeuille. Il n'est pas vérifié par la toile de confiance.",
-    "verifiedIdentity": "Identité vérifiée"
+    "pendingIdentityTooltip": "Identité inscrite sur la blockchain, pas encore validée comme membre de la toile de confiance.",
+    "verifiedIdentity": "Membre vérifié"
 }

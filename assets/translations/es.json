@@ -1030,5 +1030,6 @@
     "selfDeclaredName": "autodeclarado",
     "selfDeclaredNameLabel": "Nombre autodeclarado",
     "selfDeclaredNameTooltip": "Este nombre fue elegido por el propietario de la billetera. No está verificado por la red de confianza.",
-    "verifiedIdentity": "Identidad verificada"
+    "pendingIdentityTooltip": "Identidad registrada en la cadena, aún no validada como miembro de la red de confianza.",
+    "verifiedIdentity": "Miembro verificado"
 }

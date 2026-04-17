@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:durt2/durt2.dart' as d show ConnectionStatus, Durt, IdentitySuggestion, WalletEntity;
+import 'package:durt2/durt2.dart' as d show ConnectionStatus, Durt, IdentitySuggestion, IdtyStatus, WalletEntity;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +11,7 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/search_provider.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
@@ -19,6 +20,7 @@ import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/providers/cesium_plus_search_provider.dart';
 import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/widgets/name_source_badge.dart';
 
 class GlobalSearchPaletteDialog extends ConsumerStatefulWidget {
   const GlobalSearchPaletteDialog({super.key});
@@ -71,7 +73,10 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
       ...(walletResultsAsync.asData?.value ?? const <G1WalletsList>[]).map((w) => w.address),
       ...(identityResultsAsync.asData?.value ?? const <d.IdentitySuggestion>[]).map((i) => i.address),
     };
-    final dedupedCesiumPlus = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
+    final dedupedCesiumPlus = filterOutEmptyCesiumPlusResults(
+      ref,
+      deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses),
+    );
     final entries = _buildEntries(
       walletResultsAsync.asData?.value ?? const <G1WalletsList>[],
       identityResultsAsync.asData?.value ?? const <d.IdentitySuggestion>[],
@@ -377,7 +382,10 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
       padding: const EdgeInsets.all(12),
       children: [
         if (walletResults.isNotEmpty) ...[
-          _ResultsSectionTitle(title: 'desktopWalletShortLabel'.tr()),
+          SearchSectionHeader(
+            title: 'desktopWalletShortLabel'.tr(),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
           const SizedBox(height: 8),
           ...walletResults.map((wallet) {
             final currentIndex = runningIndex++;
@@ -390,7 +398,11 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
         ],
         if (identityResults.isNotEmpty) ...[
           if (walletResults.isNotEmpty) const SizedBox(height: 12),
-          _ResultsSectionTitle(title: 'verifiedIdentitiesSection'.tr()),
+          SearchSectionHeader(
+            title: 'verifiedIdentitiesSection'.tr(),
+            tone: SearchSectionTone.verified,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
           const SizedBox(height: 8),
           ...identityResults.map((identity) {
             final currentIndex = runningIndex++;
@@ -403,7 +415,11 @@ class _GlobalSearchPaletteDialogState extends ConsumerState<GlobalSearchPaletteD
         ],
         if (dedupedCesiumPlus.isNotEmpty) ...[
           if (walletResults.isNotEmpty || identityResults.isNotEmpty) const SizedBox(height: 12),
-          _ResultsSectionTitle(title: 'selfDeclaredNamesSection'.tr()),
+          SearchSectionHeader(
+            title: 'selfDeclaredNamesSection'.tr(),
+            tone: SearchSectionTone.warning,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
           const SizedBox(height: 8),
           ...dedupedCesiumPlus.map((cs) {
             final currentIndex = runningIndex++;
@@ -474,28 +490,6 @@ class _SearchPaletteHint extends StatelessWidget {
   }
 }
 
-class _ResultsSectionTitle extends StatelessWidget {
-  const _ResultsSectionTitle({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(
-        title,
-        style: scaledTextStyle(
-          fontSize: 11,
-          color: context.colorScheme.onSurface.withValues(alpha: 0.42),
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.9,
-        ),
-      ),
-    );
-  }
-}
-
 class _WalletResultTile extends ConsumerWidget {
   const _WalletResultTile({required this.wallet, required this.isHighlighted, this.onTapOverride});
 
@@ -542,17 +536,27 @@ class _IdentityResultTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final idtyStatus = ref.watch(hybridIdtyStatusProvider(identity.address)).asData?.value;
+    final source = idtyStatus == d.IdtyStatus.validated ? NameSource.identity : NameSource.pendingIdentity;
     return _SearchResultTileShell(
       address: identity.address,
       title: getShortPubkey(identity.address),
-      subtitle: Text(
-        identity.name,
-        overflow: TextOverflow.ellipsis,
-        style: scaledTextStyle(
-          fontSize: 13,
-          color: context.colorScheme.onSurface.withValues(alpha: 0.72),
-          fontWeight: FontWeight.w600,
-        ),
+      subtitle: Row(
+        children: [
+          Flexible(
+            child: Text(
+              identity.name,
+              overflow: TextOverflow.ellipsis,
+              style: scaledTextStyle(
+                fontSize: 13,
+                color: context.colorScheme.onSurface.withValues(alpha: 0.72),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SizedBox(width: scaleSize(6)),
+          NameSourceBadge(source: source),
+        ],
       ),
       username: identity.name,
       isHighlighted: isHighlighted,
@@ -582,15 +586,23 @@ class _CesiumPlusResultTile extends ConsumerWidget {
     return _SearchResultTileShell(
       address: result.address,
       title: getShortPubkey(result.address),
-      subtitle: Text(
-        result.title,
-        overflow: TextOverflow.ellipsis,
-        style: scaledTextStyle(
-          fontSize: 13,
-          fontStyle: FontStyle.italic,
-          color: context.colorScheme.onSurface.withValues(alpha: 0.58),
-          fontWeight: FontWeight.w600,
-        ),
+      subtitle: Row(
+        children: [
+          Flexible(
+            child: Text(
+              result.title,
+              overflow: TextOverflow.ellipsis,
+              style: scaledTextStyle(
+                fontSize: 13,
+                fontStyle: FontStyle.italic,
+                color: context.colorScheme.onSurface.withValues(alpha: 0.58),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SizedBox(width: scaleSize(6)),
+          const NameSourceBadge(source: NameSource.cesiumPlus),
+        ],
       ),
       username: result.title,
       isHighlighted: isHighlighted,

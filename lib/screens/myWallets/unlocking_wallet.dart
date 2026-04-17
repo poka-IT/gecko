@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:durt2/durt2.dart' show SafeEntity, WalletEntity, SafeType;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gecko/extensions.dart';
@@ -18,12 +19,18 @@ import 'package:gecko/widgets/cached_avatar_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/safe_carousel.dart';
 import 'package:gecko/widgets/biometric/biometric_auth_button.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/confirmation_dialog.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:gecko/widgets/pin/gecko_pin_entry.dart';
+
+bool get _isDesktopPlatform =>
+    defaultTargetPlatform == TargetPlatform.linux ||
+    defaultTargetPlatform == TargetPlatform.macOS ||
+    defaultTargetPlatform == TargetPlatform.windows;
 
 class UnlockingWallet extends ConsumerStatefulWidget {
   const UnlockingWallet({
@@ -308,6 +315,12 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     final pinState = ref.watch(pinStateProvider);
     final securityState = ref.watch(pinSecurityProvider);
 
+    // On a desktop modal the numpad is hidden (GeckoPinEntry relies on the
+    // physical keyboard), so the layout must hug its content instead of
+    // filling 90% of the modal's allowed height via Expanded — otherwise the
+    // PIN cells float in a huge empty area.
+    final isCompactDesktop = widget.embeddedMode && isDesktopLayout(context) && _isDesktopPlatform;
+
     // Handle lockout state changes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_wasLockedOut && !securityState.isLockedOut && mounted) {
@@ -526,51 +539,13 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
               return const SizedBox.shrink();
             },
           ),
-          // PIN entry — Expanded so it fills remaining space and adapts button sizes
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Consumer(
-                  builder: (context, ref, child) {
-                    ref.watch(pinSecurityProvider);
-                    return pinForm(context, pinLength);
-                  },
-                ),
-                if (pinState.isLoading && _pinController.text.length == pinLength)
-                  Container(
-                    width: double.infinity,
-                    height: scaleSize(80),
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer.withValues(alpha: 0.95),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: scaleSize(20),
-                          height: scaleSize(20),
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(context.colorScheme.primary),
-                          ),
-                        ),
-                        ScaledSizedBox(height: 6),
-                        Text(
-                          'loading'.tr(),
-                          style: scaledTextStyle(
-                            color: context.colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          // PIN entry — Expanded on mobile so the numpad fills the available
+          // height; on compact desktop, the Stack hugs its content because
+          // the numpad is hidden.
+          if (isCompactDesktop)
+            _buildPinEntryStack(context, pinState)
+          else
+            Expanded(child: _buildPinEntryStack(context, pinState)),
         ],
       ),
     );
@@ -587,6 +562,12 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
       final topWidget = constrained
           ? ConstrainedBox(constraints: const BoxConstraints(maxWidth: 500), child: topSection)
           : topSection;
+
+      if (isCompactDesktop) {
+        // Desktop modal with no numpad: collapse to content height so the
+        // modal shrinks instead of leaving a huge empty vertical gap.
+        return Column(mainAxisSize: MainAxisSize.min, children: [topWidget, pinSection]);
+      }
 
       return Column(
         children: [
@@ -869,6 +850,51 @@ class _UnlockingWalletState extends ConsumerState<UnlockingWallet> {
     _securityCountdownTimer?.cancel();
     _pinController.dispose();
     super.dispose();
+  }
+
+  Widget _buildPinEntryStack(BuildContext context, PinState pinState) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Consumer(
+          builder: (context, ref, child) {
+            ref.watch(pinSecurityProvider);
+            return pinForm(context, pinLength);
+          },
+        ),
+        if (pinState.isLoading && _pinController.text.length == pinLength)
+          Container(
+            width: double.infinity,
+            height: scaleSize(80),
+            decoration: BoxDecoration(
+              color: context.colorScheme.surfaceContainer.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: scaleSize(20),
+                  height: scaleSize(20),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(context.colorScheme.primary),
+                  ),
+                ),
+                ScaledSizedBox(height: 6),
+                Text(
+                  'loading'.tr(),
+                  style: scaledTextStyle(
+                    color: context.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
   }
 
   Widget pinForm(BuildContext context, int pinLenght) {

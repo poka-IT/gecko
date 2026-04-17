@@ -186,10 +186,12 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
     final cesiumPlusResultsAsync = query.length >= 2
         ? ref.watch(cesiumPlusSearchProvider(query))
         : const AsyncValue<List<CesiumPlusSearchResult>>.data([]);
-    final cesiumPlusResults = switch (cesiumPlusResultsAsync) {
+    final rawCesiumPlusResults = switch (cesiumPlusResultsAsync) {
       AsyncData(:final value) => value,
       _ => const <CesiumPlusSearchResult>[],
     };
+    // Hide self-declared wallets that are empty — noise in search results.
+    final cesiumPlusResults = filterOutEmptyCesiumPlusResults(ref, rawCesiumPlusResults);
 
     final addressResults = switch (addressResultsAsync) {
       AsyncData(:final value) =>
@@ -586,28 +588,52 @@ class _DesktopSearchSectionState extends ConsumerState<DesktopSearchSection> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: suggestion.type == DesktopSearchSuggestionType.identity
+                        Builder(
+                          builder: (context) {
+                            final isCesiumPlus = suggestion.type == DesktopSearchSuggestionType.cesiumPlus;
+                            final isIdentity = suggestion.type == DesktopSearchSuggestionType.identity;
+                            final pillBgColor = isIdentity
                                 ? context.colorScheme.primary.withValues(alpha: 0.12)
-                                : context.colorScheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            suggestion.type == DesktopSearchSuggestionType.identity
-                                ? 'desktopIdentityShortLabel'.tr()
-                                : suggestion.type == DesktopSearchSuggestionType.cesiumPlus
-                                ? 'selfDeclaredName'.tr()
-                                : 'desktopWalletShortLabel'.tr(),
-                            style: scaledTextStyle(
-                              fontSize: 10,
-                              color: suggestion.type == DesktopSearchSuggestionType.identity
-                                  ? context.colorScheme.primary
-                                  : context.colorScheme.onSurface.withValues(alpha: 0.7),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                                : isCesiumPlus
+                                ? context.geckoColors.warning.withValues(alpha: 0.18)
+                                : context.colorScheme.surfaceContainerHigh;
+                            final pillFgColor = isIdentity
+                                ? context.colorScheme.primary
+                                : isCesiumPlus
+                                ? context.geckoColors.warning
+                                : context.colorScheme.onSurface.withValues(alpha: 0.7);
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: pillBgColor,
+                                borderRadius: BorderRadius.circular(999),
+                                border: isCesiumPlus
+                                    ? Border.all(color: context.geckoColors.warning.withValues(alpha: 0.7), width: 1)
+                                    : null,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isCesiumPlus) ...[
+                                    Icon(Icons.warning_amber_rounded, size: scaleSize(11), color: pillFgColor),
+                                    SizedBox(width: scaleSize(3)),
+                                  ],
+                                  Text(
+                                    isIdentity
+                                        ? 'desktopIdentityShortLabel'.tr()
+                                        : isCesiumPlus
+                                        ? 'selfDeclaredName'.tr()
+                                        : 'desktopWalletShortLabel'.tr(),
+                                    style: scaledTextStyle(
+                                      fontSize: 10,
+                                      color: pillFgColor,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

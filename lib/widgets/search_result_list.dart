@@ -15,6 +15,7 @@ import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
 import 'package:gecko/widgets/name_by_address.dart';
+import 'package:gecko/widgets/name_source_badge.dart';
 import 'package:gecko/widgets/search_identity_query.dart';
 
 class SearchResult extends ConsumerWidget {
@@ -45,9 +46,13 @@ class SearchResult extends ConsumerWidget {
           final cesiumPlusResults = cesiumPlusResultsAsync.asData?.value ?? [];
           final identityResults = identityResultsAsync.asData?.value ?? [];
 
-          // Deduplicate CesiumPlus results against both wallet and identity addresses
+          // Deduplicate CesiumPlus results against both wallet and identity addresses,
+          // then hide empty self-declared wallets (likely noise / abandoned profiles).
           final knownAddresses = <String>{...results.map((w) => w.address), ...identityResults.map((i) => i.address)};
-          final dedupedCesiumPlus = deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses);
+          final dedupedCesiumPlus = filterOutEmptyCesiumPlusResults(
+            ref,
+            deduplicateCesiumPlusResults(cesiumPlusResults, knownAddresses),
+          );
 
           return Expanded(
             child: Center(
@@ -58,7 +63,7 @@ class SearchResult extends ConsumerWidget {
                     for (G1WalletsList g1Wallet in results) resultTileAddressSearch(g1Wallet, context),
                     if (dedupedCesiumPlus.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      _buildSectionHeader(context, 'selfDeclaredNamesSection'.tr()),
+                      SearchSectionHeader(title: 'selfDeclaredNamesSection'.tr(), tone: SearchSectionTone.warning),
                       for (final result in dedupedCesiumPlus) _buildCesiumPlusTile(result, context),
                     ],
                   ],
@@ -70,21 +75,6 @@ class SearchResult extends ConsumerWidget {
       },
       loading: () => const Center(child: Loading(stroke: 3, size: 30)),
       error: (error, stack) => SearchIdentityQuery(name: searchText),
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
-      child: Text(
-        title,
-        style: scaledTextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.42),
-          letterSpacing: 0.9,
-        ),
-      ),
     );
   }
 
@@ -175,16 +165,21 @@ class SearchResult extends ConsumerWidget {
       ),
       subtitle: Row(
         children: <Widget>[
-          Text(
-            result.title,
-            style: scaledTextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              fontStyle: FontStyle.italic,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+          Flexible(
+            child: Text(
+              result.title,
+              overflow: TextOverflow.ellipsis,
+              style: scaledTextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+              ),
+              textAlign: TextAlign.left,
             ),
-            textAlign: TextAlign.center,
           ),
+          SizedBox(width: scaleSize(6)),
+          const NameSourceBadge(source: NameSource.cesiumPlus),
         ],
       ),
       dense: false,

@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' as d show WalletEntity, ConnectionStatus;
+import 'package:durt2/durt2.dart' as d show WalletEntity, ConnectionStatus, IdtyStatus;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
@@ -10,6 +10,7 @@ import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/utils/identity_utils.dart';
 import 'package:gecko/widgets/commons/loading.dart';
+import 'package:gecko/widgets/name_source_badge.dart';
 import 'package:gecko/widgets/wallet_name.dart';
 import 'package:truncate/truncate.dart';
 
@@ -22,6 +23,7 @@ class NameByAddress extends ConsumerWidget {
     this.fontWeight = FontWeight.w400,
     this.fontStyle = FontStyle.normal,
     this.showCesiumPlusName = false,
+    this.showSourceBadge = false,
   });
 
   final d.WalletEntity wallet;
@@ -30,6 +32,31 @@ class NameByAddress extends ConsumerWidget {
   final FontWeight fontWeight;
   final FontStyle fontStyle;
   final bool showCesiumPlusName;
+
+  /// When `true`, render a small trailing badge that indicates whether the
+  /// displayed name comes from a verified on-chain identity (green ✓) or a
+  /// self-declared CesiumPlus profile (orange warning pill).
+  final bool showSourceBadge;
+
+  Widget _withBadge(Widget text, NameSource source) {
+    if (!showSourceBadge) return text;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(child: text),
+        SizedBox(width: scaleSize(6)),
+        NameSourceBadge(source: source),
+      ],
+    );
+  }
+
+  /// Only a validated member gets the full-trust green check; any other
+  /// on-chain identity status (created / confirmed / expired / revoked / unknown)
+  /// gets the neutral pending badge so the user can't mistake a non-member for a
+  /// vetted one.
+  NameSource _identitySource(d.IdtyStatus? status) {
+    return status == d.IdtyStatus.validated ? NameSource.identity : NameSource.pendingIdentity;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,23 +72,31 @@ class NameByAddress extends ConsumerWidget {
       if (showCesiumPlusName) {
         final cached = g1WalletsBox.get(wallet.address);
         if (cached?.username != null) {
-          // Identity name takes priority even offline
-          return Text(
-            truncate(cached!.username!, 22),
-            style: scaledTextStyle(fontSize: size, color: finalColor, fontWeight: fontWeight, fontStyle: fontStyle),
+          // Identity name takes priority even offline. Without a fresh status
+          // read, play it safe and use the pending variant — we can't claim
+          // this is still a validated member.
+          return _withBadge(
+            Text(
+              truncate(cached!.username!, 22),
+              style: scaledTextStyle(fontSize: size, color: finalColor, fontWeight: fontWeight, fontStyle: fontStyle),
+            ),
+            NameSource.pendingIdentity,
           );
         }
         if (cached?.csName != null) {
-          return Text(
-            cached!.csName!,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            style: scaledTextStyle(
-              fontSize: size,
-              color: finalColor.withValues(alpha: 0.8),
-              fontWeight: fontWeight,
-              fontStyle: FontStyle.italic,
+          return _withBadge(
+            Text(
+              cached!.csName!,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: scaledTextStyle(
+                fontSize: size,
+                color: finalColor.withValues(alpha: 0.8),
+                fontWeight: fontWeight,
+                fontStyle: FontStyle.italic,
+              ),
             ),
+            NameSource.cesiumPlus,
           );
         }
       }
@@ -106,31 +141,37 @@ class NameByAddress extends ConsumerWidget {
                     g1WalletsBox.put(wallet.address, G1WalletsList(address: wallet.address, csName: csName));
                   }
                   // Display CesiumPlus name with italic style (visually distinct from identity names)
-                  return Text(
-                    csName,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: scaledTextStyle(
-                      fontSize: size,
-                      color: finalColor.withValues(alpha: 0.8),
-                      fontWeight: fontWeight,
-                      fontStyle: FontStyle.italic,
+                  return _withBadge(
+                    Text(
+                      csName,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: scaledTextStyle(
+                        fontSize: size,
+                        color: finalColor.withValues(alpha: 0.8),
+                        fontWeight: fontWeight,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
+                    NameSource.cesiumPlus,
                   );
                 }
                 // No CesiumPlus name either -- check Hive offline cache, then fall through
                 final cached = g1WalletsBox.get(wallet.address);
                 if (cached?.csName != null) {
-                  return Text(
-                    cached!.csName!,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: scaledTextStyle(
-                      fontSize: size,
-                      color: finalColor.withValues(alpha: 0.8),
-                      fontWeight: fontWeight,
-                      fontStyle: FontStyle.italic,
+                  return _withBadge(
+                    Text(
+                      cached!.csName!,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: scaledTextStyle(
+                        fontSize: size,
+                        color: finalColor.withValues(alpha: 0.8),
+                        fontWeight: fontWeight,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
+                    NameSource.cesiumPlus,
                   );
                 }
                 if (wallet.name == null) return SizedBox.shrink();
@@ -140,16 +181,19 @@ class NameByAddress extends ConsumerWidget {
                 // While loading CesiumPlus, check Hive cache first, then show local name
                 final cached = g1WalletsBox.get(wallet.address);
                 if (cached?.csName != null) {
-                  return Text(
-                    cached!.csName!,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: scaledTextStyle(
-                      fontSize: size,
-                      color: finalColor.withValues(alpha: 0.8),
-                      fontWeight: fontWeight,
-                      fontStyle: FontStyle.italic,
+                  return _withBadge(
+                    Text(
+                      cached!.csName!,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: scaledTextStyle(
+                        fontSize: size,
+                        color: finalColor.withValues(alpha: 0.8),
+                        fontWeight: fontWeight,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
+                    NameSource.cesiumPlus,
                   );
                 }
                 if (wallet.name == null) return SizedBox.shrink();
@@ -159,16 +203,19 @@ class NameByAddress extends ConsumerWidget {
                 // On error, check Hive cache, then fall through to wallet name
                 final cached = g1WalletsBox.get(wallet.address);
                 if (cached?.csName != null) {
-                  return Text(
-                    cached!.csName!,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: scaledTextStyle(
-                      fontSize: size,
-                      color: finalColor.withValues(alpha: 0.8),
-                      fontWeight: fontWeight,
-                      fontStyle: FontStyle.italic,
+                  return _withBadge(
+                    Text(
+                      cached!.csName!,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: scaledTextStyle(
+                        fontSize: size,
+                        color: finalColor.withValues(alpha: 0.8),
+                        fontWeight: fontWeight,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
+                    NameSource.cesiumPlus,
                   );
                 }
                 if (wallet.name == null) return SizedBox.shrink();
@@ -188,14 +235,17 @@ class NameByAddress extends ConsumerWidget {
         final displayFontStyle = isCreated ? FontStyle.italic : fontStyle;
 
         // Show identity name
-        return Text(
-          truncate(displayName, 22),
-          style: scaledTextStyle(
-            fontSize: size,
-            color: displayColor,
-            fontWeight: fontWeight,
-            fontStyle: displayFontStyle,
+        return _withBadge(
+          Text(
+            truncate(displayName, 22),
+            style: scaledTextStyle(
+              fontSize: size,
+              color: displayColor,
+              fontWeight: fontWeight,
+              fontStyle: displayFontStyle,
+            ),
           ),
+          _identitySource(idtyStatus),
         );
       },
       loading: () => const Loading(),

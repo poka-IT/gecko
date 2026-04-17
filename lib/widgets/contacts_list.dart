@@ -178,14 +178,17 @@ class ContactsList extends ConsumerWidget {
                             ),
                             subtitle: Row(
                               children: <Widget>[
-                                NameByAddress(
-                                  size: scaleSize(14),
-                                  wallet: WalletEntity.create(
-                                    address: g1Wallet.address,
-                                    name: g1Wallet.username,
-                                    keyPairType: Durt.defaultKeyPairType,
+                                Expanded(
+                                  child: NameByAddress(
+                                    size: scaleSize(14),
+                                    wallet: WalletEntity.create(
+                                      address: g1Wallet.address,
+                                      name: g1Wallet.username,
+                                      keyPairType: Durt.defaultKeyPairType,
+                                    ),
+                                    showCesiumPlusName: true,
+                                    showSourceBadge: true,
                                   ),
-                                  showCesiumPlusName: true,
                                 ),
                               ],
                             ),

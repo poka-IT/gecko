@@ -1,4 +1,4 @@
-import 'package:durt2/durt2.dart' as d show IdentitySuggestion, ConnectionStatus;
+import 'package:durt2/durt2.dart' as d show IdentitySuggestion, ConnectionStatus, IdtyStatus;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,11 +8,13 @@ import 'package:gecko/models/widgets_keys.dart';
 import 'package:gecko/providers/cesium_plus_search_provider.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/identity_providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/services/navigation_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/balance.dart';
 import 'package:gecko/widgets/commons/loading.dart';
 import 'package:gecko/widgets/datapod_avatar.dart';
+import 'package:gecko/widgets/name_source_badge.dart';
 
 class SearchIdentityQuery extends ConsumerWidget {
   const SearchIdentityQuery({super.key, required this.name});
@@ -47,9 +49,9 @@ class SearchIdentityQuery extends ConsumerWidget {
     return searchResults.when(
       data: (identities) {
         final cesiumPlusResults = cesiumPlusResultsAsync.asData?.value ?? [];
-        final dedupedCesiumPlus = deduplicateCesiumPlusResults(
-          cesiumPlusResults,
-          identities.map((i) => i.address).toSet(),
+        final dedupedCesiumPlus = filterOutEmptyCesiumPlusResults(
+          ref,
+          deduplicateCesiumPlusResults(cesiumPlusResults, identities.map((i) => i.address).toSet()),
         );
 
         if (identities.isEmpty && dedupedCesiumPlus.isEmpty) {
@@ -65,14 +67,15 @@ class SearchIdentityQuery extends ConsumerWidget {
               child: ListView(
                 children: [
                   if (identities.isNotEmpty) ...[
-                    _buildSectionHeader(context, 'verifiedIdentitiesSection'.tr()),
+                    SearchSectionHeader(title: 'verifiedIdentitiesSection'.tr(), tone: SearchSectionTone.verified),
                     ...identities.map(
-                      (identity) => _buildIdentityTile(context: context, identity: identity, avatarSize: avatarSize),
+                      (identity) =>
+                          _buildIdentityTile(context: context, ref: ref, identity: identity, avatarSize: avatarSize),
                     ),
                   ],
                   if (dedupedCesiumPlus.isNotEmpty) ...[
                     if (identities.isNotEmpty) const SizedBox(height: 8),
-                    _buildSectionHeader(context, 'selfDeclaredNamesSection'.tr()),
+                    SearchSectionHeader(title: 'selfDeclaredNamesSection'.tr(), tone: SearchSectionTone.warning),
                     ...dedupedCesiumPlus.map(
                       (result) => _buildCesiumPlusTile(context: context, result: result, avatarSize: avatarSize),
                     ),
@@ -88,26 +91,14 @@ class SearchIdentityQuery extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
-      child: Text(
-        title,
-        style: scaledTextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.42),
-          letterSpacing: 0.9,
-        ),
-      ),
-    );
-  }
-
   Widget _buildIdentityTile({
     required BuildContext context,
+    required WidgetRef ref,
     required d.IdentitySuggestion identity,
     required double avatarSize,
   }) {
+    final idtyStatus = ref.watch(hybridIdtyStatusProvider(identity.address)).asData?.value;
+    final source = idtyStatus == d.IdtyStatus.validated ? NameSource.identity : NameSource.pendingIdentity;
     return ListTile(
       key: keySearchResult(identity.address),
       horizontalTitleGap: 10,
@@ -139,11 +130,16 @@ class SearchIdentityQuery extends ConsumerWidget {
       ),
       subtitle: Row(
         children: <Widget>[
-          Text(
-            identity.name,
-            style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            textAlign: TextAlign.center,
+          Flexible(
+            child: Text(
+              identity.name,
+              overflow: TextOverflow.ellipsis,
+              style: scaledTextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.left,
+            ),
           ),
+          SizedBox(width: scaleSize(6)),
+          NameSourceBadge(source: source),
         ],
       ),
       dense: !isTall,
@@ -190,16 +186,21 @@ class SearchIdentityQuery extends ConsumerWidget {
       ),
       subtitle: Row(
         children: <Widget>[
-          Text(
-            result.title,
-            style: scaledTextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              fontStyle: FontStyle.italic,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+          Flexible(
+            child: Text(
+              result.title,
+              overflow: TextOverflow.ellipsis,
+              style: scaledTextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+              ),
+              textAlign: TextAlign.left,
             ),
-            textAlign: TextAlign.center,
           ),
+          SizedBox(width: scaleSize(6)),
+          const NameSourceBadge(source: NameSource.cesiumPlus),
         ],
       ),
       dense: !isTall,

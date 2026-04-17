@@ -194,6 +194,18 @@ class SentryService {
           value.contains('ResponseFormatException')) {
         return true;
       }
+      // Expected offline guards thrown by durt2 ConnectionOrchestrator when
+      // UI code tries to read blockchain state while disconnected. The app's
+      // offline banner already tells the user — reporting these is noise.
+      if (value.contains('Cannot access') && value.contains('in offline mode')) {
+        return true;
+      }
+      // Riverpod "ref" used after widget unmount: inherent race when the user
+      // navigates away mid-async. We fix specific cases with capture-before-
+      // await patterns; reporting residual races is noise.
+      if (value.contains('Using "ref"') && value.contains('unmounted is unsafe')) {
+        return true;
+      }
     }
     return false;
   }

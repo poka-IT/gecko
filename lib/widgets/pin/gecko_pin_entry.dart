@@ -107,6 +107,13 @@ class _GeckoPinEntryState extends State<GeckoPinEntry> with SingleTickerProvider
     if (widget.controller != oldWidget.controller) {
       oldWidget.controller?._detach();
       widget.controller?._attach(this);
+      // Reset state: a swapped controller means the parent reused this
+      // widget slot for a different logical entry (e.g. PIN → PIN confirm),
+      // so _digits/_inputLocked from the previous entry must not leak.
+      _digits.clear();
+      _inputLocked = false;
+      _displayMode = PinDisplayMode.normal;
+      _shakeController.reset();
     }
   }
 

@@ -1,8 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:fade_and_translate/fade_and_translate.dart';
+import 'dart:async';
 
-/// A safer wrapper around FadeAndTranslate that handles widget lifecycle properly
-/// to prevent null check operator errors on animation controllers.
+import 'package:flutter/material.dart';
+
+/// Fade + translate transition that is safe against widget disposal.
+///
+/// Replaces the `fade_and_translate` package, whose `didUpdateWidget` spawns
+/// an uncancellable `Timer(delay, ...)` that can call `AnimationController`
+/// methods after dispose, crashing with "Null check operator used on a null
+/// value" (Sentry AXIOM-TEAM-NE).
 class SafeFadeAndTranslate extends StatefulWidget {
   const SafeFadeAndTranslate({
     super.key,
@@ -25,41 +30,74 @@ class SafeFadeAndTranslate extends StatefulWidget {
   State<SafeFadeAndTranslate> createState() => _SafeFadeAndTranslateState();
 }
 
-class _SafeFadeAndTranslateState extends State<SafeFadeAndTranslate> {
-  bool _isCompleted = false;
+class _SafeFadeAndTranslateState extends State<SafeFadeAndTranslate> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  Timer? _delayTimer;
 
-  void _handleCompleted() {
-    // Ensure we only call onCompleted once and only if the widget is still mounted
-    if (!_isCompleted && mounted && widget.onCompleted != null) {
-      _isCompleted = true;
-      widget.onCompleted!();
-    }
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration, value: widget.visible ? 1.0 : 0.0);
+    _controller.addStatusListener(_onStatus);
   }
 
   @override
   void didUpdateWidget(SafeFadeAndTranslate oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    // Reset completion state if visibility changes
+    if (oldWidget.duration != widget.duration) {
+      _controller.duration = widget.duration;
+    }
     if (oldWidget.visible != widget.visible) {
-      _isCompleted = false;
+      _delayTimer?.cancel();
+      if (widget.delay > Duration.zero) {
+        _delayTimer = Timer(widget.delay, _runAnimation);
+      } else {
+        _runAnimation();
+      }
+    }
+  }
+
+  void _runAnimation() {
+    if (!mounted) return;
+    if (widget.visible) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  void _onStatus(AnimationStatus status) {
+    if (!mounted) return;
+    if ((status == AnimationStatus.completed && widget.visible) ||
+        (status == AnimationStatus.dismissed && !widget.visible)) {
+      widget.onCompleted?.call();
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    // If the widget is not mounted, return an empty container
-    if (!mounted) {
-      return const SizedBox.shrink();
-    }
+  void dispose() {
+    _delayTimer?.cancel();
+    _controller.removeStatusListener(_onStatus);
+    _controller.dispose();
+    super.dispose();
+  }
 
-    return FadeAndTranslate(
-      visible: widget.visible,
-      translate: widget.translate,
-      delay: widget.delay,
-      duration: widget.duration,
-      onCompleted: _handleCompleted,
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
       child: widget.child,
+      builder: (context, child) {
+        final t = _controller.value;
+        if (t == 0.0) return const SizedBox.shrink();
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(widget.translate.dx * (1.0 - t), widget.translate.dy * (1.0 - t)),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

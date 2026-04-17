@@ -161,25 +161,37 @@ class SentryService {
   }
 
   /// Callback executed before sending events to Sentry
-  /// Check if a Sentry event is a network socket error (SocketException, OSError).
-  /// These occur when WebSocket/HTTP connections drop in background mode
-  /// and are automatically recovered by the auto-reconnect mechanism.
-  /// They are NOT actual crashes - Flutter catches them via PlatformDispatcher
-  /// but the Sentry SDK reports them as "fatal" because they are unhandled.
+  /// Check if a Sentry event is a transient network error.
+  /// Covers dropped sockets, DNS failures, GraphQL endpoint errors,
+  /// and lifecycle-transition teardowns. These recover automatically
+  /// via reconnection and are non-actionable noise, even though the
+  /// Sentry SDK flags them as unhandled "fatal" events.
   static bool _isNetworkSocketError(SentryEvent event) {
     final exceptions = event.exceptions;
     if (exceptions == null || exceptions.isEmpty) return false;
     for (final exception in exceptions) {
       final type = exception.type ?? '';
       final value = exception.value ?? '';
-      // Match SocketException by type (always network-related)
-      if (type == 'SocketException') return true;
+      // Match by type (always network-related)
+      if (type == 'SocketException' ||
+          type == 'HttpLinkParserException' ||
+          type == 'HttpLinkServerException' ||
+          type == 'HttpException') {
+        return true;
+      }
       // Match specific network error messages regardless of exception type
       // (OSError with network messages, chained SocketException in value, etc.)
       if (value.contains('SocketException') ||
+          value.contains('HttpLinkParserException') ||
+          value.contains('HttpLinkServerException') ||
           value.contains('Software caused connection abort') ||
           value.contains('Reading from a closed socket') ||
-          value.contains('Connection reset by peer')) {
+          value.contains('Connection reset by peer') ||
+          value.contains('Connection closed before full header') ||
+          value.contains('Failed host lookup') ||
+          value.contains('getaddrinfo') ||
+          value.contains('EAI_AGAIN') ||
+          value.contains('ResponseFormatException')) {
         return true;
       }
     }

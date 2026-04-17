@@ -379,12 +379,13 @@ class AppInitNotifier extends Notifier<AppInitState> {
       await avatarsDirectory.create();
       await config.deleteDefaultWallet();
       await config.clearAll();
-      await Hive.deleteBoxFromDisk('g1WalletsBox');
-      await Hive.deleteBoxFromDisk('contactsBox');
+      // Clear open boxes in-place: deleteBoxFromDisk closes the box, leaving
+      // the global reference pointing at a closed box until reopen — widgets
+      // rebuilding during that window crash with HiveError.
+      await g1WalletsBox.clear();
+      await contactsBox.clear();
+      // wallet_header_cache isn't opened yet at this point — safe to delete
       await Hive.deleteBoxFromDisk('wallet_header_cache');
-
-      g1WalletsBox = await Hive.openBox('g1WalletsBox');
-      contactsBox = await Hive.openBox('contactsBox');
       walletHeaderDataBox = await Hive.openBox('wallet_header_cache');
 
       await ref.read(walletServiceProvider).clearWallets();
@@ -402,10 +403,11 @@ class AppInitNotifier extends Notifier<AppInitState> {
     final homeMessageNotifier = ref.read(homeMessageProvider.notifier);
 
     if (!ref.read(durtProvider).isConnected) {
-      await Hive.deleteBoxFromDisk('g1WalletsBox');
+      // Clear in-place instead of deleteBoxFromDisk: the latter closes the
+      // box, and widgets rebuilding during that window (NameByAddress etc.)
+      // hit HiveError on the now-closed global reference.
+      await g1WalletsBox.clear();
       await avatarsCacheDirectory.create();
-      g1WalletsBox = await Hive.openBox('g1WalletsBox');
-      contactsBox = await Hive.openBox('contactsBox');
 
       // Reload wallets using Riverpod provider
       ref.read(walletsListProvider.notifier).refresh();

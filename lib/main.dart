@@ -15,7 +15,7 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType, SslConfigService;
+import 'package:durt2/durt2.dart' show Durt, Networks, KeyPairType, SslConfigService, CryptoUtils;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -102,6 +102,16 @@ Future<void> main() async {
     config.selectedNetwork = selectedNetwork.name;
   }
 
+  // Run silent data path migrations (desktop only: ObjectBox, secure storage, SQLite cache)
+  await storageService.runDesktopMigrations();
+
+  // Compute consolidated paths for desktop platforms
+  final objectBoxDir = await storageService.desktopObjectBoxDirectory();
+  final macosSecurePath = await storageService.macosSecureStoragePath();
+  if (macosSecurePath != null) {
+    CryptoUtils.setMacosSecureStoragePath(macosSecurePath);
+  }
+
   // Configure SSL certificate handling before any network connections.
   // Duniter nodes commonly use self-signed certificates, so we must accept them.
   // This is acceptable because blockchain data integrity is verified by cryptographic
@@ -110,8 +120,8 @@ Future<void> main() async {
   // TODO: Implement per-endpoint certificate pinning for CesiumPlus profile API.
   SslConfigService.configureSslCertificateHandling(allowBadCertificates: !kReleaseMode);
 
-  //Init durt2 with selected network and keypair type
-  await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519);
+  // Init durt2 with selected network, keypair type, and consolidated data path
+  await Durt().init(network: selectedNetwork, keyPairType: KeyPairType.ed25519, objectBoxDirectory: objectBoxDir);
 
   // Migrate old wallet names to new # convention
   WalletNameService.runMigration();

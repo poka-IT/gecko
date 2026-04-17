@@ -129,6 +129,134 @@ class StorageInitService {
     }
   }
 
+  /// Returns a custom ObjectBox directory on desktop (~/.gecko/objectbox),
+  /// or null on mobile (lets durt2 use its default path).
+  Future<String?> desktopObjectBoxDirectory() async {
+    if (!Platform.isLinux && !Platform.isMacOS && !Platform.isWindows) return null;
+    final base = await _appBaseDirectory();
+    final dir = Directory('${base.path}/objectbox');
+    if (!await dir.exists()) await dir.create(recursive: true);
+    return dir.path;
+  }
+
+  /// Returns the macOS secure storage path (~/.gecko/secure_storage.json),
+  /// or null on non-macOS platforms.
+  Future<String?> macosSecureStoragePath() async {
+    if (!Platform.isMacOS) return null;
+    final base = await _appBaseDirectory();
+    return '${base.path}/secure_storage.json';
+  }
+
+  /// Returns the desktop Riverpod SQLite cache path (~/.gecko/cache/riverpod.db),
+  /// or null on non-desktop platforms.
+  Future<String?> desktopRiverpodCachePath() async {
+    if (!Platform.isLinux && !Platform.isMacOS && !Platform.isWindows) return null;
+    final base = await _appBaseDirectory();
+    final cacheDir = Directory('${base.path}/cache');
+    if (!await cacheDir.exists()) await cacheDir.create(recursive: true);
+    return '${cacheDir.path}/riverpod.db';
+  }
+
+  /// Run silent data migrations from legacy paths to ~/.gecko/.
+  /// Must be called AFTER initHive() and BEFORE Durt.init().
+  Future<void> runDesktopMigrations() async {
+    if (!Platform.isLinux && !Platform.isMacOS && !Platform.isWindows) return;
+    final base = await _appBaseDirectory();
+    await _migrateObjectBox(base);
+    if (Platform.isMacOS) {
+      await _migrateMacosSecureStorage(base);
+      await _migrateRiverpodCache(base);
+    }
+  }
+
+  /// Migrate ObjectBox from ~/Documents/objectbox/ to ~/.gecko/objectbox/
+  Future<void> _migrateObjectBox(Directory base) async {
+    final home = Platform.isWindows ? Platform.environment['UserProfile'] ?? '' : Platform.environment['HOME'] ?? '';
+    final oldDir = Directory('$home/Documents/objectbox');
+    final newDir = Directory('${base.path}/objectbox');
+
+    if (!await oldDir.exists()) return;
+    if (await newDir.exists()) {
+      // New path already has data — old path is a leftover, remove it
+      await oldDir.delete(recursive: true);
+      log.i('ObjectBox migration: removed leftover old path');
+      return;
+    }
+
+    log.i('ObjectBox migration: ${oldDir.path} → ${newDir.path}');
+    await _copyDirectory(oldDir, newDir);
+
+    // Verify at least one file was transferred
+    final newFiles = newDir.listSync(recursive: true).whereType<File>().toList();
+    if (newFiles.isNotEmpty) {
+      await oldDir.delete(recursive: true);
+      log.i('ObjectBox migration complete (${newFiles.length} files)');
+    } else {
+      log.w('ObjectBox migration: copy produced no files, keeping original');
+      await newDir.delete(recursive: true);
+    }
+  }
+
+  /// Migrate macOS secure storage from ~/.durt2_secure_storage to ~/.gecko/secure_storage.json
+  Future<void> _migrateMacosSecureStorage(Directory base) async {
+    final home = Platform.environment['HOME'] ?? '';
+    final oldFile = File('$home/.durt2_secure_storage');
+    final newFile = File('${base.path}/secure_storage.json');
+
+    if (!await oldFile.exists()) return;
+    if (await newFile.exists()) {
+      await oldFile.delete();
+      log.i('Secure storage migration: removed leftover old file');
+      return;
+    }
+
+    log.i('Secure storage migration: ${oldFile.path} → ${newFile.path}');
+    await oldFile.copy(newFile.path);
+    await Process.run('chmod', ['600', newFile.path]);
+    if (await newFile.exists()) {
+      await oldFile.delete();
+      log.i('Secure storage migration complete');
+    } else {
+      log.w('Secure storage migration: copy failed, keeping original');
+    }
+  }
+
+  /// Migrate Riverpod SQLite cache from ~/Documents/ to ~/.gecko/cache/
+  Future<void> _migrateRiverpodCache(Directory base) async {
+    final home = Platform.environment['HOME'] ?? '';
+    final oldFile = File('$home/Documents/gecko_riverpod_cache.db');
+    final newFile = File('${base.path}/cache/riverpod.db');
+
+    if (!await oldFile.exists()) return;
+    if (await newFile.exists()) {
+      await oldFile.delete();
+      return;
+    }
+
+    final cacheDir = Directory('${base.path}/cache');
+    if (!await cacheDir.exists()) await cacheDir.create(recursive: true);
+
+    log.i('Riverpod cache migration: ${oldFile.path} → ${newFile.path}');
+    await oldFile.copy(newFile.path);
+    if (await newFile.exists()) {
+      await oldFile.delete();
+      log.i('Riverpod cache migration complete');
+    }
+  }
+
+  /// Recursively copy a directory tree
+  Future<void> _copyDirectory(Directory source, Directory destination) async {
+    await destination.create(recursive: true);
+    await for (final entity in source.list()) {
+      final newPath = '${destination.path}/${entity.uri.pathSegments.last}';
+      if (entity is File) {
+        await entity.copy(newPath);
+      } else if (entity is Directory) {
+        await _copyDirectory(entity, Directory(newPath));
+      }
+    }
+  }
+
   /// Get storage status information
   Map<String, dynamic> getStorageInfo() {
     final config = ConfigService(configBox);

@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:durt2/durt2.dart' as d;
 import 'package:durt2/objectbox.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/services/storage_init_service.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -131,13 +133,23 @@ class SettingsService {
   /// Clear Riverpod persistent SQLite cache (transaction history, certifications, etc.)
   Future<void> _clearRiverpodPersistCache() async {
     try {
-      final dbPath = join(await getDatabasesPath(), 'gecko_riverpod_cache.db');
+      // On Linux/Windows, sqflite is not available — no persistent cache to clear
+      if (Platform.isLinux || Platform.isWindows) {
+        log.d('Riverpod SQLite cache: not persistent on this platform, skip clear');
+        return;
+      }
+
+      // On macOS desktop, use ~/.gecko/cache/riverpod.db
+      // On mobile, use the platform default database path
+      final desktopPath = await StorageInitService().desktopRiverpodCachePath();
+      final dbPath = desktopPath ?? join(await getDatabasesPath(), 'gecko_riverpod_cache.db');
+
       final db = await openDatabase(dbPath);
       await db.delete('riverpod');
       await db.close();
-      log.d('✅ Cleared Riverpod persist cache');
+      log.d('Cleared Riverpod persist cache');
     } catch (e) {
-      log.w('⚠️ Error clearing Riverpod persist cache: $e');
+      log.w('Error clearing Riverpod persist cache: $e');
     }
   }
 

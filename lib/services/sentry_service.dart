@@ -188,11 +188,12 @@ class SentryService {
 
   static SentryEvent? _beforeSendCallback(SentryEvent event, Hint hint) {
     try {
-      // Downgrade network socket errors from fatal to warning.
-      // These are expected during background mode / network changes and
-      // auto-recover via reconnection - they don't crash the app.
+      // Drop network socket errors entirely. Stacktraces sit in dart:io
+      // (secure_socket.dart) — a known Dart SDK race during lifecycle
+      // transitions, not our bug. Auto-reconnect recovers; these reports
+      // are non-actionable noise.
       if (_isNetworkSocketError(event)) {
-        event.level = SentryLevel.warning;
+        return null;
       }
 
       // Generate diagnostic data

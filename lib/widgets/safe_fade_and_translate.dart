@@ -32,12 +32,14 @@ class SafeFadeAndTranslate extends StatefulWidget {
 
 class _SafeFadeAndTranslateState extends State<SafeFadeAndTranslate> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  late final Animation<double> _curve;
   Timer? _delayTimer;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.duration, value: widget.visible ? 1.0 : 0.0);
+    _curve = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.addStatusListener(_onStatus);
   }
 
@@ -85,10 +87,10 @@ class _SafeFadeAndTranslateState extends State<SafeFadeAndTranslate> with Single
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _curve,
       child: widget.child,
       builder: (context, child) {
-        final t = _controller.value;
+        final t = _curve.value;
         if (t == 0.0) return const SizedBox.shrink();
         return Opacity(
           opacity: t,

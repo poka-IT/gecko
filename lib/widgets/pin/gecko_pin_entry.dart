@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
@@ -36,6 +37,11 @@ const _kIdealButtonSize = 64.0;
 const _kButtonSpacingRatio = 0.25; // gap between buttons = buttonSize * ratio
 const _kRowGapRatio = 0.10; // vertical gap between rows = buttonSize * ratio
 const _kDisplayGapRatio = 0.30; // gap between display and numpad = buttonSize * ratio
+
+bool get _isDesktopPlatform =>
+    defaultTargetPlatform == TargetPlatform.linux ||
+    defaultTargetPlatform == TargetPlatform.macOS ||
+    defaultTargetPlatform == TargetPlatform.windows;
 
 // ---------------------------------------------------------------------------
 // Widget
@@ -252,10 +258,12 @@ class _GeckoPinEntryState extends State<GeckoPinEntry> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    // On desktop layouts, hide the numpad — physical keyboard input is
-    // already wired via _onKeyEvent, so the numpad is redundant and wastes
-    // vertical space.
-    final hideNumpad = isDesktopLayout(context);
+    // Hide the numpad only on true desktop platforms at desktop widths —
+    // physical keyboard input is already wired via _onKeyEvent. Gating on
+    // platform (not just width) avoids breaking iPad/large-Android tablets
+    // in landscape, which exceed the width breakpoint but typically have no
+    // physical keyboard.
+    final hideNumpad = isDesktopLayout(context) && _isDesktopPlatform;
 
     return Focus(
       focusNode: _keyboardFocusNode,
@@ -265,7 +273,10 @@ class _GeckoPinEntryState extends State<GeckoPinEntry> with SingleTickerProvider
         builder: (context, constraints) {
           final hasFiniteHeight = constraints.maxHeight.isFinite;
 
-          final buttonSize = hasFiniteHeight
+          // With the numpad hidden we bypass the height-based sizing (which
+          // budgets space for 4 numpad rows) and use the ideal button size —
+          // otherwise PIN cells shrink to fit a numpad that isn't rendered.
+          final buttonSize = (hasFiniteHeight && !hideNumpad)
               ? _computeButtonSize(constraints.maxHeight)
               : scaleSize(_kIdealButtonSize).clamp(_kMinButtonSize, _kMaxButtonSize);
 
@@ -303,6 +314,11 @@ class _GeckoPinEntryState extends State<GeckoPinEntry> with SingleTickerProvider
                   bottomLeftWidget: widget.bottomLeftWidget,
                   enabled: widget.enabled && !_inputLocked,
                 ),
+              ] else if (widget.bottomLeftWidget != null) ...[
+                // Numpad is hidden but the host still wants to surface a
+                // companion action (e.g. biometric unlock on macOS/Windows).
+                SizedBox(height: displayGap),
+                Center(child: widget.bottomLeftWidget!),
               ],
             ],
           );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
+import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/pin/gecko_numpad.dart';
 import 'package:gecko/widgets/pin/gecko_pin_display.dart';
 
@@ -251,6 +252,11 @@ class _GeckoPinEntryState extends State<GeckoPinEntry> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    // On desktop layouts, hide the numpad — physical keyboard input is
+    // already wired via _onKeyEvent, so the numpad is redundant and wastes
+    // vertical space.
+    final hideNumpad = isDesktopLayout(context);
+
     return Focus(
       focusNode: _keyboardFocusNode,
       autofocus: widget.autoFocus,
@@ -272,7 +278,8 @@ class _GeckoPinEntryState extends State<GeckoPinEntry> with SingleTickerProvider
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // PIN display — same width as numpad
+              // PIN display — width matches the (possibly hidden) numpad
+              // so cell sizing stays consistent across breakpoints.
               AnimatedBuilder(
                 animation: _shakeAnimation,
                 builder: (_, child) =>
@@ -284,18 +291,19 @@ class _GeckoPinEntryState extends State<GeckoPinEntry> with SingleTickerProvider
                   width: numpadW,
                 ),
               ),
-              SizedBox(height: displayGap),
-              // Numpad
-              GeckoNumpad(
-                buttonSize: buttonSize,
-                totalWidth: numpadW,
-                rowGap: rowGap,
-                onDigitPressed: _addDigit,
-                onDeletePressed: _deleteDigit,
-                onDeleteLongPressed: _clearAll,
-                bottomLeftWidget: widget.bottomLeftWidget,
-                enabled: widget.enabled && !_inputLocked,
-              ),
+              if (!hideNumpad) ...[
+                SizedBox(height: displayGap),
+                GeckoNumpad(
+                  buttonSize: buttonSize,
+                  totalWidth: numpadW,
+                  rowGap: rowGap,
+                  onDigitPressed: _addDigit,
+                  onDeletePressed: _deleteDigit,
+                  onDeleteLongPressed: _clearAll,
+                  bottomLeftWidget: widget.bottomLeftWidget,
+                  enabled: widget.enabled && !_inputLocked,
+                ),
+              ],
             ],
           );
         },

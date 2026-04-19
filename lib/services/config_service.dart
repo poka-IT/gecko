@@ -133,6 +133,23 @@ class ConfigService {
   set isCacheChecked(bool value) => _box.put('isCacheChecked', value);
 
   // ---------------------------------------------------------------------------
+  // Identity wallet cache (per safe)
+  // ---------------------------------------------------------------------------
+
+  /// Cached identity wallet address for a given safe. Used by the identity
+  /// provider to seed its in-memory cache on a cold build and avoid a
+  /// layout flash in WalletsHome (grid-only → hero+grid) while the
+  /// on-chain resolution is in flight.
+  String? getIdentityWalletAddress(int safeNumber) {
+    return _box.get('idtyWallet_$safeNumber') as String?;
+  }
+
+  Future<void> setIdentityWalletAddress(int safeNumber, String? address) {
+    if (address == null) return _box.delete('idtyWallet_$safeNumber');
+    return _box.put('idtyWallet_$safeNumber', address);
+  }
+
+  // ---------------------------------------------------------------------------
   // Currency display
   // ---------------------------------------------------------------------------
 

@@ -189,7 +189,12 @@ class _GeckoBottomAppBarState extends ConsumerState<_GeckoBottomAppBar> {
                           if (navCtx == null) return;
                           if (await PinCodeService.askPinCodeAndCapture(navCtx, canSwitch: true) == null) return;
 
-                          if (!mounted) return;
+                          // Do NOT check `mounted` here: the bottom bar is
+                          // unmounted while `unlockingWallet` is on top
+                          // (excluded route hides the bar → SizedBox.shrink),
+                          // so after the await `mounted` is always false.
+                          // Navigation uses the global navigator key and
+                          // doesn't require this widget to be alive.
                           final navContext = Gecko.navigatorContext;
                           if (navContext == null) return;
                           Navigator.pushNamedAndRemoveUntil(

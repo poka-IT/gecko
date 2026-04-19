@@ -116,21 +116,18 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
   GlobalKey? _currentTutorialKey;
   bool _hasAttemptedReload = false;
 
-  // Fade-in animation controller
+  // Fade-in animation controller — forward() is gated on the identity
+  // wallet being resolved, so we never fade in a transient "grid-only"
+  // layout that would flip to "hero + grid" mid-animation.
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
+  bool _fadeStarted = false;
 
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
     _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
-    // Start animation after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _fadeController.forward();
-      }
-    });
   }
 
   @override
@@ -172,9 +169,10 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
       _keyCounter++;
       _currentTutorialKey = null; // Reset tutorial key for new safe
 
-      // Restart fade-in animation for new safe
+      // Reset fade; will be forwarded once the new safe's identity
+      // resolves to avoid flashing a wrong layout for the new safe.
       _fadeController.reset();
-      _fadeController.forward();
+      _fadeStarted = false;
     }
 
     if (walletsState.wallets.isEmpty) {
@@ -225,45 +223,97 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
     // ignore: unused_local_variable
     final _ = safeDataAsync;
 
-    return idtyWalletAsync.when(
-      data: (idtyWallet) {
-        // Data is ready, render the UI with correct wallet separation
-        // Balance/Certification widgets will show shimmer while their data loads
-        final allWallets = walletsState.wallets;
+    // Arm the fade-in the first time the identity resolves (data or error).
+    // Gating the animation on resolution — rather than on mount — is what
+    // prevents a visible layout flip: we never fade in a transient
+    // "all-wallets-in-grid" layout that would rearrange into "hero + grid"
+    // once the identity arrives. On the very first PIN unlock the persistent
+    // cache is empty so we briefly show a subtle skeleton instead.
+    final hasResolved = idtyWalletAsync.hasValue || idtyWalletAsync.hasError;
+    if (!_fadeStarted && hasResolved) {
+      _fadeStarted = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _fadeController.forward();
+      });
+    }
 
-        // Validate that the identity wallet belongs to the current safe.
-        // During safe switches, a stale cached value from the previous safe
-        // can briefly be returned before the provider rebuilds.
-        final validIdtyWallet = (idtyWallet != null && allWallets.any((w) => w.address == idtyWallet.address))
-            ? idtyWallet
-            : null;
+    if (!hasResolved) {
+      return _buildLoadingScaffold(context, currentSafe);
+    }
 
-        final walletsWithoutIdty = validIdtyWallet != null
-            ? allWallets.where((w) => w.address != validIdtyWallet.address).toList()
-            : allWallets;
+    // Data is ready, render the UI with correct wallet separation
+    // Balance/Certification widgets will show shimmer while their data loads
+    final idtyWallet = idtyWalletAsync.hasValue ? idtyWalletAsync.value : null;
+    final allWallets = walletsState.wallets;
 
-        return _buildWalletsContent(context, ref, currentSafe, allWallets, validIdtyWallet, walletsWithoutIdty, nTule);
-      },
-      loading: () {
-        // Show wallets immediately with shimmer placeholders for balances
-        // This provides a smoother UX than a blocking loader
-        final allWallets = walletsState.wallets;
-        return _buildWalletsContent(context, ref, currentSafe, allWallets, null, allWallets, nTule);
-      },
-      error: (error, stack) {
-        // On error, treat as no identity wallet
-        final allWallets = walletsState.wallets;
+    // Validate that the identity wallet belongs to the current safe.
+    // During safe switches, a stale cached value from the previous safe
+    // can briefly be returned before the provider rebuilds.
+    final validIdtyWallet = (idtyWallet != null && allWallets.any((w) => w.address == idtyWallet.address))
+        ? idtyWallet
+        : null;
 
-        return _buildWalletsContent(
-          context,
-          ref,
-          currentSafe,
-          allWallets,
-          null, // No identity wallet
-          allWallets, // All wallets without identity
-          nTule,
-        );
-      },
+    final walletsWithoutIdty = validIdtyWallet != null
+        ? allWallets.where((w) => w.address != validIdtyWallet.address).toList()
+        : allWallets;
+
+    return _buildWalletsContent(context, ref, currentSafe, allWallets, validIdtyWallet, walletsWithoutIdty, nTule);
+  }
+
+  /// Skeleton shown for the brief window between WalletsHome mount and the
+  /// identity wallet resolving for the first time on a safe. The AppBar is
+  /// the same as the final screen so only the body area animates in,
+  /// keeping the entry feel vif and fluid without a visible layout flip.
+  Widget _buildLoadingScaffold(BuildContext context, SafeEntity currentSafe) {
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: context.colorScheme.surface,
+        appBar: _buildAppBar(context, currentSafe),
+        body: Center(
+          child: SizedBox(
+            width: scaleSize(22),
+            height: scaleSize(22),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(context.colorScheme.onSurface.withValues(alpha: 0.35)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context, SafeEntity currentSafe) {
+    return AppBar(
+      toolbarHeight: scaleSize(57),
+      backgroundColor: context.colorScheme.tertiary,
+      title: Row(
+        children: [
+          currentSafe.safeType == SafeType.legacy
+              ? SvgPicture.asset('assets/cesium_bw2.svg', height: 32, semanticsLabel: 'Cesium')
+              : Image.asset('assets/safes/${currentSafe.number % 4}.png', height: 32),
+          ScaledSizedBox(width: 17),
+          Text(
+            WalletNameService.displayName(currentSafe.name),
+            style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.swap_horiz, color: context.colorScheme.onSurface, size: scaleSize(24)),
+          tooltip: 'changeSafe'.tr(),
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.settings, color: context.colorScheme.onSurface, size: scaleSize(24)),
+          tooltip: 'manageSafe'.tr(),
+          onPressed: () => showSafeOptionsMenu(context),
+        ),
+        ScaledSizedBox(width: 8),
+      ],
     );
   }
 
@@ -356,38 +406,7 @@ class _WalletsHomeContentState extends ConsumerState<_WalletsHomeContent> with S
     return SafeArea(
       child: Scaffold(
         backgroundColor: context.colorScheme.surface,
-        appBar: AppBar(
-          toolbarHeight: scaleSize(57),
-          backgroundColor: context.colorScheme.tertiary,
-          title: Row(
-            children: [
-              // Show Cesium logo for legacy safes, normal safe icon for others
-              currentSafe.safeType == SafeType.legacy
-                  ? SvgPicture.asset('assets/cesium_bw2.svg', height: 32, semanticsLabel: 'Cesium')
-                  : Image.asset('assets/safes/${currentSafe.number % 4}.png', height: 32),
-              ScaledSizedBox(width: 17),
-              Text(
-                WalletNameService.displayName(currentSafe.name),
-                style: scaledTextStyle(color: context.colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.swap_horiz, color: context.colorScheme.onSurface, size: scaleSize(24)),
-              tooltip: 'changeSafe'.tr(),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const SwitchSafe()));
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.settings, color: context.colorScheme.onSurface, size: scaleSize(24)),
-              tooltip: 'manageSafe'.tr(),
-              onPressed: () => showSafeOptionsMenu(context),
-            ),
-            ScaledSizedBox(width: 8),
-          ],
-        ),
+        appBar: _buildAppBar(context, currentSafe),
         body: FadeTransition(
           opacity: _fadeAnimation,
           child: SafeArea(

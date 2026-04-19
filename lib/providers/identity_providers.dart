@@ -8,6 +8,7 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/connection_providers.dart';
 import 'package:gecko/providers/block_height_provider.dart';
 import 'package:gecko/providers/stream_providers.dart';
+import 'package:gecko/services/config_service.dart';
 
 /// Notifier to track whether the user has dismissed the migration warning for a given address.
 /// Resets on app restart, so the warning will reappear next session.
@@ -252,7 +253,24 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
     if (wallets.isEmpty) {
       _cachedResult = null;
       _cachedWalletAddresses = [];
+      _persistCache(defaultSafeNumber, null);
       return null;
+    }
+
+    // Seed the in-memory cache from the persistent cache on cold builds.
+    // This eliminates the WalletsHome layout flash (grid-only → hero+grid)
+    // that otherwise occurs on every PIN unlock when the provider is
+    // invalidated and rebuilds from scratch. The on-chain resolution below
+    // still runs to validate and refresh the cached value.
+    if (_cachedResult == null) {
+      final cachedAddress = ConfigService(configBox).getIdentityWalletAddress(defaultSafeNumber);
+      if (cachedAddress != null) {
+        final candidate = wallets.where((w) => w.address == cachedAddress).firstOrNull;
+        if (candidate != null) {
+          _cachedResult = candidate;
+          _cachedWalletAddresses = wallets.map((w) => w.address).toList()..sort();
+        }
+      }
     }
 
     // Check if wallet list changed - only rebuild if wallets were added/removed
@@ -304,6 +322,7 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
     }
 
     _cachedResult = bestWallet;
+    _persistCache(defaultSafeNumber, bestWallet?.address);
 
     // Preload streams for the selected wallet
     if (bestWallet != null) {
@@ -311,6 +330,14 @@ class IdtyWalletNotifier extends AsyncNotifier<d.WalletEntity?> {
     }
 
     return bestWallet;
+  }
+
+  /// Persist the resolved identity wallet address to Hive so the next cold
+  /// build can seed [_cachedResult] synchronously and avoid the layout flash.
+  void _persistCache(int safeNumber, String? address) {
+    // Fire-and-forget: do not await, Hive writes are fast and a failure here
+    // is non-critical (next resolution will just re-populate the cache).
+    ConfigService(configBox).setIdentityWalletAddress(safeNumber, address);
   }
 
   /// Preload streams without triggering UI rebuilds

@@ -326,10 +326,24 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                           ),
                           ScaledSizedBox(width: 16),
                           Expanded(
-                            child: Text(
-                              'deleteThisWallet'.tr(),
-                              style: scaledTextStyle(fontSize: 16, color: context.geckoColors.deleteAction),
-                              softWrap: true,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'deleteThisWallet'.tr(),
+                                  style: scaledTextStyle(fontSize: 16, color: context.geckoColors.deleteAction),
+                                  softWrap: true,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'deleteThisWalletHint'.tr(),
+                                  style: scaledTextStyle(
+                                    fontSize: 12,
+                                    color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                  softWrap: true,
+                                ),
+                              ],
                             ),
                           ),
                         ],

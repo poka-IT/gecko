@@ -371,10 +371,24 @@ class SafeOptionsContent extends ConsumerWidget {
                 ),
                 ScaledSizedBox(width: 16),
                 Expanded(
-                  child: Text(
-                    'forgetSafe'.tr(),
-                    style: scaledTextStyle(fontSize: 16, color: context.geckoColors.deleteAction),
-                    softWrap: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'forgetSafe'.tr(),
+                        style: scaledTextStyle(fontSize: 16, color: context.geckoColors.deleteAction),
+                        softWrap: true,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'forgetSafeHint'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: 12,
+                          color: context.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                        softWrap: true,
+                      ),
+                    ],
                   ),
                 ),
               ],

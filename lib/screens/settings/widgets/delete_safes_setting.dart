@@ -57,14 +57,31 @@ class DeleteSafesSetting extends ConsumerWidget {
                   size: scaleSize(isSmallScreen ? 20 : 24),
                 ),
                 ScaledSizedBox(width: 12),
-                Text(
-                  'forgetAllMySafes'.tr(),
-                  style: scaledTextStyle(
-                    fontSize: isSmallScreen ? 14 : 15,
-                    color: hasSafes
-                        ? context.geckoColors.deleteAction
-                        : context.colorScheme.onSurface.withValues(alpha: 0.38),
-                    fontWeight: FontWeight.w600,
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'forgetAllMySafes'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: isSmallScreen ? 14 : 15,
+                          color: hasSafes
+                              ? context.geckoColors.deleteAction
+                              : context.colorScheme.onSurface.withValues(alpha: 0.38),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'forgetAllMySafesHint'.tr(),
+                        style: scaledTextStyle(
+                          fontSize: isSmallScreen ? 11 : 12,
+                          color: context.colorScheme.onSurface.withValues(alpha: hasSafes ? 0.5 : 0.38),
+                        ),
+                        softWrap: true,
+                      ),
+                    ],
                   ),
                 ),
               ],

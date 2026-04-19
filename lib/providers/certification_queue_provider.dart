@@ -169,8 +169,18 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
     // The queue is persisted locally and should be available even offline.
     var queue = await CertificationQueueService.loadQueue(issuerAddress);
 
-    // If no local queue, create an empty one
-    queue ??= d.CertificationQueueState.empty(issuerAddress);
+    // If no local queue exists (fresh install, app data cleared, Hive box
+    // rebuilt), create an empty placeholder with an *epoch-0* lastUpdated.
+    // CertificationQueueState.empty() uses DateTime.now(), which would make
+    // the empty local always look newer than any pre-existing remote queue,
+    // so sync would skip the remote and the user's queue would stay lost.
+    // Using epoch 0 ensures remote always wins when local was never written.
+    queue ??= d.CertificationQueueState(
+      issuerAddress: issuerAddress,
+      pendingCertifications: const [],
+      lastUpdated: DateTime.fromMillisecondsSinceEpoch(0),
+      isSynced: false,
+    );
 
     // If storage is not initialized yet, return the local queue as-is
     // without attempting blockchain date updates or remote sync.
@@ -394,6 +404,41 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
     try {
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
+
+      // Safety: if local is empty, check remote first. A non-empty remote
+      // with empty local almost always means local data was lost (fresh
+      // install, app data cleared, Hive rebuild). Pushing empty over it
+      // would destroy the user's CesiumPlus queue irreversibly. When this
+      // mismatch is detected, recover by adopting the remote queue instead
+      // of overwriting it — which is what the user presumably wanted when
+      // tapping "sync" in the first place.
+      if (currentQueue.isEmpty) {
+        try {
+          final remoteQueue = await cesiumPlus.getCertificationQueue(issuerAddress);
+          if (remoteQueue != null && !remoteQueue.isEmpty) {
+            log.w(
+              '[CertQueuePush] Local queue empty but remote has ${remoteQueue.queueLength} items — '
+              'recovering from remote instead of overwriting it',
+            );
+            var recovered = await _updateQueueDates(remoteQueue);
+            recovered = recovered.copyWith(isSynced: true);
+            state = AsyncValue.data(recovered);
+            await CertificationQueueService.saveQueue(recovered);
+
+            if (recovered.hasReadyCertification) {
+              final readyCert = recovered.nextReadyCertification;
+              if (readyCert != null) {
+                ref.read(readyCertificationNotifierProvider(issuerAddress).notifier).notify(readyCert);
+              }
+            }
+            // Treat as success — the local state now matches remote.
+            return true;
+          }
+        } catch (e) {
+          log.e('[CertQueuePush] Pre-push remote check failed: $e — aborting push to avoid data loss');
+          return false;
+        }
+      }
 
       final success = await cesiumPlus.saveCertificationQueue(
         address: issuerAddress,

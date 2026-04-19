@@ -89,7 +89,12 @@ class _DesktopModalShell<T> extends StatelessWidget {
 
     return CallbackShortcuts(
       bindings: {const SingleActivator(LogicalKeyboardKey.escape): () => Navigator.of(context).pop()},
-      child: Focus(
+      // FocusScope (not Focus) with autofocus delegates primary focus to a
+      // descendant with autofocus: true (e.g. GeckoPinEntry). Using Focus
+      // here steals keyboard focus from the PIN entry so digit keys never
+      // reach its onKeyEvent handler — leaving the numpad-less desktop PIN
+      // unusable.
+      child: FocusScope(
         autofocus: true,
         child: SafeArea(
           child: Center(

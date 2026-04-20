@@ -6,8 +6,10 @@ import 'package:gecko/exceptions.dart';
 import 'package:gecko/globals.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/models/widgets_keys.dart';
+import 'package:gecko/providers/currency_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
+import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/utils.dart';
 import 'package:gecko/widgets/certify/certification_transaction_helper.dart';
@@ -53,32 +55,55 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
 
     setState(() => _isProcessing = true);
     try {
-      // Warn the user up-front when the target identity has expired: durt2 still
-      // accepts certifying expired identities, but users have reported confusion
-      // when the target "disappears" after an unrelated runtime error. Showing
-      // the warning lets them decide consciously and anchors the intent.
-      if (widget.idtyStatus == IdtyStatus.expired) {
-        final proceed = await showConfirmationDialog(
-          context: context,
-          title: 'certification'.tr(),
-          message: 'cantCertifyExpiredIdentity'.tr(),
-          type: ConfirmationDialogType.warning,
-        );
-        if (!proceed) return;
+      // Re-read the freshest status at click time. The widget prop was set
+      // during a previous build and may lag behind the stream (e.g., the
+      // parent rebuilt with `IdtyStatus.unknown` while data was loading).
+      // Acting on a stale status can produce inconsistent wording or worse,
+      // claim "create identity" for an identity that already exists.
+      final freshStatus = ref.read(smartIdtyStatusStreamProvider(widget.address)).asData?.value ?? widget.idtyStatus;
+
+      if (freshStatus == IdtyStatus.unknown) {
         if (!context.mounted) return;
+        await showConfirmationDialog(
+          context: context,
+          message: 'identityStatusSyncing'.tr(),
+          type: ConfirmationDialogType.warning,
+          hideCancelButton: true,
+        );
+        return;
       }
 
+      // Switch the confirmation wording on the actual on-chain status, not on
+      // whether the indexer has a cached name. A name may be missing briefly
+      // after a network switch or when Squid hasn't replicated yet; that must
+      // not make us claim we're "creating" an identity that already exists.
+      final isCreatingIdentity = freshStatus == IdtyStatus.none;
       final walletName = ref.read(squidServiceProvider).walletNameIndexer[widget.address];
-      final message = walletName != null
-          ? '${'confirmCertification'.tr()}\n\n**$walletName**\n\n${getShortPubkey(widget.address)}'
-          : '${'confirmCreateIdentity'.tr()}\n\n**${getShortPubkey(widget.address)}**';
+      final shortPubkey = getShortPubkey(widget.address);
+
+      // Avoid rendering the pubkey twice when we have no name to show: the
+      // bold identifier line is enough on its own.
+      final String baseMessage;
+      if (isCreatingIdentity) {
+        baseMessage = '${'confirmCreateIdentity'.tr()}\n\n**$shortPubkey**';
+      } else if (walletName != null) {
+        baseMessage = '${'confirmCertification'.tr()}\n\n**$walletName**\n\n$shortPubkey';
+      } else {
+        baseMessage = '${'confirmCertification'.tr()}\n\n**$shortPubkey**';
+      }
+
+      // For expired and confirmed-but-not-yet-member identities, enrich the
+      // confirmation with contextual guidance so the user understands what
+      // their certification will trigger (cert only, cert + distance eval, …).
+      final contextualHint = _buildContextualHint(freshStatus);
+      final message = contextualHint != null ? '$baseMessage\n\n$contextualHint' : baseMessage;
 
       if (!context.mounted) return;
       final result = await showConfirmationDialog(
         context: context,
-        title: walletName != null ? 'certification'.tr() : 'identityCreation'.tr(),
+        title: isCreatingIdentity ? 'identityCreation'.tr() : 'certification'.tr(),
         message: message,
-        type: walletName != null ? ConfirmationDialogType.question : ConfirmationDialogType.info,
+        type: isCreatingIdentity ? ConfirmationDialogType.info : ConfirmationDialogType.question,
         checkboxLabel: 'certifyUniqueIdentity'.tr(),
       );
 
@@ -98,12 +123,14 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
 
       try {
         if (!mounted) return;
+        if (!context.mounted) return;
         await CertificationTransactionHelper.executeCertification(
           context: context,
           ref: ref,
           issuerAddress: identityWallet.address,
           targetAddress: widget.address,
           pinCode: capturedPin,
+          targetUsername: walletName,
         );
       } catch (e) {
         if (e is! NotMemberException && e is! CantBeCertException) log.e(e);
@@ -115,5 +142,57 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
         setState(() => _isProcessing = false);
       }
     }
+  }
+
+  /// Build a contextual hint that explains what this certification will
+  /// achieve on-chain, tailored to where the target is in its membership
+  /// lifecycle:
+  ///   - `expired`   → re-membership path ("regain membership")
+  ///   - `confirmed` → first-time membership path ("become a member")
+  ///   - anything else (validated member, new identity, …) → no hint
+  ///
+  /// Within the two eligible statuses, the wording branches on whether this
+  /// very certification will bring the target to the minCerts threshold
+  /// (which triggers an auto-bundled distance evaluation via durt2) or
+  /// whether more certifications will still be needed afterwards.
+  ///
+  /// Kept best-effort: if cert counters or currency params are not loaded
+  /// yet, we fall back to no hint rather than block the flow.
+  String? _buildContextualHint(IdtyStatus status) {
+    final String needsMoreKey;
+    final String willTriggerKey;
+    switch (status) {
+      case IdtyStatus.expired:
+        needsMoreKey = 'certifyExpiredNeedsMore';
+        willTriggerKey = 'certifyExpiredWillTriggerDistance';
+      case IdtyStatus.confirmed:
+        needsMoreKey = 'certifyConfirmedNeedsMore';
+        willTriggerKey = 'certifyConfirmedWillTriggerDistance';
+      default:
+        return null;
+    }
+
+    final certData = ref.read(smartCertificationStreamProvider(widget.address)).asData?.value;
+    final minCerts = ref.read(currencyDataProvider).asData?.value.wotParams.sigQtyRule;
+    if (certData == null || minCerts == null) return null;
+
+    final receivedCount = certData.receivedCount;
+    final afterMyCert = receivedCount + 1;
+
+    if (afterMyCert >= minCerts) {
+      return willTriggerKey.tr(
+        namedArgs: {'received': receivedCount.toString(), 'after': afterMyCert.toString(), 'min': minCerts.toString()},
+      );
+    }
+
+    final remaining = minCerts - afterMyCert;
+    return needsMoreKey.tr(
+      namedArgs: {
+        'received': receivedCount.toString(),
+        'after': afterMyCert.toString(),
+        'min': minCerts.toString(),
+        'remaining': remaining.toString(),
+      },
+    );
   }
 }

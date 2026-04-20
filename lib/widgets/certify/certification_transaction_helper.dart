@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:durt2/durt2.dart' show TransactionState, TransactionStatus;
+import 'package:durt2/durt2.dart' show IdtyStatus, TransactionState, TransactionStatus;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/globals.dart';
@@ -8,6 +9,7 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/scale_functions.dart';
 import 'package:gecko/providers/certification_list_providers.dart';
 import 'package:gecko/providers/certification_queue_provider.dart';
+import 'package:gecko/providers/currency_provider.dart';
 import 'package:gecko/providers/identity_providers.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
@@ -39,6 +41,12 @@ class CertificationTransactionHelper {
   /// way to re-acquire the PIN from inside this helper.
   ///
   /// Returns the broadcast stream if successful, null if cancelled or failed before sending
+  ///
+  /// The success SnackBar is built from flags resolved internally via [ref]
+  /// (renewal vs new cert, bundled distance eval) so every caller — direct
+  /// button, queue executor, ready-listener — produces the same contextual
+  /// feedback. This directly addresses the forum reports where users thought
+  /// nothing had happened after certifying an expired identity.
   static Future<Stream<TransactionStatus>?> executeCertification({
     required BuildContext context,
     required WidgetRef ref,
@@ -55,6 +63,12 @@ class CertificationTransactionHelper {
     final walletService = ref.read(walletServiceProvider);
     final duniterService = ref.read(duniterServiceProvider);
     final container = ProviderScope.containerOf(context);
+
+    // Resolve success-SnackBar flags now while providers are primed. Same
+    // heuristic as durt2's certify(): distance eval is auto-bundled when the
+    // target is not a validated member and this cert brings them to ≥ minCerts.
+    final isRenewal = ref.read(certificationExistsProvider(targetAddress)).asData?.value ?? false;
+    final willTriggerDistanceEval = _resolveWillTriggerDistanceEval(ref, targetAddress);
 
     // Capture ScaffoldMessenger now while context is valid,
     // so stream errors can show a snackbar even after navigation.
@@ -86,6 +100,8 @@ class CertificationTransactionHelper {
         targetUsername: targetUsername,
         container: container,
         scaffoldMessenger: scaffoldMessenger,
+        isRenewal: isRenewal,
+        willTriggerDistanceEval: willTriggerDistanceEval,
         removeFromPersistentQueue: true,
       );
 
@@ -125,6 +141,8 @@ class CertificationTransactionHelper {
     String? targetUsername,
     required ProviderContainer container,
     required ScaffoldMessengerState scaffoldMessenger,
+    bool isRenewal = false,
+    bool willTriggerDistanceEval = false,
     bool removeFromPersistentQueue = false,
   }) {
     bool hasHandled = false;
@@ -138,6 +156,26 @@ class CertificationTransactionHelper {
           hasHandled = true;
           log.d('✅ [CertificationHelper] Transaction SUCCESS - marking as completed');
           notifier.markCompleted(issuerAddress, targetAddress);
+
+          // Surface contextual success feedback so the user knows exactly what
+          // landed on-chain (add vs renew, with or without distance eval). This
+          // directly addresses the forum reports where users thought nothing
+          // had happened after certifying an expired identity.
+          //
+          // For the bundled distance-eval case we verify the on-chain state
+          // post-facto: durt2 uses a NON-ATOMIC `utility.batch`, so a distance
+          // sub-call rejection (AlreadyInEvaluation, QueueFull, …) would leave
+          // no pending request even though the batch "succeeded" overall.
+          // Querying `hasPendingDistanceEvaluation` after finalization gives
+          // us the truth on the ground.
+          _resolveAndShowSuccessSnackbar(
+            scaffoldMessenger: scaffoldMessenger,
+            container: container,
+            targetAddress: targetAddress,
+            targetUsername: targetUsername,
+            isRenewal: isRenewal,
+            willTriggerDistanceEval: willTriggerDistanceEval,
+          );
 
           // Auto-add certified person to contacts
           final contactService = container.read(contactServiceProvider);
@@ -250,6 +288,91 @@ class CertificationTransactionHelper {
     } catch (_) {
       // ScaffoldMessenger may have been disposed if the app navigated away entirely
       log.w('Could not show error snackbar: $message');
+    }
+  }
+
+  /// Mirror durt2's certify() heuristic at the UI layer: distance evaluation
+  /// is auto-bundled when the target is not a validated member AND this
+  /// certification brings them to (or above) the minCerts threshold.
+  static bool _resolveWillTriggerDistanceEval(WidgetRef ref, String targetAddress) {
+    final idtyStatus = ref.read(smartIdtyStatusStreamProvider(targetAddress)).asData?.value;
+    if (idtyStatus == null) return false;
+    if (idtyStatus == IdtyStatus.validated) return false;
+    if (idtyStatus == IdtyStatus.none) return false;
+
+    final certData = ref.read(smartCertificationStreamProvider(targetAddress)).asData?.value;
+    final minCerts = ref.read(currencyDataProvider).asData?.value.wotParams.sigQtyRule;
+    if (certData == null || minCerts == null) return false;
+
+    return certData.receivedCount >= minCerts - 1;
+  }
+
+  /// Resolve the authoritative "did a distance eval actually get triggered?"
+  /// signal, then show the success SnackBar. When we had no reason to expect
+  /// a distance eval, skip the chain query and show the add/renew SnackBar
+  /// directly.
+  ///
+  /// Fire-and-forget: the listener callback doesn't await this. A transient
+  /// query failure falls back to the optimistic predicted value so the user
+  /// still gets feedback — the worst case is a slightly less accurate wording,
+  /// never a missing SnackBar.
+  static Future<void> _resolveAndShowSuccessSnackbar({
+    required ScaffoldMessengerState scaffoldMessenger,
+    required ProviderContainer container,
+    required String targetAddress,
+    required String? targetUsername,
+    required bool isRenewal,
+    required bool willTriggerDistanceEval,
+  }) async {
+    bool distanceEvalActuallyTriggered = false;
+    if (willTriggerDistanceEval) {
+      try {
+        final storageService = container.read(storageServiceProvider);
+        distanceEvalActuallyTriggered = await storageService.hasPendingDistanceEvaluation(targetAddress);
+      } catch (e) {
+        log.w('Could not verify distance eval post-finalization: $e');
+        // Fall back to the predicted value so the user still gets feedback.
+        distanceEvalActuallyTriggered = true;
+      }
+    }
+    _showSuccessSnackbar(
+      scaffoldMessenger,
+      isRenewal: isRenewal,
+      distanceEvalTriggered: distanceEvalActuallyTriggered,
+      targetUsername: targetUsername,
+    );
+  }
+
+  /// Show a success message differentiating add / renew, with a hint when a
+  /// distance evaluation was actually recorded on-chain (verified by the
+  /// caller post-finalization, not the optimistic pre-tx prediction).
+  static void _showSuccessSnackbar(
+    ScaffoldMessengerState scaffoldMessenger, {
+    required bool isRenewal,
+    required bool distanceEvalTriggered,
+    String? targetUsername,
+  }) {
+    final target = targetUsername ?? 'thisIdentity'.tr();
+    final String message;
+    if (distanceEvalTriggered) {
+      final baseKey = isRenewal ? 'certRenewedWithDistanceEvalSuccess' : 'certAddedWithDistanceEvalSuccess';
+      message = baseKey.tr(namedArgs: {'name': target});
+    } else {
+      final baseKey = isRenewal ? 'certRenewedSuccess' : 'certAddedSuccess';
+      message = baseKey.tr(namedArgs: {'name': target});
+    }
+    try {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green.shade700,
+          padding: EdgeInsets.all(scaleSize(19)),
+          content: Text(message, style: scaledTextStyle(fontSize: 14, color: Colors.white)),
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      log.w('Could not show success snackbar: $message');
     }
   }
 }

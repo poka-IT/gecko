@@ -451,6 +451,7 @@
     "bypassMinWindowSizeDescription": "Permesas malgrandigi la fenestron sub la defaŭltan minimuman grandon (800×600)",
     "clearCacheConfirmTitle": "Konfirmo pri vakigo de la kaŝmemoro",
     "clearCacheConfirmMessage": "Ĉu vi vere vola vakigi la kaŝmemoron?\n\nTio inkluzivas:\n- La saldojn de la monujoj\n- La atestojn\n- La datenojn pri identeco",
+    "qrCode": "QR-kodo",
     "qrCodeNotAddress": "Tiu QR-kodo ne estas valida adreso",
     "emptyWalletCannotBeCertified": "Malplena monujo ne povas esti atestita",
     "timeoutScanDerivations": "Tempolimo atingita dum la skanado de la derivaĵoj. Bonvolu reprovi poste.",

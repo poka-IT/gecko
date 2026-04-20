@@ -743,6 +743,7 @@
     "profileUpdateFailed": "Errore nell'aggiornamento del profilo",
     "profileUpdated": "Profilo aggiornato con successo",
     "propagating": "Propagando...",
+    "qrCode": "QR code",
     "qrCodeNotAddress": "Questo QR code non è un indirizzo valido",
     "question": "Domanda",
     "queueLength": "{} certificazione/i in attesa",

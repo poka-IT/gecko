@@ -472,6 +472,7 @@
     "bypassMinWindowSizeDescription": "Permet de redimensionner la fenêtre en dessous de la taille minimale par défaut (800×600)",
     "clearCacheConfirmTitle": "Confirmation de suppression du cache",
     "clearCacheConfirmMessage": "Voulez-vous vraiment effacer le cache ?\n\nCela inclut :\n- Les soldes des portefeuilles\n- Les certifications\n- Les données d'identité",
+    "qrCode": "QR code",
     "qrCodeNotAddress": "Ce QR code n'est pas une adresse valide",
     "emptyWalletCannotBeCertified": "Un portefeuille vide ne peut pas être certifié",
     "timeoutScanDerivations": "Délai d'attente dépassé lors du scan des dérivations. Veuillez réessayer plus tard.",

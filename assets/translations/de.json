@@ -714,6 +714,7 @@
     "profileUpdateFailed": "Fehler beim Aktualisieren des Profils",
     "profileUpdated": "Profil erfolgreich aktualisiert",
     "propagating": "Wird übermittelt...",
+    "qrCode": "QR-Code",
     "qrCodeNotAddress": "Dieser QR-Code ist keine gültige Adresse",
     "question": "Frage",
     "queueLength": "{} ausstehende Zertifizierung(en)",

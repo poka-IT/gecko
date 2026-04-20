@@ -39,6 +39,7 @@ Future<T?> showDesktopModal<T>({
   bool showCloseButton = true,
   EdgeInsets? contentPadding,
   VoidCallback? onBack,
+  List<Widget>? headerActions,
 }) {
   return showGeneralDialog<T>(
     context: context,
@@ -61,6 +62,7 @@ Future<T?> showDesktopModal<T>({
         contentPadding: contentPadding,
         builder: builder,
         onBack: onBack,
+        headerActions: headerActions,
       );
     },
   );
@@ -73,6 +75,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
   final EdgeInsets? contentPadding;
   final WidgetBuilder builder;
   final VoidCallback? onBack;
+  final List<Widget>? headerActions;
 
   const _DesktopModalShell({
     required this.size,
@@ -81,6 +84,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
     required this.contentPadding,
     required this.builder,
     this.onBack,
+    this.headerActions,
   });
 
   @override
@@ -129,7 +133,11 @@ class _DesktopModalShell<T> extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (title != null || showCloseButton || onBack != null) _buildHeader(context),
+                          if (title != null ||
+                              showCloseButton ||
+                              onBack != null ||
+                              (headerActions != null && headerActions!.isNotEmpty))
+                            _buildHeader(context),
                           Flexible(
                             child: Padding(padding: effectivePadding, child: builder(context)),
                           ),
@@ -174,6 +182,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
             )
           else
             const Spacer(),
+          if (headerActions != null) ...headerActions!,
           if (showCloseButton)
             IconButton(
               onPressed: () => Navigator.of(context).pop(),

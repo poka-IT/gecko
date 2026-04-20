@@ -15,6 +15,7 @@ import 'package:gecko/providers/profile_view_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/services/pin_cache_service.dart';
 import 'package:gecko/widgets/desktop/modals/activity_modal.dart';
+import 'package:gecko/widgets/desktop/modals/qr_code_modal.dart';
 import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/services/wallet_name_service.dart';
 import 'package:gecko/utils.dart';
@@ -22,6 +23,7 @@ import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 /// Shows a profile view inside a desktop modal.
 Future<void> showDesktopProfileModal(
@@ -37,12 +39,43 @@ Future<void> showDesktopProfileModal(
     showCloseButton: true,
     title: username != null ? 'memberAccountOf'.tr(args: [username]) : 'seeAWallet'.tr(),
     onBack: onBack,
+    headerActions: [_HeaderQrButton(address: address, username: username)],
     builder: (modalContext) => DesktopModalScope(
       reopenCurrentModal: () =>
           showDesktopProfileModal(Gecko.navigatorContext!, address: address, username: username, onBack: onBack),
       child: _DesktopProfileContent(address: address, username: username, onBack: onBack),
     ),
   );
+}
+
+class _HeaderQrButton extends StatelessWidget {
+  final String address;
+  final String? username;
+
+  const _HeaderQrButton({required this.address, this.username});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'qrCode'.tr(),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => showDesktopQrCodeModal(Gecko.navigatorContext!, address: address, username: username),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: QrImageView(
+            data: address,
+            version: QrVersions.auto,
+            size: 36,
+            padding: EdgeInsets.zero,
+            dataModuleStyle: QrDataModuleStyle(color: context.colorScheme.onSurface.withValues(alpha: 0.85)),
+            eyeStyle: QrEyeStyle(color: context.colorScheme.onSurface.withValues(alpha: 0.85)),
+            backgroundColor: Colors.transparent,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _DesktopProfileContent extends ConsumerStatefulWidget {

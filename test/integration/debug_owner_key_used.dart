@@ -2,9 +2,11 @@
 //
 // Run with:
 //   flutter test test/integration/debug_owner_key_used.dart
+//
+// Standalone debug script: `print` is the intended output channel.
+// ignore_for_file: avoid_print
 
 import 'dart:io';
-import 'dart:convert';
 import 'package:durt2/durt2.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

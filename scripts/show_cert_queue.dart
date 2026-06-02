@@ -1,6 +1,10 @@
 #!/usr/bin/env dart
 // Script to display the certification queue for a given SS58 address
 // Usage: dart run scripts/show_cert_queue.dart <SS58_ADDRESS>
+//
+// Standalone CLI utility: `print` is the intended output channel, and the
+// ss58 / base_codecs packages are pulled in transitively via durt2.
+// ignore_for_file: avoid_print, depend_on_referenced_packages
 
 import 'dart:convert';
 import 'dart:io';

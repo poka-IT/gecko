@@ -258,7 +258,7 @@ Future bkDeleteAllWallets() async {
     await configBox.delete('defaultWallet');
     await configBox.delete('isUdUnit');
     // await sub.deleteAllAccounts();
-    PinCodeService.pinCode = '';
+    PinCodeService.clearPin();
     container.read(walletsListProvider.notifier).refresh();
   }
   container.dispose();

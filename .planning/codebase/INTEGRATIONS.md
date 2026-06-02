@@ -161,7 +161,6 @@
 - Android: `scripts/deploy-android.sh` — fastlane to Google Play
 - iOS: `scripts/deploy-ios.sh` — App Store Connect via fastlane
 - macOS: `scripts/build-macos-dmg.sh`
-- Linux: `scripts/build-docker-linux.sh`
 - Release notes: `scripts/publish-forum.py` — posts to Duniter forum via Discourse API (pydiscourse client)
 
 ## Environment Configuration

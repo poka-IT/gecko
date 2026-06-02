@@ -425,9 +425,13 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       if (currentQueue.isEmpty) {
         try {
           final remoteQueue = await cesiumPlus.getCertificationQueue(issuerAddress);
+          // Recover from remote unless the local empty is STRICTLY newer than
+          // remote (a deliberate deletion). At equal timestamps we recover —
+          // consistent with `_syncWithCesiumPlus`'s `!isBefore` arbitration,
+          // which lets the (non-empty) remote win on ties.
           if (remoteQueue != null &&
               !remoteQueue.isEmpty &&
-              currentQueue.lastUpdated.isBefore(remoteQueue.lastUpdated)) {
+              !currentQueue.lastUpdated.isAfter(remoteQueue.lastUpdated)) {
             log.w(
               '[CertQueuePush] Local queue empty and older than remote (${remoteQueue.queueLength} items) — '
               'recovering from remote instead of overwriting it',

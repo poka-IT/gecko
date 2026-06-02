@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:durt2/durt2.dart' show IdtyStatus, TransactionStatus, TransactionState, WalletEntity;
+import 'package:durt2/durt2.dart'
+    show IdtyStatus, TransactionStatus, TransactionState, WalletEntity, WalletService, DuniterService;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -933,8 +934,8 @@ class _LegacyMigrationContentState extends ConsumerState<_LegacyMigrationContent
     required String password,
     required String toAddress,
     required String pinCode,
-    required walletService,
-    required duniterService,
+    required WalletService walletService,
+    required DuniterService duniterService,
   }) async* {
     try {
       yield TransactionStatus(hash: '', state: TransactionState.pending);

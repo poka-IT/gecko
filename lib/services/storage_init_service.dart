@@ -5,6 +5,7 @@ import 'package:gecko/models/g1_wallets_list.dart';
 import 'package:gecko/models/wallet_header_data.dart';
 import 'package:gecko/services/config_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:gecko/services/certification_queue_service.dart';
 
@@ -162,10 +163,25 @@ class StorageInitService {
   Future<void> runDesktopMigrations() async {
     if (!Platform.isLinux && !Platform.isMacOS && !Platform.isWindows) return;
     final base = await _appBaseDirectory();
-    await _migrateObjectBox(base);
+    // Migrations must never prevent the app from starting: a read-only or full
+    // filesystem, a permission error, etc. should be logged and skipped rather
+    // than crashing `main()` before runApp().
+    try {
+      await _migrateObjectBox(base);
+    } catch (e, st) {
+      log.e('ObjectBox migration failed, continuing without it: $e', error: e, stackTrace: st);
+    }
     if (Platform.isMacOS) {
-      await _migrateMacosSecureStorage(base);
-      await _migrateRiverpodCache(base);
+      try {
+        await _migrateMacosSecureStorage(base);
+      } catch (e, st) {
+        log.e('macOS secure storage migration failed, continuing: $e', error: e, stackTrace: st);
+      }
+      try {
+        await _migrateRiverpodCache(base);
+      } catch (e, st) {
+        log.e('Riverpod cache migration failed, continuing: $e', error: e, stackTrace: st);
+      }
     }
   }
 
@@ -302,15 +318,23 @@ class StorageInitService {
     }
   }
 
-  /// Recursively copy a directory tree
+  /// Recursively copy a directory tree.
+  ///
+  /// Skips ObjectBox/LMDB `lock.mdb` files: the lock embeds a PID and live
+  /// transaction state, and ObjectBox recreates it on open. Copying it can
+  /// leave the destination DB referencing a stale/foreign lock and fail to
+  /// open. Only the actual data (`data.mdb`) must travel.
   Future<void> _copyDirectory(Directory source, Directory destination) async {
     await destination.create(recursive: true);
     await for (final entity in source.list()) {
-      final newPath = '${destination.path}/${entity.uri.pathSegments.last}';
+      // Use the filesystem path basename, not `uri.pathSegments.last`, which is
+      // an empty string for directories (their URI ends with a trailing slash).
+      final name = p.basename(entity.path);
       if (entity is File) {
-        await entity.copy(newPath);
+        if (name == 'lock.mdb') continue;
+        await entity.copy('${destination.path}/$name');
       } else if (entity is Directory) {
-        await _copyDirectory(entity, Directory(newPath));
+        await _copyDirectory(entity, Directory('${destination.path}/$name'));
       }
     }
   }

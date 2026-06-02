@@ -189,22 +189,27 @@ Future<void> _showDesktopWindow() async {
   // displays a hardcoded 800×600 minimum is larger than the work area, so the
   // window opens oversized and "refuses to shrink" (reported on desktop). We
   // never request a minimum/initial size bigger than the visible screen.
+  //
+  // When the user explicitly enabled `bypassMinWindowSize`, honor that intent
+  // fully: no minimum AND no initial-size clamp (power users / multi-monitor).
   const preferredMinSize = Size(800, 600);
   Size minSize = preferredMinSize;
   var effectiveSize = size;
-  try {
-    final display = await screenRetriever.getPrimaryDisplay();
-    final screen = display.visibleSize ?? display.size;
-    // Leave a small margin so the window never exactly fills (or overflows) the work area.
-    final maxW = (screen.width * 0.95).floorToDouble();
-    final maxH = (screen.height * 0.95).floorToDouble();
-    minSize = Size(
-      preferredMinSize.width > maxW ? maxW : preferredMinSize.width,
-      preferredMinSize.height > maxH ? maxH : preferredMinSize.height,
-    );
-    effectiveSize = Size(size.width > maxW ? maxW : size.width, size.height > maxH ? maxH : size.height);
-  } catch (e) {
-    log.w('Could not read primary display size, using default window sizing: $e');
+  if (!bypassMinSize) {
+    try {
+      final display = await screenRetriever.getPrimaryDisplay();
+      final screen = display.visibleSize ?? display.size;
+      // Leave a small margin so the window never exactly fills (or overflows) the work area.
+      final maxW = (screen.width * 0.95).floorToDouble();
+      final maxH = (screen.height * 0.95).floorToDouble();
+      minSize = Size(
+        preferredMinSize.width > maxW ? maxW : preferredMinSize.width,
+        preferredMinSize.height > maxH ? maxH : preferredMinSize.height,
+      );
+      effectiveSize = Size(size.width > maxW ? maxW : size.width, size.height > maxH ? maxH : size.height);
+    } catch (e) {
+      log.w('Could not read primary display size, using default window sizing: $e');
+    }
   }
 
   final windowOptions = WindowOptions(

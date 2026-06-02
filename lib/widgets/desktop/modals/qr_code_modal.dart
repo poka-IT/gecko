@@ -16,6 +16,28 @@ Future<void> showDesktopQrCodeModal(BuildContext context, {required String addre
   );
 }
 
+/// Header action button (for desktop modals) that opens the address QR code.
+///
+/// Rendered as a plain rounded [IconButton] so it visually matches the
+/// back/close buttons of [showDesktopModal]'s header — instead of a raw,
+/// background-less mini QR which clashes with the title bar.
+class DesktopQrHeaderButton extends StatelessWidget {
+  const DesktopQrHeaderButton({super.key, required this.address, this.username});
+
+  final String address;
+  final String? username;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () => showDesktopQrCodeModal(context, address: address, username: username),
+      icon: Icon(Icons.qr_code_2_rounded, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+      tooltip: 'qrCode'.tr(),
+      splashRadius: 20,
+    );
+  }
+}
+
 class _QrCodeContent extends StatelessWidget {
   final String address;
 

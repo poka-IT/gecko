@@ -406,18 +406,30 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
       final cesiumPlus = ref.read(cesiumPlusServiceProvider);
 
       // Safety: if local is empty, check remote first. A non-empty remote
-      // with empty local almost always means local data was lost (fresh
-      // install, app data cleared, Hive rebuild). Pushing empty over it
-      // would destroy the user's CesiumPlus queue irreversibly. When this
-      // mismatch is detected, recover by adopting the remote queue instead
-      // of overwriting it — which is what the user presumably wanted when
-      // tapping "sync" in the first place.
+      // with empty local can mean either:
+      //   (a) local data was lost (fresh install, app data cleared, Hive
+      //       rebuild) — the empty local is the epoch-0 placeholder created
+      //       in build(), i.e. OLDER than the remote queue;
+      //   (b) the user deliberately removed the last queued certification —
+      //       removeFromQueue/removeExecutedCertification stamp the empty
+      //       queue with lastUpdated = now, i.e. NEWER than the remote queue.
+      //
+      // Only case (a) must recover from remote; pushing empty there would
+      // destroy the user's CesiumPlus queue irreversibly. Case (b) is a
+      // legitimate emptying that MUST be propagated — otherwise the last
+      // entry resurrects on every sync and the app keeps prompting to
+      // re-certify (the recurring "phantom last certification" bug).
+      //
+      // The discriminator is the same lastUpdated arbitration used in
+      // _syncWithCesiumPlus: remote only wins when the local empty predates it.
       if (currentQueue.isEmpty) {
         try {
           final remoteQueue = await cesiumPlus.getCertificationQueue(issuerAddress);
-          if (remoteQueue != null && !remoteQueue.isEmpty) {
+          if (remoteQueue != null &&
+              !remoteQueue.isEmpty &&
+              currentQueue.lastUpdated.isBefore(remoteQueue.lastUpdated)) {
             log.w(
-              '[CertQueuePush] Local queue empty but remote has ${remoteQueue.queueLength} items — '
+              '[CertQueuePush] Local queue empty and older than remote (${remoteQueue.queueLength} items) — '
               'recovering from remote instead of overwriting it',
             );
             var recovered = await _updateQueueDates(remoteQueue);

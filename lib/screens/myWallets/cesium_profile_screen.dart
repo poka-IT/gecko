@@ -15,6 +15,16 @@ import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/commons/responsive_center.dart';
 import 'package:http/http.dart' as http;
 
+/// Validates geographic coordinates before building a [LatLng].
+///
+/// `double.tryParse('NaN')` returns NaN (not null) and remote Cesium+ profiles
+/// can carry NaN / out-of-range geoPoints. Feeding those to flutter_map throws
+/// "LatLng is not finite" on every tile update, which was the single largest
+/// crash cluster. We therefore reject non-finite and out-of-range values.
+bool isValidLatLng(double lat, double lon) {
+  return lat.isFinite && lon.isFinite && lat.abs() <= 90 && lon.abs() <= 180;
+}
+
 class CesiumProfileScreen extends ConsumerStatefulWidget {
   const CesiumProfileScreen({super.key, required this.address, this.embeddedMode = false});
 
@@ -68,7 +78,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
         if (profile['geoPoint'] != null) {
           final lat = double.tryParse(profile['geoPoint']['lat']?.toString() ?? '');
           final lon = double.tryParse(profile['geoPoint']['lon']?.toString() ?? '');
-          if (lat != null && lon != null) {
+          if (lat != null && lon != null && isValidLatLng(lat, lon)) {
             _selectedLocation = LatLng(lat, lon);
             // Center the map on the existing location after a small delay to ensure map is initialized
             Future.delayed(const Duration(milliseconds: 300), () {
@@ -241,7 +251,7 @@ class _CesiumProfileScreenState extends ConsumerState<CesiumProfileScreen> {
     final lat = double.tryParse(city['lat']?.toString() ?? '');
     final lon = double.tryParse(city['lon']?.toString() ?? '');
 
-    if (lat != null && lon != null) {
+    if (lat != null && lon != null && isValidLatLng(lat, lon)) {
       setState(() {
         _selectedLocation = LatLng(lat, lon);
       });

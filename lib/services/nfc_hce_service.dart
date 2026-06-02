@@ -21,10 +21,23 @@ class NfcHceService {
   /// `payment_read` (with `paymentUri`), `communication_error`,
   /// `reader_mode_started`, `reader_mode_stopped`, `reader_mode_timeout`.
   static Stream<Map<String, dynamic>> get eventStream {
-    _eventStream ??= _eventChannel.receiveBroadcastStream().map((event) {
-      if (event is Map) return Map<String, dynamic>.from(event);
-      return <String, dynamic>{'type': 'unknown'};
-    });
+    // NFC HCE is Android-only; the native EventChannel does not exist
+    // elsewhere. Returning an empty stream avoids activating a missing channel.
+    if (!_isAndroid()) return const Stream<Map<String, dynamic>>.empty();
+    _eventStream ??= _eventChannel
+        .receiveBroadcastStream()
+        .map((event) {
+          if (event is Map) return Map<String, dynamic>.from(event);
+          return <String, dynamic>{'type': 'unknown'};
+        })
+        // Some devices/builds have no native HCE implementation registered, so
+        // activating the stream throws MissingPluginException ("No implementation
+        // found ... nfc_hce_events", was AXIOM-TEAM-NF). NFC is optional — swallow
+        // the plugin-missing error instead of letting it crash listeners.
+        .handleError(
+          (Object error) => log.w('NFC HCE event stream unavailable: $error'),
+          test: (error) => error is MissingPluginException || error is PlatformException,
+        );
     return _eventStream!;
   }
 

@@ -122,7 +122,7 @@ class _ConfirmChangePinScreenState extends ConsumerState<ConfirmChangePinScreen>
       final currentSafe = ref.read(currentSafeNumberProvider);
       await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
 
-      if (!context.mounted) return;
+      if (!mounted) return;
       Navigator.of(context)
         ..pop()
         ..pop();

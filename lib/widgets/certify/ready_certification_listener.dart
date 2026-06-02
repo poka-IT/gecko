@@ -154,7 +154,7 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
       final queueNotifier = ref.read(certificationQueueProvider(issuerAddress).notifier);
       await queueNotifier.removeFromQueue(pendingCert.id);
       final ctx = Gecko.navigatorContext;
-      if (ctx != null) {
+      if (ctx != null && ctx.mounted) {
         showConfirmationDialog(
           context: ctx,
           type: ConfirmationDialogType.error,
@@ -172,6 +172,7 @@ class _ReadyCertificationListenerState extends ConsumerState<ReadyCertificationL
         pendingCert.receiverName ?? pendingCert.receiverUid ?? getShortPubkey(pendingCert.receiverAddress);
 
     // Show confirmation dialog
+    if (!navContext.mounted) return;
     final confirmed = await showConfirmationDialog(
       context: navContext,
       title: 'certification'.tr(),

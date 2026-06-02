@@ -108,10 +108,13 @@ class _CertifyButtonState extends ConsumerState<CertifyButton> {
       );
 
       if (!result) return;
+      // The confirmation dialog is awaited; the widget may have been disposed
+      // meanwhile. Guard before reusing `context` so we never hand a detached
+      // context to the PIN flow (was AXIOM-TEAM-PE: "No ProviderScope found").
+      if (!context.mounted) return;
 
       // Capture the PIN locally so it survives the async gap until the
       // certification helper reaches its crypto step (see askPinCodeAndCapture).
-      // ignore: use_build_context_synchronously
       final capturedPin = await PinCodeService.askPinCodeAndCapture(context);
       if (capturedPin == null) return;
       if (!mounted) return;

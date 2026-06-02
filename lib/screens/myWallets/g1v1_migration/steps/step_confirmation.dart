@@ -14,6 +14,8 @@ import 'package:gecko/providers/providers.dart';
 import 'package:gecko/providers/stream_providers.dart';
 import 'package:gecko/providers/wallets_provider.dart';
 import 'package:gecko/screens/transaction_in_progress.dart';
+import 'package:gecko/services/legacy_migration_cleanup_service.dart';
+import 'package:gecko/services/snackbar_service.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
 import 'package:gecko/widgets/desktop/modals/transaction_progress_modal.dart';
 import 'package:gecko/services/pin_cache_service.dart';
@@ -303,12 +305,19 @@ class StepConfirmation extends ConsumerWidget {
     WalletEntity? targetWallet;
 
     if (flowState.createNewWallet) {
-      // Create a new derivation
+      // Create a new derivation. generateNextDerivation throws on legacy safes,
+      // so target a non-legacy (mnemonic) safe — when the user's default safe
+      // is the imported legacy account, derive into an existing mnemonic safe
+      // instead of crashing with "Cannot generate derivations for legacy wallets".
       final walletService = ref.read(walletServiceProvider);
-      targetWallet = await walletService.generateNextDerivation(
-        pinCode: pinCode,
-        safeBoxNumber: walletService.defaultSafeBoxNumber,
-      );
+      final targetSafeNumber = walletService.firstDerivableSafeNumber();
+      if (targetSafeNumber == null) {
+        if (context.mounted) {
+          SnackbarService.showError(context, message: 'migrationNeedsTargetWallet'.tr());
+        }
+        return;
+      }
+      targetWallet = await walletService.generateNextDerivation(pinCode: pinCode, safeBoxNumber: targetSafeNumber);
       targetWallet.imagePath = 'assets/avatars/${targetWallet.number % 4}.png';
       await walletService.walletBox.putAsync(targetWallet);
 
@@ -366,6 +375,7 @@ class StepConfirmation extends ConsumerWidget {
     // Capture container before navigation since ConsumerWidget has no mounted check
     // ignore: use_build_context_synchronously
     final container = ProviderScope.containerOf(context);
+    var cleanupDone = false;
     final invalidateSubscription = broadcastStream.listen((status) {
       if (status.state == TransactionState.finalized || status.state == TransactionState.inBlock) {
         container.invalidate(persistentIdtyStatusStreamProvider(targetAddress));
@@ -375,6 +385,21 @@ class StepConfirmation extends ConsumerWidget {
         container.invalidate(hybridIdentityNameProvider(targetAddress));
         container.invalidate(idtyWalletAsyncProvider);
         container.invalidate(identityWalletsAsyncProvider);
+
+        // Remove the now-empty legacy safe that was imported for this same
+        // account (if any), so the user no longer lands on an orphan 0 Ğ1
+        // coffer after migrating from an id/password (Cesium v1) account.
+        // The migration source (fromAddress) is the v2-derived address of the
+        // legacy account; if it was imported, its legacy safe is now empty.
+        if (!cleanupDone && fromAddress.isNotEmpty && fromAddress != targetAddress) {
+          cleanupDone = true;
+          LegacyMigrationCleanupService.cleanupOrphanLegacySafe(
+            container: container,
+            walletService: walletService,
+            migratedFromAddress: fromAddress,
+            targetAddress: targetAddress,
+          );
+        }
       }
     });
 

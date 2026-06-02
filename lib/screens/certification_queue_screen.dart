@@ -331,32 +331,44 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (isReady)
-                    SizedBox(
-                      width: scaleSize(32),
-                      height: scaleSize(32),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: Icon(Icons.play_circle_filled, color: context.geckoColors.success, size: scaleSize(26)),
-                        tooltip: 'executeNow'.tr(),
-                        onPressed: () => _executeCertification(cert),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      width: scaleSize(32),
-                      height: scaleSize(32),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: Icon(
-                          Icons.close,
-                          color: context.geckoColors.danger.withValues(alpha: 0.6),
-                          size: scaleSize(18),
+                  // Play (only when ready) + delete are always available together,
+                  // so a ready certification can still be removed from the queue.
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isReady) ...[
+                        SizedBox(
+                          width: scaleSize(32),
+                          height: scaleSize(32),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: Icon(
+                              Icons.play_circle_filled,
+                              color: context.geckoColors.success,
+                              size: scaleSize(26),
+                            ),
+                            tooltip: 'executeNow'.tr(),
+                            onPressed: () => _executeCertification(cert),
+                          ),
                         ),
-                        tooltip: 'remove'.tr(),
-                        onPressed: () => _removeFromQueue(cert),
+                        ScaledSizedBox(width: 2),
+                      ],
+                      SizedBox(
+                        width: scaleSize(32),
+                        height: scaleSize(32),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            Icons.close,
+                            color: context.geckoColors.danger.withValues(alpha: 0.6),
+                            size: scaleSize(18),
+                          ),
+                          tooltip: 'remove'.tr(),
+                          onPressed: () => _removeFromQueue(cert),
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
                   ScaledSizedBox(height: 2),
                   ReorderableDragStartListener(
                     index: cert.position - 1,

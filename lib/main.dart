@@ -20,6 +20,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:screen_retriever/screen_retriever.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' show ProviderScope, Consumer;
 import 'package:gecko/globals.dart';
 import 'package:gecko/providers/text_scaling_provider.dart';
@@ -183,9 +184,31 @@ Future<void> _showDesktopWindow() async {
   final hasValidPosition = savedX != null && savedY != null && savedX >= 0 && savedY >= 0;
 
   final bypassMinSize = config.bypassMinWindowSize;
-  const minSize = Size(800, 600);
+
+  // Clamp the minimum (and initial) size to the actual screen. On small
+  // displays a hardcoded 800×600 minimum is larger than the work area, so the
+  // window opens oversized and "refuses to shrink" (reported on desktop). We
+  // never request a minimum/initial size bigger than the visible screen.
+  const preferredMinSize = Size(800, 600);
+  Size minSize = preferredMinSize;
+  var effectiveSize = size;
+  try {
+    final display = await screenRetriever.getPrimaryDisplay();
+    final screen = display.visibleSize ?? display.size;
+    // Leave a small margin so the window never exactly fills (or overflows) the work area.
+    final maxW = (screen.width * 0.95).floorToDouble();
+    final maxH = (screen.height * 0.95).floorToDouble();
+    minSize = Size(
+      preferredMinSize.width > maxW ? maxW : preferredMinSize.width,
+      preferredMinSize.height > maxH ? maxH : preferredMinSize.height,
+    );
+    effectiveSize = Size(size.width > maxW ? maxW : size.width, size.height > maxH ? maxH : size.height);
+  } catch (e) {
+    log.w('Could not read primary display size, using default window sizing: $e');
+  }
+
   final windowOptions = WindowOptions(
-    size: size,
+    size: effectiveSize,
     minimumSize: bypassMinSize ? null : minSize,
     center: !hasValidPosition,
     title: 'Ğecko',

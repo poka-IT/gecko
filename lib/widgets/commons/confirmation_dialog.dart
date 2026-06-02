@@ -11,6 +11,16 @@ import 'package:gecko/widgets/commons/text_markdown.dart';
 /// Type de message pour le dialogue de confirmation
 enum ConfirmationDialogType { info, warning, success, error, question }
 
+/// Pops the confirmation dialog only when a route is still poppable.
+///
+/// Rapid double-taps (or Enter + tap) on the dialog buttons could otherwise
+/// call Navigator.pop after the dialog route was already removed, which throws
+/// "Bad state: No element" inside NavigatorState.pop (was AXIOM-TEAM-PA).
+void _safePopDialog(BuildContext context, bool result) {
+  final navigator = Navigator.of(context);
+  if (navigator.canPop()) navigator.pop(result);
+}
+
 /// Extension pour obtenir l'icône correspondante au type de message
 extension ConfirmationDialogTypeExtension on ConfirmationDialogType {
   IconData get icon => switch (this) {
@@ -94,7 +104,7 @@ Future<bool> showConfirmationDialog({
             bindings: <ShortcutActivator, VoidCallback>{
               const SingleActivator(LogicalKeyboardKey.enter): () {
                 if (isChecked && !hideConfirmButton) {
-                  Navigator.of(context).pop(true);
+                  _safePopDialog(context, true);
                 }
               },
             },
@@ -180,7 +190,7 @@ Future<bool> showConfirmationDialog({
                             if (type != ConfirmationDialogType.error && !hideCancelButton) ...[
                               Expanded(
                                 child: TextButton(
-                                  onPressed: () => Navigator.of(context).pop(false),
+                                  onPressed: () => _safePopDialog(context, false),
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -200,7 +210,7 @@ Future<bool> showConfirmationDialog({
                             if (!hideConfirmButton) ...[
                               Expanded(
                                 child: ElevatedButton(
-                                  onPressed: isChecked ? () => Navigator.of(context).pop(true) : null,
+                                  onPressed: isChecked ? () => _safePopDialog(context, true) : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: iconColorToShow,
                                     foregroundColor: Colors.white,

@@ -158,7 +158,7 @@ class _RestoreSafeState extends ConsumerState<RestoreSafe> {
                                   // Clear input and clean up global keys
                                   ref.read(clearMnemonicInputProvider)();
 
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                   await AppNavigator.pushWithFader(
                                     context,
                                     widget.skipIntro ? RouteNames.onboardingStepNine : RouteNames.onboardingStepSeven,

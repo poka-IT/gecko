@@ -41,6 +41,17 @@ String mapValidationErrors(Set<MigrateWalletValidationError> errors) {
   };
 }
 
+/// Human-readable approximation of the owner-key cool-down remaining time,
+/// used to fill the `ownerKeyBondWait` message ("You must wait {} ...").
+String formatOwnerKeyBondWait(Duration remaining) {
+  final days = remaining.inDays;
+  if (days >= 60) return 'months'.tr(args: [(days / 30).round().toString()]);
+  if (days > 0) return 'days'.tr(args: [days.toString()]);
+  final hours = remaining.inHours;
+  if (hours > 0) return 'hours'.tr(args: [hours.toString(), '']);
+  return 'minutes'.tr(args: [remaining.inMinutes.clamp(1, 59).toString()]);
+}
+
 class MigrateIdentityScreen extends ConsumerStatefulWidget {
   const MigrateIdentityScreen({super.key, required this.address});
 
@@ -469,6 +480,21 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                             textAlign: TextAlign.center,
                             style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: Colors.grey[600]),
                           ),
+                        // Owner-key cool-down: explain why migration is blocked and
+                        // for how long, instead of letting the node reject it with a
+                        // raw `OwnerKeyAlreadyRecentlyChanged` error.
+                        if (migrationChecks.ownerKeyBondInfo != null &&
+                            !migrationChecks.ownerKeyBondInfo!.hasEnded) ...[
+                          if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
+                            ScaledSizedBox(height: isSmall ? 4 : 8),
+                          Text(
+                            'ownerKeyBondWait'.tr(
+                              args: [formatOwnerKeyBondWait(migrationChecks.ownerKeyBondInfo!.remainingTime)],
+                            ),
+                            textAlign: TextAlign.center,
+                            style: scaledTextStyle(fontSize: isSmall ? 12 : 13, color: context.geckoColors.warningText),
+                          ),
+                        ],
                         if (matchInfo.isNotEmpty) ...[
                           if (mapValidationErrors(migrationChecks.errors).isNotEmpty)
                             ScaledSizedBox(height: isSmall ? 4 : 8),
@@ -492,7 +518,11 @@ class _MigrateIdentityScreenState extends ConsumerState<MigrateIdentityScreen> {
                           elevation: 0,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        onPressed: migrationChecks.canMigrate && mnemonicIsValid && toKeypair != null
+                        onPressed:
+                            migrationChecks.canMigrate &&
+                                (migrationChecks.ownerKeyBondInfo?.hasEnded ?? true) &&
+                                mnemonicIsValid &&
+                                toKeypair != null
                             ? () async {
                                 try {
                                   // Ask for PIN and capture it locally — the migration below

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/extensions.dart';
 
 /// Predefined sizes for desktop modals
@@ -40,6 +41,7 @@ Future<T?> showDesktopModal<T>({
   EdgeInsets? contentPadding,
   VoidCallback? onBack,
   List<Widget>? headerActions,
+  Color Function(BuildContext context, WidgetRef ref)? headerBackgroundColorBuilder,
 }) {
   return showGeneralDialog<T>(
     context: context,
@@ -63,6 +65,7 @@ Future<T?> showDesktopModal<T>({
         builder: builder,
         onBack: onBack,
         headerActions: headerActions,
+        headerBackgroundColorBuilder: headerBackgroundColorBuilder,
       );
     },
   );
@@ -76,6 +79,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
   final WidgetBuilder builder;
   final VoidCallback? onBack;
   final List<Widget>? headerActions;
+  final Color Function(BuildContext context, WidgetRef ref)? headerBackgroundColorBuilder;
 
   const _DesktopModalShell({
     required this.size,
@@ -85,6 +89,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
     required this.builder,
     this.onBack,
     this.headerActions,
+    this.headerBackgroundColorBuilder,
   });
 
   @override
@@ -155,43 +160,57 @@ class _DesktopModalShell<T> extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
-      child: Row(
-        children: [
-          if (onBack != null)
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onBack!();
-              },
-              icon: Icon(Icons.arrow_back_rounded, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
-              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-              splashRadius: 20,
-            )
-          else
-            const SizedBox(width: 12),
-          if (title != null)
-            Expanded(
-              child: Text(
-                title!,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: context.colorScheme.onSurface),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            )
-          else
-            const Spacer(),
-          if (headerActions != null) ...headerActions!,
-          if (showCloseButton)
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: Icon(Icons.close_rounded, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              splashRadius: 20,
+    const padding = EdgeInsets.fromLTRB(12, 16, 12, 0);
+    final row = _buildHeaderRow(context);
+
+    // When a background builder is provided (wallet modals), the title bar
+    // shares its tint with the wallet header below — reactively, so it tracks
+    // the wallet's empty/funded state — forming one continuous surface.
+    if (headerBackgroundColorBuilder != null) {
+      return Consumer(
+        builder: (context, ref, _) =>
+            Container(color: headerBackgroundColorBuilder!(context, ref), padding: padding, child: row),
+      );
+    }
+
+    return Container(padding: padding, child: row);
+  }
+
+  Widget _buildHeaderRow(BuildContext context) {
+    return Row(
+      children: [
+        if (onBack != null)
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onBack!();
+            },
+            icon: Icon(Icons.arrow_back_rounded, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            splashRadius: 20,
+          )
+        else
+          const SizedBox(width: 12),
+        if (title != null)
+          Expanded(
+            child: Text(
+              title!,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: context.colorScheme.onSurface),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-        ],
-      ),
+          )
+        else
+          const Spacer(),
+        if (headerActions != null) ...headerActions!,
+        if (showCloseButton)
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: Icon(Icons.close_rounded, color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            splashRadius: 20,
+          ),
+      ],
     );
   }
 }

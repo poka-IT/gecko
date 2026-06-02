@@ -95,6 +95,7 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
 
       final message = '${'confirmCertification'.tr()}\n\n**$displayName**\n\n${getShortPubkey(widget.address)}';
 
+      if (!context.mounted) return;
       final result = await showConfirmationDialog(
         context: context,
         title: 'certification'.tr(),
@@ -105,7 +106,7 @@ class _ExecuteQueuedButtonState extends ConsumerState<ExecuteQueuedButton> {
 
       if (!result) return;
 
-      if (!mounted) return;
+      if (!context.mounted) return;
       final capturedPin = await PinCodeService.askPinCodeAndCapture(
         context,
         wallet: ref.read(walletServiceProvider).getWalletData(widget.issuerAddress),

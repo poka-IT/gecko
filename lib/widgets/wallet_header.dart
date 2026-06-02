@@ -83,6 +83,20 @@ class WalletHeader extends ConsumerWidget {
   }
 }
 
+/// Background tint for a wallet header surface.
+///
+/// Returns the error tint when the wallet is empty, and the standard header
+/// color otherwise (also while the balance is still loading). Used by both the
+/// [WalletHeader] block and the desktop modal title bar so they form a single
+/// continuous surface instead of a colored body under a neutral title bar.
+Color walletHeaderSurfaceColor(BuildContext context, WidgetRef ref, String address) {
+  final balanceAsync = ref.watch(smartBalanceStreamProvider(address));
+  if (!balanceAsync.hasValue) return context.colorScheme.tertiary;
+  final balance = balanceAsync.value?.transferableBalance;
+  final isEmptyWallet = balance == null || balance == BigInt.zero;
+  return isEmptyWallet ? context.colorScheme.error : context.colorScheme.tertiary;
+}
+
 class WalletHeaderContent extends ConsumerWidget {
   const WalletHeaderContent({
     super.key,

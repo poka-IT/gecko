@@ -1026,7 +1026,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                     if (value == 'select'.tr()) {
                       // Get available endpoints dynamically
                       final availableEndpoints = await _getAvailableDuniterEndpoints();
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       await _showNodeSelectionDialog(
                         context,
                         availableEndpoints,
@@ -1358,7 +1358,7 @@ class _NetworkSettingsSectionState extends ConsumerState<NetworkSettingsSection>
                         if (value == 'Sélectionner') {
                           // Get available and working endpoints dynamically
                           final availableEndpoints = await _getAvailableSquidEndpoints();
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           await _showIndexerSelectionDialog(
                             context,
                             availableEndpoints,

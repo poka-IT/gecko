@@ -23,7 +23,6 @@ import 'package:gecko/widgets/certify/cert_state.dart';
 import 'package:gecko/widgets/desktop/desktop_modal.dart';
 import 'package:gecko/widgets/wallet_header.dart';
 import 'package:gecko/widgets/payment_popup.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 /// Shows a profile view inside a desktop modal.
 Future<void> showDesktopProfileModal(
@@ -39,43 +38,14 @@ Future<void> showDesktopProfileModal(
     showCloseButton: true,
     title: username != null ? 'memberAccountOf'.tr(args: [username]) : 'seeAWallet'.tr(),
     onBack: onBack,
-    headerActions: [_HeaderQrButton(address: address, username: username)],
+    headerActions: [DesktopQrHeaderButton(address: address, username: username)],
+    headerBackgroundColorBuilder: (context, ref) => walletHeaderSurfaceColor(context, ref, address),
     builder: (modalContext) => DesktopModalScope(
       reopenCurrentModal: () =>
           showDesktopProfileModal(Gecko.navigatorContext!, address: address, username: username, onBack: onBack),
       child: _DesktopProfileContent(address: address, username: username, onBack: onBack),
     ),
   );
-}
-
-class _HeaderQrButton extends StatelessWidget {
-  final String address;
-  final String? username;
-
-  const _HeaderQrButton({required this.address, this.username});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: 'qrCode'.tr(),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () => showDesktopQrCodeModal(Gecko.navigatorContext!, address: address, username: username),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: QrImageView(
-            data: address,
-            version: QrVersions.auto,
-            size: 36,
-            padding: EdgeInsets.zero,
-            dataModuleStyle: QrDataModuleStyle(color: context.colorScheme.onSurface.withValues(alpha: 0.85)),
-            eyeStyle: QrEyeStyle(color: context.colorScheme.onSurface.withValues(alpha: 0.85)),
-            backgroundColor: Colors.transparent,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _DesktopProfileContent extends ConsumerStatefulWidget {
@@ -110,11 +80,10 @@ class _DesktopProfileContentState extends ConsumerState<_DesktopProfileContent> 
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Wallet header (avatar, name, address, balance, identity)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: WalletHeader(address: widget.address),
-          ),
+          // Wallet header (avatar, name, address, balance, identity). Shares
+          // its background tint with the modal title bar above so the two form
+          // one continuous surface — no rounding/gap between them.
+          WalletHeader(address: widget.address),
           const SizedBox(height: 24),
           // Action buttons
           Padding(padding: const EdgeInsets.symmetric(horizontal: 24), child: _buildActions(context)),

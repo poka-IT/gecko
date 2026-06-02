@@ -383,7 +383,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
                   final newName = await WalletNameDialogService.showEditWalletNameDialog(context, widget.wallet);
                   if (newName != null && mounted) {
                     await ref.read(walletsListProvider.notifier).loadWallets(safeBoxNumber: currentSafe);
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     final updatedWallet = ref.read(walletByAddressProvider(widget.wallet.address));
                     if (updatedWallet != null) {
                       widget.wallet.name = updatedWallet.name;
@@ -790,7 +790,7 @@ class _WalletOptionsState extends ConsumerState<WalletOptions> {
     if (oldPin == null) return;
 
     // Navigate to change PIN screen
-    if (!mounted) return;
+    if (!context.mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(

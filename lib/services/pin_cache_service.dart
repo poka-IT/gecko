@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gecko/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:gecko/globals.dart';
+import 'package:gecko/main.dart';
 import 'package:gecko/routes.dart';
 import 'package:gecko/services/config_service.dart';
 import 'package:gecko/widgets/desktop/desktop_utils.dart';
@@ -148,13 +149,31 @@ class PinCodeService {
   /// Returns `true` when [_pinCode] is set to a valid PIN for the target
   /// safe (either from cache reuse or from a fresh prompt), `false` when
   /// the user cancelled or authentication failed.
+  /// Resolves the Riverpod container from [context], falling back to the root
+  /// navigator context when [context] is detached. A widget can be disposed
+  /// during an awaited dialog before the PIN flow runs, leaving its context
+  /// without a ProviderScope ancestor — `ProviderScope.containerOf` then throws
+  /// "No ProviderScope found" (was AXIOM-TEAM-PE). The root navigator context
+  /// always sits under the app's ProviderScope.
+  static ProviderContainer _resolveContainer(BuildContext context) {
+    try {
+      return ProviderScope.containerOf(context);
+    } catch (_) {
+      final fallback = Gecko.navigatorContext;
+      if (fallback != null) {
+        return ProviderScope.containerOf(fallback);
+      }
+      rethrow;
+    }
+  }
+
   static Future<bool> _promptPin(
     BuildContext context, {
     bool force = false,
     bool canSwitch = false,
     d.WalletEntity? wallet,
   }) async {
-    final container = ProviderScope.containerOf(context);
+    final container = _resolveContainer(context);
     final targetWallet = wallet ?? container.read(walletServiceProvider).defaultWallet;
     final targetSafeNumber = targetWallet.safe.target?.number;
 

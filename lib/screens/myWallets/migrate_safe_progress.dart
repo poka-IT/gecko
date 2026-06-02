@@ -353,7 +353,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                                 ref.invalidate(identityWalletsAsyncProvider);
 
                                 // Navigate to switch safe screen
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(builder: (context) => const SwitchSafe()),
@@ -363,7 +363,7 @@ class _MigrateSafeProgressScreenState extends ConsumerState<MigrateSafeProgressS
                                 // Set the mnemonic in the provider for the next screen
                                 await ref.read(mnemonicStateProvider.notifier).setMnemonic(widget.newMnemonic);
 
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 await AppNavigator.pushAndRemoveUntilWithFader(
                                   context,
                                   RouteNames.onboardingStepSeven,

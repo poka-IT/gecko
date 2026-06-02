@@ -351,7 +351,7 @@ class _PaymentPopupWidgetState extends ConsumerState<PaymentPopupWidget> {
             AccountPaymentStatus.active => ('', ''),
           };
 
-          if (!context.mounted) return;
+          if (!mounted) return;
           final confirmed = await showConfirmationDialog(
             context: context,
             title: warning.$1,

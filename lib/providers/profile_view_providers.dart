@@ -289,7 +289,7 @@ final nfcScanProvider = Provider<Future<void> Function(BuildContext)>((ref) {
       // Always dismiss the Android dialog, even on unexpected exceptions
       if (isAndroid) {
         final navCtx = Gecko.navigatorContext;
-        if (navCtx != null && Navigator.canPop(navCtx)) {
+        if (navCtx != null && navCtx.mounted && Navigator.canPop(navCtx)) {
           Navigator.pop(navCtx);
         }
       }

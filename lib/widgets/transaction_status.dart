@@ -28,6 +28,7 @@ Map<String, String> errorTransactionMap = {
   'cert.CannotCertifySelf': 'canNotCertifySelf'.tr(),
   'identity.IdtyNameAlreadyExist': 'nameAlreadyExist'.tr(),
   'identity.OwnerKeyInBound': 'ownerKeyInBound'.tr(),
+  'identity.OwnerKeyAlreadyRecentlyChanged': 'ownerKeyAlreadyRecentlyChanged'.tr(),
   'identity.OwnerKeyUsedAsValidator': 'ownerKeyUsedAsValidator'.tr(),
   'balances.KeepAlive': '2GDtoKeepAlive'.tr(args: [Durt.i.network.symbol]),
   '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low':
@@ -63,6 +64,16 @@ Map<String, String> errorTransactionMap = {
   'distance.AlreadyInEvaluation': 'alreadyInEvaluation'.tr(),
   'distance.QueueFull': 'evaluationQueueFull'.tr(),
   'distance.TargetMustBeUnvalidated': 'targetMustBeUnvalidated'.tr(),
+  // Distance evaluation can be triggered by membership renewal; surface the
+  // remaining variants with clear messages instead of a raw technical error.
+  'distance.TooManyEvaluationsInBlock': 'distanceEvaluationBusy'.tr(),
+  'distance.TooManyEvaluationsByAuthor': 'distanceEvaluationBusy'.tr(),
+  'distance.TooManyEvaluators': 'distanceEvaluationBusy'.tr(),
+  'distance.NoAuthor': 'distanceEvaluationBusy'.tr(),
+  'distance.CallerNotMember': 'issuerNotMember'.tr(),
+  'distance.CallerHasNoIdentity': 'originMustHaveAnIdentity'.tr(),
+  'distance.CallerIdentityNotFound': 'idtyNotFound'.tr(),
+  'distance.TargetIdentityNotFound': 'idtyNotFound'.tr(),
   'membership.AlreadyMember': 'alreadyMember'.tr(),
   'universalDividend.AccountNotAllowedToClaimUds': 'accountNotAllowedToClaim'.tr(),
   'balances.InsufficientBalance': 'fundsUnavailable'.tr(),

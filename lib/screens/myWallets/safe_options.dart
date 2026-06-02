@@ -33,8 +33,15 @@ class SafeOptions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final walletService = ref.watch(walletServiceProvider);
-    if (walletService.safeBox.isEmpty()) {
-      return const SizedBox.shrink(); // Widget se ferme, évite l'exception
+    // Guard against transient "no valid default safe" states during safe
+    // deletion: the default number can be momentarily -1 (or point to an
+    // already-removed safe) while the widget is still rebuilding, which made
+    // walletService.defaultSafeBox throw "No default safe set" mid-build
+    // (was AXIOM-TEAM-JH). Render nothing until a valid default exists again.
+    final safes = walletService.safeBox.getAll();
+    final defaultNumber = walletService.defaultSafeBoxNumber;
+    if (safes.isEmpty || defaultNumber < 0 || !safes.any((s) => s.number == defaultNumber)) {
+      return const SizedBox.shrink();
     }
     final currentSafe = walletService.defaultSafeBox;
 

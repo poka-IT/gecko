@@ -169,31 +169,89 @@ class StorageInitService {
     }
   }
 
-  /// Migrate ObjectBox from ~/Documents/objectbox/ to ~/.gecko/objectbox/
+  /// Migrate the ObjectBox database from its pre-1.2.6 location to
+  /// ~/.gecko/objectbox/.
+  ///
+  /// Before 1.2.6 durt2 stored ObjectBox under
+  /// `getApplicationDocumentsDirectory()/objectbox`. The previous migration
+  /// hardcoded `%UserProfile%/Documents/objectbox`, which is WRONG on Windows
+  /// whenever the Documents folder is redirected (OneDrive →
+  /// `%UserProfile%/OneDrive/Documents`) or localized — and on Linux when the
+  /// XDG documents dir differs from `$HOME/Documents`. In those cases the
+  /// source was never found, the DB started empty and users lost their safes,
+  /// wallet names, colors and profile photos after updating.
+  ///
+  /// We now resolve the authoritative previous path via
+  /// [pp.getApplicationDocumentsDirectory] (same API durt2 used), with the
+  /// hardcoded `$HOME/Documents` and `$HOME/OneDrive/Documents` kept as
+  /// fallbacks, and migrate from the first candidate that actually holds data.
   Future<void> _migrateObjectBox(Directory base) async {
-    final home = Platform.isWindows ? Platform.environment['UserProfile'] ?? '' : Platform.environment['HOME'] ?? '';
-    final oldDir = Directory('$home/Documents/objectbox');
     final newDir = Directory('${base.path}/objectbox');
 
-    if (!await oldDir.exists()) return;
-    if (await newDir.exists()) {
-      // New path already has data — old path is a leftover, remove it
-      await oldDir.delete(recursive: true);
-      log.i('ObjectBox migration: removed leftover old path');
+    // Already migrated (new path holds data) — clean up any stray legacy dirs
+    // and stop. An empty newDir is treated as "not migrated yet".
+    if (await newDir.exists() && _directoryHasFiles(newDir)) {
+      return;
+    }
+
+    final candidates = <Directory>[];
+
+    // 1. Authoritative previous default: durt2 used getApplicationDocumentsDirectory().
+    //    On Windows this resolves OneDrive/localized Documents; on Linux the XDG
+    //    documents dir. It can throw on headless Linux WMs, hence the guard.
+    try {
+      final docs = await pp.getApplicationDocumentsDirectory();
+      candidates.add(Directory('${docs.path}/objectbox'));
+    } catch (e) {
+      log.w('ObjectBox migration: getApplicationDocumentsDirectory() unavailable: $e');
+    }
+
+    // 2. Hardcoded fallbacks (the old behavior + the common OneDrive redirect).
+    final home = Platform.isWindows ? Platform.environment['UserProfile'] ?? '' : Platform.environment['HOME'] ?? '';
+    if (home.isNotEmpty) {
+      candidates.add(Directory('$home/Documents/objectbox'));
+      if (Platform.isWindows) {
+        candidates.add(Directory('$home/OneDrive/Documents/objectbox'));
+      }
+    }
+
+    Directory? oldDir;
+    for (final candidate in candidates) {
+      if (candidate.path == newDir.path) continue; // never copy onto ourselves
+      if (await candidate.exists() && _directoryHasFiles(candidate)) {
+        oldDir = candidate;
+        break;
+      }
+    }
+
+    if (oldDir == null) {
+      // Could be a genuine fresh install, or a legacy DB in an unexpected
+      // location. Log it so the rare "lost data after update" case is
+      // diagnosable via Sentry breadcrumbs instead of failing silently.
+      log.i('ObjectBox migration: no legacy database found in ${candidates.map((c) => c.path).toList()}');
       return;
     }
 
     log.i('ObjectBox migration: ${oldDir.path} → ${newDir.path}');
     await _copyDirectory(oldDir, newDir);
 
-    // Verify at least one file was transferred
+    // Verify at least one file was transferred before removing the original.
     final newFiles = newDir.listSync(recursive: true).whereType<File>().toList();
     if (newFiles.isNotEmpty) {
       await oldDir.delete(recursive: true);
       log.i('ObjectBox migration complete (${newFiles.length} files)');
     } else {
       log.w('ObjectBox migration: copy produced no files, keeping original');
-      await newDir.delete(recursive: true);
+      if (await newDir.exists()) await newDir.delete(recursive: true);
+    }
+  }
+
+  /// Returns true if [dir] contains at least one regular file (recursively).
+  bool _directoryHasFiles(Directory dir) {
+    try {
+      return dir.listSync(recursive: true).whereType<File>().isNotEmpty;
+    } catch (_) {
+      return false;
     }
   }
 

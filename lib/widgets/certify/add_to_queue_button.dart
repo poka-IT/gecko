@@ -207,6 +207,7 @@ class _AddToQueueButtonState extends ConsumerState<AddToQueueButton> {
         message += '\n\n${'estimatedProcessingDate'.tr(args: [formattedDate])}';
       }
 
+      if (!context.mounted) return;
       final result = await showConfirmationDialog(
         context: context,
         title: 'addToQueue'.tr(),

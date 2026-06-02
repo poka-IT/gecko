@@ -2,10 +2,10 @@ name: gecko
 description: Pay with G1.
 publish_to: "none"
 
-version: 1.2.6+192
+version: 1.2.7+193
 
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.10.0
 
 dependencies:
   flutter:
@@ -13,7 +13,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   bubble: ^1.2.1
-  calendar_date_picker2: ^2.0.1
+  calendar_date_picker2: ^3.0.0
   carousel_slider: ^5.1.2
   graphql_flutter: ^5.3.0
   hive_flutter: ^1.1.0
@@ -32,8 +32,8 @@ dependencies:
   sentry_flutter: ^9.16.1
   truncate: ^3.0.1
   dio: ^5.9.2
-  package_info_plus: ^9.0.1
-  device_info_plus: ^12.4.0
+  package_info_plus: ^10.1.0
+  device_info_plus: ^13.1.0
   dots_indicator: ^4.0.1
   connectivity_plus: ^7.1.0
   image_cropper: ^12.2.0
@@ -57,7 +57,7 @@ dependencies:
   http: ^1.6.0
   gif_view: ^1.0.3
   get_it: ^9.2.1
-  durt2: ^1.1.6
+  durt2: ^1.1.7
   flutter_riverpod: ^3.3.1
   riverpod_sqflite: ^0.4.2
   sqflite: ^2.4.2

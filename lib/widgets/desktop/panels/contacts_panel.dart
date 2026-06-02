@@ -85,7 +85,7 @@ class _DesktopContactsPanelState extends ConsumerState<DesktopContactsPanel> {
   }
 
   void _onReorder(int oldIndex, int newIndex, List<G1WalletsList> orderedContacts) {
-    if (oldIndex < newIndex) newIndex -= 1;
+    // `newIndex` already accounts for the removed item (onReorderItem semantics).
     final item = orderedContacts.removeAt(oldIndex);
     orderedContacts.insert(newIndex, item);
     _saveOrder(orderedContacts.map((c) => c.address).toList());
@@ -197,7 +197,7 @@ class _DesktopContactsPanelState extends ConsumerState<DesktopContactsPanel> {
                     );
                   },
                   itemCount: contacts.length,
-                  onReorder: (oldIndex, newIndex) => _onReorder(oldIndex, newIndex, contacts),
+                  onReorderItem: (oldIndex, newIndex) => _onReorder(oldIndex, newIndex, contacts),
                   itemBuilder: (context, index) => Padding(
                     key: ValueKey(contacts[index].address),
                     padding: const EdgeInsets.only(bottom: 4),

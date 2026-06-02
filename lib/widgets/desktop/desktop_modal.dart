@@ -202,7 +202,7 @@ class _DesktopModalShell<T> extends StatelessWidget {
           )
         else
           const Spacer(),
-        if (headerActions != null) ...headerActions!,
+        ...?headerActions,
         if (showCloseButton)
           IconButton(
             onPressed: () => Navigator.of(context).pop(),

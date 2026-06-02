@@ -654,10 +654,8 @@ class CertificationQueueNotifier extends AsyncNotifier<d.CertificationQueueState
 
     final certifications = List<d.PendingCertification>.from(currentQueue.pendingCertifications);
 
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-
+    // `newIndex` already accounts for the removed item (onReorderItem semantics),
+    // so no `if (oldIndex < newIndex) newIndex -= 1` adjustment is needed here.
     final item = certifications.removeAt(oldIndex);
     certifications.insert(newIndex, item);
 

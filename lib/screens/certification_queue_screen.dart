@@ -503,7 +503,11 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
 
     final identityWallet = await identityWalletFuture;
     if (identityWallet == null) {
-      if (!context.mounted) return;
+      // Use the State's own null-safe `mounted`, NOT `context.mounted`:
+      // reading `State.context` after disposal throws "Null check operator
+      // used on a null value" (framework `_element!`) before `.mounted` is
+      // even evaluated.
+      if (!mounted) return;
       // ignore: use_build_context_synchronously
       showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: 'noIdentityWallet'.tr());
       return;
@@ -528,8 +532,9 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
         },
       );
     } catch (e) {
-      if (!context.mounted) return;
       log.e('Error executing certification: $e');
+      // `mounted` (State) is null-safe; `context.mounted` would throw on a
+      // disposed State because evaluating `context` dereferences `_element!`.
       if (!mounted) return;
       showConfirmationDialog(context: context, type: ConfirmationDialogType.error, message: e.toString());
     }
@@ -561,8 +566,10 @@ class _CertificationQueueScreenState extends ConsumerState<CertificationQueueScr
     // Sync to CesiumPlus with the captured PIN
     await _syncToRemoteWithRefs(walletService, queueNotifier, capturedPin);
 
-    if (!context.mounted) return;
-
+    // AXIOM-TEAM-HG: the user often taps the back button during this network
+    // sync, disposing this State. Guard with the State's own null-safe
+    // `mounted` — `context.mounted` crashed here because reading `State.context`
+    // dereferences `_element!`, which is null after disposal.
     if (!mounted) return;
     SnackbarService.showWarning(context, message: 'removedFromQueue'.tr(args: [displayName]));
   }

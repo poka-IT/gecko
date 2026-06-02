@@ -30,6 +30,16 @@ APP_NAME="gecko"
 DMG_NAME="Gecko-v${VERSION}-macos.dmg"
 APP_PATH="$PROJECT_ROOT/build/macos/Build/Products/Release/${APP_NAME}.app"
 
+# Code signing & notarization (distribution outside the Mac App Store).
+# Requires a "Developer ID Application" certificate and a stored notarytool
+# credentials profile. Override via env vars if needed.
+#   xcrun notarytool store-credentials "gecko-notary" \
+#     --apple-id <APPLE_ID> --team-id 2P2PNF45VD --password <APP_SPECIFIC_PASSWORD>
+TEAM_ID="${MACOS_TEAM_ID:-2P2PNF45VD}"
+SIGN_IDENTITY="${MACOS_SIGN_IDENTITY:-Developer ID Application: Axiom-Team (${TEAM_ID})}"
+NOTARY_PROFILE="${MACOS_NOTARY_PROFILE:-gecko-notary}"
+ENTITLEMENTS="$PROJECT_ROOT/macos/Runner/Release.entitlements"
+
 echo -e "${CYAN}🦎 Gecko macOS DMG Build Script${NC}"
 echo -e "${CYAN}=================================${NC}"
 echo -e "${BLUE}Version: ${VERSION}+${BUILD_NUMBER}${NC}"
@@ -88,7 +98,20 @@ if [[ ! -d "$PROJECT_ROOT/../durt2" ]]; then
     print_error "durt2 dependency not found at ../durt2"
 fi
 
-print_success "Environment verified"
+# Check the Developer ID signing identity is available in the keychain
+if ! security find-identity -v -p codesigning 2>/dev/null | grep -qF "$SIGN_IDENTITY"; then
+    echo -e "${RED}Available signing identities:${NC}"
+    security find-identity -v -p codesigning 2>/dev/null | grep -o '"[^"]*"' || true
+    print_error "Signing identity not found: '$SIGN_IDENTITY'. A 'Developer ID Application' certificate is required for distribution outside the App Store."
+fi
+
+# Check the notarization credentials profile is configured
+if ! xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>&1; then
+    print_error "Notary profile '$NOTARY_PROFILE' not configured. Run once:
+   xcrun notarytool store-credentials \"$NOTARY_PROFILE\" --apple-id <APPLE_ID> --team-id $TEAM_ID --password <APP_SPECIFIC_PASSWORD>"
+fi
+
+print_success "Environment verified (signing identity + notary profile OK)"
 
 # Step 2: Clean previous builds
 print_step "Cleaning previous builds..."
@@ -141,6 +164,83 @@ else
     print_error "Binary not found at $BINARY_PATH"
 fi
 
+# Step 6b: Code signing with Developer ID + Hardened Runtime
+# Required to distribute outside the App Store. Without this the app is signed
+# with a development certificate (+ provisioning profile + get-task-allow) and
+# will be killed by Gatekeeper on any machine other than the build machine.
+print_step "Signing with Developer ID (Hardened Runtime)..."
+
+# Development provisioning profile is invalid for Developer ID distribution.
+rm -f "$APP_PATH/Contents/embedded.provisionprofile"
+
+# Build a distribution entitlements file from Release.entitlements, resolving the
+# Xcode build variables that Xcode would normally expand at sign time. This keeps
+# the entitlements in sync with the project while dropping the dev-only flags.
+BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Contents/Info.plist")
+DIST_ENTITLEMENTS=$(mktemp -t gecko_entitlements_XXXXXX.plist)
+sed -e "s|\$(AppIdentifierPrefix)|${TEAM_ID}.|g" \
+    -e "s|\$(CFBundleIdentifier)|${BUNDLE_ID}|g" \
+    "$ENTITLEMENTS" > "$DIST_ENTITLEMENTS"
+
+# keychain-access-groups is a provisioning-restricted entitlement: it is only
+# authorized when an embedded provisioning profile grants it (development/App
+# Store builds). With Developer ID distribution there is no profile, so AMFI
+# kills the app at launch ("Launchd job spawn failed"). Removing it makes the
+# app fall back to the default keychain access group (TeamID.BundleID), which is
+# the exact same value — flutter_secure_storage keeps working and previously
+# stored secrets stay accessible.
+/usr/libexec/PlistBuddy -c "Delete :keychain-access-groups" "$DIST_ENTITLEMENTS" 2>/dev/null || true
+
+# Sign inner code first, then the app bundle (inside-out). --deep is intentionally
+# NOT used (Apple-discouraged); each nested component is signed explicitly.
+while IFS= read -r -d '' dylib; do
+    codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$dylib"
+done < <(find "$APP_PATH/Contents/Frameworks" -type f -name "*.dylib" -print0 2>/dev/null)
+
+while IFS= read -r -d '' framework; do
+    codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$framework"
+done < <(find "$APP_PATH/Contents/Frameworks" -type d -name "*.framework" -print0 2>/dev/null)
+
+# Sign the main bundle last, with Hardened Runtime and the resolved entitlements.
+codesign --force --timestamp --options runtime \
+    --entitlements "$DIST_ENTITLEMENTS" \
+    --sign "$SIGN_IDENTITY" "$APP_PATH"
+
+rm -f "$DIST_ENTITLEMENTS"
+
+# Verify the signature is well-formed and valid.
+codesign --verify --deep --strict --verbose=2 "$APP_PATH" \
+    || print_error "Code signature verification failed"
+
+# Guard: the dev-only get-task-allow entitlement must be gone, and we must be on
+# a Developer ID certificate (not Apple Development).
+if codesign -d --entitlements - --xml "$APP_PATH" 2>/dev/null | grep -q "get-task-allow"; then
+    print_error "get-task-allow still present after signing (would be rejected for distribution)"
+fi
+SIGN_AUTH=$(codesign -dvv "$APP_PATH" 2>&1 | grep -m1 "Authority=" | sed 's/Authority=//')
+if [[ "$SIGN_AUTH" != "Developer ID Application"* ]]; then
+    print_error "Unexpected signing authority: '$SIGN_AUTH' (expected Developer ID Application)"
+fi
+print_success "Signed with: $SIGN_AUTH"
+
+# Smoke test: AMFI kills apps that carry unauthorized entitlements at spawn time
+# (exit 137 / SIGKILL), even when the signature itself is valid and the app is
+# notarizable. Catch that here, before spending minutes on notarization.
+print_step "Launch smoke test (AMFI spawn check)..."
+"$BINARY_PATH" >/dev/null 2>&1 &
+SMOKE_PID=$!
+sleep 2
+if kill -0 "$SMOKE_PID" 2>/dev/null; then
+    kill -9 "$SMOKE_PID" 2>/dev/null
+    print_success "App launches (not killed by AMFI)"
+else
+    wait "$SMOKE_PID" 2>/dev/null; SMOKE_RC=$?
+    if [[ $SMOKE_RC -eq 137 ]]; then
+        print_error "App killed by AMFI at launch (exit 137). Almost always a provisioning-restricted entitlement (e.g. keychain-access-groups) that Developer ID signing cannot authorize. Fix the distribution entitlements."
+    fi
+    echo -e "${YELLOW}⚠️  Smoke test: app exited on its own (code $SMOKE_RC). Verify manually that it is not crashing.${NC}"
+fi
+
 # Step 7: Create release directory
 print_step "Preparing release directory..."
 mkdir -p "$RELEASE_DIR"
@@ -165,13 +265,13 @@ INSTALLATION:
 3. Double-click on "Gecko" to launch
 
 SYSTEM REQUIREMENTS:
-- macOS 10.14 (Mojave) or later
-- Apple Silicon (M1/M2/M3) or Intel processor
+- macOS 11.5 (Big Sur) or later
+- Apple Silicon (M1/M2/M3) or Intel processor (Universal binary)
 
 FIRST RUN:
-If you see a security warning:
-1. Go to System Preferences > Security & Privacy
-2. Click "Open Anyway" for Gecko
+This app is signed with a Developer ID and notarized by Apple, so it
+should open normally with a simple double-click. No security override
+is required.
 
 SUPPORT:
 Visit: https://github.com/duniter/gecko
@@ -193,6 +293,30 @@ if [[ ! -f "$RELEASE_DIR/$DMG_NAME" ]]; then
 fi
 
 print_success "DMG package created"
+
+# Step 9b: Notarize the DMG with Apple, then staple the ticket.
+# Notarization must target the outermost container (the DMG). Stapling embeds the
+# ticket so Gatekeeper accepts the app even on an offline machine.
+print_step "Submitting DMG to Apple for notarization (this can take a few minutes)..."
+if xcrun notarytool submit "$RELEASE_DIR/$DMG_NAME" \
+        --keychain-profile "$NOTARY_PROFILE" --wait; then
+    print_success "Notarization accepted by Apple"
+else
+    print_error "Notarization failed. Inspect with: xcrun notarytool log <submission-id> --keychain-profile $NOTARY_PROFILE"
+fi
+
+print_step "Stapling notarization ticket..."
+xcrun stapler staple "$RELEASE_DIR/$DMG_NAME" || print_error "Failed to staple ticket to DMG"
+# Also staple the standalone .app that gets copied to the release dir below.
+xcrun stapler staple "$APP_PATH" 2>/dev/null || true
+print_success "Notarization ticket stapled"
+
+# Authoritative offline check: a stapled, notarized DMG must validate.
+if xcrun stapler validate "$RELEASE_DIR/$DMG_NAME" >/dev/null 2>&1; then
+    print_success "Gatekeeper: DMG is notarized and stapled"
+else
+    print_error "Stapler validation failed on the DMG"
+fi
 
 # Step 10: Copy standalone app
 print_step "Copying standalone application..."
@@ -261,17 +385,14 @@ cat > "$RELEASE_DIR/INSTALLATION_GUIDE.md" << EOF
 3. **Glissez** \`gecko.app\` vers le dossier \`Applications\`
 4. **Lancez** Gecko depuis Launchpad
 
-## ⚠️ Avertissement de Sécurité
+## ✅ Sécurité
 
-Si macOS affiche un avertissement au premier lancement :
-
-1. Allez dans **Préférences Système > Sécurité et confidentialité**
-2. Cliquez **"Ouvrir quand même"** pour Gecko
-3. Ou faites **clic droit > Ouvrir** sur l'application
+L'application est signée avec un certificat **Developer ID** et **notarisée par Apple**.
+Elle s'ouvre donc normalement d'un simple double-clic, sans manipulation de sécurité.
 
 ## 🔧 Prérequis Système
 
-- **macOS 10.14** (Mojave) ou plus récent
+- **macOS 11.5** (Big Sur) ou plus récent
 - **~100 MB** d'espace libre
 - **Droits administrateur** pour l'installation
 
@@ -299,17 +420,14 @@ cat > "$RELEASE_DIR/INSTALLATION_GUIDE_EN.md" << EOF
 3. **Drag** \`gecko.app\` to the \`Applications\` folder
 4. **Launch** Gecko from Launchpad
 
-## ⚠️ Security Warning
+## ✅ Security
 
-If macOS shows a security warning on first launch:
-
-1. Go to **System Preferences > Security & Privacy**
-2. Click **"Open Anyway"** for Gecko
-3. Or **right-click > Open** on the application
+The app is signed with a **Developer ID** certificate and **notarized by Apple**.
+It opens normally with a simple double-click — no security override needed.
 
 ## 🔧 System Requirements
 
-- **macOS 10.14** (Mojave) or later
+- **macOS 11.5** (Big Sur) or later
 - **~100 MB** free space
 - **Administrator privileges** for installation
 

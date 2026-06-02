@@ -1,147 +1,46 @@
 PODS:
-  - app_links (6.4.1):
-    - FlutterMacOS
-  - audioplayers_darwin (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - clipboard_watcher (0.0.1):
     - FlutterMacOS
-  - connectivity_plus (0.0.1):
-    - FlutterMacOS
-  - device_info_plus (0.0.1):
-    - FlutterMacOS
-  - file_selector_macos (0.0.1):
-    - FlutterMacOS
-  - flutter_secure_storage_darwin (10.0.0):
-    - Flutter
-    - FlutterMacOS
   - FlutterMacOS (1.0.0)
-  - local_auth_darwin (0.0.1):
-    - Flutter
-    - FlutterMacOS
-  - mobile_scanner (7.0.0):
-    - Flutter
-    - FlutterMacOS
-  - ObjectBox (5.3.0-beta.4)
+  - ObjectBox (5.3.0)
   - objectbox_flutter_libs (0.0.1):
     - FlutterMacOS
-    - ObjectBox (= 5.3.0-beta.4)
-  - package_info_plus (0.0.1):
-    - FlutterMacOS
+    - ObjectBox (= 5.3.0)
   - printing (1.0.0):
-    - FlutterMacOS
-  - screen_brightness_macos (0.1.0):
     - FlutterMacOS
   - screen_retriever_macos (0.0.1):
     - FlutterMacOS
-  - Sentry/HybridSDK (8.58.1)
-  - sentry_flutter (9.18.0):
-    - Flutter
-    - FlutterMacOS
-    - Sentry/HybridSDK (= 8.58.1)
-  - shared_preferences_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
-  - sqflite_darwin (0.0.4):
-    - Flutter
-    - FlutterMacOS
-  - url_launcher_macos (0.0.1):
-    - FlutterMacOS
-  - window_manager (0.5.0):
-    - FlutterMacOS
 
 DEPENDENCIES:
-  - app_links (from `Flutter/ephemeral/.symlinks/plugins/app_links/macos`)
-  - audioplayers_darwin (from `Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin`)
   - clipboard_watcher (from `Flutter/ephemeral/.symlinks/plugins/clipboard_watcher/macos`)
-  - connectivity_plus (from `Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos`)
-  - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
-  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
-  - flutter_secure_storage_darwin (from `Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
   - FlutterMacOS (from `Flutter/ephemeral`)
-  - local_auth_darwin (from `Flutter/ephemeral/.symlinks/plugins/local_auth_darwin/darwin`)
-  - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin`)
   - objectbox_flutter_libs (from `Flutter/ephemeral/.symlinks/plugins/objectbox_flutter_libs/macos`)
-  - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
   - printing (from `Flutter/ephemeral/.symlinks/plugins/printing/macos`)
-  - screen_brightness_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_brightness_macos/macos`)
   - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
-  - sentry_flutter (from `Flutter/ephemeral/.symlinks/plugins/sentry_flutter/macos`)
-  - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
-  - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
-  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
-  - window_manager (from `Flutter/ephemeral/.symlinks/plugins/window_manager/macos`)
 
 SPEC REPOS:
   trunk:
     - ObjectBox
-    - Sentry
 
 EXTERNAL SOURCES:
-  app_links:
-    :path: Flutter/ephemeral/.symlinks/plugins/app_links/macos
-  audioplayers_darwin:
-    :path: Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin
   clipboard_watcher:
     :path: Flutter/ephemeral/.symlinks/plugins/clipboard_watcher/macos
-  connectivity_plus:
-    :path: Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos
-  device_info_plus:
-    :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
-  file_selector_macos:
-    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
-  flutter_secure_storage_darwin:
-    :path: Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_darwin/darwin
   FlutterMacOS:
     :path: Flutter/ephemeral
-  local_auth_darwin:
-    :path: Flutter/ephemeral/.symlinks/plugins/local_auth_darwin/darwin
-  mobile_scanner:
-    :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin
   objectbox_flutter_libs:
     :path: Flutter/ephemeral/.symlinks/plugins/objectbox_flutter_libs/macos
-  package_info_plus:
-    :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
   printing:
     :path: Flutter/ephemeral/.symlinks/plugins/printing/macos
-  screen_brightness_macos:
-    :path: Flutter/ephemeral/.symlinks/plugins/screen_brightness_macos/macos
   screen_retriever_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos
-  sentry_flutter:
-    :path: Flutter/ephemeral/.symlinks/plugins/sentry_flutter/macos
-  shared_preferences_foundation:
-    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
-  sqflite_darwin:
-    :path: Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin
-  url_launcher_macos:
-    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
-  window_manager:
-    :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
 
 SPEC CHECKSUMS:
-  app_links: 05a6ec2341985eb05e9f97dc63f5837c39895c3f
-  audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
   clipboard_watcher: e9c9d88b3aea4889fe80025037e690e73600b160
-  connectivity_plus: 4adf20a405e25b42b9c9f87feff8f4b6fde18a4e
-  device_info_plus: 4fb280989f669696856f8b129e4a5e3cd6c48f76
-  file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
-  flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
-  local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
-  mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
-  ObjectBox: eccb95ea2054c39d81dfa2d4ccc5f1e31187228a
-  objectbox_flutter_libs: 3adf97321750a5e89c199bda09d3c0ce659022d8
-  package_info_plus: f0052d280d17aa382b932f399edf32507174e870
+  ObjectBox: 2aae8ad350012cb53c6e7848064307cf68617f73
+  objectbox_flutter_libs: c6ec3df598aa194da1cdf929fc9640bbc8f58be1
   printing: c4cf83c78fd684f9bc318e6aadc18972aa48f617
-  screen_brightness_macos: 2a3ee243f8051c340381e8e51bcedced8360f421
   screen_retriever_macos: 452e51764a9e1cdb74b3c541238795849f21557f
-  Sentry: 958d9619ceccf6abb8c4736003fa336dac1a80a7
-  sentry_flutter: 8c688f0657eef5c6faf4985c57ca0f48ffb2b7b5
-  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
-  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
-  url_launcher_macos: f87a979182d112f911de6820aefddaf56ee9fbfd
-  window_manager: b729e31d38fb04905235df9ea896128991cad99e
 
 PODFILE CHECKSUM: f3f9f3f6802844abef343fa9e1b28695b84d6ad1
 

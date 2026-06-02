@@ -15,8 +15,12 @@ set -e
 REPO="poka"
 IMAGES=("format" "android" "linux" "deploy" "publish")
 
-# Images that need multi-arch builds (used by runners of different architectures)
-MULTIARCH_IMAGES=("linux")
+# Images that need multi-arch builds (used by runners of different architectures).
+# Everything except "android" is built for amd64 + arm64 so the images run on CI
+# runners and local dev machines of either architecture. "android" is intentionally
+# excluded: it is pinned to linux/amd64 (Flutter ships no gen_snapshot for
+# linux-arm64 Android targets — see docker/android.Dockerfile).
+MULTIARCH_IMAGES=("format" "linux" "deploy" "publish")
 
 is_multiarch() {
     local name="$1"
@@ -71,13 +75,20 @@ build_and_push() {
             --push \
             .
     else
-        echo "Building ${image}..."
-        local provenance_flag=""
-        if docker buildx version &>/dev/null; then
-            provenance_flag="--provenance=false"
-        fi
-        docker build $provenance_flag -f "$dockerfile" -t "${image}:latest" .
-        docker push "${image}:latest"
+        # Single-arch image (currently only "android"): pinned to linux/amd64
+        # because Flutter ships no gen_snapshot for linux-arm64 Android targets.
+        # Built via buildx and pushed directly so it works regardless of which
+        # buildx builder is active (the docker-container builder used for the
+        # multi-arch images does not load into the local image store).
+        echo "Building ${image} (linux/amd64)..."
+        ensure_buildx_builder
+        docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            -f "$dockerfile" \
+            -t "${image}:latest" \
+            --push \
+            .
     fi
 
     echo "Pushed ${image}:latest"

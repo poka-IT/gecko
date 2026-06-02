@@ -142,7 +142,7 @@ Pour rejoindre le programme beta sur le Play Store : [s'inscrire ici](https://pl
 
 • **[Linux Desktop (tar.gz)]({linux_arm64_base_url}/gecko-{version}-linux-arm64.tar.gz)** (ARM64){optional_desktop_lines}
 
-• **[macOS Desktop (dmg)]()** (Universel — Intel + Apple Silicon)
+• **[macOS Desktop (dmg)]()** (Universel - Intel + Apple Silicon)
 
 **Changelog:**
 {changelog}"""

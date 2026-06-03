@@ -350,6 +350,7 @@ build:linux:x64:
     - dart run sentry_dart_plugin 2>/dev/null || echo "Sentry symbol upload skipped"
     - mkdir -p artifacts/linux
     - export ARCH=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/x64/')
+    - ./scripts/package-linux-bundle.sh "build/linux/${ARCH}/release/bundle"
     - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-x64.tar.gz" -C build/linux/${ARCH}/release/bundle .
     - echo "$CI_JOB_ID" > artifacts/linux_x64_job_id.txt
   tags:
@@ -364,6 +365,7 @@ build:linux:arm64:
     - dart run sentry_dart_plugin 2>/dev/null || echo "Sentry symbol upload skipped"
     - mkdir -p artifacts/linux
     - export ARCH=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/x64/')
+    - ./scripts/package-linux-bundle.sh "build/linux/${ARCH}/release/bundle"
     - tar -czf "artifacts/linux/gecko-${VERSION}+${BUILD}-linux-arm64.tar.gz" -C build/linux/${ARCH}/release/bundle .
     - echo "$CI_JOB_ID" > artifacts/linux_arm64_job_id.txt
   tags:

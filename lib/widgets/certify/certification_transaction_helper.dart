@@ -69,6 +69,9 @@ class CertificationTransactionHelper {
     // target is not a validated member and this cert brings them to ≥ minCerts.
     final isRenewal = ref.read(certificationExistsProvider(targetAddress)).asData?.value ?? false;
     final willTriggerDistanceEval = _resolveWillTriggerDistanceEval(ref, targetAddress);
+    // An expired target (on-chain `NotMember`) cannot have its distance triggered
+    // by us; surface guidance telling the certifier the OWNER must self-renew.
+    final isExpiredTarget = ref.read(smartIdtyStatusStreamProvider(targetAddress)).asData?.value == IdtyStatus.expired;
 
     // Capture ScaffoldMessenger now while context is valid,
     // so stream errors can show a snackbar even after navigation.
@@ -102,6 +105,7 @@ class CertificationTransactionHelper {
         scaffoldMessenger: scaffoldMessenger,
         isRenewal: isRenewal,
         willTriggerDistanceEval: willTriggerDistanceEval,
+        isExpiredTarget: isExpiredTarget,
         removeFromPersistentQueue: true,
       );
 
@@ -143,6 +147,7 @@ class CertificationTransactionHelper {
     required ScaffoldMessengerState scaffoldMessenger,
     bool isRenewal = false,
     bool willTriggerDistanceEval = false,
+    bool isExpiredTarget = false,
     bool removeFromPersistentQueue = false,
   }) {
     bool hasHandled = false;
@@ -175,6 +180,7 @@ class CertificationTransactionHelper {
             targetUsername: targetUsername,
             isRenewal: isRenewal,
             willTriggerDistanceEval: willTriggerDistanceEval,
+            isExpiredTarget: isExpiredTarget,
           );
 
           // Auto-add certified person to contacts
@@ -292,13 +298,13 @@ class CertificationTransactionHelper {
   }
 
   /// Mirror durt2's certify() heuristic at the UI layer: distance evaluation
-  /// is auto-bundled when the target is not a validated member AND this
-  /// certification brings them to (or above) the minCerts threshold.
+  /// is auto-bundled ONLY for a confirmed newcomer (on-chain `Unvalidated`,
+  /// app status `confirmed`) reaching the minCerts threshold. The runtime
+  /// rejects `request_distance_evaluation_for` on any other target status, so
+  /// expired identities (`NotMember`) are excluded here — they must self-renew.
   static bool _resolveWillTriggerDistanceEval(WidgetRef ref, String targetAddress) {
     final idtyStatus = ref.read(smartIdtyStatusStreamProvider(targetAddress)).asData?.value;
-    if (idtyStatus == null) return false;
-    if (idtyStatus == IdtyStatus.validated) return false;
-    if (idtyStatus == IdtyStatus.none) return false;
+    if (idtyStatus != IdtyStatus.confirmed) return false;
 
     final certData = ref.read(smartCertificationStreamProvider(targetAddress)).asData?.value;
     final minCerts = ref.read(currencyDataProvider).asData?.value.wotParams.sigQtyRule;
@@ -323,6 +329,7 @@ class CertificationTransactionHelper {
     required String? targetUsername,
     required bool isRenewal,
     required bool willTriggerDistanceEval,
+    required bool isExpiredTarget,
   }) async {
     bool distanceEvalActuallyTriggered = false;
     if (willTriggerDistanceEval) {
@@ -339,6 +346,7 @@ class CertificationTransactionHelper {
       scaffoldMessenger,
       isRenewal: isRenewal,
       distanceEvalTriggered: distanceEvalActuallyTriggered,
+      isExpiredTarget: isExpiredTarget,
       targetUsername: targetUsername,
     );
   }
@@ -350,11 +358,18 @@ class CertificationTransactionHelper {
     ScaffoldMessengerState scaffoldMessenger, {
     required bool isRenewal,
     required bool distanceEvalTriggered,
+    bool isExpiredTarget = false,
     String? targetUsername,
   }) {
     final target = targetUsername ?? 'thisIdentity'.tr();
     final String message;
-    if (distanceEvalTriggered) {
+    if (isExpiredTarget) {
+      // The cert landed, but re-membership of an expired identity can only be
+      // completed by its OWNER (self distance evaluation). Tell the certifier so
+      // they don't believe the recovery is finished.
+      final baseKey = isRenewal ? 'certRenewedExpiredSelfRenewal' : 'certAddedExpiredSelfRenewal';
+      message = baseKey.tr(namedArgs: {'name': target});
+    } else if (distanceEvalTriggered) {
       final baseKey = isRenewal ? 'certRenewedWithDistanceEvalSuccess' : 'certAddedWithDistanceEvalSuccess';
       message = baseKey.tr(namedArgs: {'name': target});
     } else {

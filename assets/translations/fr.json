@@ -458,6 +458,7 @@
     "identityNameTooLong": "Le nom ne doit pas dépasser 32 caractères",
     "confirmIdentityCreation": "Confirmation de l'identité",
     "confirmIdentityNameChoice": "Êtes-vous sûr de vouloir utiliser \"{}\" comme nom d'identité ? Ce choix est définitif.",
+    "identityNotConfirmable": "Cette identité ne peut plus être confirmée (déjà confirmée ou statut modifié).",
     "identityNameNoSpaces": "Le nom ne doit pas contenir d'espaces",
     "areYouSureYouWantToRevokeIdentity": "Êtes-vous sûr de vouloir révoquer votre identité ? Cette action est définitive.",
     "confirmationTitle": "Confirmation",

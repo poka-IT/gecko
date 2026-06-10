@@ -193,6 +193,7 @@
     "confirmCreateIdentity": "Stai per creare un'identità per:",
     "confirmIdentityCreation": "Conferma la creazione dell'identità",
     "confirmIdentityNameChoice": "Sei sicuro di voler usare \"{}\" come nome dell'identità? Questa scelta è definitiva.",
+    "identityNotConfirmable": "Questa identità non può più essere confermata (già confermata o stato modificato).",
     "confirmMigrationMessage": "Sei sicuro di voler migrare tutti i tuoi portafogli in questa nuova cassaforte?",
     "confirmMigrationTitle": "Conferma migrazione",
     "confirmMyIdentity": "Confermare la mia identità",

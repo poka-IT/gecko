@@ -192,6 +192,7 @@
     "confirmCreateIdentity": "Estás a punto de crear una identidad para:",
     "confirmIdentityCreation": "Confirmación de la identidad",
     "confirmIdentityNameChoice": "¿Estás seguro de querer usar \"{}\" como nombre de identidad? Esta elección es definitiva.",
+    "identityNotConfirmable": "Esta identidad ya no puede confirmarse (ya confirmada o estado modificado).",
     "confirmMigrationMessage": "¿Estás seguro de que quieres migrar todos tus monederos a esta nueva bóveda?",
     "confirmMigrationTitle": "Confirmación de la migración",
     "confirmMyIdentity": "Confirmar mi identidad",

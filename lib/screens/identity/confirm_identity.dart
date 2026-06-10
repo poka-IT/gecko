@@ -112,6 +112,18 @@ class _ConfirmIdentityScreenState extends ConsumerState<ConfirmIdentityScreen> {
     final name = _identityNameController.text.trim();
     final navigatorState = Navigator.of(context);
 
+    // Precondition: the identity must still be Unconfirmed (app `created`).
+    // If it changed while this screen was open (e.g. confirmed from another
+    // device), confirming again is rejected on-chain (IdtyAlreadyConfirmed) and
+    // wastes fees — bail with a clear message instead of submitting a doomed tx.
+    final currentStatus = ref.read(hybridIdtyStatusProvider(widget.address)).value;
+    if (currentStatus != null && currentStatus != IdtyStatus.created) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('identityNotConfirmable'.tr()), backgroundColor: context.geckoColors.danger),
+      );
+      return;
+    }
+
     // Afficher le dialogue de confirmation
     final confirmed = await showConfirmationDialog(
       context: context,

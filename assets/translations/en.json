@@ -187,6 +187,7 @@
     "confirmCreateIdentity": "You are about to create an identity for:",
     "confirmIdentityCreation": "Identity Confirmation",
     "confirmIdentityNameChoice": "Are you sure you want to use \"{}\" as your identity name? This choice is permanent.",
+    "identityNotConfirmable": "This identity can no longer be confirmed (already confirmed or status changed).",
     "confirmMigrationMessage": "Are you sure you want to migrate all your wallets to this new safe?",
     "confirmMigrationTitle": "Migration Confirmation",
     "confirmMyIdentity": "Confirm my identity",
